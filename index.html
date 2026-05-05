@@ -1020,6 +1020,114 @@ body{
   .raveworm-overlay .snake-swipe-hint{display:block!important;}
   .raveworm-overlay .snake-mobile-start{display:flex!important;}
 }
+
+/* ══════════════════════════════════════════════════
+   AUTH SCREENS
+══════════════════════════════════════════════════ */
+.auth-overlay{
+  position:fixed;inset:0;z-index:50000;
+  background:#000;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;
+}
+.auth-overlay.open{display:flex;}
+.auth-box{
+  width:100%;max-width:400px;
+  background:#0a0a0a;border:1px solid rgba(245,200,66,0.3);
+  padding:32px 28px;
+}
+.auth-logo{
+  font-family:'Pirata One',cursive;font-size:28px;color:var(--gold-bright);
+  text-shadow:0 0 18px rgba(245,200,66,0.4);text-align:center;
+  margin-bottom:4px;
+}
+.auth-logo span{
+  display:block;font-family:'Poppins',sans-serif;font-size:10px;
+  color:var(--teal-glow);letter-spacing:3px;text-transform:uppercase;
+  font-weight:600;margin-top:2px;
+}
+.auth-title{
+  font-size:18px;font-weight:800;color:var(--text-light);
+  text-align:center;margin:20px 0 6px;text-transform:uppercase;letter-spacing:1px;
+}
+.auth-sub{
+  font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:24px;
+}
+.auth-field{margin-bottom:14px;}
+.auth-label{
+  font-size:11px;font-weight:700;color:var(--text-muted);
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;display:block;
+}
+.auth-input{
+  width:100%;padding:12px 14px;background:#111;
+  border:1px solid rgba(255,255,255,0.12);color:var(--text-light);
+  font-family:'Poppins',sans-serif;font-size:15px;font-weight:500;
+  outline:none;transition:border-color .15s;
+}
+.auth-input:focus{border-color:var(--gold-bright);}
+.auth-input::placeholder{color:rgba(122,184,224,0.35);}
+.auth-btn{
+  width:100%;padding:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--gold-warm),var(--gold-sunset));
+  color:#000;font-family:'Poppins',sans-serif;font-size:15px;font-weight:800;
+  letter-spacing:0.5px;text-transform:uppercase;transition:all .15s;
+  margin-top:6px;
+}
+.auth-btn:hover{filter:brightness(1.08);}
+.auth-btn:disabled{opacity:0.5;cursor:default;}
+.auth-error{
+  background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.35);
+  color:var(--pink-coral);font-size:13px;font-weight:600;
+  padding:10px 14px;margin-bottom:14px;display:none;
+}
+.auth-error.show{display:block;}
+.auth-switch{
+  text-align:center;margin-top:18px;font-size:13px;color:var(--text-muted);
+}
+.auth-switch a{color:var(--teal-glow);cursor:pointer;font-weight:700;text-decoration:none;}
+.auth-switch a:hover{text-decoration:underline;}
+.auth-divider{
+  height:1px;background:rgba(255,255,255,0.08);margin:20px 0;
+}
+/* Role badge in nav avatar */
+.nav-avatar-wrap{position:relative;cursor:pointer;}
+.nav-role-badge{
+  position:absolute;bottom:-3px;right:-3px;
+  font-size:8px;font-weight:800;letter-spacing:0.5px;
+  padding:1px 4px;text-transform:uppercase;
+}
+.nav-role-badge.festie  {background:var(--teal-glow);color:#000;}
+.nav-role-badge.employee{background:var(--purple-mutiny);color:#fff;}
+.nav-role-badge.admin   {background:var(--gold-bright);color:#000;}
+/* User menu dropdown */
+.user-menu{
+  position:absolute;top:calc(100% + 10px);right:0;
+  background:#0a0a0a;border:1px solid rgba(245,200,66,0.25);
+  min-width:180px;z-index:500;display:none;
+  box-shadow:0 16px 48px rgba(0,0,0,0.8);
+}
+.user-menu.open{display:block;}
+.user-menu-header{
+  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.user-menu-name{font-size:14px;font-weight:800;color:var(--text-light);}
+.user-menu-email{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.user-menu-role{
+  font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  margin-top:4px;
+}
+.user-menu-role.festie  {color:var(--teal-glow);}
+.user-menu-role.employee{color:#c084fc;}
+.user-menu-role.admin   {color:var(--gold-bright);}
+.user-menu-item{
+  display:flex;align-items:center;gap:10px;padding:11px 16px;
+  font-size:13px;font-weight:600;color:var(--text-muted);
+  cursor:pointer;transition:all .12s;border:none;background:transparent;
+  width:100%;text-align:left;
+}
+.user-menu-item:hover{background:rgba(255,255,255,0.05);color:var(--text-light);}
+.user-menu-item.logout{color:var(--pink-coral);}
+.user-menu-item.logout:hover{background:rgba(255,77,141,0.08);}
 </style>
 </head>
 <body>
@@ -1073,7 +1181,21 @@ body{
       </div>
     </div>
     <div class="nav-bell">🔔<div class="notif-dot"></div></div>
-    <div class="nav-avatar" id="navAvatar">?</div>
+    <div class="nav-avatar-wrap" id="navAvatarWrap" onclick="toggleUserMenu()" style="display:none;position:relative;">
+      <div class="nav-avatar" id="navAvatar">?</div>
+      <div class="nav-role-badge festie" id="navRoleBadge">Fan</div>
+      <div class="user-menu" id="userMenu">
+        <div class="user-menu-header">
+          <div class="user-menu-name" id="menuName">—</div>
+          <div class="user-menu-email" id="menuEmail">—</div>
+          <div class="user-menu-role festie" id="menuRole">Festie</div>
+        </div>
+        <button class="user-menu-item" onclick="navigate('schedule');closeUserMenu()">📅 My Schedule</button>
+        <button class="user-menu-item" onclick="showToast('Profile coming in Phase 4!')">👤 Profile</button>
+        <button class="user-menu-item logout" onclick="authLogout()">Sign out</button>
+      </div>
+    </div>
+    <button class="auth-btn" id="navSignInBtn" onclick="showAuth('login')" style="width:auto;padding:8px 16px;font-size:12px;margin-top:0;">Sign In</button>
     <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()">
       <span></span><span></span><span></span>
     </button>
@@ -2714,6 +2836,172 @@ document.addEventListener('keydown', e=>{
 
 
 /* ════════════════════════════════════════════════════════════
+   AUTH SYSTEM
+════════════════════════════════════════════════════════════ */
+const AUTH_URL = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
+const TOKEN_KEY = 'ss_auth_token';
+const USER_KEY  = 'ss_auth_user';
+
+let currentUser = null;
+
+// ── Boot: restore session ──────────────────────────────────
+async function authInit() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) { showAuth('login'); return; }
+  try {
+    const res  = await fetch(`${AUTH_URL}/auth/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Session expired');
+    const data = await res.json();
+    setCurrentUser(data.user, token);
+  } catch {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    showAuth('login');
+  }
+}
+
+// ── Set user state + update UI ─────────────────────────────
+function setCurrentUser(user, token) {
+  currentUser = user;
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+  // Nav avatar
+  const wrap    = document.getElementById('navAvatarWrap');
+  const avatar  = document.getElementById('navAvatar');
+  const badge   = document.getElementById('navRoleBadge');
+  const signIn  = document.getElementById('navSignInBtn');
+  const name    = document.getElementById('menuName');
+  const email   = document.getElementById('menuEmail');
+  const role    = document.getElementById('menuRole');
+
+  if (wrap)   wrap.style.display   = 'block';
+  if (signIn) signIn.style.display = 'none';
+  if (avatar) avatar.textContent   = user.avatar || user.name.slice(0,2).toUpperCase();
+  if (badge)  { badge.textContent  = roleLabel(user.role); badge.className = `nav-role-badge ${user.role}`; }
+  if (name)   name.textContent     = user.name;
+  if (email)  email.textContent    = user.email;
+  if (role)   { role.textContent   = roleLabel(user.role); role.className = `user-menu-role ${user.role}`; }
+
+  // Close auth overlay
+  closeAuth();
+}
+
+function roleLabel(role) {
+  return { festie:'Festie', employee:'Staff', admin:'Admin' }[role] || role;
+}
+
+// ── Show/hide auth overlay ─────────────────────────────────
+function showAuth(mode='login') {
+  document.getElementById('authOverlay').classList.add('open');
+  document.getElementById('authLogin').style.display    = mode==='login'    ? 'block' : 'none';
+  document.getElementById('authRegister').style.display = mode==='register' ? 'block' : 'none';
+  document.body.style.overflow = 'hidden';
+  // Focus first input
+  setTimeout(()=>{
+    const el = document.getElementById(mode==='login' ? 'loginEmail' : 'registerName');
+    if (el) el.focus();
+  }, 100);
+}
+function closeAuth() {
+  document.getElementById('authOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── Login ──────────────────────────────────────────────────
+async function submitLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl    = document.getElementById('loginError');
+  const btn      = document.getElementById('loginBtn');
+
+  errEl.classList.remove('show');
+  if (!email || !password) { showAuthError(errEl, 'Please fill in all fields.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const res  = await fetch(`${AUTH_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { showAuthError(errEl, data.error || 'Login failed.'); return; }
+    setCurrentUser(data.user, data.token);
+    showToast(`Welcome back, ${data.user.name}! ☠`);
+  } catch {
+    showAuthError(errEl, 'Could not connect. Check your connection.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+
+// ── Register ───────────────────────────────────────────────
+async function submitRegister() {
+  const name     = document.getElementById('registerName').value.trim();
+  const email    = document.getElementById('registerEmail').value.trim();
+  const password = document.getElementById('registerPassword').value;
+  const errEl    = document.getElementById('registerError');
+  const btn      = document.getElementById('registerBtn');
+
+  errEl.classList.remove('show');
+  if (!name || !email || !password) { showAuthError(errEl, 'Please fill in all fields.'); return; }
+  if (password.length < 8) { showAuthError(errEl, 'Password must be at least 8 characters.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  try {
+    const res  = await fetch(`${AUTH_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { showAuthError(errEl, data.error || 'Registration failed.'); return; }
+    setCurrentUser(data.user, data.token);
+    showToast(`Welcome aboard, ${data.user.name}! ☠`);
+  } catch {
+    showAuthError(errEl, 'Could not connect. Check your connection.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+}
+
+// ── Logout ─────────────────────────────────────────────────
+function authLogout() {
+  currentUser = null;
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  closeUserMenu();
+  const wrap   = document.getElementById('navAvatarWrap');
+  const signIn = document.getElementById('navSignInBtn');
+  if (wrap)   wrap.style.display   = 'none';
+  if (signIn) signIn.style.display = 'block';
+  showToast('Signed out. See you on the dance floor! 🏴‍☠️');
+  showAuth('login');
+}
+
+// ── User menu ──────────────────────────────────────────────
+function toggleUserMenu() {
+  document.getElementById('userMenu').classList.toggle('open');
+}
+function closeUserMenu() {
+  document.getElementById('userMenu').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#navAvatarWrap')) closeUserMenu();
+});
+
+function showAuthError(el, msg) {
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+// Run auth on load
+authInit();
+
+/* ════════════════════════════════════════════════════════════
    RAVEWORM GAME
 ════════════════════════════════════════════════════════════ */
 function openRaveworm() {
@@ -2861,6 +3149,63 @@ function closeRaveworm() {
         <button class="snake-btn" id="snakeMobileStartBtn" onclick="snakeStart()" style="width:80px;font-size:22px;background:#111;color:#33ff33;border-color:#33ff33;">▶</button>
       </div>
 
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ AUTH OVERLAY ══ -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">☠ SUNKEN SUITE<span>The Mutiny 2026</span></div>
+
+    <!-- LOGIN FORM -->
+    <div id="authLogin">
+      <div class="auth-title">Welcome Back</div>
+      <div class="auth-sub">Sign in to your Mutiny account</div>
+      <div class="auth-error" id="loginError"></div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="loginEmail" type="email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')submitLogin()">
+      </div>
+      <button class="auth-btn" id="loginBtn" onclick="submitLogin()">Sign In</button>
+      <div class="auth-divider"></div>
+      <div class="auth-switch">No account? <a onclick="showAuth('register')">Create one free</a></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="authRegister" style="display:none;">
+      <div class="auth-title">Join The Mutiny</div>
+      <div class="auth-sub">Create your free Festie account</div>
+      <div class="auth-error" id="registerError"></div>
+      <div class="auth-field">
+        <label class="auth-label">Your Name</label>
+        <input class="auth-input" id="registerName" type="text" placeholder="Pirate name or real name" autocomplete="name">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="registerEmail" type="email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="registerPassword" type="password" placeholder="Min 8 characters" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter')submitRegister()">
+      </div>
+      <button class="auth-btn" id="registerBtn" onclick="submitRegister()">Create Account</button>
+      <div class="auth-divider"></div>
+      <div class="auth-switch">Already have an account? <a onclick="showAuth('login')">Sign in</a></div>
+    </div>
+
+    <!-- Skip for now (closes overlay without logging in) -->
+    <div style="text-align:center;margin-top:16px;">
+      <a onclick="closeAuth()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">
+        Continue without signing in →
+      </a>
     </div>
   </div>
 </div>
