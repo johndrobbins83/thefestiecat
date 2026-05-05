@@ -157,15 +157,18 @@ body{
 .nav-item:active{transform:scale(0.93);}
 .nav-icon-wrap{width:36px;height:36px;border-radius:0;background:transparent;
   border:1px solid transparent;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;font-size:18px;}
-.nav-label{font-size:10px;font-weight:600;letter-spacing:0.5px;color:rgba(122,184,224,0.6);
-  text-transform:uppercase;white-space:nowrap;}
-.nav-item.active .nav-icon-wrap{background:linear-gradient(135deg,rgba(245,200,66,0.2),rgba(232,148,26,0.2));border-color:rgba(245,200,66,0.5);}
-.nav-item.active .nav-label{color:var(--gold-bright);}
-.nav-item.nav-sos .nav-icon-wrap{background:rgba(255,77,141,0.15);border-color:rgba(255,77,141,0.4);}
-.nav-item.nav-sos .nav-label{color:var(--pink-coral);}
-.nav-item.more-active .nav-icon-wrap{background:rgba(245,200,66,0.15);border-color:rgba(245,200,66,0.4);}
-.nav-item.more-active .nav-label{color:var(--gold-bright);}
+  transition:all .15s;font-size:20px;color:var(--gold-bright);filter:drop-shadow(0 0 4px rgba(245,200,66,0.4));}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--gold-bright);
+  text-transform:uppercase;white-space:nowrap;opacity:0.6;}
+.nav-item.active .nav-icon-wrap{background:rgba(245,200,66,0.12);border-color:rgba(245,200,66,0.5);
+  filter:drop-shadow(0 0 8px rgba(245,200,66,0.7));}
+.nav-item.active .nav-label{color:var(--gold-bright);opacity:1;}
+.nav-item.nav-sos .nav-icon-wrap{background:rgba(255,77,141,0.15);border-color:rgba(255,77,141,0.4);
+  color:var(--pink-coral);filter:drop-shadow(0 0 6px rgba(255,77,141,0.5));}
+.nav-item.nav-sos .nav-label{color:var(--pink-coral);opacity:1;}
+.nav-item.more-active .nav-icon-wrap{background:rgba(245,200,66,0.15);border-color:rgba(245,200,66,0.5);
+  filter:drop-shadow(0 0 8px rgba(245,200,66,0.7));}
+.nav-item.more-active .nav-label{color:var(--gold-bright);opacity:1;}
 /* Bottom nav: mobile only */
 @media(min-width:768px){
   nav.bottom-nav{display:none!important;}
@@ -1456,13 +1459,13 @@ body{
 
 <!-- ══ BOTTOM NAV ══ -->
 <nav class="bottom-nav">
-  <span class="nav-item active" data-page="home"      onclick="navigate('home')"><div class="nav-icon-wrap">🏠</div><span class="nav-label">Home</span></span>
-  <span class="nav-item"        data-page="schedule"  onclick="navigate('schedule')"><div class="nav-icon-wrap">📅</div><span class="nav-label">Schedule</span></span>
-  <span class="nav-item"        data-page="artists"   onclick="navigate('artists')"><div class="nav-icon-wrap">🎤</div><span class="nav-label">Artists</span></span>
-  <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">🗺️</div><span class="nav-label">Map</span></span>
-  <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">✅</div><span class="nav-label">List</span></span>
-  <span class="nav-item more-trigger" onclick="toggleMore(this)"><div class="nav-icon-wrap">⋯</div><span class="nav-label">More</span></span>
-  <span class="nav-item nav-sos" onclick="openSOS()"><div class="nav-icon-wrap">🆘</div><span class="nav-label">SOS</span></span>
+  <span class="nav-item active" data-page="home"      onclick="navigate('home')"><div class="nav-icon-wrap">⌂</div><span class="nav-label">Home</span></span>
+  <span class="nav-item"        data-page="schedule"  onclick="navigate('schedule')"><div class="nav-icon-wrap">◈</div><span class="nav-label">Schedule</span></span>
+  <span class="nav-item"        data-page="artists"   onclick="navigate('artists')"><div class="nav-icon-wrap">♪</div><span class="nav-label">Artists</span></span>
+  <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">⊕</div><span class="nav-label">Map</span></span>
+  <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">☑</div><span class="nav-label">List</span></span>
+  <span class="nav-item more-trigger" onclick="toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
+  <span class="nav-item nav-sos" onclick="openSOS()"><div class="nav-icon-wrap" style="font-size:13px;font-weight:900;letter-spacing:0;">SOS</div><span class="nav-label">SOS</span></span>
 </nav>
 
 <!-- ══ MORE POPOUT ══ -->
