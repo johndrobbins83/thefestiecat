@@ -1128,6 +1128,181 @@ body{
 .user-menu-item:hover{background:rgba(255,255,255,0.05);color:var(--text-light);}
 .user-menu-item.logout{color:var(--pink-coral);}
 .user-menu-item.logout:hover{background:rgba(255,77,141,0.08);}
+
+/* ══════════════════════════════════════════════════
+   ADMIN & EMPLOYEE DASHBOARDS
+══════════════════════════════════════════════════ */
+
+/* Role-gated nav items — hidden until JS shows them */
+.nav-admin-only  { display:none!important; }
+.nav-staff-only  { display:none!important; }
+body.role-admin    .nav-admin-only { display:flex!important; }
+body.role-employee .nav-staff-only { display:flex!important; }
+body.role-admin    .nav-staff-only { display:flex!important; }
+
+/* Dashboard header */
+.dash-header{margin-bottom:24px;}
+.dash-title{font-size:22px;font-weight:900;color:var(--gold-bright);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.dash-sub{font-size:13px;color:var(--text-muted);}
+
+/* Stat cards row */
+.dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:10px;margin-bottom:24px;}
+.dash-stat{background:#0d0d0d;border:1px solid rgba(255,255,255,0.08);
+  padding:14px;text-align:center;}
+.dash-stat-num{font-size:28px;font-weight:900;color:var(--gold-bright);
+  font-family:'Orbitron',sans-serif;line-height:1;}
+.dash-stat-label{font-size:11px;color:var(--text-muted);font-weight:600;
+  text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+
+/* Section cards */
+.dash-section{background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);
+  margin-bottom:16px;}
+.dash-section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.dash-section-title{font-size:13px;font-weight:800;color:var(--text-light);
+  text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px;}
+.dash-section-body{padding:16px;}
+
+/* Tabs */
+.dash-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);
+  margin-bottom:16px;overflow-x:auto;}
+.dash-tab{padding:10px 18px;font-size:13px;font-weight:700;color:var(--text-muted);
+  cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;
+  transition:all .15s;background:transparent;border-top:none;border-left:none;border-right:none;}
+.dash-tab:hover{color:var(--text-light);}
+.dash-tab.active{color:var(--gold-bright);border-bottom-color:var(--gold-bright);}
+
+/* Action buttons */
+.dash-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;
+  font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .15s;border:1px solid rgba(255,255,255,0.12);
+  background:transparent;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;}
+.dash-btn:hover{border-color:rgba(245,200,66,0.4);color:var(--gold-bright);}
+.dash-btn.primary{background:var(--gold-bright);color:#000;border-color:var(--gold-bright);}
+.dash-btn.primary:hover{filter:brightness(1.1);}
+.dash-btn.danger{border-color:rgba(255,77,141,0.3);color:var(--pink-coral);}
+.dash-btn.danger:hover{background:rgba(255,77,141,0.1);}
+.dash-btn.success{border-color:rgba(0,212,200,0.3);color:var(--teal-glow);}
+.dash-btn.success:hover{background:rgba(0,212,200,0.1);}
+
+/* Artist editor grid */
+.admin-artist-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+@media(min-width:560px){.admin-artist-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:768px){.admin-artist-grid{grid-template-columns:repeat(4,1fr);}}
+@media(min-width:1100px){.admin-artist-grid{grid-template-columns:repeat(5,1fr);}}
+
+.admin-artist-card{position:relative;aspect-ratio:1/1;cursor:pointer;
+  background:#111;overflow:hidden;}
+.admin-artist-card:hover .admin-artist-edit{opacity:1;}
+.admin-artist-placeholder{position:absolute;inset:0;display:flex;
+  align-items:center;justify-content:center;font-size:clamp(16px,4vw,28px);
+  font-weight:900;color:rgba(255,255,255,0.9);}
+.admin-artist-overlay{position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,rgba(0,0,0,0.95) 0%,transparent 100%);
+  padding:20px 8px 8px;}
+.admin-artist-name{font-size:clamp(9px,2vw,12px);font-weight:800;
+  color:#fff;text-transform:uppercase;letter-spacing:0.5px;}
+.admin-artist-stage{font-size:9px;color:rgba(255,255,255,0.5);margin-top:1px;}
+.admin-artist-edit{position:absolute;top:6px;right:6px;
+  width:28px;height:28px;background:rgba(245,200,66,0.9);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;cursor:pointer;opacity:0;transition:opacity .15s;
+  border:none;color:#000;}
+.admin-artist-tba{position:absolute;top:6px;left:6px;
+  background:rgba(255,77,141,0.9);color:#fff;
+  font-size:8px;font-weight:800;padding:2px 5px;letter-spacing:0.5px;}
+
+/* Edit modal */
+.edit-modal-overlay{position:fixed;inset:0;z-index:30000;
+  background:rgba(0,0,0,0.85);display:none;
+  align-items:center;justify-content:center;padding:16px;}
+.edit-modal-overlay.open{display:flex;}
+.edit-modal{background:#0a0a0a;border:1px solid rgba(245,200,66,0.3);
+  width:100%;max-width:540px;max-height:90vh;overflow-y:auto;}
+.edit-modal-header{display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.edit-modal-title{font-size:15px;font-weight:800;color:var(--gold-bright);
+  text-transform:uppercase;letter-spacing:1px;}
+.edit-modal-close{width:32px;height:32px;background:rgba(255,255,255,0.06);
+  border:none;color:var(--text-light);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;}
+.edit-modal-body{padding:20px;display:flex;flex-direction:column;gap:14px;}
+.edit-field{display:flex;flex-direction:column;gap:6px;}
+.edit-label{font-size:11px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:1px;}
+.edit-input{padding:10px 12px;background:#111;border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-light);font-family:'Poppins',sans-serif;font-size:14px;
+  font-weight:500;outline:none;transition:border-color .15s;width:100%;}
+.edit-input:focus{border-color:var(--gold-bright);}
+.edit-select{padding:10px 12px;background:#111;border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-light);font-family:'Poppins',sans-serif;font-size:14px;
+  outline:none;cursor:pointer;width:100%;}
+.edit-textarea{padding:10px 12px;background:#111;border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-light);font-family:'Poppins',sans-serif;font-size:14px;
+  outline:none;resize:vertical;min-height:80px;width:100%;}
+.edit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.edit-modal-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.07);
+  display:flex;gap:8px;justify-content:flex-end;}
+
+/* User management table */
+.user-table{width:100%;border-collapse:collapse;}
+.user-table th{font-size:10px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:1px;padding:8px 12px;
+  border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;}
+.user-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);
+  font-size:13px;color:var(--text-light);vertical-align:middle;}
+.user-table tr:last-child td{border-bottom:none;}
+.user-table tr:hover td{background:rgba(255,255,255,0.02);}
+.role-pill{display:inline-block;font-size:9px;font-weight:800;
+  letter-spacing:1px;text-transform:uppercase;padding:2px 7px;}
+.role-pill.festie  {background:rgba(0,212,200,0.15);color:var(--teal-glow);}
+.role-pill.employee{background:rgba(155,61,255,0.15);color:#c084fc;}
+.role-pill.admin   {background:rgba(245,200,66,0.15);color:var(--gold-bright);}
+
+/* Employee dashboard specific */
+.staff-role-badge{display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:16px;}
+.staff-role-badge.security  {background:rgba(255,77,141,0.15);color:var(--pink-coral);border:1px solid rgba(255,77,141,0.3);}
+.staff-role-badge.stage-crew{background:rgba(155,61,255,0.15);color:#c084fc;border:1px solid rgba(155,61,255,0.3);}
+.staff-role-badge.ticketing {background:rgba(0,212,200,0.15);color:var(--teal-glow);border:1px solid rgba(0,212,200,0.3);}
+.staff-role-badge.engineers {background:rgba(245,200,66,0.15);color:var(--gold-bright);border:1px solid rgba(245,200,66,0.3);}
+.staff-role-badge.management{background:rgba(255,107,26,0.15);color:var(--gold-sunset);border:1px solid rgba(255,107,26,0.3);}
+
+/* Task list */
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:12px;
+  border-bottom:1px solid rgba(255,255,255,0.05);transition:background .12s;}
+.task-item:last-child{border-bottom:none;}
+.task-item:hover{background:rgba(255,255,255,0.02);}
+.task-check{width:20px;height:20px;border:1.5px solid rgba(255,255,255,0.2);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:11px;transition:all .15s;margin-top:1px;}
+.task-check.done{background:var(--teal-glow);border-color:var(--teal-glow);color:#000;}
+.task-body{flex:1;}
+.task-title{font-size:14px;font-weight:600;color:var(--text-light);line-height:1.3;}
+.task-title.done{text-decoration:line-through;color:var(--text-muted);}
+.task-meta{font-size:11px;color:var(--text-muted);margin-top:3px;}
+.task-priority{font-size:9px;font-weight:800;letter-spacing:1px;
+  padding:2px 6px;text-transform:uppercase;flex-shrink:0;}
+.task-priority.high  {background:rgba(255,77,141,0.2);color:var(--pink-coral);}
+.task-priority.medium{background:rgba(245,200,66,0.15);color:var(--gold-bright);}
+.task-priority.low   {background:rgba(0,212,200,0.1);color:var(--teal-glow);}
+
+/* Announcement cards */
+.announce-card{padding:14px;border-left:3px solid var(--gold-bright);
+  background:rgba(245,200,66,0.05);margin-bottom:8px;}
+.announce-card-title{font-size:14px;font-weight:700;color:var(--text-light);margin-bottom:4px;}
+.announce-card-body{font-size:13px;color:var(--text-muted);line-height:1.6;}
+.announce-card-time{font-size:11px;color:rgba(122,184,224,0.4);margin-top:6px;}
+
+/* Edit pen overlay on artist cards when admin */
+body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
+.artist-admin-pen{display:none;position:absolute;top:6px;left:6px;
+  width:26px;height:26px;background:rgba(245,200,66,0.9);
+  align-items:center;justify-content:center;font-size:12px;
+  cursor:pointer;z-index:5;border:none;color:#000;}
 </style>
 </head>
 <body>
@@ -1152,6 +1327,8 @@ body{
     <span class="desktop-nav-link"        data-page="checklist" onclick="navigate('checklist')">✅ List</span>
     <span class="desktop-nav-link more-trigger" onclick="toggleMore(this)">⋯ More</span>
     <span class="desktop-nav-link sos" onclick="openSOS()">🆘 SOS</span>
+    <span class="desktop-nav-link nav-admin-only" data-page="admin"   onclick="navigate('admin')"  style="color:#f5c842;border-color:rgba(245,200,66,0.3);">⚙ Admin</span>
+    <span class="desktop-nav-link nav-staff-only" data-page="staff"   onclick="navigate('staff')"  style="color:#c084fc;border-color:rgba(155,61,255,0.3);">📋 Staff</span>
   </nav>
   <div class="nav-right">
     <!-- Weather -->
@@ -1577,6 +1754,179 @@ body{
     <div class="games-grid" id="gamesGrid"></div>
   </div><!-- /page-games -->
 
+
+  <!-- ── ADMIN DASHBOARD ── -->
+  <div class="page" id="page-admin">
+    <div class="dash-header">
+      <div class="dash-title">⚙ Admin Dashboard</div>
+      <div class="dash-sub">Sunken Suite 2026 · The Mutiny</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="dash-stats" id="adminStats">
+      <div class="dash-stat"><div class="dash-stat-num" id="statArtists">66</div><div class="dash-stat-label">Artists</div></div>
+      <div class="dash-stat"><div class="dash-stat-num" id="statUsers">—</div><div class="dash-stat-label">Users</div></div>
+      <div class="dash-stat"><div class="dash-stat-num">3</div><div class="dash-stat-label">Days</div></div>
+      <div class="dash-stat"><div class="dash-stat-num">2</div><div class="dash-stat-label">Stages</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="dash-tabs">
+      <button class="dash-tab active" onclick="switchAdminTab('artists',this)">🎤 Artists</button>
+      <button class="dash-tab" onclick="switchAdminTab('schedule',this)">📅 Schedule</button>
+      <button class="dash-tab" onclick="switchAdminTab('users',this)">👥 Users</button>
+      <button class="dash-tab" onclick="switchAdminTab('settings',this)">⚙ Settings</button>
+    </div>
+
+    <!-- Artists Tab -->
+    <div id="adminTab-artists">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">🎤 Artist Roster <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(tap ✏ to edit)</span></div>
+          <button class="dash-btn primary" onclick="adminNewArtist()">+ Add Artist</button>
+        </div>
+        <div class="dash-section-body">
+          <!-- Filter pills -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+            <button class="dash-btn active" onclick="setAdminArtistFilter('all',this)" style="border-color:rgba(245,200,66,0.4);color:var(--gold-bright);" id="adminArtistFilterAll">All</button>
+            <button class="dash-btn" onclick="setAdminArtistFilter('tba',this)">⚠ TBA</button>
+            <button class="dash-btn" onclick="setAdminArtistFilter('dnb',this)">DNB Stage</button>
+            <button class="dash-btn" onclick="setAdminArtistFilter('oasis',this)">Oasis Stage</button>
+          </div>
+          <div class="admin-artist-grid" id="adminArtistGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule Tab -->
+    <div id="adminTab-schedule" style="display:none;">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">📅 Schedule Editor</div>
+        </div>
+        <div class="dash-section-body">
+          <div style="display:flex;gap:6px;margin-bottom:14px;">
+            <button class="dash-btn active" onclick="setAdminSchedDay('fri',this)" style="border-color:rgba(245,200,66,0.4);color:var(--gold-bright);">Fri 7/17</button>
+            <button class="dash-btn" onclick="setAdminSchedDay('sat',this)">Sat 7/18</button>
+            <button class="dash-btn" onclick="setAdminSchedDay('sun',this)">Sun 7/19</button>
+          </div>
+          <div id="adminSchedList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="adminTab-users" style="display:none;">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">👥 User Management</div>
+          <button class="dash-btn" onclick="adminLoadUsers()">↻ Refresh</button>
+        </div>
+        <div class="dash-section-body">
+          <div id="adminUsersList">
+            <div style="text-align:center;padding:32px;color:var(--text-muted);">
+              Click Refresh to load users
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="adminTab-settings" style="display:none;">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">⚙ Site Settings</div>
+        </div>
+        <div class="dash-section-body" style="display:flex;flex-direction:column;gap:14px;">
+          <div class="edit-field">
+            <label class="edit-label">Banner announcement text</label>
+            <input class="edit-input" id="settingBanner" value="GATES OPEN IN" placeholder="Banner text">
+          </div>
+          <div class="edit-field">
+            <label class="edit-label">Artist count (shown on home)</label>
+            <input class="edit-input" id="settingArtistCount" value="66+" placeholder="e.g. 66+">
+          </div>
+          <div class="edit-field">
+            <label class="edit-label">Festival dates</label>
+            <input class="edit-input" id="settingDates" value="July 17–19, 2026" placeholder="Dates">
+          </div>
+          <button class="dash-btn primary" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /page-admin -->
+
+  <!-- ── EMPLOYEE DASHBOARD ── -->
+  <div class="page" id="page-staff">
+    <div class="dash-header">
+      <div class="dash-title">📋 Staff Dashboard</div>
+      <div class="dash-sub" id="staffRoleDisplay">Sunken Suite 2026 · The Mutiny</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="dash-tabs">
+      <button class="dash-tab active" onclick="switchStaffTab('tasks',this)">✅ My Tasks</button>
+      <button class="dash-tab" onclick="switchStaffTab('schedule',this)">🕐 Shift Schedule</button>
+      <button class="dash-tab" onclick="switchStaffTab('announcements',this)">📢 Announcements</button>
+      <button class="dash-tab" onclick="switchStaffTab('contacts',this)">📞 Contacts</button>
+    </div>
+
+    <!-- Tasks Tab -->
+    <div id="staffTab-tasks">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">✅ Your Tasks</div>
+          <span id="staffTaskProgress" style="font-size:12px;color:var(--text-muted);">0 / 0 done</span>
+        </div>
+        <div id="staffTaskList"></div>
+      </div>
+    </div>
+
+    <!-- Shift Schedule Tab -->
+    <div id="staffTab-schedule" style="display:none;">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">🕐 Shift Schedule</div>
+        </div>
+        <div class="dash-section-body">
+          <div id="staffShiftList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Announcements Tab -->
+    <div id="staffTab-announcements" style="display:none;">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">📢 Staff Announcements</div>
+        </div>
+        <div class="dash-section-body" id="staffAnnouncements">
+          <div class="announce-card">
+            <div class="announce-card-title">Welcome to Sunken Suite 2026!</div>
+            <div class="announce-card-body">Thank you for being part of the crew. Please check your tasks and make sure you know your shift times. More details coming soon.</div>
+            <div class="announce-card-time">Posted by Admin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contacts Tab -->
+    <div id="staffTab-contacts" style="display:none;">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">📞 Key Contacts</div>
+        </div>
+        <div class="dash-section-body" style="display:flex;flex-direction:column;gap:8px;">
+          <div class="task-item"><div class="task-body"><div class="task-title">Event Management</div><div class="task-meta">For general event questions and escalations</div></div><a href="tel:+15083470000" class="dash-btn success">Call</a></div>
+          <div class="task-item"><div class="task-body"><div class="task-title">Security Lead</div><div class="task-meta">For security incidents and crowd control</div></div><a href="tel:+15083470000" class="dash-btn danger">Call</a></div>
+          <div class="task-item"><div class="task-body"><div class="task-title">Stage Manager</div><div class="task-meta">For stage and technical issues</div></div><a href="tel:+15083470000" class="dash-btn">Call</a></div>
+          <div class="task-item"><div class="task-body"><div class="task-title">Hotel Front Desk</div><div class="task-meta">Sturbridge Host Hotel · 24hrs</div></div><a href="tel:+15083477393" class="dash-btn">Call</a></div>
+          <div class="task-item"><div class="task-body"><div class="task-title">Emergency</div><div class="task-meta">Life threatening emergencies only</div></div><a href="tel:911" class="dash-btn danger">911</a></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /page-staff -->
 </div><!-- /app -->
 
 <!-- ══ BOTTOM NAV ══ -->
@@ -1911,6 +2261,8 @@ function navigate(page) {
   if (page === 'artists') initArtists();
   if (page === 'games') initGames();
   if (page === 'checklist') renderChecklist();
+  if (page === 'admin') initAdminDashboard();
+  if (page === 'staff') initStaffDashboard();
   // Update URL hash for deep-linking
   window.location.hash = page;
 }
@@ -2329,7 +2681,9 @@ function renderArtists() {
         <div class="artist-card-initials">${a.initials}</div>
       </div>`;
 
+    const penBtn = `<button class="artist-admin-pen" onclick="event.stopPropagation();adminEditArtist('${esc(key)}')" title="Edit artist">✏</button>`;
     return `<div class="artist-card" onclick="openArtist('${esc(key)}')">`+
+      penBtn+
       placeholderHTML +
       photoHTML +
       `<div class="artist-card-overlay">`+
@@ -2885,6 +3239,10 @@ function setCurrentUser(user, token) {
   if (email)  email.textContent    = user.email;
   if (role)   { role.textContent   = roleLabel(user.role); role.className = `user-menu-role ${user.role}`; }
 
+  // Apply role class to body for CSS gating
+  document.body.classList.remove('role-festie','role-employee','role-admin');
+  document.body.classList.add('role-' + user.role);
+
   // Close auth overlay
   closeAuth();
 }
@@ -3006,6 +3364,411 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', authInit);
 } else {
   setTimeout(authInit, 0);
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   ADMIN DASHBOARD
+════════════════════════════════════════════════════════════ */
+let adminArtistFilter = 'all';
+let adminSchedDay = 'fri';
+
+function initAdminDashboard() {
+  renderAdminArtistGrid();
+  renderAdminSchedule();
+}
+
+// ── Tab switching ──────────────────────────────────────────
+function switchAdminTab(tab, btn) {
+  ['artists','schedule','users','settings'].forEach(t => {
+    const el = document.getElementById('adminTab-'+t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#page-admin .dash-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (tab === 'artists') renderAdminArtistGrid();
+  if (tab === 'schedule') renderAdminSchedule();
+}
+
+// ── Artist grid ────────────────────────────────────────────
+function setAdminArtistFilter(f, btn) {
+  adminArtistFilter = f;
+  document.querySelectorAll('#adminTab-artists .dash-btn').forEach(b => {
+    b.style.borderColor=''; b.style.color='';
+  });
+  if (btn) { btn.style.borderColor='rgba(245,200,66,0.4)'; btn.style.color='var(--gold-bright)'; }
+  renderAdminArtistGrid();
+}
+
+function renderAdminArtistGrid() {
+  const grid = document.getElementById('adminArtistGrid');
+  if (!grid) return;
+  let keys = Object.keys(artists);
+  if (adminArtistFilter === 'tba')   keys = keys.filter(k => artists[k].time === 'TBA' || artists[k].stage === 'TBA');
+  if (adminArtistFilter === 'dnb')   keys = keys.filter(k => artists[k].stage === 'DNB Stage');
+  if (adminArtistFilter === 'oasis') keys = keys.filter(k => artists[k].stage === 'Oasis Stage');
+  keys.sort((a,b) => a.localeCompare(b));
+
+  grid.innerHTML = keys.map(key => {
+    const a = artists[key];
+    const isTBA = a.time === 'TBA' || a.stage === 'TBA';
+    return `<div class="admin-artist-card" onclick="adminEditArtist('${esc(key)}')" title="Edit ${key}">
+      <div class="admin-artist-placeholder" style="background:${a.color}">${a.initials}</div>
+      <div class="admin-artist-overlay">
+        <div class="admin-artist-name">${key}</div>
+        <div class="admin-artist-stage">${a.stage === 'TBA' ? '⚠ Stage TBA' : a.stage} · ${a.time || 'TBA'}</div>
+      </div>
+      ${isTBA ? '<div class="admin-artist-tba">TBA</div>' : ''}
+      <button class="admin-artist-edit" onclick="event.stopPropagation();adminEditArtist('${esc(key)}')">✏</button>
+    </div>`;
+  }).join('');
+}
+
+// ── Artist edit modal ──────────────────────────────────────
+function adminEditArtist(key) {
+  const a = artists[key];
+  if (!a) return;
+  document.getElementById('editModalTitle').textContent = 'Edit · ' + key;
+  document.getElementById('editArtistKey').value        = key;
+  document.getElementById('editArtistName').value       = key;
+  document.getElementById('editArtistStage').value      = a.stage || 'TBA';
+  document.getElementById('editArtistDay').value        = a.day   || 'TBA';
+  document.getElementById('editArtistTime').value       = a.time  || '';
+  document.getElementById('editArtistGenre').value      = a.genre || '';
+  document.getElementById('editArtistHeadliner').value  = a.headliner ? 'true' : 'false';
+  document.getElementById('editArtistBio').value        = a.bio   || '';
+  document.getElementById('editArtistSpotify').value    = a.spotify || '';
+  document.getElementById('artistEditModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function adminNewArtist() {
+  document.getElementById('editModalTitle').textContent = 'Add New Artist';
+  document.getElementById('editArtistKey').value        = '';
+  document.getElementById('editArtistName').value       = '';
+  document.getElementById('editArtistStage').value      = 'TBA';
+  document.getElementById('editArtistDay').value        = 'TBA';
+  document.getElementById('editArtistTime').value       = 'TBA';
+  document.getElementById('editArtistGenre').value      = '';
+  document.getElementById('editArtistHeadliner').value  = 'false';
+  document.getElementById('editArtistBio').value        = '';
+  document.getElementById('editArtistSpotify').value    = '';
+  document.getElementById('artistEditModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeArtistEdit() {
+  document.getElementById('artistEditModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function saveArtistEdit() {
+  const oldKey = document.getElementById('editArtistKey').value;
+  const name   = document.getElementById('editArtistName').value.trim().toUpperCase();
+  if (!name) { showToast('Artist name is required'); return; }
+
+  const updated = {
+    ...(artists[oldKey] || {}),
+    stage:     document.getElementById('editArtistStage').value,
+    day:       document.getElementById('editArtistDay').value,
+    time:      document.getElementById('editArtistTime').value || 'TBA',
+    genre:     document.getElementById('editArtistGenre').value,
+    headliner: document.getElementById('editArtistHeadliner').value === 'true',
+    bio:       document.getElementById('editArtistBio').value,
+    spotify:   document.getElementById('editArtistSpotify').value,
+    initials:  artists[oldKey]?.initials || name.slice(0,2),
+    color:     artists[oldKey]?.color    || 'linear-gradient(135deg,#9b3dff,#00d4c8)',
+  };
+
+  // Remove old key if name changed
+  if (oldKey && oldKey !== name) delete artists[oldKey];
+  artists[name] = updated;
+
+  closeArtistEdit();
+  renderAdminArtistGrid();
+  renderArtists();
+  renderSchedule();
+  showToast('✓ ' + name + ' saved');
+}
+
+// ── Schedule editor ────────────────────────────────────────
+function setAdminSchedDay(day, btn) {
+  adminSchedDay = day;
+  document.querySelectorAll('#adminTab-schedule .dash-btn').forEach(b => {
+    b.style.borderColor=''; b.style.color='';
+  });
+  if (btn) { btn.style.borderColor='rgba(245,200,66,0.4)'; btn.style.color='var(--gold-bright)'; }
+  renderAdminSchedule();
+}
+
+function renderAdminSchedule() {
+  const list = document.getElementById('adminSchedList');
+  if (!list) return;
+  const dayData = SCHEDULE_DATA[adminSchedDay];
+  if (!dayData) return;
+
+  let html = '';
+  ['dnb','oasis'].forEach(stage => {
+    const stageName = stage === 'dnb' ? '🥁 DNB Stage' : '🌴 Oasis Stage';
+    html += `<div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:800;color:${stage==='dnb'?'#c084fc':'var(--teal-glow)'};
+        letter-spacing:2px;text-transform:uppercase;padding:8px 0;
+        border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:8px;">${stageName}</div>`;
+    const items = dayData[stage] || [];
+    if (!items.length) {
+      html += `<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">No artists assigned yet</div>`;
+    } else {
+      items.forEach((item, idx) => {
+        const a = artists[item.artist] || {};
+        html += `<div style="display:flex;align-items:center;gap:10px;padding:10px;
+          border-bottom:1px solid rgba(255,255,255,0.04);">
+          <div style="width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;
+            justify-content:center;font-size:11px;font-weight:800;color:#fff;
+            background:${a.color||'#333'};">${a.initials||'?'}</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:var(--text-light);">${item.artist}</div>
+          </div>
+          <input value="${item.time}" onchange="updateSchedTime('${adminSchedDay}','${stage}',${idx},this.value)"
+            style="width:90px;padding:6px 8px;background:#111;border:1px solid rgba(255,255,255,0.12);
+            color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;outline:none;">
+          <select onchange="updateSchedDay('${adminSchedDay}','${stage}',${idx},this.value)"
+            style="padding:6px 8px;background:#111;border:1px solid rgba(255,255,255,0.12);
+            color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;outline:none;">
+            <option ${item.headliner?'selected':''} value="headliner">⭐ Headliner</option>
+            <option ${!item.headliner?'selected':''} value="regular">Regular</option>
+          </select>
+        </div>`;
+      });
+    }
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function updateSchedTime(day, stage, idx, val) {
+  if (SCHEDULE_DATA[day] && SCHEDULE_DATA[day][stage] && SCHEDULE_DATA[day][stage][idx]) {
+    SCHEDULE_DATA[day][stage][idx].time = val;
+    // Also update in artists object
+    const key = SCHEDULE_DATA[day][stage][idx].artist;
+    if (artists[key]) artists[key].time = val;
+    showToast('✓ Time updated');
+    renderSchedule();
+  }
+}
+
+// ── User management ────────────────────────────────────────
+async function adminLoadUsers() {
+  const list = document.getElementById('adminUsersList');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>';
+
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) { list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">Not authenticated</div>'; return; }
+
+  try {
+    const res  = await fetch(AUTH_URL + '/auth/users', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.status === 404) {
+      // Endpoint not built yet — show placeholder
+      list.innerHTML = buildUserTableHTML([
+        { id: currentUser.id, name: currentUser.name, email: currentUser.email, role: 'admin', createdAt: new Date().toISOString() }
+      ]);
+      return;
+    }
+    const data = await res.json();
+    list.innerHTML = buildUserTableHTML(data.users || []);
+  } catch {
+    list.innerHTML = buildUserTableHTML([
+      { id: currentUser?.id, name: currentUser?.name, email: currentUser?.email, role: currentUser?.role, createdAt: '—' }
+    ]);
+  }
+}
+
+function buildUserTableHTML(users) {
+  if (!users.length) return '<div style="padding:16px;color:var(--text-muted);">No users found</div>';
+  return `<div style="overflow-x:auto;"><table class="user-table">
+    <thead><tr>
+      <th>Name</th><th>Email</th><th>Role</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${users.map(u => `<tr>
+      <td style="font-weight:700;">${u.name || '—'}</td>
+      <td style="color:var(--text-muted);">${u.email}</td>
+      <td><span class="role-pill ${u.role}">${u.role}</span></td>
+      <td>
+        <select onchange="adminSetRole('${u.id}',this.value)"
+          style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);
+          color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;outline:none;">
+          <option ${u.role==='festie'?'selected':''} value="festie">Festie</option>
+          <option ${u.role==='employee'?'selected':''} value="employee">Employee</option>
+          <option ${u.role==='admin'?'selected':''} value="admin">Admin</option>
+        </select>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+async function adminSetRole(userId, role) {
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) return;
+  try {
+    const res = await fetch(AUTH_URL + '/auth/role', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ userId, role })
+    });
+    const data = await res.json();
+    if (res.ok) showToast('✓ Role updated to ' + role);
+    else showToast('Error: ' + data.error);
+  } catch {
+    showToast('Could not update role');
+  }
+}
+
+function saveSettings() {
+  const banner = document.getElementById('settingBanner')?.value;
+  const count  = document.getElementById('settingArtistCount')?.value;
+  if (banner) {
+    const el = document.getElementById('countdown-label');
+    if (el) el.textContent = banner;
+  }
+  if (count) {
+    const el = document.getElementById('statArtists');
+    if (el) el.textContent = count;
+    // Update home stat
+    const homeEl = document.querySelector('.stat-num');
+    if (homeEl) homeEl.textContent = count;
+  }
+  showToast('✓ Settings saved');
+}
+
+/* ════════════════════════════════════════════════════════════
+   EMPLOYEE DASHBOARD
+════════════════════════════════════════════════════════════ */
+const STAFF_TASKS = {
+  security: [
+    { id:1, title:'Attend pre-event security briefing', meta:'Fri 5:00 PM · Main Lobby', priority:'high' },
+    { id:2, title:'Set up perimeter at DNB Stage entrance', meta:'Fri 7:00 PM', priority:'high' },
+    { id:3, title:'Check wristbands at all entry points', meta:'Ongoing · All nights', priority:'high' },
+    { id:4, title:'Monitor crowd density at both stages', meta:'Ongoing', priority:'medium' },
+    { id:5, title:'Radio check-in every 30 minutes', meta:'Ongoing · All nights', priority:'medium' },
+    { id:6, title:'Post-event sweep of venue', meta:'Each night after close', priority:'low' },
+  ],
+  'stage-crew': [
+    { id:1, title:'Load-in and stage setup', meta:'Fri 2:00 PM · Event Hall', priority:'high' },
+    { id:2, title:'Sound check — DNB Stage', meta:'Fri 5:00 PM', priority:'high' },
+    { id:3, title:'Sound check — Oasis Stage', meta:'Fri 6:00 PM', priority:'high' },
+    { id:4, title:'Assist artists with backline setup', meta:'Before each set', priority:'medium' },
+    { id:5, title:'Cable management and safety check', meta:'Before doors open', priority:'high' },
+    { id:6, title:'Strike and load-out', meta:'Sun after close', priority:'medium' },
+  ],
+  ticketing: [
+    { id:1, title:'Pick up ticket scanners from management', meta:'Fri 4:00 PM', priority:'high' },
+    { id:2, title:'Set up check-in tables at main entrance', meta:'Fri 6:00 PM', priority:'high' },
+    { id:3, title:'Scan tickets and verify wristbands', meta:'Fri–Sun · Doors open', priority:'high' },
+    { id:4, title:'Handle will-call and guest list', meta:'Each night', priority:'medium' },
+    { id:5, title:'Report attendance numbers to management', meta:'Each night at midnight', priority:'medium' },
+    { id:6, title:'Return equipment after close', meta:'Each night', priority:'low' },
+  ],
+  engineers: [
+    { id:1, title:'System test — audio and lighting', meta:'Fri 12:00 PM', priority:'high' },
+    { id:2, title:'Install festival lighting rig', meta:'Fri 2:00 PM', priority:'high' },
+    { id:3, title:'Full sound system check', meta:'Fri 4:00 PM', priority:'high' },
+    { id:4, title:'Monitor levels throughout sets', meta:'Ongoing · All nights', priority:'high' },
+    { id:5, title:'Backup equipment ready and tested', meta:'Before doors open', priority:'medium' },
+    { id:6, title:'Troubleshoot and resolve any tech issues', meta:'Ongoing', priority:'medium' },
+  ],
+  management: [
+    { id:1, title:'All-hands staff briefing', meta:'Fri 4:00 PM · Main Lobby', priority:'high' },
+    { id:2, title:'Confirm all vendors and suppliers on-site', meta:'Fri 3:00 PM', priority:'high' },
+    { id:3, title:'Artist hospitality check', meta:'Before each headliner', priority:'high' },
+    { id:4, title:'Walk venue and approve setup', meta:'Fri 6:00 PM', priority:'high' },
+    { id:5, title:'Nightly debrief with department leads', meta:'Each night after close', priority:'medium' },
+    { id:6, title:'Final venue sign-off and cleanup coordination', meta:'Sun after close', priority:'medium' },
+  ],
+};
+
+const STAFF_SHIFTS = {
+  security:    [ {day:'Fri', start:'6:00 PM', end:'4:00 AM', location:'All Entry Points'}, {day:'Sat', start:'6:00 PM', end:'4:00 AM', location:'All Entry Points'}, {day:'Sun', start:'6:00 PM', end:'2:00 AM', location:'All Entry Points'} ],
+  'stage-crew':[ {day:'Fri', start:'2:00 PM', end:'4:00 AM', location:'Event Hall'}, {day:'Sat', start:'4:00 PM', end:'4:00 AM', location:'Event Hall'}, {day:'Sun', start:'4:00 PM', end:'2:00 AM', location:'Event Hall'} ],
+  ticketing:   [ {day:'Fri', start:'6:30 PM', end:'12:00 AM', location:'Main Entrance'}, {day:'Sat', start:'6:30 PM', end:'12:00 AM', location:'Main Entrance'}, {day:'Sun', start:'6:30 PM', end:'11:00 PM', location:'Main Entrance'} ],
+  engineers:   [ {day:'Fri', start:'12:00 PM', end:'4:00 AM', location:'Stages + Booth'}, {day:'Sat', start:'3:00 PM', end:'4:00 AM', location:'Stages + Booth'}, {day:'Sun', start:'3:00 PM', end:'2:00 AM', location:'Stages + Booth'} ],
+  management:  [ {day:'Fri', start:'12:00 PM', end:'4:00 AM', location:'Full Venue'}, {day:'Sat', start:'12:00 PM', end:'4:00 AM', location:'Full Venue'}, {day:'Sun', start:'12:00 PM', end:'2:00 AM', location:'Full Venue'} ],
+};
+
+const STAFF_TASK_KEY = 'ss_staff_tasks_done';
+let staffDoneTasks = new Set();
+
+function initStaffDashboard() {
+  try { staffDoneTasks = new Set(JSON.parse(localStorage.getItem(STAFF_TASK_KEY)) || []); } catch { staffDoneTasks = new Set(); }
+  const role = currentUser?.staffRole || 'management';
+  const roleLabels = { security:'🔴 Security', 'stage-crew':'🟣 Stage Crew', ticketing:'🟦 Ticketing/Front', engineers:'🟡 Engineers', management:'🟠 Management' };
+  const el = document.getElementById('staffRoleDisplay');
+  if (el) el.textContent = roleLabels[role] || 'Staff · Sunken Suite 2026';
+  renderStaffTasks();
+  renderStaffShifts();
+}
+
+function switchStaffTab(tab, btn) {
+  ['tasks','schedule','announcements','contacts'].forEach(t => {
+    const el = document.getElementById('staffTab-'+t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#page-staff .dash-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function getStaffRole() {
+  return currentUser?.staffRole || 'management';
+}
+
+function renderStaffTasks() {
+  const role  = getStaffRole();
+  const tasks = STAFF_TASKS[role] || STAFF_TASKS.management;
+  const done  = tasks.filter(t => staffDoneTasks.has(role+':'+t.id)).length;
+  const prog  = document.getElementById('staffTaskProgress');
+  if (prog) prog.textContent = done + ' / ' + tasks.length + ' done';
+
+  const list = document.getElementById('staffTaskList');
+  if (!list) return;
+  list.innerHTML = tasks.map(t => {
+    const isDone = staffDoneTasks.has(role+':'+t.id);
+    return `<div class="task-item">
+      <div class="task-check ${isDone?'done':''}" onclick="toggleStaffTask('${role}',${t.id})">${isDone?'✓':''}</div>
+      <div class="task-body">
+        <div class="task-title ${isDone?'done':''}">${t.title}</div>
+        <div class="task-meta">${t.meta}</div>
+      </div>
+      <span class="task-priority ${t.priority}">${t.priority}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleStaffTask(role, id) {
+  const key = role+':'+id;
+  if (staffDoneTasks.has(key)) staffDoneTasks.delete(key);
+  else staffDoneTasks.add(key);
+  localStorage.setItem(STAFF_TASK_KEY, JSON.stringify([...staffDoneTasks]));
+  renderStaffTasks();
+}
+
+function renderStaffShifts() {
+  const role   = getStaffRole();
+  const shifts = STAFF_SHIFTS[role] || STAFF_SHIFTS.management;
+  const list   = document.getElementById('staffShiftList');
+  if (!list) return;
+  const dayColors = { Fri:'rgba(155,61,255,0.2)', Sat:'rgba(0,212,200,0.2)', Sun:'rgba(245,200,66,0.15)' };
+  list.innerHTML = shifts.map(s => `
+    <div style="display:flex;align-items:center;gap:12px;padding:14px;
+      border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+        font-size:12px;font-weight:900;background:${dayColors[s.day]||'rgba(255,255,255,0.08)'};
+        color:var(--text-light);flex-shrink:0;">${s.day}</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-light);">${s.start} — ${s.end}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">📍 ${s.location}</div>
+      </div>
+    </div>`).join('');
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -3213,6 +3976,73 @@ function closeRaveworm() {
       <a onclick="closeAuth()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">
         Continue without signing in →
       </a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ ARTIST EDIT MODAL ══ -->
+<div class="edit-modal-overlay" id="artistEditModal">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div class="edit-modal-title" id="editModalTitle">Edit Artist</div>
+      <button class="edit-modal-close" onclick="closeArtistEdit()">✕</button>
+    </div>
+    <div class="edit-modal-body">
+      <input type="hidden" id="editArtistKey">
+      <div class="edit-field">
+        <label class="edit-label">Artist Name</label>
+        <input class="edit-input" id="editArtistName" placeholder="e.g. RONI SIZE">
+      </div>
+      <div class="edit-row">
+        <div class="edit-field">
+          <label class="edit-label">Stage</label>
+          <select class="edit-select" id="editArtistStage">
+            <option value="DNB Stage">DNB Stage</option>
+            <option value="Oasis Stage">Oasis Stage</option>
+            <option value="TBA">TBA</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Day</label>
+          <select class="edit-select" id="editArtistDay">
+            <option value="Fri">Friday 7/17</option>
+            <option value="Sat">Saturday 7/18</option>
+            <option value="Sun">Sunday 7/19</option>
+            <option value="All">All Days</option>
+            <option value="TBA">TBA</option>
+          </select>
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-field">
+          <label class="edit-label">Set Time</label>
+          <input class="edit-input" id="editArtistTime" placeholder="e.g. 10:30 PM">
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Genre</label>
+          <input class="edit-input" id="editArtistGenre" placeholder="e.g. Drum & Bass">
+        </div>
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Headliner</label>
+        <select class="edit-select" id="editArtistHeadliner">
+          <option value="false">No</option>
+          <option value="true">Yes — Headliner</option>
+        </select>
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Bio</label>
+        <textarea class="edit-textarea" id="editArtistBio" rows="4" placeholder="Artist bio…"></textarea>
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Spotify URL</label>
+        <input class="edit-input" id="editArtistSpotify" placeholder="https://open.spotify.com/artist/…">
+      </div>
+    </div>
+    <div class="edit-modal-footer">
+      <button class="dash-btn" onclick="closeArtistEdit()">Cancel</button>
+      <button class="dash-btn primary" onclick="saveArtistEdit()">Save Changes</button>
     </div>
   </div>
 </div>
