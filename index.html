@@ -1,0 +1,2841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Sunken Suite · The Mutiny 2026</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#020b1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sunken Suite">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Poppins:wght@400;500;600;700;800;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ocean-deep:#000000;--ocean-mid:#0d0d0d;--ocean-surf:#1a1a1a;
+  --gold-bright:#f5c842;--gold-warm:#e8941a;--gold-sunset:#ff6b1a;
+  --teal-glow:#00d4c8;--pink-coral:#ff4d8d;--purple-mutiny:#9b3dff;
+  --text-light:#e8f4ff;--text-muted:#7ab8e0;--nav-height:64px;
+}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:'Poppins',sans-serif;
+  background:var(--ocean-deep);color:var(--text-light);
+  font-size:15px;overflow:hidden;
+}
+
+/* ── BACKGROUND ── */
+.bg-ocean{position:fixed;inset:0;background:#000;z-index:0;}
+.wave{display:none;}
+
+/* ══════════════════════════════════════════════════
+   TOP NAV
+══════════════════════════════════════════════════ */
+.top-nav{
+  position:fixed;top:0;left:0;right:0;height:var(--nav-height);
+  background:#000000;backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(245,200,66,0.25);
+  z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+}
+.nav-logo{font-family:'Pirata One',cursive;font-size:22px;color:var(--gold-bright);
+  text-shadow:0 0 18px rgba(245,200,66,0.45);line-height:1;white-space:nowrap;
+  flex-shrink:0;cursor:pointer;text-decoration:none;}
+.nav-logo span{display:block;font-size:10px;font-family:'Poppins',sans-serif;
+  color:var(--teal-glow);letter-spacing:2px;text-transform:uppercase;font-weight:600;}
+.desktop-nav-links{display:none;}
+@media(min-width:768px){
+  .desktop-nav-links{display:flex!important;align-items:center;gap:4px;}
+  .bottom-nav{display:none!important;}
+  .hamburger-btn{display:none!important;}
+}
+.desktop-nav-link{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:0;
+  cursor:pointer;font-size:13px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;
+  text-decoration:none;color:var(--text-muted);border:1px solid transparent;transition:all .15s;
+  white-space:nowrap;background:transparent;}
+.desktop-nav-link:hover{color:var(--gold-bright);border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.06);}
+.desktop-nav-link.active{color:var(--gold-bright);border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.1);}
+.desktop-nav-link.sos{color:var(--pink-coral);border-color:rgba(255,77,141,0.3);background:rgba(255,77,141,0.08);}
+.desktop-nav-link.sos:hover{background:rgba(255,77,141,0.15);}
+.desktop-nav-link.more-active{color:var(--gold-bright);border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.1);}
+
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-bell{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;font-size:15px;}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;
+  background:var(--pink-coral);border-radius:50%;border:1.5px solid var(--ocean-deep);}
+.nav-avatar{width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold-warm),var(--purple-mutiny));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;cursor:pointer;border:2px solid var(--gold-bright);}
+
+/* Weather widget */
+.weather-widget{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:0;
+  cursor:pointer;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+  transition:all .15s;position:relative;flex-shrink:0;}
+.weather-widget:hover{background:rgba(255,255,255,0.11);border-color:rgba(0,212,200,0.4);}
+.weather-icon{font-size:16px;line-height:1;}
+.weather-temp{font-size:13px;font-weight:700;color:var(--text-light);line-height:1;white-space:nowrap;}
+.weather-label{font-size:10px;font-weight:600;color:var(--text-muted);line-height:1;white-space:nowrap;}
+.weather-col{display:flex;flex-direction:column;gap:1px;}
+.weather-panel{position:absolute;top:calc(100% + 10px);right:0;width:220px;
+  background:#000000;backdrop-filter:blur(16px);
+  border:1px solid rgba(0,212,200,0.3);border-radius:0;padding:14px;z-index:500;
+  display:none;flex-direction:column;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  animation:panelFade .18s ease;}
+@keyframes panelFade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.weather-panel.open{display:flex;}
+.weather-panel-header{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;}
+.weather-panel-main{display:flex;align-items:center;gap:10px;}
+.weather-panel-icon{font-size:36px;line-height:1;}
+.weather-panel-temp{font-size:28px;font-weight:800;color:var(--text-light);line-height:1;}
+.weather-panel-feel{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.weather-panel-desc{font-size:13px;font-weight:600;color:var(--teal-glow);}
+.weather-panel-row{display:flex;gap:8px;}
+.weather-panel-stat{flex:1;background:rgba(255,255,255,0.05);border-radius:0;padding:7px 8px;text-align:center;}
+.weather-panel-stat-val{font-size:13px;font-weight:700;color:var(--text-light);}
+.weather-panel-stat-lbl{font-size:10px;color:var(--text-muted);font-weight:600;margin-top:1px;}
+.weather-panel-footer{font-size:10px;color:rgba(122,184,224,0.4);text-align:center;}
+.weather-fest-note{background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.25);
+  border-radius:0;padding:7px 10px;font-size:11px;font-weight:700;color:var(--gold-bright);text-align:center;}
+
+/* hamburger */
+.hamburger-btn{display:flex;flex-direction:column;justify-content:center;align-items:center;
+  gap:5px;width:38px;height:38px;border-radius:0;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);cursor:pointer;padding:0;flex-shrink:0;}
+.hamburger-btn span{display:block;width:18px;height:2px;background:var(--text-light);
+  border-radius:0;transition:all .22s ease;transform-origin:center;}
+.hamburger-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger-btn.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+.hamburger-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+/* ── MOBILE DRAWER ── */
+.mobile-drawer{position:fixed;inset:0;z-index:250;pointer-events:none;}
+.mobile-drawer.open{pointer-events:all;}
+.drawer-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s ease;}
+.mobile-drawer.open .drawer-backdrop{opacity:1;}
+.drawer-panel{position:absolute;top:0;right:0;width:min(280px,80vw);height:100%;
+  background:#0a0a0a;
+  border-left:1px solid rgba(245,200,66,0.2);transform:translateX(100%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;padding:var(--nav-height) 0 40px;overflow-y:auto;}
+.mobile-drawer.open .drawer-panel{transform:translateX(0);}
+.drawer-links{display:flex;flex-direction:column;padding:16px 12px;gap:4px;}
+.drawer-link{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:0;
+  text-decoration:none;font-size:16px;font-weight:700;color:var(--text-muted);
+  border:1px solid transparent;transition:all .15s;cursor:pointer;background:transparent;}
+.drawer-link:hover{color:var(--gold-bright);background:rgba(245,200,66,0.07);border-color:rgba(245,200,66,0.2);}
+.drawer-link.active{color:var(--gold-bright);background:rgba(245,200,66,0.1);border-color:rgba(245,200,66,0.3);}
+.drawer-link.sos{color:var(--pink-coral);background:rgba(255,77,141,0.08);border-color:rgba(255,77,141,0.25);margin-top:8px;}
+.drawer-divider{height:1px;background:rgba(255,255,255,0.07);margin:8px 20px;}
+
+/* ══════════════════════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════════════════════ */
+.bottom-nav{
+  position:fixed!important;bottom:0!important;left:0!important;right:0!important;
+  height:72px!important;visibility:visible!important;opacity:1!important;
+  background:#000000;border-top:1px solid rgba(245,200,66,0.35);
+  display:flex!important;align-items:center;justify-content:space-around;
+  z-index:99999!important;padding:0 4px;padding-bottom:env(safe-area-inset-bottom,0);
+  pointer-events:all!important;transform:none!important;
+}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;
+  border-radius:0;cursor:pointer;transition:all .15s;min-width:0;flex:1;
+  border:none;background:transparent;text-decoration:none;}
+.nav-item:active{transform:scale(0.93);}
+.nav-icon-wrap{width:36px;height:36px;border-radius:0;background:transparent;
+  border:1px solid transparent;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;font-size:18px;}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:0.5px;color:rgba(122,184,224,0.6);
+  text-transform:uppercase;white-space:nowrap;}
+.nav-item.active .nav-icon-wrap{background:linear-gradient(135deg,rgba(245,200,66,0.2),rgba(232,148,26,0.2));border-color:rgba(245,200,66,0.5);}
+.nav-item.active .nav-label{color:var(--gold-bright);}
+.nav-item.nav-sos .nav-icon-wrap{background:rgba(255,77,141,0.15);border-color:rgba(255,77,141,0.4);}
+.nav-item.nav-sos .nav-label{color:var(--pink-coral);}
+.nav-item.more-active .nav-icon-wrap{background:rgba(245,200,66,0.15);border-color:rgba(245,200,66,0.4);}
+.nav-item.more-active .nav-label{color:var(--gold-bright);}
+/* Bottom nav: mobile only */
+@media(min-width:768px){
+  nav.bottom-nav{display:none!important;}
+}
+@media(max-width:767px){
+  nav.bottom-nav{display:flex!important;position:fixed!important;bottom:0!important;
+    left:0!important;right:0!important;z-index:99999!important;height:72px!important;
+    visibility:visible!important;opacity:1!important;pointer-events:all!important;transform:none!important;}
+}
+
+/* ══════════════════════════════════════════════════
+   PAGE SHELL / ROUTER
+══════════════════════════════════════════════════ */
+#app{
+  position:fixed;inset:0;top:var(--nav-height);bottom:72px;
+  overflow:hidden;z-index:10;
+}
+@media(min-width:768px){#app{bottom:0;}}
+/* ensure pages have enough bottom padding on mobile so content isn't hidden under nav */
+@media(max-width:767px){.page{padding-bottom:88px!important;}}
+.page{
+  position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+  padding:16px 16px 24px;opacity:0;pointer-events:none;
+  transition:opacity .2s ease,transform .2s ease;transform:translateX(24px);
+}
+@media(min-width:768px){.page{padding:24px 32px 40px;}}
+.page.active{opacity:1;pointer-events:all;transform:translateX(0);}
+
+/* ── PAGE TRANSITIONS ── */
+.page-enter{animation:pageIn .22s ease forwards;}
+@keyframes pageIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+/* ══════════════════════════════════════════════════
+   SHARED COMPONENTS
+══════════════════════════════════════════════════ */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.section-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;
+  color:var(--gold-bright);letter-spacing:2px;text-transform:uppercase;}
+.section-see-all{font-size:13px;color:var(--teal-glow);cursor:pointer;text-decoration:none;font-weight:600;}
+.page-header{margin-bottom:20px;}
+.page-title{font-size:24px;font-weight:800;color:var(--gold-bright);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.page-sub{font-size:14px;color:var(--text-muted);font-weight:500;}
+
+/* Toast */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#000000;border:1px solid rgba(0,212,200,0.35);
+  color:var(--text-light);padding:10px 18px;border-radius:0;font-size:13px;font-weight:600;
+  z-index:9999;opacity:0;transition:all .3s ease;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ══════════════════════════════════════════════════
+   HOME PAGE STYLES
+══════════════════════════════════════════════════ */
+.announce-banner{background:linear-gradient(90deg,rgba(155,61,255,0.18),rgba(0,212,200,0.18));
+  border:1px solid rgba(155,61,255,0.3);border-radius:0;padding:10px 14px;
+  display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.announce-icon{font-size:18px;flex-shrink:0;}
+.announce-text{flex:1;min-width:0;}
+.announce-text strong{display:block;font-size:11px;font-weight:800;color:var(--gold-bright);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.announce-text p{font-size:12px;color:var(--text-muted);margin-top:5px;}
+.countdown-clock{display:flex;align-items:center;gap:4px;}
+.cd-unit{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,0.6);
+  border:1px solid rgba(255,255,255,0.1);border-radius:0;padding:4px 8px;min-width:42px;}
+.cd-num{font-size:22px;font-weight:900;color:var(--text-light);line-height:1;font-variant-numeric:tabular-nums;}
+.cd-lbl{font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.cd-sep{font-size:20px;font-weight:900;color:var(--gold-bright);line-height:1;margin-bottom:10px;opacity:0.7;}
+@keyframes cdPulse{0%,100%{opacity:1}50%{opacity:0.6}}
+#cd-secs{animation:cdPulse 1s ease-in-out infinite;}
+.flyer-section{position:relative;border-radius:0;overflow:hidden;
+  border:2px solid rgba(245,200,66,0.45);margin-bottom:16px;
+  box-shadow:0 0 40px rgba(245,200,66,0.15),0 0 80px rgba(0,212,200,0.08);}
+.flyer-img{width:100%;display:block;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.stat-card{background:rgba(10,10,10,0.95);border:1px solid rgba(0,212,200,0.15);
+  border-radius:0;padding:11px 8px;text-align:center;}
+.stat-num{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;
+  color:var(--gold-bright);line-height:1;margin-bottom:3px;}
+.stat-label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+
+/* Desktop two-col */
+@media(min-width:768px){
+  .desktop-grid{display:grid;grid-template-columns:420px 1fr;gap:28px;align-items:start;}
+  .desktop-col-left{position:sticky;top:16px;}
+  .stats-row{grid-template-columns:repeat(3,1fr);}
+}
+@media(min-width:1100px){.desktop-grid{grid-template-columns:480px 1fr;}}
+
+/* Schedule widget on home */
+.schedule-card{background:rgba(10,10,10,0.95);border:1px solid rgba(245,200,66,0.2);
+  border-radius:0;padding:14px;margin-bottom:16px;}
+.my-sched-empty{text-align:center;padding:28px 16px;color:var(--text-muted);font-size:14px;line-height:1.7;}
+.my-sched-empty .empty-icon{font-size:36px;display:block;margin-bottom:10px;}
+.schedule-item{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;border-radius:0;transition:background .15s;}
+.schedule-item:last-child{border-bottom:none;}
+.schedule-item:hover{background:rgba(245,200,66,0.06);padding-left:6px;}
+.sched-time{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;
+  color:var(--teal-glow);min-width:44px;line-height:1.2;}
+.sched-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sched-info{flex:1;}
+.sched-artist{font-size:14px;font-weight:700;color:var(--text-light);}
+.sched-stage{font-size:14px;color:var(--text-muted);}
+.sched-stage-header{font-size:11px;font-weight:700;color:var(--gold-bright);letter-spacing:2px;
+  text-transform:uppercase;padding:8px 0 4px;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;}
+.sched-stage-header:first-child{border-top:none;margin-top:0;}
+.sched-arrow{font-size:18px;color:var(--teal-glow);font-weight:600;flex-shrink:0;}
+.sched-add-btn{flex-shrink:0;width:30px;height:30px;border-radius:50%;
+  border:2px solid rgba(0,212,200,0.4);background:transparent;color:var(--teal-glow);
+  font-size:20px;font-weight:300;line-height:1;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:all .18s;margin-left:4px;}
+.sched-add-btn:hover{background:rgba(0,212,200,0.15);border-color:var(--teal-glow);transform:scale(1.1);}
+.sched-add-btn.added{background:linear-gradient(135deg,var(--teal-glow),#00a89e);
+  border-color:var(--teal-glow);color:var(--ocean-deep);font-size:14px;}
+.my-sched-clear{display:block;margin:12px auto 0;background:transparent;
+  border:1px solid rgba(255,77,141,0.35);color:var(--pink-coral);font-family:'Poppins',sans-serif;
+  font-size:12px;font-weight:700;padding:6px 16px;border-radius:0;cursor:pointer;transition:all .15s;}
+.my-sched-clear:hover{background:rgba(255,77,141,0.1);}
+
+/* Featured artists */
+.featured-card{display:flex;align-items:center;gap:14px;padding:14px;border-radius:0;
+  margin-bottom:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.07);
+  background:rgba(10,10,10,0.85);transition:all .18s;position:relative;overflow:hidden;}
+.featured-card::before{content:'';position:absolute;inset:0;
+  background:var(--card-accent,rgba(155,61,255,0.07));opacity:0;transition:opacity .18s;}
+.featured-card:hover{border-color:rgba(255,255,255,0.18);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.35);}
+.featured-card:hover::before{opacity:1;}
+.featured-card:active{transform:scale(0.98);}
+.featured-avatar{width:52px;height:52px;border-radius:0;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;
+  color:#fff;border:2px solid rgba(255,255,255,0.15);position:relative;z-index:1;}
+.featured-body{flex:1;min-width:0;position:relative;z-index:1;}
+.featured-name{font-size:15px;font-weight:800;color:var(--text-light);line-height:1.2;
+  margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.featured-genre{font-size:12px;color:var(--text-muted);font-weight:500;}
+.featured-meta{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;}
+.featured-badge{font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;padding:2px 8px;border-radius:0;}
+.featured-badge.stage-dnb{background:rgba(155,61,255,0.2);color:#c084fc;}
+.featured-badge.stage-oasis{background:rgba(0,212,200,0.18);color:var(--teal-glow);}
+.featured-badge.headliner{background:rgba(245,200,66,0.18);color:var(--gold-bright);}
+.featured-arrow{font-size:20px;color:var(--text-muted);flex-shrink:0;position:relative;z-index:1;transition:transform .15s;}
+.featured-card:hover .featured-arrow{transform:translateX(3px);color:var(--gold-bright);}
+
+/* Venue card */
+.venue-card{border-radius:0;overflow:hidden;border:1px solid rgba(0,212,200,0.2);
+  background:rgba(10,10,10,0.9);margin-bottom:4px;}
+.venue-map-wrap{position:relative;height:160px;}
+.venue-map-wrap iframe{width:100%;height:100%;display:block;border:none;}
+.venue-map-open{position:absolute;top:10px;right:10px;padding:5px 11px;border-radius:0;
+  font-size:11px;font-weight:700;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);
+  border:1px solid rgba(245,200,66,0.3);color:var(--gold-bright);text-decoration:none;transition:background .15s;}
+.venue-map-open:hover{background:rgba(245,200,66,0.15);}
+.venue-info{padding:14px 16px 16px;}
+.venue-name{font-size:16px;font-weight:800;color:var(--text-light);line-height:1.2;}
+.venue-sub{font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:12px;}
+.venue-rows{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.venue-row{display:flex;align-items:flex-start;gap:10px;}
+.venue-row-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.venue-row-body{flex:1;min-width:0;}
+.venue-row-val{font-size:13px;font-weight:700;color:var(--text-light);line-height:1.3;}
+.venue-row-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
+.venue-link{color:var(--teal-glow);text-decoration:none;}
+.venue-link:hover{text-decoration:underline;}
+.venue-copy-btn{flex-shrink:0;width:28px;height:28px;border-radius:0;border:none;cursor:pointer;
+  background:rgba(245,200,66,0.1);color:var(--gold-bright);font-size:13px;
+  display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.venue-copy-btn:hover{background:rgba(245,200,66,0.22);}
+.venue-dir-row{display:flex;gap:6px;}
+.venue-dir-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:8px 6px;border-radius:0;text-decoration:none;font-size:12px;font-weight:700;
+  border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);
+  color:var(--text-muted);transition:all .15s;white-space:nowrap;}
+.venue-dir-btn:hover{transform:translateY(-2px);}
+.venue-dir-btn.google{border-color:rgba(66,133,244,0.35);color:#5b9bf8;}
+.venue-dir-btn.google:hover{background:rgba(66,133,244,0.12);}
+.venue-dir-btn.apple{border-color:rgba(255,255,255,0.2);color:var(--text-light);}
+.venue-dir-btn.apple:hover{background:rgba(255,255,255,0.08);}
+.venue-dir-btn.waze{border-color:rgba(28,203,255,0.3);color:#1ccbff;}
+.venue-dir-btn.waze:hover{background:rgba(28,203,255,0.1);}
+.venue-dir-btn.uber{border-color:rgba(255,255,255,0.15);color:var(--text-light);}
+.venue-dir-btn.uber:hover{background:rgba(255,255,255,0.07);}
+
+/* ══════════════════════════════════════════════════
+   SCHEDULE PAGE
+══════════════════════════════════════════════════ */
+.controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;
+  position:sticky;top:0;z-index:100;background:#000000;backdrop-filter:blur(12px);
+  padding:12px 0 8px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;
+  border-bottom:1px solid rgba(245,200,66,0.1);}
+@media(min-width:768px){.controls-bar{margin-left:-32px;margin-right:-32px;padding-left:32px;padding-right:32px;}}
+.search-wrap{position:relative;}
+.search-input{width:100%;padding:10px 16px 10px 40px;background:rgba(20,20,20,0.9);
+  border:1px solid rgba(0,212,200,0.25);border-radius:0;color:var(--text-light);
+  font-family:'Poppins',sans-serif;font-size:14px;font-weight:500;outline:none;transition:border-color .15s;}
+.search-input::placeholder{color:var(--text-muted);}
+.search-input:focus{border-color:var(--teal-glow);}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;}
+.day-tabs{display:flex;gap:6px;}
+.day-tab{flex:1;padding:6px 4px;border-radius:0;text-align:center;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-muted);
+  font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;transition:all .15s;}
+.day-tab.active{background:linear-gradient(135deg,var(--gold-warm),var(--gold-sunset));border-color:transparent;color:var(--ocean-deep);}
+.mine-tab.active{background:linear-gradient(135deg,#00d4c8,#0098a0);color:var(--ocean-deep);}
+.filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.filter-label{font-size:12px;font-weight:700;color:var(--text-muted);white-space:nowrap;}
+.stage-pill{padding:5px 12px;border-radius:0;border:1px solid rgba(255,255,255,0.1);
+  background:transparent;color:var(--text-muted);font-family:'Poppins',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.stage-pill.on.all{background:rgba(245,200,66,0.15);border-color:rgba(245,200,66,0.4);color:var(--gold-bright);}
+.stage-pill.on.dnb{background:rgba(155,61,255,0.15);border-color:rgba(155,61,255,0.4);color:#c084fc;}
+.stage-pill.on.oasis{background:rgba(0,212,200,0.15);border-color:rgba(0,212,200,0.4);color:var(--teal-glow);}
+.view-toggle{display:flex;gap:4px;margin-left:auto;}
+.view-btn{width:32px;height:32px;border-radius:0;border:1px solid rgba(255,255,255,0.1);
+  background:transparent;color:var(--text-muted);font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.view-btn.active{background:rgba(0,212,200,0.15);border-color:rgba(0,212,200,0.4);color:var(--teal-glow);}
+.schedule-day{display:none;}.schedule-day.active{display:block;}
+.list-view-wrap{}.list-view-wrap.hidden{display:none;}
+.block-view-wrap{display:none;}.block-view-wrap.visible{display:block;}
+.stage-section{margin-bottom:16px;}
+.stage-section-header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:0;
+  font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.stage-section-header.dnb{background:rgba(155,61,255,0.12);color:#c084fc;border:1px solid rgba(155,61,255,0.2);}
+.stage-section-header.oasis{background:rgba(0,212,200,0.1);color:var(--teal-glow);border:1px solid rgba(0,212,200,0.2);}
+.stage-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sched-list{display:flex;flex-direction:column;}
+.sched-event-row{display:flex;align-items:center;gap:10px;padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);color:var(--text-muted);}
+.event-icon{font-size:16px;flex-shrink:0;}
+.event-info{flex:1;}
+.event-name{font-size:13px;font-weight:700;color:var(--text-muted);}
+.event-meta{font-size:12px;color:rgba(122,184,224,0.5);margin-top:2px;}
+.sched-item{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;border-radius:0;transition:all .15s;}
+.sched-item:last-child{border-bottom:none;}
+.sched-item:hover{background:rgba(255,255,255,0.04);padding-left:6px;}
+.sched-item.headliner{background:rgba(155,61,255,0.06)!important;border-radius:0;
+  border-bottom:1px solid rgba(155,61,255,0.15)!important;padding:10px 8px!important;}
+.sched-item.oasis-headliner{background:rgba(0,212,200,0.06)!important;border-radius:0;
+  border-bottom:1px solid rgba(0,212,200,0.15)!important;padding:10px 8px!important;}
+.item-time{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;
+  color:var(--teal-glow);min-width:46px;line-height:1;text-align:center;}
+.ampm{font-size:9px;font-weight:600;color:var(--text-muted);margin-top:2px;}
+.item-avatar{width:40px;height:40px;border-radius:0;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+  color:#fff;border:1.5px solid rgba(255,255,255,0.1);}
+.item-info{flex:1;min-width:0;}
+.item-name{font-size:14px;font-weight:800;color:var(--text-light);display:flex;align-items:center;gap:6px;}
+.item-meta{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.item-headliner-badge{font-size:9px;font-weight:700;background:linear-gradient(90deg,var(--gold-warm),var(--gold-sunset));
+  color:var(--ocean-deep);padding:2px 6px;border-radius:0;letter-spacing:0.5px;white-space:nowrap;}
+.item-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.item-arrow{font-size:18px;color:var(--text-muted);}
+.add-btn{width:30px;height:30px;border-radius:50%;border:2px solid rgba(0,212,200,0.4);
+  background:transparent;color:var(--teal-glow);font-size:20px;font-weight:300;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;}
+.add-btn:hover{background:rgba(0,212,200,0.15);border-color:var(--teal-glow);transform:scale(1.1);}
+.add-btn.added{background:linear-gradient(135deg,var(--teal-glow),#00a89e);
+  border-color:var(--teal-glow);color:var(--ocean-deep);font-size:14px;}
+/* Block / grid view */
+.tg-grid{display:grid;gap:8px;}
+.tg-col-header{font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:1.5px;
+  text-transform:uppercase;padding:8px 4px 6px;border-bottom:1px solid rgba(245,200,66,0.15);}
+.tg-block{position:relative;border-radius:0;padding:6px 8px;cursor:pointer;
+  display:flex;flex-direction:column;gap:3px;transition:all .15s;}
+.tg-block:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.4);}
+.tg-block.dnb-block{background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.25);}
+.tg-block.oasis-block{background:rgba(0,212,200,0.12);border:1px solid rgba(0,212,200,0.22);}
+.tg-block.headliner-block{border-width:2px;}
+.tg-block-time{font-size:10px;font-weight:700;color:var(--text-muted);font-family:'Orbitron',sans-serif;}
+.tg-block-name{font-size:12px;font-weight:800;color:var(--text-light);line-height:1.2;}
+.tg-block-genre{font-size:10px;color:var(--text-muted);}
+.tg-block-add{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.25);background:transparent;color:rgba(255,255,255,0.5);
+  font-size:14px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.tg-block-add.added{background:var(--teal-glow);border-color:var(--teal-glow);color:var(--ocean-deep);font-size:10px;}
+.tg-tba-block{position:relative;margin:4px;border-radius:0;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);padding:5px 8px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:background .15s;}
+.tg-tba-block:hover{background:rgba(255,255,255,0.08);}
+.tg-tba-name{font-size:11px;font-weight:700;color:var(--text-muted);}
+.tg-tba-label{font-size:9px;color:rgba(122,184,224,0.5);font-weight:600;flex-shrink:0;}
+.tg-tba-section{padding:8px 4px 4px;border-top:1px solid rgba(255,255,255,0.06);margin-top:8px;}
+.tg-tba-heading{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;padding:0 4px 5px;}
+/* Calendar export */
+.cal-export-section{margin-top:20px;background:rgba(10,10,10,0.85);border:1px solid rgba(0,212,200,0.15);
+  border-radius:0;padding:14px;}
+.cal-export-title{font-size:13px;font-weight:800;color:var(--gold-bright);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:10px;}
+.cal-btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.cal-btn{flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px 12px;border-radius:0;border:none;cursor:pointer;font-family:'Poppins',sans-serif;
+  font-size:13px;font-weight:700;transition:all .18s;white-space:nowrap;}
+.cal-btn.gcal{background:rgba(66,133,244,0.15);color:#4285f4;border:1px solid rgba(66,133,244,0.35);}
+.cal-btn.gcal:hover{background:rgba(66,133,244,0.25);}
+.cal-btn.apple{background:rgba(255,255,255,0.07);color:var(--text-light);border:1px solid rgba(255,255,255,0.2);}
+.cal-btn.apple:hover{background:rgba(255,255,255,0.14);}
+.export-cal-btn{background:rgba(0,212,200,0.12);border:1px solid rgba(0,212,200,0.3);
+  color:var(--teal-glow);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;
+  padding:5px 12px;border-radius:0;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.export-cal-btn:hover{background:rgba(0,212,200,0.22);}
+
+/* ══════════════════════════════════════════════════
+   ARTIST PAGE — PHOTO GRID
+══════════════════════════════════════════════════ */
+.artist-controls{display:flex;flex-direction:column;gap:8px;margin-bottom:0;
+  position:sticky;top:0;z-index:100;background:#000;
+  padding:10px 0 0;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;
+  border-bottom:1px solid rgba(255,255,255,0.08);}
+@media(min-width:768px){.artist-controls{margin-left:-32px;margin-right:-32px;padding-left:32px;padding-right:32px;}}
+
+/* A–Z bar */
+.az-bar{display:flex;gap:2px;flex-wrap:wrap;padding-bottom:8px;overflow-x:auto;}
+.az-bar::-webkit-scrollbar{display:none;}
+.az-btn{min-width:28px;height:28px;border:1px solid rgba(255,255,255,0.15);background:transparent;
+  color:rgba(255,255,255,0.5);font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.az-btn:hover{border-color:rgba(245,200,66,0.5);color:var(--gold-bright);}
+.az-btn.active{background:var(--gold-bright);border-color:var(--gold-bright);color:#000;}
+.az-btn.disabled{opacity:0.2;cursor:default;pointer-events:none;}
+
+/* Stage / day filter row */
+.artist-filters{display:flex;gap:5px;flex-wrap:wrap;padding-bottom:10px;}
+.af-pill{padding:4px 12px;border:1px solid rgba(255,255,255,0.1);background:transparent;
+  color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .12s;white-space:nowrap;text-transform:uppercase;letter-spacing:0.5px;}
+.af-pill.active{border-color:rgba(245,200,66,0.5);background:rgba(245,200,66,0.12);color:var(--gold-bright);}
+.af-pill.dnb.active{border-color:rgba(155,61,255,0.5);background:rgba(155,61,255,0.12);color:#c084fc;}
+.af-pill.oasis.active{border-color:rgba(0,212,200,0.5);background:rgba(0,212,200,0.12);color:var(--teal-glow);}
+.af-pill.saved.active{border-color:rgba(245,200,66,0.5);background:rgba(245,200,66,0.12);color:var(--gold-bright);}
+
+/* Photo grid */
+.artists-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin-top:12px;}
+@media(min-width:480px){.artists-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:768px){.artists-grid{grid-template-columns:repeat(4,1fr);gap:3px;}}
+@media(min-width:1100px){.artists-grid{grid-template-columns:repeat(5,1fr);}}
+
+.artist-card{position:relative;cursor:pointer;overflow:hidden;aspect-ratio:1/1;
+  background:#111;border:none;transition:transform .15s;}
+.artist-card:hover{transform:scale(1.02);z-index:2;}
+.artist-card:active{transform:scale(0.98);}
+
+/* Photo or gradient placeholder fills the whole card */
+.artist-card-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.artist-card-placeholder{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;flex-direction:column;gap:6px;}
+.artist-card-initials{font-size:clamp(18px,5vw,32px);font-weight:900;color:rgba(255,255,255,0.9);
+  font-family:'Poppins',sans-serif;letter-spacing:1px;}
+
+/* Dark gradient overlay at bottom — name sits here */
+.artist-card-overlay{position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+  padding:28px 10px 10px;}
+.artist-card-name{font-size:clamp(10px,2.5vw,13px);font-weight:800;color:#fff;
+  text-transform:uppercase;letter-spacing:0.8px;line-height:1.2;text-align:center;}
+.artist-card-stage{font-size:9px;font-weight:600;color:rgba(255,255,255,0.55);
+  text-transform:uppercase;letter-spacing:1px;text-align:center;margin-top:2px;}
+
+/* Save button — top right corner */
+.artist-card-save{position:absolute;top:8px;right:8px;width:28px;height:28px;
+  background:rgba(0,0,0,0.6);border:1.5px solid rgba(255,255,255,0.3);
+  color:rgba(255,255,255,0.7);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+  backdrop-filter:blur(4px);z-index:3;}
+.artist-card-save:hover{background:rgba(0,212,200,0.3);border-color:var(--teal-glow);}
+.artist-card-save.added{background:var(--teal-glow);border-color:var(--teal-glow);color:#000;font-size:11px;}
+
+/* Headliner crown badge — top left */
+.artist-card-hl{position:absolute;top:8px;left:8px;background:var(--gold-bright);
+  color:#000;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+  padding:3px 6px;z-index:3;}
+
+.no-results{text-align:center;padding:40px 16px;color:var(--text-muted);grid-column:1/-1;}
+.no-results-icon{font-size:40px;margin-bottom:10px;}
+
+/* Letter divider shown in grid when A-Z active */
+.artist-letter-divider{grid-column:1/-1;padding:10px 4px 4px;
+  font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:3px;
+  text-transform:uppercase;border-bottom:1px solid rgba(245,200,66,0.15);margin-bottom:2px;}
+
+/* ══════════════════════════════════════════════════
+   MAP PAGE
+══════════════════════════════════════════════════ */
+.address-card{display:flex;align-items:flex-start;gap:12px;background:rgba(10,10,10,0.95);
+  border:1px solid rgba(0,212,200,0.2);border-radius:0;padding:14px;margin-bottom:16px;}
+.address-pin{font-size:24px;flex-shrink:0;}
+.address-body{flex:1;}
+.address-name{font-size:15px;font-weight:800;color:var(--text-light);margin-bottom:3px;}
+.address-line{font-size:12px;color:var(--text-muted);margin-bottom:2px;}
+.address-phone{font-size:13px;font-weight:700;color:var(--teal-glow);margin-top:4px;}
+.address-copy-btn{flex-shrink:0;padding:7px 12px;border-radius:0;border:1px solid rgba(245,200,66,0.3);
+  background:rgba(245,200,66,0.08);color:var(--gold-bright);font-family:'Poppins',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.address-copy-btn:hover{background:rgba(245,200,66,0.18);}
+.map-section-title{font-size:13px;font-weight:800;color:var(--gold-bright);letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:10px;margin-top:16px;}
+.map-embed-wrap{position:relative;border-radius:0;overflow:hidden;height:260px;
+  border:1px solid rgba(0,212,200,0.2);margin-bottom:4px;}
+.map-embed-wrap iframe{width:100%;height:100%;display:block;border:none;}
+.map-open-btn{position:absolute;top:10px;right:10px;padding:6px 12px;border-radius:0;
+  font-size:11px;font-weight:700;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);
+  border:1px solid rgba(245,200,66,0.3);color:var(--gold-bright);text-decoration:none;transition:background .15s;}
+.map-open-btn:hover{background:rgba(245,200,66,0.15);}
+.directions-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+@media(min-width:560px){.directions-grid{grid-template-columns:repeat(4,1fr);}}
+.dir-btn{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:0;
+  text-decoration:none;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);
+  transition:all .18s;cursor:pointer;}
+.dir-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.4);}
+.dir-icon{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.dir-label{font-size:13px;font-weight:700;color:var(--text-light);}
+.dir-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
+.dir-btn.google{border-color:rgba(66,133,244,0.3);}
+.dir-btn.apple{border-color:rgba(255,255,255,0.15);}
+.dir-btn.waze{border-color:rgba(28,203,255,0.25);}
+.dir-btn.uber{border-color:rgba(255,255,255,0.1);}
+.hotel-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.info-chip{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:0;
+  background:rgba(10,10,10,0.9);border:1px solid rgba(255,255,255,0.1);
+  font-size:12px;font-weight:600;color:var(--text-muted);}
+.hotel-map-wrap{background:rgba(10,10,10,0.9);border:1px solid rgba(0,212,200,0.15);
+  border-radius:0;overflow:hidden;margin-bottom:16px;}
+.hotel-map-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid rgba(255,255,255,0.07);}
+.hotel-map-title{font-size:15px;font-weight:800;color:var(--text-light);}
+.hotel-map-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.map-legend{display:flex;flex-wrap:wrap;gap:12px;padding:8px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.06);}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);font-weight:600;}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.hotel-svg-wrap{overflow-x:auto;cursor:grab;}
+.hotel-svg-wrap:active{cursor:grabbing;}
+.hotel-svg-wrap svg{display:block;min-width:400px;}
+@keyframes mapPulse{0%,100%{r:14;opacity:0.6}50%{r:18;opacity:0.2}}
+.pulse-ring{animation:mapPulse 2s ease-in-out infinite;}
+/* Map pin tooltip */
+.map-tooltip{position:fixed;background:#000000;backdrop-filter:blur(12px);
+  border:1px solid rgba(245,200,66,0.3);border-radius:0;padding:10px 14px;
+  z-index:9000;pointer-events:none;transition:all .15s;max-width:220px;}
+.map-tooltip-name{font-size:14px;font-weight:800;color:var(--text-light);margin-bottom:3px;}
+.map-tooltip-sub{font-size:12px;color:var(--text-muted);}
+
+/* ══════════════════════════════════════════════════
+   CHECKLIST PAGE
+══════════════════════════════════════════════════ */
+.progress-wrap{background:rgba(10,10,10,0.85);border:1px solid rgba(0,212,200,0.15);
+  border-radius:0;padding:14px;margin-bottom:16px;}
+.progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.progress-label{font-size:13px;font-weight:700;color:var(--text-muted);}
+.progress-count{font-size:13px;font-weight:800;color:var(--gold-bright);}
+.progress-bar-bg{width:100%;height:8px;background:rgba(255,255,255,0.08);border-radius:0;overflow:hidden;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal-glow),var(--gold-bright));
+  border-radius:0;transition:width .4s ease;}
+.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.cat-tab{padding:5px 12px;border-radius:0;border:1px solid rgba(255,255,255,0.12);
+  background:transparent;color:var(--text-muted);font-family:'Poppins',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.cat-tab.active{background:linear-gradient(135deg,var(--gold-warm),var(--gold-sunset));
+  border-color:transparent;color:var(--ocean-deep);}
+.tab-count{font-size:11px;font-weight:800;opacity:0.75;}
+.add-form{background:rgba(10,10,10,0.9);border:1px solid rgba(0,212,200,0.15);
+  border-radius:0;padding:14px;margin-bottom:14px;}
+.add-row{display:flex;gap:8px;margin-bottom:8px;}
+.add-input{flex:1;padding:10px 14px;background:rgba(20,20,20,0.9);border:1px solid rgba(0,212,200,0.25);
+  border-radius:0;color:var(--text-light);font-family:'Poppins',sans-serif;
+  font-size:14px;font-weight:500;outline:none;transition:border-color .15s;}
+.add-input:focus{border-color:var(--teal-glow);}
+.add-input::placeholder{color:var(--text-muted);}
+.add-btn-main{padding:10px 16px;border-radius:0;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--teal-glow),#00a89e);color:var(--ocean-deep);
+  font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;transition:all .15s;white-space:nowrap;}
+.add-btn-main:hover{filter:brightness(1.1);}
+.add-meta-row{display:flex;gap:8px;flex-wrap:wrap;}
+.add-select{flex:1;min-width:120px;padding:8px 12px;background:rgba(20,20,20,0.9);
+  border:1px solid rgba(0,212,200,0.2);border-radius:0;color:var(--text-light);
+  font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;outline:none;cursor:pointer;}
+.add-date-input{flex:1;min-width:110px;padding:8px 12px;background:rgba(20,20,20,0.9);
+  border:1px solid rgba(0,212,200,0.2);border-radius:0;color:var(--text-light);
+  font-family:'Poppins',sans-serif;font-size:13px;outline:none;}
+.preset-section{margin-bottom:16px;}
+.preset-title{font-size:12px;font-weight:700;color:var(--text-muted);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:8px;}
+.preset-grid{display:flex;flex-wrap:wrap;gap:6px;}
+.preset-pack{padding:5px 12px;border-radius:0;border:1px solid rgba(155,61,255,0.25);
+  background:rgba(155,61,255,0.08);color:#c084fc;font-family:'Poppins',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.preset-pack:hover{background:rgba(155,61,255,0.18);border-color:rgba(155,61,255,0.4);}
+.checklist-group{margin-bottom:16px;}
+.group-header{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border-radius:0;background:rgba(10,10,10,0.8);
+  border:1px solid rgba(255,255,255,0.07);margin-bottom:8px;cursor:pointer;}
+.group-title{font-size:13px;font-weight:800;color:var(--text-light);display:flex;align-items:center;gap:8px;}
+.group-count{font-size:12px;color:var(--text-muted);font-weight:600;}
+.group-chevron{font-size:16px;color:var(--text-muted);transition:transform .2s;}
+.group-chevron.collapsed{transform:rotate(-90deg);}
+.group-items{display:flex;flex-direction:column;gap:6px;}
+.cl-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:0;
+  background:#0a0a0a;border:1px solid rgba(255,255,255,0.07);transition:all .15s;}
+.cl-item.done{opacity:0.5;}
+.cl-item.done .cl-text{text-decoration:line-through;color:var(--text-muted);}
+.cl-check{width:22px;height:22px;border-radius:0;border:2px solid rgba(0,212,200,0.4);
+  background:transparent;flex-shrink:0;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:13px;transition:all .18s;}
+.cl-check.checked{background:linear-gradient(135deg,var(--teal-glow),#00a89e);border-color:var(--teal-glow);color:var(--ocean-deep);}
+.cl-text{flex:1;font-size:14px;font-weight:500;color:var(--text-light);}
+.cl-meta{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.cl-actions{display:flex;gap:4px;flex-shrink:0;}
+.cl-action-btn{width:28px;height:28px;border-radius:0;border:none;background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--text-muted);transition:all .15s;}
+.cl-action-btn:hover{background:rgba(255,255,255,0.08);color:var(--text-light);}
+.cl-action-btn.delete:hover{background:rgba(255,77,141,0.15);color:var(--pink-coral);}
+.no-items{text-align:center;padding:32px 16px;color:var(--text-muted);}
+
+/* ══════════════════════════════════════════════════
+   GAMES PAGE
+══════════════════════════════════════════════════ */
+.games-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+@media(min-width:560px){.games-grid{grid-template-columns:repeat(3,1fr);}}
+.game-card{background:rgba(10,10,10,0.9);border:1px solid rgba(255,255,255,0.08);
+  border-radius:0;padding:16px 12px;cursor:pointer;transition:all .18s;
+  display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
+.game-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.2);box-shadow:0 8px 28px rgba(0,0,0,0.4);}
+.game-icon{font-size:32px;width:60px;height:60px;border-radius:0;
+  display:flex;align-items:center;justify-content:center;}
+.game-name{font-size:14px;font-weight:800;color:var(--text-light);}
+.game-desc{font-size:11px;color:var(--text-muted);font-weight:500;line-height:1.4;}
+.game-players{font-size:10px;font-weight:700;padding:3px 8px;border-radius:0;
+  background:rgba(255,255,255,0.07);color:var(--text-muted);margin-top:2px;}
+.game-badge{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+  padding:4px 10px;margin-top:6px;display:inline-block;}
+.game-badge.soon{background:rgba(255,255,255,0.06);color:rgba(122,184,224,0.5);}
+.game-badge.live{background:rgba(0,212,200,0.2);color:var(--teal-glow);border:1px solid rgba(0,212,200,0.4);}
+.game-card.game-ready{border-color:rgba(0,212,200,0.3);}
+.game-card.game-ready:hover{border-color:var(--teal-glow);}
+
+/* ══════════════════════════════════════════════════
+   MORE POPOUT
+══════════════════════════════════════════════════ */
+.more-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;}
+.more-overlay.open{pointer-events:all;}
+.more-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);
+  opacity:0;transition:opacity .2s ease;}
+.more-overlay.open .more-backdrop{opacity:1;}
+.more-panel{position:relative;z-index:1;background:#0a0a0a;
+  border:1px solid rgba(245,200,66,0.25);border-radius:0;padding:20px;
+  width:min(320px,calc(100vw - 32px));
+  transform:scale(0.95) translateY(-8px);opacity:0;
+  transition:transform .22s cubic-bezier(.4,0,.2,1),opacity .22s ease;
+  box-shadow:0 24px 64px rgba(0,0,0,0.8);}
+.more-overlay.open .more-panel{transform:scale(1) translateY(0);opacity:1;}
+.more-panel-header{font-size:11px;font-weight:800;color:var(--text-muted);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:12px;padding-bottom:10px;
+  border-bottom:1px solid rgba(255,255,255,0.07);}
+.more-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.more-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:16px 10px;border-radius:0;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);
+  transition:all .15s;text-decoration:none;}
+.more-btn:hover{transform:translateY(-2px);border-color:rgba(245,200,66,0.3);
+  background:rgba(245,200,66,0.07);box-shadow:0 6px 20px rgba(0,0,0,0.3);}
+.more-btn:active{transform:scale(0.96);}
+.more-btn-icon{width:44px;height:44px;border-radius:0;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.more-btn-label{font-size:12px;font-weight:700;color:var(--text-light);text-align:center;line-height:1.2;}
+.more-btn-sub{font-size:10px;color:var(--text-muted);font-weight:500;text-align:center;}
+.more-btn.games .more-btn-icon{background:rgba(155,61,255,0.2);color:#c084fc;}
+.more-btn.info  .more-btn-icon{background:rgba(0,212,200,0.2);color:var(--teal-glow);}
+.more-btn.board .more-btn-icon{background:rgba(245,200,66,0.2);color:var(--gold-bright);}
+.more-btn.games:hover{border-color:rgba(155,61,255,0.4);background:rgba(155,61,255,0.08);}
+.more-btn.info:hover{border-color:rgba(0,212,200,0.4);background:rgba(0,212,200,0.08);}
+.more-btn.board:hover{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);}
+
+/* ══════════════════════════════════════════════════
+   SOS OVERLAY
+══════════════════════════════════════════════════ */
+.sos-overlay{position:fixed;inset:0;z-index:10000;pointer-events:none;}
+.sos-overlay.open{pointer-events:all;}
+.sos-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(6px);
+  opacity:0;transition:opacity .25s ease;}
+.sos-overlay.open .sos-backdrop{opacity:1;}
+.sos-panel{position:absolute;bottom:80px;left:12px;right:12px;
+  background:#0a0010;
+  border:1px solid rgba(255,77,141,0.45);border-radius:0;padding:0 0 20px;
+  transform:translateY(30px);opacity:0;
+  transition:transform .28s cubic-bezier(.4,0,.2,1),opacity .25s ease;
+  box-shadow:0 0 60px rgba(255,77,141,0.2),0 20px 60px rgba(0,0,0,0.7);
+  max-height:88vh;overflow-y:auto;}
+.sos-overlay.open .sos-panel{transform:translateY(0);opacity:1;}
+@media(min-width:768px){
+  .sos-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-60%);
+    width:440px;bottom:auto;}
+  .sos-overlay.open .sos-panel{transform:translate(-50%,-50%);}
+}
+.sos-drag{width:40px;height:4px;background:rgba(255,77,141,0.4);border-radius:0;margin:14px auto 0;}
+@media(min-width:768px){.sos-drag{display:none;}}
+.sos-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;
+  border-bottom:1px solid rgba(255,77,141,0.2);}
+.sos-title{font-size:17px;font-weight:800;color:var(--pink-coral);display:flex;align-items:center;gap:8px;}
+.sos-title-pulse{width:10px;height:10px;border-radius:50%;background:var(--pink-coral);flex-shrink:0;
+  animation:sosPulse 1s ease-in-out infinite;}
+@keyframes sosPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.4)}}
+.sos-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);
+  border:none;cursor:pointer;color:var(--text-light);font-size:16px;
+  display:flex;align-items:center;justify-content:center;}
+.sos-body{padding:16px 20px;display:flex;flex-direction:column;gap:12px;}
+.sos-field-label{font-size:11px;font-weight:800;color:rgba(255,77,141,0.8);
+  letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;}
+.sos-input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,77,141,0.25);border-radius:0;color:var(--text-light);
+  font-family:'Poppins',sans-serif;font-size:15px;font-weight:500;
+  outline:none;transition:border-color .15s;resize:none;}
+.sos-input:focus{border-color:var(--pink-coral);background:rgba(255,77,141,0.07);}
+.sos-input::placeholder{color:rgba(122,184,224,0.4);}
+.sos-select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,77,141,0.25);border-radius:0;color:var(--text-light);
+  font-family:'Poppins',sans-serif;font-size:15px;font-weight:500;
+  outline:none;cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ff4d8d' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+.sos-select option{background:#1a0520;color:var(--text-light);}
+.sos-gps-row{display:flex;gap:8px;align-items:flex-end;}
+.sos-gps-btn{flex-shrink:0;padding:12px 16px;border-radius:0;border:none;cursor:pointer;
+  background:rgba(0,212,200,0.15);border:1px solid rgba(0,212,200,0.35);
+  color:var(--teal-glow);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;
+  white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.sos-gps-btn:hover{background:rgba(0,212,200,0.25);}
+.sos-gps-btn.got{background:rgba(74,222,128,0.15);border-color:rgba(74,222,128,0.4);color:#4ade80;}
+.sos-gps-status{font-size:11px;color:var(--text-muted);margin-top:4px;min-height:16px;}
+.sos-send-btn{width:100%;padding:15px;border-radius:0;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#ff4d8d,#c8185a);color:white;font-family:'Poppins',sans-serif;
+  font-size:16px;font-weight:800;letter-spacing:0.5px;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 20px rgba(255,77,141,0.4);}
+.sos-send-btn:hover{filter:brightness(1.1);transform:scale(1.01);}
+.sos-send-btn:active{transform:scale(0.98);}
+.sos-send-btn:disabled{opacity:0.5;cursor:default;transform:none;}
+.sos-sent-screen{text-align:center;padding:32px 20px;}
+.sos-sent-icon{font-size:56px;margin-bottom:12px;}
+.sos-sent-title{font-size:20px;font-weight:800;color:#4ade80;margin-bottom:8px;}
+.sos-sent-sub{font-size:14px;color:var(--text-muted);line-height:1.7;}
+.sos-sent-ref{font-size:12px;color:var(--pink-coral);font-weight:700;margin-top:12px;}
+.sos-disclaimer{font-size:11px;color:rgba(122,184,224,0.4);text-align:center;padding:0 20px;line-height:1.6;}
+
+/* ══════════════════════════════════════════════════
+   ARTIST MODAL
+══════════════════════════════════════════════════ */
+.modal-backdrop{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.92);
+  backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;}
+.modal-backdrop.open{display:flex;}
+@media(min-width:768px){.modal-backdrop.open{align-items:center;}}
+.artist-modal{background:#0a0a0a;
+  border:1px solid rgba(255,255,255,0.12);border-radius:0 24px 0 0;
+  width:100%;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,20px);}
+@media(min-width:768px){
+  .artist-modal{border-radius:0;max-width:520px;max-height:80vh;}
+}
+.modal-drag{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:0;margin:14px auto 0;}
+@media(min-width:768px){.modal-drag{display:none;}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.07);}
+.modal-header-label{font-size:11px;font-weight:800;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;}
+.modal-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);
+  border:none;cursor:pointer;color:var(--text-light);font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.modal-close:hover{background:rgba(255,255,255,0.15);}
+.modal-hero{display:flex;align-items:center;gap:16px;padding:16px 20px;}
+.modal-avatar{width:72px;height:72px;border-radius:0;display:flex;align-items:center;
+  justify-content:center;font-size:16px;font-weight:800;color:#fff;
+  border:2px solid rgba(255,255,255,0.15);flex-shrink:0;}
+.modal-name{font-size:22px;font-weight:900;color:var(--text-light);line-height:1.1;margin-bottom:4px;}
+.modal-stage-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;padding:3px 10px;border-radius:0;margin-bottom:4px;}
+.modal-stage-badge.dnb{background:rgba(155,61,255,0.2);color:#c084fc;}
+.modal-stage-badge.oasis{background:rgba(0,212,200,0.15);color:var(--teal-glow);}
+.modal-genre{font-size:13px;color:var(--text-muted);font-weight:500;}
+.modal-divider{height:1px;background:rgba(255,255,255,0.07);margin:0 20px;}
+.modal-section{padding:16px 20px;}
+.modal-section-title{font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:10px;}
+.set-info-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.set-info-card{background:rgba(255,255,255,0.05);border-radius:0;padding:10px 8px;text-align:center;}
+.set-info-label{font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.set-info-val{font-size:14px;font-weight:800;color:var(--text-light);}
+.modal-bio{font-size:14px;color:var(--text-muted);line-height:1.7;}
+.spotify-embed{background:rgba(29,185,84,0.08);border:1px solid rgba(29,185,84,0.2);
+  border-radius:0;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.spotify-placeholder{flex:1;font-size:13px;color:var(--text-muted);}
+.spotify-play-btn{flex-shrink:0;padding:8px 16px;border-radius:0;border:none;cursor:pointer;
+  background:#1db954;color:#fff;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;
+  transition:all .15s;white-space:nowrap;}
+.spotify-play-btn:hover{filter:brightness(1.1);}
+.social-row{display:flex;flex-wrap:wrap;gap:8px;}
+.social-link{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:0;
+  text-decoration:none;font-size:13px;font-weight:700;border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);color:var(--text-muted);transition:all .15s;}
+.social-link:hover{border-color:rgba(245,200,66,0.3);color:var(--gold-bright);background:rgba(245,200,66,0.06);}
+
+/* ══════════════════════════════════════════════════
+   PWA INSTALL BANNER
+══════════════════════════════════════════════════ */
+.pwa-install-banner{
+  display:none;position:fixed;bottom:80px;left:12px;right:12px;z-index:8000;
+  background:linear-gradient(135deg,rgba(10,37,64,0.98),rgba(4,29,58,0.98));
+  border:1px solid rgba(245,200,66,0.4);border-radius:0;padding:16px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);animation:bannerSlideUp .35s ease;
+}
+@media(min-width:768px){.pwa-install-banner{max-width:400px;left:50%;transform:translateX(-50%);bottom:20px;}}
+@keyframes bannerSlideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.pwa-install-banner.show{display:block;}
+.pwa-banner-inner{display:flex;align-items:center;gap:12px;}
+.pwa-banner-icon{font-size:28px;flex-shrink:0;}
+.pwa-banner-text{flex:1;}
+.pwa-banner-title{font-size:14px;font-weight:800;color:var(--text-light);margin-bottom:2px;}
+.pwa-banner-sub{font-size:12px;color:var(--text-muted);}
+.pwa-banner-actions{display:flex;gap:8px;margin-top:12px;}
+.pwa-install-btn{flex:1;padding:10px;border-radius:0;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--gold-warm),var(--gold-sunset));
+  color:var(--ocean-deep);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;
+  transition:all .15s;}
+.pwa-install-btn:hover{filter:brightness(1.05);}
+.pwa-dismiss-btn{padding:10px 14px;border-radius:0;border:1px solid rgba(255,255,255,0.15);
+  background:transparent;color:var(--text-muted);font-family:'Poppins',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.pwa-dismiss-btn:hover{border-color:rgba(255,255,255,0.3);}
+
+/* iOS install tip */
+.ios-install-tip{display:none;}
+.ios-install-tip.show{display:block;}
+.ios-tip-inner{background:#000000;border:1px solid rgba(0,212,200,0.3);
+  border-radius:0;padding:14px;text-align:center;}
+.ios-tip-text{font-size:13px;color:var(--text-muted);line-height:1.6;}
+.ios-tip-text strong{color:var(--teal-glow);}
+.ios-tip-close{margin-top:10px;padding:6px 16px;border-radius:0;
+  border:1px solid rgba(255,255,255,0.15);background:transparent;
+  color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;cursor:pointer;}
+
+/* ══════════════════════════════════════════════════
+   RAVEWORM GAME OVERLAY
+══════════════════════════════════════════════════ */
+.raveworm-overlay{
+  position:fixed;inset:0;z-index:20000;
+  background:#0a0a1a;
+  display:none;flex-direction:column;
+  font-family:'VT323',monospace;
+}
+.raveworm-overlay.open{display:flex;}
+.raveworm-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:#000;
+  border-bottom:2px solid #ff00ff;flex-shrink:0;
+}
+.raveworm-title{
+  font-size:28px;letter-spacing:3px;
+  animation:rwPulse 2s ease-in-out infinite;
+}
+@keyframes rwPulse{
+  0%,100%{color:#ff00ff;text-shadow:0 0 10px #ff00ff;}
+  33%{color:#00ffff;text-shadow:0 0 10px #00ffff;}
+  66%{color:#ffff00;text-shadow:0 0 10px #ffff00;}
+}
+.raveworm-close{
+  width:36px;height:36px;background:rgba(255,0,255,0.15);
+  border:1px solid #ff00ff;color:#ff00ff;font-size:18px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-family:'Poppins',sans-serif;
+}
+.raveworm-close:hover{background:rgba(255,0,255,0.3);}
+.raveworm-body{
+  flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;
+  padding:10px 16px 20px;
+  background:#0a0a1a;
+}
+/* Rave mode vars scoped to overlay */
+.raveworm-overlay .win-card{
+  background:#111;border:1px solid #ff00ff;
+  box-shadow:0 0 10px rgba(255,0,255,0.25);
+  margin-bottom:8px;width:100%;max-width:440px;
+}
+.raveworm-overlay .win-card-title{
+  background:linear-gradient(to right,#ff00ff,#8800ff);
+  color:#fff;font-size:16px;font-weight:bold;
+  padding:4px 8px;display:flex;align-items:center;gap:8px;
+  text-shadow:0 0 8px #ff00ff;
+}
+.raveworm-overlay .win-card-body{padding:10px;}
+.raveworm-overlay #page-snake{
+  background:#0a0a1a;width:100%;max-width:440px;padding:8px;
+}
+.raveworm-overlay .snake-screen-wrap{
+  background:#ff007f;border:3px solid #33ff33;
+  box-shadow:0 0 12px rgba(51,255,51,0.27);
+  margin-bottom:12px;line-height:0;position:relative;
+}
+.raveworm-overlay canvas{display:block;width:100%;}
+.raveworm-overlay .stat-chip{
+  background:#ff00ff!important;color:#000!important;
+  border:2px solid #ffff00!important;
+}
+.raveworm-overlay .snake-btn{
+  background:#1a1a1a;color:#888;border:2px solid #444;
+  font-size:22px;font-weight:bold;cursor:pointer;
+  font-family:'VT323',monospace;
+  display:flex;align-items:center;justify-content:center;
+  min-height:52px;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+.raveworm-overlay .snake-btn:active{
+  background:#222;color:#33ff33;border-color:#33ff33;transform:scale(0.93);
+}
+.raveworm-overlay .snake-gb-btn{
+  width:64px;height:64px;border-radius:50%!important;
+  background:#dd2020;color:#fff;border:3px solid #ff4444!important;
+  box-shadow:0 0 8px rgba(221,32,32,0.4),inset 0 2px 4px rgba(0,0,0,0.3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;font-size:13px;cursor:pointer;font-family:'VT323',monospace;
+  transition:box-shadow .1s,transform .1s;min-height:unset;aspect-ratio:1;
+}
+.raveworm-overlay .snake-gb-btn:active{
+  transform:scale(0.92);
+  box-shadow:0 0 4px rgba(221,32,32,0.4),inset 0 3px 6px rgba(0,0,0,0.5);
+}
+.raveworm-overlay .snake-gb-label{
+  font-size:10px;letter-spacing:1px;opacity:0.85;line-height:1;
+}
+@media(min-width:640px){
+  .raveworm-overlay .snake-dpad{max-width:160px;}
+  .raveworm-overlay .snake-btn{min-height:36px;font-size:18px;}
+}
+@media(pointer:coarse){
+  .raveworm-overlay .snake-dpad-wrap{display:none!important;}
+  .raveworm-overlay .snake-swipe-hint{display:block!important;}
+  .raveworm-overlay .snake-mobile-start{display:flex!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-ocean"></div>
+<svg class="wave" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="rgba(0,212,200,1)">
+  <path d="M0,60 C300,120 600,0 900,60 C1050,90 1150,30 1200,60 L1200,120 L0,120 Z"/>
+</svg>
+<svg class="wave" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="rgba(245,200,66,1)">
+  <path d="M0,80 C200,20 500,100 800,50 C1000,20 1100,80 1200,60 L1200,120 L0,120 Z"/>
+</svg>
+
+<!-- ══ TOP NAV ══ -->
+<nav class="top-nav">
+  <span class="nav-logo" onclick="navigate('home')">☠ SUNKEN SUITE<span>The Mutiny</span></span>
+  <nav class="desktop-nav-links">
+    <span class="desktop-nav-link active" data-page="home"    onclick="navigate('home')">🏠 Home</span>
+    <span class="desktop-nav-link"        data-page="schedule" onclick="navigate('schedule')">📅 Schedule</span>
+    <span class="desktop-nav-link"        data-page="artists"  onclick="navigate('artists')">🎤 Artists</span>
+    <span class="desktop-nav-link"        data-page="map"      onclick="navigate('map')">🗺️ Map</span>
+    <span class="desktop-nav-link"        data-page="checklist" onclick="navigate('checklist')">✅ List</span>
+    <span class="desktop-nav-link more-trigger" onclick="toggleMore(this)">⋯ More</span>
+    <span class="desktop-nav-link sos" onclick="openSOS()">🆘 SOS</span>
+  </nav>
+  <div class="nav-right">
+    <!-- Weather -->
+    <div class="weather-widget" id="weatherWidget">
+      <span class="weather-icon" id="wIcon">⛅</span>
+      <div class="weather-col">
+        <span class="weather-temp" id="wTemp">--°</span>
+        <span class="weather-label">Sturbridge</span>
+      </div>
+      <div class="weather-panel" id="weatherPanel">
+        <div class="weather-panel-header">📍 Sturbridge, MA</div>
+        <div class="weather-panel-main">
+          <span class="weather-panel-icon" id="wpIcon">⛅</span>
+          <div>
+            <div class="weather-panel-temp" id="wpTemp">--°F</div>
+            <div class="weather-panel-feel" id="wpFeel">Feels like --°F</div>
+            <div class="weather-panel-desc" id="wpDesc">Loading…</div>
+          </div>
+        </div>
+        <div class="weather-panel-row">
+          <div class="weather-panel-stat"><div class="weather-panel-stat-val" id="wpHumid">--%</div><div class="weather-panel-stat-lbl">Humidity</div></div>
+          <div class="weather-panel-stat"><div class="weather-panel-stat-val" id="wpWind">-- mph</div><div class="weather-panel-stat-lbl">Wind</div></div>
+          <div class="weather-panel-stat"><div class="weather-panel-stat-val" id="wpRain">--%</div><div class="weather-panel-stat-lbl">Rain</div></div>
+        </div>
+        <div class="weather-fest-note" id="wpFestNote"></div>
+        <div class="weather-panel-footer" id="wpUpdated">Fetching weather…</div>
+      </div>
+    </div>
+    <div class="nav-bell">🔔<div class="notif-dot"></div></div>
+    <div class="nav-avatar" id="navAvatar">?</div>
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══ MOBILE DRAWER ══ -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="drawer-backdrop" onclick="closeDrawer()"></div>
+  <div class="drawer-panel">
+    <div class="drawer-links">
+      <span class="drawer-link active" data-page="home"     onclick="navigate('home');closeDrawer()">🏠 Home</span>
+      <span class="drawer-link"        data-page="schedule" onclick="navigate('schedule');closeDrawer()">📅 Schedule</span>
+      <span class="drawer-link"        data-page="artists"  onclick="navigate('artists');closeDrawer()">🎤 Artists</span>
+      <span class="drawer-link"        data-page="map"      onclick="navigate('map');closeDrawer()">🗺️ Map</span>
+      <span class="drawer-link"        data-page="checklist" onclick="navigate('checklist');closeDrawer()">✅ Checklist</span>
+      <span class="drawer-link"        data-page="games"    onclick="navigate('games');closeDrawer()">🎮 Games</span>
+      <div class="drawer-divider"></div>
+      <span class="drawer-link sos" onclick="openSOS();closeDrawer()">🆘 Emergency SOS</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP SHELL ══ -->
+<div id="app">
+
+  <!-- ── HOME PAGE ── -->
+  <div class="page active" id="page-home">
+    <div class="announce-banner">
+      <div class="announce-icon">📢</div>
+      <div class="announce-text">
+        <strong id="countdown-label">GATES OPEN IN</strong>
+        <div class="countdown-clock" id="countdown-clock">
+          <div class="cd-unit"><span class="cd-num" id="cd-days">--</span><span class="cd-lbl">Days</span></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><span class="cd-num" id="cd-hours">--</span><span class="cd-lbl">Hrs</span></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><span class="cd-num" id="cd-mins">--</span><span class="cd-lbl">Min</span></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><span class="cd-num" id="cd-secs">--</span><span class="cd-lbl">Sec</span></div>
+        </div>
+        <p>Sturbridge Host Hotel · Jul 17–19, 2026</p>
+      </div>
+    </div>
+
+    <div class="desktop-grid">
+      <div class="desktop-col-left">
+        <div class="flyer-section">
+          <img src="flyer.jpg" alt="Sunken Suite 2026 Official Flyer" class="flyer-img" id="flyerImg"
+               onerror="this.style.display='none';this.parentElement.style.background='rgba(4,29,58,0.8)';this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;font-family:Pirata One,cursive;font-size:28px;color:#f5c842;\'>☠ SUNKEN SUITE<br><span style=\'font-family:Poppins,sans-serif;font-size:14px;color:#7ab8e0;\'>The Mutiny 2026<br>July 17–19 · Sturbridge, MA</span></div>'">
+        </div>
+      </div>
+      <div class="desktop-col-right">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-num">47+</div><div class="stat-label">Artists</div></div>
+          <div class="stat-card"><div class="stat-num">3</div><div class="stat-label">Days</div></div>
+          <div class="stat-card"><div class="stat-num">2</div><div class="stat-label">Stages</div></div>
+        </div>
+        <div class="section-header">
+          <div class="section-title">⭐ My Schedule</div>
+          <span class="section-see-all" onclick="navigate('schedule')">Full schedule →</span>
+        </div>
+        <div class="schedule-card" id="mySchedWidget">
+          <div id="mySchedList"></div>
+          <div id="mySchedEmpty" class="my-sched-empty">
+            <span class="empty-icon">⭐</span>
+            No artists saved yet.<br>
+            Go to <span style="color:var(--teal-glow);font-weight:700;cursor:pointer;" onclick="navigate('schedule')">Schedule</span> and tap <strong style="color:var(--teal-glow);">+</strong> to build your lineup.
+          </div>
+        </div>
+        <div class="section-header" style="margin-top:20px;">
+          <div class="section-title">🎤 Featured Today</div>
+          <span class="section-see-all" onclick="navigate('artists')">All artists →</span>
+        </div>
+        <div id="featuredArtists"></div>
+        <div class="section-header" style="margin-top:20px;">
+          <div class="section-title">📍 Venue</div>
+          <span class="section-see-all" onclick="navigate('map')">Full map →</span>
+        </div>
+        <div class="venue-card">
+          <div class="venue-map-wrap">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2962.7!2d-72.0898!3d42.1167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e6a3a322e1a0c1%3A0xe6fcfc2b19cf0fd6!2sSturbridge%20Host%20Hotel%20%26%20Conference%20Center!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Sturbridge Host Hotel"></iframe>
+            <a class="venue-map-open" href="https://maps.google.com/?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA" target="_blank" rel="noopener">↗ Open</a>
+          </div>
+          <div class="venue-info">
+            <div class="venue-name">Sturbridge Host Hotel</div>
+            <div class="venue-sub">& Conference Center · On Cedar Lake</div>
+            <div class="venue-rows">
+              <div class="venue-row">
+                <span class="venue-row-icon">📍</span>
+                <div class="venue-row-body"><div class="venue-row-val">366 Main St, Sturbridge, MA 01566</div><div class="venue-row-sub">Exit 3B off I-90 · 1 hr west of Boston</div></div>
+                <button class="venue-copy-btn" onclick="copyAddress()">📋</button>
+              </div>
+              <div class="venue-row">
+                <span class="venue-row-icon">📞</span>
+                <div class="venue-row-body"><a class="venue-row-val venue-link" href="tel:+15083477393">(508) 347-7393</a><div class="venue-row-sub">Front desk · 24 hrs</div></div>
+              </div>
+              <div class="venue-row">
+                <span class="venue-row-icon">🗓️</span>
+                <div class="venue-row-body"><div class="venue-row-val">July 17 – 19, 2026</div><div class="venue-row-sub">Friday · Saturday · Sunday</div></div>
+              </div>
+            </div>
+            <div class="venue-dir-row">
+              <a class="venue-dir-btn google" id="homeDirGoogle" href="#" target="_blank" rel="noopener">🗺️ Google</a>
+              <a class="venue-dir-btn apple"  id="homeDirApple"  href="#" target="_blank" rel="noopener">🍎 Apple</a>
+              <a class="venue-dir-btn waze"   href="https://waze.com/ul?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA&navigate=yes" target="_blank" rel="noopener">🚗 Waze</a>
+              <a class="venue-dir-btn uber"   href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=366+Main+St+Sturbridge+MA+01566&dropoff[latitude]=42.1167&dropoff[longitude]=-72.0898" target="_blank" rel="noopener">🚕 Uber</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /page-home -->
+
+  <!-- ── SCHEDULE PAGE ── -->
+  <div class="page" id="page-schedule">
+    <div class="page-header"><div class="page-title">📅 Full Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
+    <div class="controls-bar">
+      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <div class="day-tabs" style="flex:1;">
+          <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
+          <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
+          <button class="day-tab"        data-day="sun" onclick="switchDay('sun',this)">SUN 7/19</button>
+          <button class="day-tab mine-tab" data-day="mine" onclick="switchDay('mine',this)" id="mySchedTab">⭐ Mine</button>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Stage:</span>
+          <button class="stage-pill all on" data-stage="all"   onclick="filterStage('all',this)">All</button>
+          <button class="stage-pill dnb"    data-stage="dnb"   onclick="filterStage('dnb',this)">🥁 DNB</button>
+          <button class="stage-pill oasis"  data-stage="oasis" onclick="filterStage('oasis',this)">🌴 Oasis</button>
+          <div class="view-toggle">
+            <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
+            <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- List View -->
+    <div class="list-view-wrap hidden" id="listViewWrap" style="display:none;">
+      <div id="schedListContent"></div>
+    </div>
+    <!-- Grid / Block View -->
+    <div class="block-view-wrap visible" id="blockViewWrap">
+      <div id="schedGridContent"></div>
+    </div>
+    <!-- My Schedule empty -->
+    <div id="mySchedPage" style="display:none;">
+      <div id="mySchedPageList"></div>
+      <div id="mySchedPageEmpty" class="my-sched-empty" style="display:none;">
+        <span class="empty-icon">⭐</span>No artists saved yet.<br>Tap + next to any artist to add them.
+      </div>
+    </div>
+    <!-- Calendar export -->
+    <div class="cal-export-section" id="calExportSection">
+      <div class="cal-export-title">📅 Export to Calendar</div>
+      <div class="cal-btn-row">
+        <button class="cal-btn gcal"  onclick="exportGCal()"><span style="background:#4285f4;color:#fff;border-radius:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;">G</span>Google Cal</button>
+        <button class="cal-btn apple" onclick="exportICS()">🍎 Apple / .ics</button>
+      </div>
+    </div>
+  </div><!-- /page-schedule -->
+
+  <!-- ── ARTISTS PAGE ── -->
+  <div class="page" id="page-artists">
+    <div class="artist-controls">
+      <!-- A–Z bar -->
+      <div class="az-bar" id="azBar"></div>
+      <!-- Search + filters -->
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:2px;">
+        <div class="search-wrap" style="flex:1;"><span class="search-icon">🔍</span><input type="text" class="search-input" id="artistSearchInput" placeholder="Search artists…" oninput="setArtistLetter('');renderArtists()"></div>
+      </div>
+      <div class="artist-filters" id="artistFilters">
+        <button class="af-pill active" data-filter="all"   onclick="setArtistFilter('all',this)">All</button>
+        <button class="af-pill dnb"    data-filter="dnb"   onclick="setArtistFilter('dnb',this)">🥁 DNB</button>
+        <button class="af-pill oasis"  data-filter="oasis" onclick="setArtistFilter('oasis',this)">🌴 Oasis</button>
+        <button class="af-pill"        data-filter="fri"   onclick="setArtistFilter('fri',this)">Fri</button>
+        <button class="af-pill"        data-filter="sat"   onclick="setArtistFilter('sat',this)">Sat</button>
+        <button class="af-pill"        data-filter="sun"   onclick="setArtistFilter('sun',this)">Sun</button>
+        <button class="af-pill saved"  data-filter="saved" onclick="setArtistFilter('saved',this)">⭐ Saved</button>
+      </div>
+    </div>
+    <div class="artists-grid" id="artistsGrid"></div>
+  </div><!-- /page-artists -->
+
+  <!-- ── MAP PAGE ── -->
+  <div class="page" id="page-map">
+    <div class="page-header"><div class="page-title">🗺️ Map &amp; Directions</div><div class="page-sub">Sturbridge Host Hotel · Jul 17–19, 2026</div></div>
+    <div class="address-card">
+      <div class="address-pin">📍</div>
+      <div class="address-body">
+        <div class="address-name">Sturbridge Host Hotel &amp; Conference Center</div>
+        <div class="address-line">366 Main St, Sturbridge, MA 01566</div>
+        <div class="address-line">On Cedar Lake · 1 hr west of Boston · Exit 3B off I-90</div>
+        <div class="address-phone">(508) 347-7393</div>
+      </div>
+      <button class="address-copy-btn" onclick="copyAddress()">📋 Copy</button>
+    </div>
+    <div class="map-section-title">📍 Location</div>
+    <div class="map-embed-wrap">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2962.7!2d-72.0898!3d42.1167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e6a3a322e1a0c1%3A0xe6fcfc2b19cf0fd6!2sSturbridge%20Host%20Hotel%20%26%20Conference%20Center!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Sturbridge Host Hotel location map"></iframe>
+      <a class="map-open-btn" href="https://maps.google.com/?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA+01566" target="_blank" rel="noopener">↗ Open in Maps</a>
+    </div>
+    <div class="map-section-title">🧭 Get Directions</div>
+    <div class="directions-grid">
+      <a class="dir-btn google" id="mapDirGoogle" href="#" target="_blank" rel="noopener">
+        <div class="dir-icon"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M24 4C16.27 4 10 10.27 10 18c0 10.5 14 26 14 26s14-15.5 14-26c0-7.73-6.27-14-14-14z" fill="url(#gPin2)"/><defs><linearGradient id="gPin2" x1="10" y1="4" x2="38" y2="44" gradientUnits="userSpaceOnUse"><stop stop-color="#4285F4"/><stop offset="1" stop-color="#34A853"/></linearGradient></defs><circle cx="24" cy="18" r="5" fill="white"/></svg></div>
+        <div><div class="dir-label">Google Maps</div><div class="dir-sub">Opens app or web</div></div>
+      </a>
+      <a class="dir-btn apple" id="mapDirApple" href="#" target="_blank" rel="noopener">
+        <div class="dir-icon"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="0" fill="#1C1C1E"/><path d="M24 8C20 8 16 11 16 15.5c0 6.5 8 16.5 8 16.5s8-10 8-16.5C32 11 28 8 24 8z" fill="#34C759"/><circle cx="24" cy="15.5" r="3.5" fill="white"/></svg></div>
+        <div><div class="dir-label">Apple Maps</div><div class="dir-sub">iPhone &amp; Mac</div></div>
+      </a>
+      <a class="dir-btn waze" href="https://waze.com/ul?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA&navigate=yes" target="_blank" rel="noopener">
+        <div class="dir-icon"><svg width="32" height="32" viewBox="0 0 48 48" fill="none"><ellipse cx="24" cy="26" rx="0" ry="14" fill="#33CCFF"/><circle cx="18" cy="27" r="3" fill="white"/><circle cx="30" cy="27" r="3" fill="white"/><path d="M18 33 Q24 37 30 33" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="24" cy="10" r="5" fill="#FFCC00"/></svg></div>
+        <div><div class="dir-label">Waze</div><div class="dir-sub">Live traffic</div></div>
+      </a>
+      <a class="dir-btn uber" href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=366+Main+St+Sturbridge+MA+01566&dropoff[latitude]=42.1167&dropoff[longitude]=-72.0898" target="_blank" rel="noopener">
+        <div class="dir-icon"><svg width="28" height="28" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="0" fill="#000"/><text x="24" y="32" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="white" text-anchor="middle">U</text></svg></div>
+        <div><div class="dir-label">Uber</div><div class="dir-sub">Request a ride</div></div>
+      </a>
+    </div>
+    <div class="map-section-title">🏨 Amenities</div>
+    <div class="hotel-chips">
+      <div class="info-chip"><span>🏊</span> Indoor Pool</div>
+      <div class="info-chip"><span>🛁</span> Hot Tub</div>
+      <div class="info-chip"><span>🏖️</span> Beach &amp; Dock</div>
+      <div class="info-chip"><span>🍽️</span> Greenhouse Rest.</div>
+      <div class="info-chip"><span>🍺</span> Oxhead Tavern</div>
+      <div class="info-chip"><span>💪</span> Fitness Room</div>
+      <div class="info-chip"><span>🅿️</span> Free Parking</div>
+      <div class="info-chip"><span>📶</span> Free WiFi</div>
+    </div>
+    <div class="hotel-map-wrap">
+      <div class="hotel-map-header">
+        <div><div class="hotel-map-title">🏨 Hotel Grounds</div><div class="hotel-map-sub" style="font-size:12px;color:var(--text-muted);">Tap a pin to see details</div></div>
+      </div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#f5c842;"></div>Event Stages</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00d4c8;"></div>Pool &amp; Beach</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff4d8d;"></div>Food &amp; Drink</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9b3dff;"></div>Hotel Facilities</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4ade80;"></div>Entry / Parking</div>
+      </div>
+      <div class="hotel-svg-wrap" id="hotelMapWrap">
+        <svg viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg" font-family="Poppins,sans-serif" style="min-width:400px;width:100%;">
+          <rect width="700" height="500" fill="#000000"/>
+          <ellipse cx="560" cy="300" rx="0" ry="220" fill="#060606" opacity="0.9"/>
+          <ellipse cx="560" cy="300" rx="0" ry="220" fill="none" stroke="rgba(0,212,200,0.3)" stroke-width="1.5"/>
+          <text x="590" y="240" font-size="11" fill="rgba(0,212,200,0.5)" font-weight="600">Cedar Lake</text>
+          <ellipse cx="575" cy="280" rx="0" ry="12" fill="none" stroke="rgba(0,212,200,0.12)" stroke-width="1"/>
+          <rect x="30" y="30" width="370" height="440" rx="0" fill="#0a0a0a" opacity="0.8"/>
+          <rect x="0" y="450" width="700" height="50" fill="#000000"/>
+          <rect x="0" y="456" width="700" height="2" fill="rgba(245,200,66,0.15)"/>
+          <text x="350" y="472" font-size="11" fill="rgba(122,184,224,0.5)" text-anchor="middle" font-weight="600">MAIN ST (ROUTE 20)</text>
+          <rect x="150" y="380" width="44" height="70" fill="#000000"/>
+          <rect x="40" y="380" width="110" height="66" rx="0" fill="#050505" stroke="rgba(74,222,128,0.2)" stroke-width="1"/>
+          <text x="95" y="396" font-size="9" fill="rgba(74,222,128,0.5)" text-anchor="middle" font-weight="700">PARKING</text>
+          <rect x="60" y="140" width="280" height="160" rx="0" fill="#111111" stroke="rgba(155,61,255,0.4)" stroke-width="1.5"/>
+          <text x="200" y="215" font-size="13" fill="rgba(232,244,255,0.9)" text-anchor="middle" font-weight="800">HOTEL</text>
+          <text x="200" y="232" font-size="10" fill="rgba(122,184,224,0.6)" text-anchor="middle">Main Building · Rooms</text>
+          <rect x="60" y="50" width="200" height="80" rx="0" fill="#111122" stroke="rgba(245,200,66,0.35)" stroke-width="1.5"/>
+          <text x="160" y="87" font-size="12" fill="rgba(245,200,66,0.9)" text-anchor="middle" font-weight="800">EVENT HALL</text>
+          <text x="160" y="103" font-size="9" fill="rgba(122,184,224,0.6)" text-anchor="middle">DNB Stage · Oasis Stage</text>
+          <rect x="280" y="50" width="120" height="62" rx="0" fill="#110a0a" stroke="rgba(255,77,141,0.35)" stroke-width="1.5"/>
+          <text x="340" y="78" font-size="11" fill="rgba(255,77,141,0.9)" text-anchor="middle" font-weight="800">🍽️ Greenhouse</text>
+          <text x="340" y="95" font-size="9" fill="rgba(122,184,224,0.5)" text-anchor="middle">Restaurant</text>
+          <rect x="280" y="124" width="120" height="60" rx="0" fill="#0a0a11" stroke="rgba(255,107,26,0.35)" stroke-width="1.5"/>
+          <text x="340" y="152" font-size="11" fill="rgba(255,107,26,0.9)" text-anchor="middle" font-weight="800">🍺 Oxhead</text>
+          <text x="340" y="168" font-size="9" fill="rgba(122,184,224,0.5)" text-anchor="middle">Tavern · Bar</text>
+          <rect x="60" y="310" width="130" height="70" rx="0" fill="#001020" stroke="rgba(0,212,200,0.45)" stroke-width="2"/>
+          <ellipse cx="125" cy="345" rx="0" ry="22" fill="rgba(0,212,200,0.15)" stroke="rgba(0,212,200,0.3)" stroke-width="1"/>
+          <text x="125" y="341" font-size="11" fill="rgba(0,212,200,0.9)" text-anchor="middle" font-weight="800">🏊 Indoor Pool</text>
+          <text x="125" y="356" font-size="9" fill="rgba(122,184,224,0.5)" text-anchor="middle">Heated · Hot Tub</text>
+          <rect x="200" y="310" width="90" height="70" rx="0" fill="#080810" stroke="rgba(155,61,255,0.3)" stroke-width="1.5"/>
+          <text x="245" y="341" font-size="11" fill="rgba(155,61,255,0.85)" text-anchor="middle" font-weight="800">💪 Fitness</text>
+          <text x="245" y="357" font-size="9" fill="rgba(122,184,224,0.5)" text-anchor="middle">Gym &amp; Spa</text>
+          <path d="M390 340 Q430 290 440 380 Q420 420 390 390 Z" fill="rgba(245,200,66,0.08)" stroke="rgba(245,200,66,0.2)" stroke-width="1"/>
+          <text x="415" y="365" font-size="10" fill="rgba(245,200,66,0.7)" text-anchor="middle" font-weight="700">🏖️ Beach</text>
+          <g class="map-pin" data-name="🥁 DNB Stage" data-sub="Event Hall · Hosted by BP²" style="cursor:pointer" onclick="showMapTooltip(this,event)">
+            <circle cx="130" cy="80" r="14" fill="rgba(245,200,66,0.2)" class="pulse-ring"/>
+            <circle cx="130" cy="80" r="9" fill="#f5c842"/>
+            <text x="130" y="84" font-size="9" fill="#020b1a" text-anchor="middle" font-weight="900">DNB</text>
+          </g>
+          <g class="map-pin" data-name="🌴 Oasis Stage" data-sub="Event Hall · House & Techno" style="cursor:pointer" onclick="showMapTooltip(this,event)">
+            <circle cx="190" cy="80" r="14" fill="rgba(245,200,66,0.15)" class="pulse-ring" style="animation-delay:0.4s"/>
+            <circle cx="190" cy="80" r="9" fill="#e8941a"/>
+            <text x="190" y="84" font-size="8" fill="#020b1a" text-anchor="middle" font-weight="900">OAS</text>
+          </g>
+          <g class="map-pin" data-name="🏊 Indoor Pool & Hot Tub" data-sub="Heated pool · Open daily" style="cursor:pointer" onclick="showMapTooltip(this,event)">
+            <circle cx="125" cy="345" r="9" fill="#00d4c8"/>
+            <text x="125" y="349" font-size="9" fill="#020b1a" text-anchor="middle" font-weight="900">P</text>
+          </g>
+          <g class="map-pin" data-name="🍽️ Greenhouse Restaurant" data-sub="Full service · Open all weekend" style="cursor:pointer" onclick="showMapTooltip(this,event)">
+            <circle cx="340" cy="65" r="9" fill="#ff4d8d"/>
+            <text x="340" y="69" font-size="9" fill="#fff" text-anchor="middle" font-weight="900">R</text>
+          </g>
+          <g class="map-pin" data-name="🍺 Oxhead Tavern" data-sub="Bar & casual food · Late night" style="cursor:pointer" onclick="showMapTooltip(this,event)">
+            <circle cx="340" cy="145" r="9" fill="#ff6b1a"/>
+            <text x="340" y="149" font-size="9" fill="#fff" text-anchor="middle" font-weight="900">B</text>
+          </g>
+          <g class="map-pin" data-name="🅿️ Main Parking" data-sub="Free · Entry off Main St" style="cursor:pointer" onclick="showMapTooltip(this,event)">
+            <circle cx="95" cy="413" r="9" fill="#4ade80"/>
+            <text x="95" y="417" font-size="9" fill="#020b1a" text-anchor="middle" font-weight="900">P</text>
+          </g>
+          <g transform="translate(650,55)">
+            <circle r="22" fill="rgba(4,29,58,0.9)" stroke="rgba(245,200,66,0.3)" stroke-width="1"/>
+            <text x="0" y="-8" font-size="11" fill="rgba(245,200,66,0.9)" text-anchor="middle" font-weight="900">N</text>
+            <line x1="0" y1="-4" x2="0" y2="4" stroke="rgba(245,200,66,0.6)" stroke-width="1.5"/>
+            <text x="0" y="14" font-size="8" fill="rgba(122,184,224,0.5)" text-anchor="middle">S</text>
+            <text x="-13" y="3" font-size="8" fill="rgba(122,184,224,0.5)" text-anchor="middle">W</text>
+            <text x="13" y="3" font-size="8" fill="rgba(122,184,224,0.5)" text-anchor="middle">E</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div><!-- /page-map -->
+
+  <!-- ── CHECKLIST PAGE ── -->
+  <div class="page" id="page-checklist">
+    <div class="page-header"><div class="page-title">✅ Checklist</div><div class="page-sub">Packing · Plans · To-Dos · All in one place</div></div>
+    <div class="progress-wrap">
+      <div class="progress-row"><span class="progress-label">Overall progress</span><span class="progress-count" id="progressCount">0 / 0</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+    <div class="cat-tabs" id="catTabs">
+      <button class="cat-tab active" data-cat="all"      onclick="setChecklistCat('all',this)">All <span class="tab-count" id="count-all">0</span></button>
+      <button class="cat-tab"        data-cat="packing"  onclick="setChecklistCat('packing',this)">🧳 Packing <span class="tab-count" id="count-packing">0</span></button>
+      <button class="cat-tab"        data-cat="outfits"  onclick="setChecklistCat('outfits',this)">👗 Outfits <span class="tab-count" id="count-outfits">0</span></button>
+      <button class="cat-tab"        data-cat="supplies" onclick="setChecklistCat('supplies',this)">🔧 Supplies <span class="tab-count" id="count-supplies">0</span></button>
+      <button class="cat-tab"        data-cat="food"     onclick="setChecklistCat('food',this)">🍔 Food <span class="tab-count" id="count-food">0</span></button>
+      <button class="cat-tab"        data-cat="plans"    onclick="setChecklistCat('plans',this)">📋 Plans <span class="tab-count" id="count-plans">0</span></button>
+      <button class="cat-tab"        data-cat="todo"     onclick="setChecklistCat('todo',this)">✅ To-Do <span class="tab-count" id="count-todo">0</span></button>
+    </div>
+    <div class="add-form">
+      <div class="add-form-inner">
+        <div class="add-row">
+          <input class="add-input" id="clAddInput" type="text" placeholder="Add an item…" autocomplete="off" maxlength="120" onkeydown="if(event.key==='Enter')addChecklistItem()">
+          <button class="add-btn-main" onclick="addChecklistItem()">+ Add</button>
+        </div>
+        <div class="add-meta-row">
+          <select class="add-select" id="clAddCat">
+            <option value="packing">🧳 Packing</option>
+            <option value="outfits">👗 Outfits</option>
+            <option value="supplies">🔧 Supplies</option>
+            <option value="food">🍔 Food &amp; Drink</option>
+            <option value="plans">📋 Plans</option>
+            <option value="todo">✅ To-Do</option>
+          </select>
+          <input class="add-date-input" id="clAddDate" type="date" title="Date (optional)">
+          <input class="add-date-input" id="clAddTime" type="time" title="Time (optional)" style="max-width:120px;">
+        </div>
+      </div>
+    </div>
+    <div class="preset-section" id="presetSection">
+      <div class="preset-title">✨ Quick-add preset packs</div>
+      <div class="preset-grid">
+        <button class="preset-pack" onclick="addPreset('festival-basics')">🎪 Festival Basics</button>
+        <button class="preset-pack" onclick="addPreset('outfit-essentials')">👗 Outfit Checklist</button>
+        <button class="preset-pack" onclick="addPreset('rave-kit')">🔦 Rave Kit</button>
+        <button class="preset-pack" onclick="addPreset('self-care')">💊 Self Care</button>
+        <button class="preset-pack" onclick="addPreset('food-drink')">🍔 Food &amp; Drink</button>
+        <button class="preset-pack" onclick="addPreset('tech')">🔌 Tech &amp; Charging</button>
+      </div>
+    </div>
+    <div id="clListArea"></div>
+  </div><!-- /page-checklist -->
+
+  <!-- ── GAMES PAGE ── -->
+  <div class="page" id="page-games">
+    <div class="page-header"><div class="page-title">🎮 Games</div><div class="page-sub">Festival fun — play solo or with your crew</div></div>
+    <div class="games-grid" id="gamesGrid"></div>
+  </div><!-- /page-games -->
+
+</div><!-- /app -->
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bottom-nav">
+  <span class="nav-item active" data-page="home"      onclick="navigate('home')"><div class="nav-icon-wrap">🏠</div><span class="nav-label">Home</span></span>
+  <span class="nav-item"        data-page="schedule"  onclick="navigate('schedule')"><div class="nav-icon-wrap">📅</div><span class="nav-label">Schedule</span></span>
+  <span class="nav-item"        data-page="artists"   onclick="navigate('artists')"><div class="nav-icon-wrap">🎤</div><span class="nav-label">Artists</span></span>
+  <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">🗺️</div><span class="nav-label">Map</span></span>
+  <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">✅</div><span class="nav-label">List</span></span>
+  <span class="nav-item more-trigger" onclick="toggleMore(this)"><div class="nav-icon-wrap">⋯</div><span class="nav-label">More</span></span>
+  <span class="nav-item nav-sos" onclick="openSOS()"><div class="nav-icon-wrap">🆘</div><span class="nav-label">SOS</span></span>
+</nav>
+
+<!-- ══ MORE POPOUT ══ -->
+<div class="more-overlay" id="moreOverlay">
+  <div class="more-backdrop" id="moreBackdrop" onclick="closeMore()"></div>
+  <div class="more-panel" id="morePanel">
+    <div class="more-panel-header">More Features</div>
+    <div class="more-grid">
+      <span class="more-btn games" onclick="navigate('games');closeMore()">
+        <div class="more-btn-icon">🎮</div>
+        <div class="more-btn-label">Games</div>
+        <div class="more-btn-sub">Trivia &amp; fun</div>
+      </span>
+      <span class="more-btn info" onclick="showInfo();closeMore()">
+        <div class="more-btn-icon">ℹ️</div>
+        <div class="more-btn-label">Information</div>
+        <div class="more-btn-sub">FAQ &amp; details</div>
+      </span>
+      <span class="more-btn board" onclick="showBoard();closeMore()">
+        <div class="more-btn-icon">🏴‍☠️</div>
+        <div class="more-btn-label">Mutiny Board</div>
+        <div class="more-btn-sub">Community</div>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SOS OVERLAY ══ -->
+<div class="sos-overlay" id="sosOverlay">
+  <div class="sos-backdrop" id="sosBackdrop"></div>
+  <div class="sos-panel" id="sosPanel">
+    <div class="sos-drag"></div>
+    <div class="sos-header">
+      <div class="sos-title">
+        <div class="sos-title-pulse"></div>
+        🆘 Emergency SOS
+      </div>
+      <button class="sos-close" id="sosClose">✕</button>
+    </div>
+
+    <!-- FORM -->
+    <div class="sos-body" id="sosForm">
+      <div>
+        <div class="sos-field-label">📍 Location / Room Number</div>
+        <input class="sos-input" id="sosRoom" type="text"
+          placeholder="e.g. Room 214, Poolside, Event Hall…" autocomplete="off" maxlength="80">
+      </div>
+
+      <div>
+        <div class="sos-field-label">🎛️ Nearest Stage / Area</div>
+        <select class="sos-select" id="sosStage">
+          <option value="">— Select location —</option>
+          <option value="DNB Stage (BP²)">🥁 DNB Stage (BP²)</option>
+          <option value="Oasis Stage">🌴 Oasis Stage</option>
+          <option value="Hotel Lobby">🏨 Hotel Lobby</option>
+          <option value="Poolside">🏊 Poolside / Beach</option>
+          <option value="Parking Lot">🅿️ Parking Lot</option>
+          <option value="Hotel Room">🛏️ Hotel Room</option>
+          <option value="Corridor / Hallway">🚪 Corridor / Hallway</option>
+          <option value="Outside / Grounds">🌿 Outside / Grounds</option>
+          <option value="Other">📌 Other</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="sos-field-label">📡 GPS Coordinates</div>
+        <div class="sos-gps-row">
+          <input class="sos-input" id="sosGpsDisplay" type="text"
+            placeholder="Tap button to get location" readonly style="flex:1;">
+          <button class="sos-gps-btn" id="sosGpsBtn">📡 Get GPS</button>
+        </div>
+        <div class="sos-gps-status" id="sosGpsStatus"></div>
+      </div>
+
+      <div>
+        <div class="sos-field-label">💬 Message / What's Happening</div>
+        <textarea class="sos-input" id="sosMessage" rows="3"
+          placeholder="Describe the situation clearly…" maxlength="400"></textarea>
+      </div>
+
+      <button class="sos-send-btn" id="sosSendBtn">
+        🆘 Send Emergency Alert
+      </button>
+
+      <div class="sos-disclaimer">
+        This alert is sent directly to Sunken Suite staff and security.<br>
+        For life-threatening emergencies, always call <strong style="color:var(--pink-coral);">911</strong> first.
+      </div>
+    </div>
+
+    <!-- SENT CONFIRMATION -->
+    <div class="sos-sent-screen" id="sosSentScreen" style="display:none;">
+      <div class="sos-sent-icon">✅</div>
+      <div class="sos-sent-title">Alert Sent!</div>
+      <div class="sos-sent-sub">
+        Staff have been notified and are on their way.<br>
+        Stay where you are if it's safe to do so.
+      </div>
+      <div class="sos-sent-ref" id="sosSentRef"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ARTIST MODAL ══ -->
+<div class="modal-backdrop" id="artistModal" onclick="handleModalBackdropClick(event)">
+  <div class="artist-modal" onclick="event.stopPropagation()">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <div class="modal-header-label">Artist Profile</div>
+      <button class="modal-close" id="modalClose" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-hero">
+      <div class="modal-avatar" id="modalAvatar"></div>
+      <div>
+        <div class="modal-name" id="modalName"></div>
+        <div class="modal-stage-badge" id="modalStageBadge"></div>
+        <div class="modal-genre" id="modalGenre"></div>
+      </div>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-section">
+      <div class="modal-section-title">⏰ Set Info</div>
+      <div class="set-info-row">
+        <div class="set-info-card"><div class="set-info-label">Stage</div><div class="set-info-val" id="modalStage"></div></div>
+        <div class="set-info-card"><div class="set-info-label">Set Time</div><div class="set-info-val" id="modalTime"></div></div>
+        <div class="set-info-card"><div class="set-info-label">Day</div><div class="set-info-val" id="modalDay"></div></div>
+      </div>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-section">
+      <div class="modal-section-title">📖 Bio</div>
+      <div class="modal-bio" id="modalBio"></div>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-section">
+      <div class="modal-section-title">🎵 Listen on Spotify</div>
+      <div class="spotify-embed">
+        <div class="spotify-placeholder" id="modalSpotifyText">Curated playlist from this artist</div>
+        <button class="spotify-play-btn" id="modalSpotifyBtn">▶ Open on Spotify</button>
+      </div>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-section">
+      <div class="modal-section-title">🔗 Follow</div>
+      <div class="social-row" id="modalSocials"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAP TOOLTIP ══ -->
+<div class="map-tooltip" id="mapTooltip" style="display:none;">
+  <div class="map-tooltip-name" id="mapTooltipName"></div>
+  <div class="map-tooltip-sub"  id="mapTooltipSub"></div>
+</div>
+
+<!-- ══ PWA INSTALL BANNER ══ -->
+<div class="pwa-install-banner" id="pwaInstallBanner">
+  <div class="pwa-banner-inner">
+    <div class="pwa-banner-icon">☠️</div>
+    <div class="pwa-banner-text">
+      <div class="pwa-banner-title">Install the App</div>
+      <div class="pwa-banner-sub">Add to your home screen for offline access at the festival</div>
+    </div>
+  </div>
+  <div class="pwa-banner-actions">
+    <button class="pwa-install-btn" id="pwaInstallBtn" onclick="installPWA()">Install Now</button>
+    <button class="pwa-dismiss-btn" onclick="dismissInstall()">Not now</button>
+  </div>
+</div>
+
+<!-- iOS install tip (shows on iOS Safari) -->
+<div class="pwa-install-banner ios-install-tip" id="iosInstallTip">
+  <div class="ios-tip-inner">
+    <div class="ios-tip-text">To install: tap <strong>Share ↑</strong> then <strong>"Add to Home Screen"</strong></div>
+    <button class="ios-tip-close" onclick="document.getElementById('iosInstallTip').style.display='none'">Got it</button>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   ARTIST DATABASE
+════════════════════════════════════════════════════════════ */
+const artists = {
+  "DARA":          {initials:"DA",  color:"linear-gradient(135deg,#9b3dff,#ff4d8d)",stage:"DNB Stage",  time:"11:30 PM",day:"Fri",genre:"Drum & Bass · Jungle",bio:"Dara is a legendary veteran of the drum & bass scene, revered for his deep, soulful selections and encyclopedic knowledge of jungle and DnB. A true selector whose sets feel like a journey through the genre's entire history."},
+  "DEEKLINE":      {initials:"DK",  color:"linear-gradient(135deg,#f5c842,#e8941a)",stage:"DNB Stage",  time:"10:30 PM",day:"Fri",genre:"Drum & Bass · Breakbeat",bio:"Deekline is a prolific producer and DJ whose infectious energy and genre-blending style have made him a global festival favorite. Co-founder of Utter Gutter Records, he has been pushing boundaries for over two decades."},
+  "DEGS":          {initials:"DG",  color:"linear-gradient(135deg,#00d4c8,#0a3d6b)",stage:"DNB Stage",  time:"8:00 PM", day:"Sat",genre:"Drum & Bass",bio:"Degs brings a raw, energetic approach to drum & bass, blending old school influences with a modern sound. A respected figure in the UK DnB underground with a loyal following on both sides of the Atlantic."},
+  "EVOL INTENT":   {initials:"EI",  color:"linear-gradient(135deg,#ff6b1a,#9b3dff)",stage:"DNB Stage",  time:"9:00 PM", day:"Sun",genre:"Drum & Bass · Neurofunk",bio:"Evol Intent is an Atlanta-based drum & bass collective that helped put American DnB on the map. Known for dark, hard-hitting neurofunk and legendary live energy that has powered dance floors worldwide."},
+  "GEORGIE RIOT":  {initials:"GR",  color:"linear-gradient(135deg,#ff4d8d,#f5c842)",stage:"DNB Stage",  time:"TBA",     day:"Sat",genre:"Drum & Bass · Jump-Up",bio:"Georgie Riot is known for high-energy sets packed with jump-up bangers and crowd-wrecking drops. A firm festival favorite across the UK and US who never fails to bring the party."},
+  "JFB":           {initials:"JFB", color:"linear-gradient(135deg,#9b3dff,#00d4c8)",stage:"DNB Stage",  time:"9:30 PM", day:"Fri",genre:"Drum & Bass · Scratch DJ",bio:"JFB is a multi-award winning scratch DJ and drum & bass artist. World DMC Champion, renowned for incorporating live scratching into DnB sets in a way no one else can match.",headliner:true},
+  "PHANTOM 45":    {initials:"P45", color:"linear-gradient(135deg,#3d1f8a,#9b3dff)",stage:"DNB Stage",  time:"TBA",     day:"Sat",genre:"Drum & Bass · Liquid",bio:"Phantom 45 delivers smooth, rolling liquid drum & bass with emotional depth and precise mixing. A key player in the liquid DnB movement."},
+  "RONI SIZE":     {initials:"RS",  color:"linear-gradient(135deg,#9b3dff,#6b1fcc)",stage:"DNB Stage",  time:"1:00 AM", day:"Fri",genre:"Drum & Bass · Jazz · Live",bio:"Roni Size is a Mercury Prize-winning pioneer of drum & bass. His Reprazent project revolutionized the genre by fusing jazz, hip-hop and DnB. Every set is a masterclass.",headliner:true},
+  "SPOR":          {initials:"SP",  color:"linear-gradient(135deg,#ff6b1a,#9b3dff)",stage:"DNB Stage",  time:"1:00 AM", day:"Sat",genre:"Drum & Bass · Neurofunk",bio:"Spor is one of the most technically gifted producers in drum & bass. Known for impossibly tight engineering and devastating live power.",headliner:true},
+  "BICLOPS":       {initials:"BI",  color:"linear-gradient(135deg,#00d4c8,#f5c842)",stage:"DNB Stage",  time:"TBA",     day:"Fri",genre:"Drum & Bass",bio:"Biclops brings an energetic, forward-thinking approach to drum & bass with sets that hit hard from start to finish."},
+  "COEXIST":       {initials:"CX",  color:"linear-gradient(135deg,#9b3dff,#00d4c8)",stage:"DNB Stage",  time:"TBA",     day:"Fri",genre:"Drum & Bass",bio:"Coexist crafts sonic journeys through the DnB landscape, weaving liquid and hard styles seamlessly."},
+  "DADAM":         {initials:"DD",  color:"linear-gradient(135deg,#ff6b1a,#9b3dff)",stage:"DNB Stage",  time:"TBA",     day:"Fri",genre:"Drum & Bass",bio:"Dadam is a versatile DnB artist whose diverse selections keep dance floors guessing and moving."},
+  "J. PHLIP":      {initials:"JP",  color:"linear-gradient(135deg,#9b3dff,#f5c842)",stage:"Oasis Stage",time:"1:00 AM", day:"Fri",genre:"House · Techno",bio:"J. Phlip is a San Francisco-based DJ and producer whose deep, hypnotic house and techno sets have made her a global headliner.",headliner:true},
+  "CARLO LIO":     {initials:"CL",  color:"linear-gradient(135deg,#ff4d8d,#9b3dff)",stage:"Oasis Stage",time:"10:30 PM",day:"Fri",genre:"Techno · House",bio:"Carlo Lio is a Canadian DJ and producer whose relentless techno and house output keeps dance floors locked in for hours."},
+  "CODES":         {initials:"CO",  color:"linear-gradient(135deg,#00d4c8,#041d3a)",stage:"Oasis Stage",time:"11:30 PM",day:"Fri",genre:"House · Breaks",bio:"Codes fuses classic house structures with modern breakbeat energy, creating a unique sound that bridges generations of dance music."},
+  "THE SPONGES":   {initials:"TS",  color:"linear-gradient(135deg,#f5c842,#00d4c8)",stage:"Oasis Stage",time:"9:30 PM", day:"Fri",genre:"House · Funk",bio:"The Sponges absorb the best of house, funk and disco and wring it out onto the dance floor in joyous, groove-heavy sets."},
+  "CHANANAGAINS":  {initials:"CH",  color:"linear-gradient(135deg,#f5c842,#9b3dff)",stage:"Oasis Stage",time:"TBA",     day:"Fri",genre:"House · Breaks",bio:"Chananagains brings a dancefloor-first philosophy, reading the room with precision and dropping tracks that never miss."},
+  "COLLIN IN KIND":{initials:"CIK", color:"linear-gradient(135deg,#ff4d8d,#f5c842)",stage:"Oasis Stage",time:"TBA",     day:"Fri",genre:"House · Deep",bio:"Collin In Kind explores the deeper, more introspective side of house music, crafting emotional late-night journeys."},
+  "GAVIN QUINN":   {initials:"GQ",  color:"linear-gradient(135deg,#f5c842,#ff4d8d)",stage:"Oasis Stage",time:"TBA",day:"Fri",genre:"House · Tech House",bio:"Gavin Quinn's tech-house selections are perfectly crafted for peak-hour dance floors with precision and groove."},
+
+  // ── DNB STAGE — CONFIRMED FROM FLYER ──
+  "UNGLUED":           {initials:"UN",  color:"linear-gradient(135deg,#ff4d8d,#9b3dff)",stage:"DNB Stage",  time:"TBA",day:"TBA",genre:"Drum & Bass",bio:"Unglued is a powerhouse of the drum & bass scene, known for energetic, technically precise sets that keep dance floors locked in from first drop to last."},
+
+  // ── OASIS STAGE — CONFIRMED FROM FLYER ──
+  "GETTOBLASTER":      {initials:"GB",  color:"linear-gradient(135deg,#00d4c8,#9b3dff)",stage:"Oasis Stage",time:"TBA",day:"TBA",genre:"House · Electro",bio:"Gettoblaster brings a high-voltage blend of electro house and club-ready sounds that ignite any dance floor."},
+  "KRAFTY KUTZ":       {initials:"KK",  color:"linear-gradient(135deg,#f5c842,#00d4c8)",stage:"Oasis Stage",time:"TBA",day:"TBA",genre:"House · Breaks",bio:"Krafty Kutz is a legendary selector in the breaks and house world, renowned for infectious grooves and expert programming."},
+  "MADAM X":           {initials:"MX",  color:"linear-gradient(135deg,#ff4d8d,#f5c842)",stage:"Oasis Stage",time:"TBA",day:"TBA",genre:"House · Techno",bio:"Madam X delivers dark, hypnotic house and techno sets built for the deepest hours of the night."},
+  "UNIQU3":            {initials:"U3",  color:"linear-gradient(135deg,#9b3dff,#ff4d8d)",stage:"Oasis Stage",time:"TBA",day:"TBA",genre:"House · Breaks",bio:"Uniqu3 crafts unique sonic journeys through house and breaks, blending classic foundations with forward-thinking selections."},
+
+  // ── MID-TIER — CONFIRMED FROM FLYER ──
+  "DALI":              {initials:"DL",  color:"linear-gradient(135deg,#f5c842,#9b3dff)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic",bio:"Dali brings a visionary approach to the dance floor, blending surreal soundscapes with driving rhythms."},
+  "D. BROWN":          {initials:"DB",  color:"linear-gradient(135deg,#00d4c8,#ff4d8d)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic",bio:"D. Brown is a versatile artist whose deep musical knowledge translates into sets that hit the sweet spot every time."},
+  "DEMIEN SIXX":       {initials:"DS",  color:"linear-gradient(135deg,#9b3dff,#ff6b1a)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic",bio:"Demien Sixx delivers heavy, purposeful selections that build and release with surgical precision."},
+  "GRUV 42":           {initials:"G42", color:"linear-gradient(135deg,#ff6b1a,#f5c842)",stage:"TBA",        time:"TBA",day:"TBA",genre:"House · Groove",bio:"Gruv 42 lives up to the name — pure groove-driven house that keeps bodies moving from start to finish."},
+  "LAST ACTION HEROES":{initials:"LAH", color:"linear-gradient(135deg,#ff4d8d,#9b3dff)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic",bio:"Last Action Heroes bring cinematic energy and action-packed selections to every performance."},
+  "LENORE":            {initials:"LE",  color:"linear-gradient(135deg,#9b3dff,#00d4c8)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic",bio:"Lenore's sets are emotionally charged journeys through the deeper, more introspective side of electronic music."},
+  "OSCILLOT":          {initials:"OS",  color:"linear-gradient(135deg,#00d4c8,#9b3dff)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic",bio:"Oscillot generates waves of sound that ripple through a crowd, with selections that oscillate between tension and release."},
+  "PAPA RUNKZ":        {initials:"PR",  color:"linear-gradient(135deg,#f5c842,#ff4d8d)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic · Bass",bio:"Papa Runkz commands the floor with heavy bass-driven selections and an undeniable sense of funk."},
+  "SOAPPY":            {initials:"SO",  color:"linear-gradient(135deg,#00d4c8,#f5c842)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic",bio:"Soappy brings a clean, slick style to the decks — crisp selections and spotless mixing that float across the dance floor."},
+  "STEPPO":            {initials:"ST",  color:"linear-gradient(135deg,#ff6b1a,#9b3dff)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic",bio:"Steppo steps up with bold, confident selections and a commanding presence behind the decks."},
+  "TARI":              {initials:"TR",  color:"linear-gradient(135deg,#9b3dff,#f5c842)",stage:"TBA",        time:"TBA",day:"TBA",genre:"Electronic",bio:"Tari weaves intricate patterns of sound into sets that feel both meticulously crafted and effortlessly natural."},
+
+  // ── SUPPORT — CONFIRMED FROM FLYER ──
+  "DJ SEAMUS":         {initials:"DJS", color:"linear-gradient(135deg,#00d4c8,#ff4d8d)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"DJ Seamus brings years of experience and an instinctive feel for the crowd to every performance."},
+  "EDDIE MERCED":      {initials:"EM",  color:"linear-gradient(135deg,#f5c842,#9b3dff)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Eddie Merced delivers sharp, well-crafted sets drawn from a deep well of musical knowledge."},
+  "EXZACKTO":          {initials:"EX",  color:"linear-gradient(135deg,#ff4d8d,#f5c842)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Exzackto brings razor-sharp precision and exactly the right track at exactly the right moment."},
+  "GREEN JEANS":       {initials:"GJ",  color:"linear-gradient(135deg,#4ade80,#00d4c8)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic · House",bio:"Green Jeans keeps things fresh and funky, with a laid-back style that disguises serious technical skill."},
+  "HONEY BUNCHES OF BEATS":{initials:"HBB",color:"linear-gradient(135deg,#f5c842,#ff6b1a)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic · Funk",bio:"Honey Bunches of Beats serves up sweet, funky selections that are impossible not to move to."},
+  "K COMPLEX":         {initials:"KC",  color:"linear-gradient(135deg,#9b3dff,#00d4c8)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"K Complex navigates the deeper layers of electronic music with intelligence and depth."},
+  "KOHAKU":            {initials:"KO",  color:"linear-gradient(135deg,#ff6b1a,#f5c842)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Kohaku brings an amber warmth to their sets — rich, glowing soundscapes built for late-night dance floors."},
+  "KREESAY":           {initials:"KR",  color:"linear-gradient(135deg,#ff4d8d,#9b3dff)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Kreesay creates infectious grooves that build in intensity and leave the crowd wanting more."},
+  "KUNAII":            {initials:"KU",  color:"linear-gradient(135deg,#00d4c8,#9b3dff)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Kunaii crafts immersive sets that take listeners on a journey through texture, rhythm and feeling."},
+  "LOUD NOISES!":      {initials:"LN",  color:"linear-gradient(135deg,#ff4d8d,#ff6b1a)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic · Bass",bio:"Loud Noises! does exactly what it says — massive, high-energy sets that shake walls and rattle bones."},
+  "LOWKEE":            {initials:"LK",  color:"linear-gradient(135deg,#9b3dff,#ff4d8d)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Don't let the name fool you — Lowkee's sets are anything but understated, with devastating drops hidden in plain sight."},
+  "MCCOOEY":           {initials:"MC",  color:"linear-gradient(135deg,#f5c842,#00d4c8)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"McCooey brings a cool, effortless style to the decks with selections that feel perfectly natural."},
+  "MENTALLY ILL":      {initials:"MI",  color:"linear-gradient(135deg,#9b3dff,#ff6b1a)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic · Bass",bio:"Mentally Ill pushes the boundaries of what dance music can be — chaotic, brilliant and totally compelling."},
+  "MISS HAZE":         {initials:"MH",  color:"linear-gradient(135deg,#ff4d8d,#9b3dff)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Miss Haze wraps the dance floor in a haze of perfectly chosen records, each one leading seamlessly to the next."},
+  "MO' BACON":         {initials:"MB",  color:"linear-gradient(135deg,#ff6b1a,#f5c842)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic · House",bio:"Mo' Bacon serves up extra helpings of groove and funk — sizzling sets that keep the dance floor fed all night."},
+  "NICK MINIERI":      {initials:"NM",  color:"linear-gradient(135deg,#00d4c8,#f5c842)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Nick Minieri brings a refined, mature approach to the decks, with selections that reward attentive listeners."},
+  "NOTORIOUS CHOW":    {initials:"NC",  color:"linear-gradient(135deg,#f5c842,#ff4d8d)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Notorious Chow is infamous for serving up sets that are impossible to resist — flavourful, unpredictable and always satisfying."},
+  "ORIGINATE":         {initials:"OR",  color:"linear-gradient(135deg,#9b3dff,#00d4c8)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Originate goes back to the source — drawing from deep roots to create something fresh and vital every time."},
+  "PAULYWOG":          {initials:"PW",  color:"linear-gradient(135deg,#00d4c8,#ff4d8d)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Paulywog hops between styles and tempos with ease, creating sets full of surprises and unexpected delights."},
+  "QUEERVOYANT":       {initials:"QV",  color:"linear-gradient(135deg,#ff4d8d,#9b3dff)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Queervoyant sees the dance floor's future — visionary sets that feel both ahead of their time and deeply grounded."},
+  "RED DAWN":          {initials:"RD",  color:"linear-gradient(135deg,#ff4d8d,#ff6b1a)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Red Dawn rises with blazing energy, lighting up the dance floor with an intensity that only builds as the set progresses."},
+  "SESH":              {initials:"SE",  color:"linear-gradient(135deg,#9b3dff,#ff4d8d)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Sesh knows how to hold a crowd — long, deep, immersive sets that make time disappear on the dance floor."},
+  "SINGLE GRIND":      {initials:"SG",  color:"linear-gradient(135deg,#f5c842,#9b3dff)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Single Grind brings a focused, singular vision to every performance — no filler, just pure, uncut dance music."},
+  "SLAYTOVEN":         {initials:"SL",  color:"linear-gradient(135deg,#9b3dff,#ff6b1a)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Slaytoven composes chaos into something beautiful — sets that are both devastating and deeply musical."},
+  "SOKOMODO":          {initials:"SK",  color:"linear-gradient(135deg,#00d4c8,#f5c842)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Sokomodo moves through the musical jungle with power and grace, selecting tracks that feel primal and unstoppable."},
+  "SYNESTHESIA":       {initials:"SY",  color:"linear-gradient(135deg,#ff4d8d,#00d4c8)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Synesthesia makes you feel the music in colors — sets so immersive they trigger every sense simultaneously."},
+  "TIMMOLOGY":         {initials:"TM",  color:"linear-gradient(135deg,#f5c842,#ff4d8d)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Timmology applies a scientific precision to the art of DJing — every selection calculated to maximize dance floor impact."},
+  "VALDEE":            {initials:"VA",  color:"linear-gradient(135deg,#9b3dff,#f5c842)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Valdee brings undeniable value to every set — well-chosen records delivered with confidence and flair."},
+  "WHO:IS":            {initials:"WI",  color:"linear-gradient(135deg,#00d4c8,#9b3dff)",stage:"TBA",time:"TBA",day:"TBA",genre:"Electronic",bio:"Who:Is remains an enigma — mysterious selections that keep the crowd guessing and always wanting more."},
+
+  // ── EMCEES ──
+  "JOSIAH SCRIBES":    {initials:"JS",  color:"linear-gradient(135deg,#f5c842,#ff4d8d)",stage:"DNB Stage",  time:"All Night",day:"All",genre:"Emcee",bio:"Josiah Scribes is an accomplished emcee whose fluid delivery and infectious energy amplify every set he graces."},
+  "ELIJAH DIVINE":     {initials:"ED",  color:"linear-gradient(135deg,#9b3dff,#f5c842)",stage:"DNB Stage",  time:"All Night",day:"All",genre:"Emcee",bio:"Elijah Divine brings divine lyrical energy to the dance floor — a master emcee who elevates every performance he touches."},
+};
+
+/* ════════════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════════════ */
+const MY_SCHED_KEY = 'ss_my_schedule_v2';
+const CHECKLIST_KEY = 'ss_checklist_v2';
+const PWA_DISMISSED_KEY = 'ss_pwa_dismissed';
+
+let currentPage = 'home';
+let schedCurrentDay = 'fri';
+let schedStageFilter = 'all';
+let schedView = 'grid';
+let artistFilter = 'all';
+let checklistCat = 'all';
+let gpsCoords = null;
+let deferredInstallPrompt = null;
+
+function getMySchedule() {
+  try { return JSON.parse(localStorage.getItem(MY_SCHED_KEY)) || []; } catch(e) { return []; }
+}
+function saveMySchedule(arr) {
+  localStorage.setItem(MY_SCHED_KEY, JSON.stringify(arr));
+}
+function getChecklist() {
+  try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || []; } catch(e) { return []; }
+}
+function saveChecklist(arr) {
+  localStorage.setItem(CHECKLIST_KEY, JSON.stringify(arr));
+}
+function toggleSaved(key) {
+  let mine = getMySchedule();
+  const idx = mine.indexOf(key);
+  if (idx === -1) { mine.push(key); showToast('⭐ ' + key + ' added to your schedule'); }
+  else { mine.splice(idx, 1); showToast('Removed ' + key + ' from your schedule'); }
+  saveMySchedule(mine);
+  refreshAllAddBtns();
+  if (currentPage === 'home') renderMySchedWidget();
+}
+
+/* ════════════════════════════════════════════════════════════
+   ROUTER
+════════════════════════════════════════════════════════════ */
+function navigate(page) {
+  if (currentPage === page) return;
+  const prev = document.getElementById('page-' + currentPage);
+  const next = document.getElementById('page-' + page);
+  if (!next) return;
+  if (prev) { prev.classList.remove('active'); }
+  next.classList.add('active');
+  next.classList.add('page-enter');
+  setTimeout(() => next.classList.remove('page-enter'), 300);
+  // Scroll to top
+  next.scrollTop = 0;
+  currentPage = page;
+  updateNavActive(page);
+  // Lazy init pages on first visit
+  if (page === 'schedule') initSchedule();
+  if (page === 'artists') initArtists();
+  if (page === 'games') initGames();
+  if (page === 'checklist') renderChecklist();
+  // Update URL hash for deep-linking
+  window.location.hash = page;
+}
+
+function updateNavActive(page) {
+  document.querySelectorAll('[data-page]').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === page);
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   HOME — COUNTDOWN
+════════════════════════════════════════════════════════════ */
+(function() {
+  const FEST = new Date('2026-07-17T21:00:00-04:00');
+  function pad(n) { return String(n).padStart(2,'0'); }
+  function tick() {
+    const now = new Date(), diff = FEST - now;
+    const el = document.getElementById('countdown-label');
+    if (!el) return;
+    if (diff <= 0) {
+      const end = new Date('2026-07-20T04:00:00-04:00');
+      if (new Date() < end) {
+        el.textContent = '🔥 FESTIVAL IS LIVE';
+        document.getElementById('cd-days').textContent='00';
+        document.getElementById('cd-hours').textContent='00';
+        document.getElementById('cd-mins').textContent='00';
+        document.getElementById('cd-secs').textContent='00';
+      } else {
+        el.textContent = 'SEE YOU NEXT YEAR';
+      }
+      return;
+    }
+    const d = Math.floor(diff/86400000), h = Math.floor((diff%86400000)/3600000);
+    const m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
+    document.getElementById('cd-days').textContent = pad(d);
+    document.getElementById('cd-hours').textContent = pad(h);
+    document.getElementById('cd-mins').textContent = pad(m);
+    document.getElementById('cd-secs').textContent = pad(s);
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+/* ── My Schedule Widget (home) ── */
+function renderMySchedWidget() {
+  const mine = getMySchedule();
+  const listEl = document.getElementById('mySchedList');
+  const emptyEl = document.getElementById('mySchedEmpty');
+  if (!listEl) return;
+  if (!mine.length) { listEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
+  emptyEl.style.display = 'none';
+  const days = {Fri:[],Sat:[],Sun:[],TBA:[]};
+  mine.forEach(k => { const a = artists[k]; if (a) (days[a.day]||days.TBA).push(k); });
+  const dayLabels = {Fri:'🎉 Friday · Jul 17',Sat:'🎉 Saturday · Jul 18',Sun:'🎉 Sunday · Jul 19',TBA:'📌 Day TBA'};
+  const dotColors = {'DNB Stage':'#9b3dff','Oasis Stage':'#00d4c8'};
+  let html = '';
+  Object.entries(days).forEach(([day,keys]) => {
+    if (!keys.length) return;
+    html += `<div class="sched-stage-header">${dayLabels[day]}</div>`;
+    keys.forEach(key => {
+      const a = artists[key]; if (!a) return;
+      const dot = dotColors[a.stage]||'#888';
+      html += `<div class="schedule-item" onclick="openArtist('${esc(key)}')">`+
+        `<div class="sched-time" style="font-size:12px;font-weight:700;color:var(--teal-glow);min-width:44px;">${a.time||'TBA'}</div>`+
+        `<div class="sched-dot" style="background:${dot};width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>`+
+        `<div class="sched-info" style="flex:1;"><div class="sched-artist">${key}</div><div class="sched-stage">${a.stage}</div></div>`+
+        `<span class="sched-arrow">›</span></div>`;
+    });
+  });
+  listEl.innerHTML = html;
+}
+
+/* ── Featured artists ── */
+(function() {
+  const HEADLINERS = ['RONI SIZE','SPOR','J. PHLIP'];
+  const ALL_KEYS = Object.keys(artists);
+  const today = new Date();
+  const seed = today.getFullYear()*10000+(today.getMonth()+1)*100+today.getDate();
+  function sr(s){let x=s^0xdeadbeef;x=((x>>>16)^x)*0x45d9f3b|0;x=((x>>>16)^x)*0x45d9f3b|0;return((x>>>16)^x)>>>0/0xffffffff;}
+  const picked=[]; picked.push(HEADLINERS[Math.floor(sr(seed)*HEADLINERS.length)]);
+  const pool=ALL_KEYS.filter(k=>!picked.includes(k)); let s2=seed*31+7;
+  while(picked.length<3&&pool.length>0){const i=Math.floor(sr(s2)*pool.length);picked.push(pool.splice(i,1)[0]);s2=s2*31+13;}
+  const stageClass={'DNB Stage':'stage-dnb','Oasis Stage':'stage-oasis'};
+  const hlSet=new Set(HEADLINERS);
+  const html=picked.map(key=>{const a=artists[key];if(!a)return'';
+    const sc=stageClass[a.stage]||'stage-dnb';const isHL=hlSet.has(key);
+    const dl={Fri:'Fri 7/17',Sat:'Sat 7/18',Sun:'Sun 7/19',TBA:'TBA'}[a.day]||a.day;
+    const am=a.color.match(/#[0-9a-fA-F]{6}/);const acc=am?am[0]+'12':'rgba(155,61,255,0.07)';
+    return `<div class="featured-card" onclick="openArtist('${esc(key)}')" style="--card-accent:${acc};">`+
+      `<div class="featured-avatar" style="background:${a.color};">${a.initials}</div>`+
+      `<div class="featured-body"><div class="featured-name">${key}</div><div class="featured-genre">${a.genre}</div>`+
+      `<div class="featured-meta"><span class="featured-badge ${sc}">${a.stage}</span>`+
+      `${isHL?'<span class="featured-badge headliner">⭐ Headliner</span>':''}`+
+      `<span class="featured-badge" style="background:rgba(122,184,224,0.1);color:var(--text-muted);">${dl}</span></div></div>`+
+      `<span class="featured-arrow">›</span></div>`;
+  }).join('');
+  const el=document.getElementById('featuredArtists');if(el)el.innerHTML=html;
+})();
+
+/* ── Direction URLs ── */
+(function() {
+  const addr = encodeURIComponent('Sturbridge Host Hotel 366 Main St Sturbridge MA 01566');
+  const lat = 42.1167, lng = -72.0898;
+  const g = `https://maps.google.com/?q=${addr}`;
+  const ap = `http://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+  ['homeDirGoogle','mapDirGoogle'].forEach(id=>{const el=document.getElementById(id);if(el)el.href=g;});
+  ['homeDirApple','mapDirApple'].forEach(id=>{const el=document.getElementById(id);if(el)el.href=ap;});
+})();
+
+/* ════════════════════════════════════════════════════════════
+   SCHEDULE PAGE
+════════════════════════════════════════════════════════════ */
+let scheduleInitted = false;
+function initSchedule() {
+  if (scheduleInitted) { renderSchedule(); return; }
+  scheduleInitted = true;
+  renderSchedule();
+}
+
+const SCHEDULE_DATA = {
+  fri: {
+    dnb: [
+      {artist:'JFB',time:'9:30 PM',headliner:true},
+      {artist:'DEEKLINE',time:'10:30 PM'},
+      {artist:'DARA',time:'11:30 PM'},
+      {artist:'RONI SIZE',time:'1:00 AM',headliner:true},
+      {artist:'BICLOPS',time:'TBA'},
+      {artist:'COEXIST',time:'TBA'},
+      {artist:'DADAM',time:'TBA'},
+    ],
+    oasis: [
+      {artist:'THE SPONGES',time:'9:30 PM'},
+      {artist:'CARLO LIO',time:'10:30 PM'},
+      {artist:'CODES',time:'11:30 PM'},
+      {artist:'J. PHLIP',time:'1:00 AM',headliner:true},
+      {artist:'CHANANAGAINS',time:'TBA'},
+      {artist:'COLLIN IN KIND',time:'TBA'},
+      {artist:'GAVIN QUINN',time:'TBA'},
+    ]
+  },
+  sat: {
+    dnb: [
+      {artist:'DEGS',time:'8:00 PM'},
+      {artist:'GEORGIE RIOT',time:'TBA'},
+      {artist:'PHANTOM 45',time:'TBA'},
+      {artist:'SPOR',time:'1:00 AM',headliner:true},
+    ],
+    oasis: []
+  },
+  sun: {
+    dnb: [
+      {artist:'EVOL INTENT',time:'9:00 PM'},
+    ],
+    oasis: []
+  }
+};
+
+function renderSchedule() {
+  const day = schedCurrentDay;
+  const listWrap = document.getElementById('listViewWrap');
+  const gridWrap = document.getElementById('blockViewWrap');
+  const myPage   = document.getElementById('mySchedPage');
+  const search   = (document.getElementById('schedSearchInput')||{}).value||'';
+
+  listWrap.style.display = 'none';
+  gridWrap.style.display = 'none';
+  myPage.style.display = 'none';
+
+  if (day === 'mine') {
+    myPage.style.display = 'block';
+    renderMySchedPage();
+    return;
+  }
+
+  const data = SCHEDULE_DATA[day];
+  if (!data) return;
+  const mine = getMySchedule();
+  const q = search.toLowerCase();
+
+  function matchArtist(key) {
+    if (!q) return true;
+    const a = artists[key]||{};
+    return (key+' '+(a.genre||'')+(a.stage||'')).toLowerCase().includes(q);
+  }
+  function shouldShowStage(stage) {
+    if (schedStageFilter === 'all') return true;
+    if (schedStageFilter === 'dnb' && stage === 'dnb') return true;
+    if (schedStageFilter === 'oasis' && stage === 'oasis') return true;
+    return false;
+  }
+
+  if (schedView === 'list') {
+    listWrap.style.display = 'block';
+    let html = '';
+    ['dnb','oasis'].forEach(stage => {
+      if (!shouldShowStage(stage)) return;
+      const items = (data[stage]||[]).filter(item => matchArtist(item.artist));
+      if (!items.length) return;
+      const stageName = stage === 'dnb' ? '🥁 DNB Stage — Hosted by BP²' : '🌴 Oasis Stage';
+      html += `<div class="stage-section"><div class="stage-section-header ${stage}">`+
+        `<div class="stage-dot" style="background:${stage==='dnb'?'#9b3dff':'#00d4c8'};"></div>${stageName}</div>`+
+        `<div class="sched-list">`;
+      items.forEach(item => {
+        const a = artists[item.artist]||{};
+        const saved = mine.includes(item.artist);
+        const hl = item.headliner ? 'headliner' : (stage==='oasis'&&item.headliner?'oasis-headliner':'');
+        html += `<div class="sched-item ${hl}" onclick="openArtist('${esc(item.artist)}')">`+
+          `<div class="item-time">${item.time.replace(' PM','<div class="ampm">PM</div>').replace(' AM','<div class="ampm">AM</div>')}</div>`+
+          `<div class="item-avatar" style="background:${a.color||'#333'};">${a.initials||'?'}</div>`+
+          `<div class="item-info"><div class="item-name">${item.artist}${item.headliner?'<span class="item-headliner-badge">HEADLINER</span>':''}</div>`+
+          `<div class="item-meta">${a.genre||''}</div></div>`+
+          `<div class="item-actions"><span class="item-arrow">›</span>`+
+          `<button class="add-btn ${saved?'added':''}" data-key="${esc(item.artist)}" onclick="event.stopPropagation();toggleSaved('${esc(item.artist)}')">${saved?'✓':'+'}</button></div></div>`;
+      });
+      html += '</div></div>';
+    });
+    document.getElementById('schedListContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon">🔍</div>No artists match your search.</div>';
+  } else {
+    gridWrap.style.display = 'block';
+    const stages = [];
+    if (shouldShowStage('dnb')) stages.push({key:'dnb',name:'🥁 DNB Stage',color:'#9b3dff'});
+    if (shouldShowStage('oasis')) stages.push({key:'oasis',name:'🌴 Oasis Stage',color:'#00d4c8'});
+    let html = `<div class="tg-grid" style="grid-template-columns:repeat(${stages.length},1fr);">`;
+    stages.forEach(st => {
+      html += `<div><div class="tg-col-header" style="color:${st.color};">${st.name}</div>`;
+      const items = (data[st.key]||[]).filter(i=>matchArtist(i.artist)&&i.time!=='TBA');
+      const tbas  = (data[st.key]||[]).filter(i=>matchArtist(i.artist)&&i.time==='TBA');
+      items.forEach(item => {
+        const a = artists[item.artist]||{};
+        const saved = mine.includes(item.artist);
+        html += `<div class="tg-block ${st.key}-block${item.headliner?' headliner-block':''}" onclick="openArtist('${esc(item.artist)}')">`+
+          `<div class="tg-block-time">${item.time}</div>`+
+          `<div class="tg-block-name">${item.artist}</div>`+
+          `<div class="tg-block-genre">${(a.genre||'').split('·')[0].trim()}</div>`+
+          `<button class="tg-block-add ${saved?'added':''}" data-key="${esc(item.artist)}" onclick="event.stopPropagation();toggleSaved('${esc(item.artist)}')">${saved?'✓':'+'}</button></div>`;
+      });
+      if (tbas.length) {
+        html += `<div class="tg-tba-section"><div class="tg-tba-heading">TBA</div>`;
+        tbas.forEach(item=>{
+          const saved=mine.includes(item.artist);
+          html+=`<div class="tg-tba-block" onclick="openArtist('${esc(item.artist)}')">`+
+            `<div class="tg-tba-name">${item.artist}</div>`+
+            `<button class="tg-block-add ${saved?'added':''}" style="position:static;width:18px;height:18px;font-size:12px;" data-key="${esc(item.artist)}" onclick="event.stopPropagation();toggleSaved('${esc(item.artist)}')">${saved?'✓':'+'}</button></div>`;
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+    document.getElementById('schedGridContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon">🔍</div>No artists match your search.</div>';
+  }
+}
+
+function renderMySchedPage() {
+  const mine = getMySchedule();
+  const listEl = document.getElementById('mySchedPageList');
+  const emptyEl = document.getElementById('mySchedPageEmpty');
+  if (!mine.length) { listEl.innerHTML=''; emptyEl.style.display='block'; return; }
+  emptyEl.style.display = 'none';
+  const days={Fri:[],Sat:[],Sun:[],TBA:[]};
+  mine.forEach(k=>{const a=artists[k];if(a)(days[a.day]||days.TBA).push(k);});
+  const dayLabels={Fri:'🎉 Friday · Jul 17',Sat:'🎉 Saturday · Jul 18',Sun:'🎉 Sunday · Jul 19',TBA:'📌 Day TBA'};
+  let html='';
+  Object.entries(days).forEach(([day,keys])=>{
+    if(!keys.length)return;
+    html+=`<div class="sched-stage-header">${dayLabels[day]}</div>`;
+    keys.forEach(key=>{
+      const a=artists[key];if(!a)return;
+      const dot={'DNB Stage':'#9b3dff','Oasis Stage':'#00d4c8'}[a.stage]||'#888';
+      html+=`<div class="sched-item" onclick="openArtist('${esc(key)}')">`+
+        `<div class="item-time" style="font-size:12px;">${a.time||'TBA'}</div>`+
+        `<div class="item-avatar" style="background:${a.color};width:32px;height:32px;font-size:10px;">${a.initials}</div>`+
+        `<div class="item-info"><div class="item-name">${key}</div><div class="item-meta">${a.stage}</div></div>`+
+        `<button class="add-btn added" data-key="${esc(key)}" onclick="event.stopPropagation();toggleSaved('${esc(key)}')">✓</button></div>`;
+    });
+  });
+  listEl.innerHTML=html;
+}
+
+function switchDay(day, btn) {
+  schedCurrentDay = day;
+  document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderSchedule();
+}
+function filterStage(s, btn) {
+  schedStageFilter = s;
+  document.querySelectorAll('.stage-pill').forEach(p=>{p.classList.remove('on');});
+  btn.classList.add('on');
+  renderSchedule();
+}
+function filterSchedule() { renderSchedule(); }
+function setView(v) {
+  schedView = v;
+  document.getElementById('viewListBtn').classList.toggle('active', v==='list');
+  document.getElementById('viewGridBtn').classList.toggle('active', v==='grid');
+  renderSchedule();
+}
+
+/* ── Calendar Export ── */
+function exportGCal() {
+  const mine = getMySchedule();
+  if (!mine.length) { showToast('No artists in your schedule yet!'); return; }
+  const a = artists[mine[0]];
+  if (!a) return;
+  const dtStr = '20260717T210000';
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Sunken+Suite+2026&dates=${dtStr}/${dtStr}&details=My+festival+schedule&location=366+Main+St+Sturbridge+MA+01566`;
+  window.open(url, '_blank');
+}
+function exportICS() {
+  const mine = getMySchedule();
+  let ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Sunken Suite//App//EN\n';
+  mine.forEach(key => {
+    const a = artists[key]; if (!a) return;
+    ics += `BEGIN:VEVENT\nSUMMARY:${key} @ Sunken Suite\nDTSTART:20260717T210000\nDTEND:20260717T230000\nLOCATION:Sturbridge Host Hotel\\, 366 Main St\\, Sturbridge MA 01566\nDESCRIPTION:${a.genre} · ${a.stage}\nEND:VEVENT\n`;
+  });
+  ics += 'END:VCALENDAR';
+  const blob = new Blob([ics], {type:'text/calendar'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'SunkenSuite2026.ics';
+  link.click();
+}
+
+/* ════════════════════════════════════════════════════════════
+   ARTISTS PAGE — PHOTO GRID
+════════════════════════════════════════════════════════════ */
+let artistsInitted = false;
+let artistLetterFilter = '';
+
+function initArtists() {
+  if (!artistsInitted) {
+    artistsInitted = true;
+    buildAZBar();
+  }
+  renderArtists();
+}
+
+function buildAZBar() {
+  const bar = document.getElementById('azBar');
+  if (!bar) return;
+  const allKeys = Object.keys(artists);
+  // Which letters actually exist
+  const usedLetters = new Set(allKeys.map(k => k[0].toUpperCase()));
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  bar.innerHTML = 
+    `<button class="az-btn active" data-letter="" onclick="setArtistLetter('',this)">ALL</button>` +
+    letters.map(l => {
+      const has = usedLetters.has(l);
+      return `<button class="az-btn${has?'':' disabled'}" data-letter="${l}" onclick="setArtistLetter('${l}',this)">${l}</button>`;
+    }).join('');
+}
+
+function setArtistLetter(letter, btn) {
+  artistLetterFilter = letter;
+  // Clear search when picking a letter
+  if (letter) { const si = document.getElementById('artistSearchInput'); if(si) si.value=''; }
+  document.querySelectorAll('.az-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    // Find the ALL button
+    const allBtn = document.querySelector('.az-btn[data-letter=""]');
+    if (allBtn) allBtn.classList.add('active');
+  }
+  renderArtists();
+}
+
+function setArtistFilter(f, btn) {
+  artistFilter = f;
+  document.querySelectorAll('.af-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  // Reset letter when changing stage/day filter
+  setArtistLetter('', document.querySelector('.az-btn[data-letter=""]'));
+  renderArtists();
+}
+
+function renderArtists() {
+  const grid = document.getElementById('artistsGrid');
+  if (!grid) return;
+  const q = ((document.getElementById('artistSearchInput')||{}).value||'').toLowerCase();
+  const mine = getMySchedule();
+  let keys = Object.keys(artists);
+
+  // Stage/day filter
+  if (artistFilter === 'dnb')   keys = keys.filter(k=>artists[k].stage==='DNB Stage');
+  if (artistFilter === 'oasis') keys = keys.filter(k=>artists[k].stage==='Oasis Stage');
+  if (artistFilter === 'fri')   keys = keys.filter(k=>artists[k].day==='Fri');
+  if (artistFilter === 'sat')   keys = keys.filter(k=>artists[k].day==='Sat');
+  if (artistFilter === 'sun')   keys = keys.filter(k=>artists[k].day==='Sun');
+  if (artistFilter === 'saved') keys = keys.filter(k=>mine.includes(k));
+
+  // Letter filter
+  if (artistLetterFilter) keys = keys.filter(k=>k[0].toUpperCase()===artistLetterFilter);
+
+  // Text search
+  if (q) keys = keys.filter(k=>(k+' '+(artists[k].genre||'')+(artists[k].stage||'')).toLowerCase().includes(q));
+
+  // Sort alphabetically
+  keys.sort((a,b)=>a.localeCompare(b));
+
+  if (!keys.length) {
+    grid.innerHTML='<div class="no-results"><div class="no-results-icon">🎤</div>No artists found.</div>';
+    return;
+  }
+
+  // Build cards
+  grid.innerHTML = keys.map(key => {
+    const a = artists[key];
+    const saved = mine.includes(key);
+    const stageLabel = a.stage === 'DNB Stage' ? 'DNB' : a.stage === 'Oasis Stage' ? 'Oasis' : '';
+    // Photo: use a.photo if set, otherwise gradient placeholder
+    const photoHTML = a.photo
+      ? `<img class="artist-card-photo" src="${a.photo}" alt="${key}" loading="lazy" onerror="this.style.display='none'">`
+      : '';
+    const placeholderHTML = `<div class="artist-card-placeholder" style="background:${a.color};">
+        <div class="artist-card-initials">${a.initials}</div>
+      </div>`;
+
+    return `<div class="artist-card" onclick="openArtist('${esc(key)}')">`+
+      placeholderHTML +
+      photoHTML +
+      `<div class="artist-card-overlay">`+
+        `<div class="artist-card-name">${key}</div>`+
+        `${stageLabel?`<div class="artist-card-stage">${stageLabel}</div>`:''}`+
+      `</div>`+
+      `${a.headliner?'<div class="artist-card-hl">⭐ Headliner</div>':''}`+
+      `<button class="artist-card-save ${saved?'added':''}" data-key="${esc(key)}" onclick="event.stopPropagation();toggleSaved('${esc(key)}')">${saved?'✓':'+'}</button>`+
+    `</div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════════════════════
+   ARTIST MODAL
+════════════════════════════════════════════════════════════ */
+function openArtist(key) {
+  const a = artists[key]; if (!a) return;
+  document.getElementById('modalAvatar').style.background = a.color;
+  document.getElementById('modalAvatar').textContent = a.initials;
+  document.getElementById('modalName').textContent = key;
+  const badge = document.getElementById('modalStageBadge');
+  badge.textContent = a.stage;
+  badge.className = 'modal-stage-badge ' + (a.stage==='DNB Stage'?'dnb':'oasis');
+  document.getElementById('modalGenre').textContent = a.genre;
+  document.getElementById('modalStage').textContent = a.stage;
+  document.getElementById('modalTime').textContent = a.time||'TBA';
+  document.getElementById('modalDay').textContent = {Fri:'Friday 7/17',Sat:'Saturday 7/18',Sun:'Sunday 7/19',TBA:'TBA'}[a.day]||a.day;
+  document.getElementById('modalBio').textContent = a.bio||'Bio coming soon.';
+  const spotifyBtn = document.getElementById('modalSpotifyBtn');
+  spotifyBtn.onclick = () => window.open('https://open.spotify.com/search/'+encodeURIComponent(key),'_blank');
+  document.getElementById('modalSocials').innerHTML =
+    `<a class="social-link" href="https://soundcloud.com/search?q=${encodeURIComponent(key)}" target="_blank" rel="noopener">🎵 SoundCloud</a>`+
+    `<a class="social-link" href="https://instagram.com/${encodeURIComponent(key.toLowerCase().replace(/\s/g,''))}" target="_blank" rel="noopener">📸 Instagram</a>`;
+  const modal = document.getElementById('artistModal');
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('artistModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleModalBackdropClick(e) {
+  if (e.target === document.getElementById('artistModal')) closeModal();
+}
+
+/* ════════════════════════════════════════════════════════════
+   CHECKLIST
+════════════════════════════════════════════════════════════ */
+const PRESETS = {
+  'festival-basics': [{cat:'packing',text:'ID / Tickets'},{cat:'packing',text:'Cash & cards'},{cat:'packing',text:'Phone charger'},{cat:'packing',text:'Ear plugs'},{cat:'packing',text:'Water bottle'},{cat:'packing',text:'Sunscreen'},{cat:'packing',text:'Rain poncho'}],
+  'outfit-essentials': [{cat:'outfits',text:'Friday night outfit'},{cat:'outfits',text:'Saturday night outfit'},{cat:'outfits',text:'Sunday outfit'},{cat:'outfits',text:'Comfortable shoes'},{cat:'outfits',text:'Layers for late night'},{cat:'outfits',text:'Hat or sunglasses'}],
+  'rave-kit': [{cat:'supplies',text:'Kandi / bracelets'},{cat:'supplies',text:'LED accessories'},{cat:'supplies',text:'Fanny pack'},{cat:'supplies',text:'Face mask or bandana'},{cat:'supplies',text:'Glow sticks'}],
+  'self-care': [{cat:'supplies',text:'Ibuprofen'},{cat:'supplies',text:'Antacids'},{cat:'supplies',text:'Electrolyte packets'},{cat:'supplies',text:'Lip balm'},{cat:'supplies',text:'Deodorant'},{cat:'supplies',text:'Hand sanitizer'}],
+  'food-drink': [{cat:'food',text:'Pre-event dinner plan'},{cat:'food',text:'Cash for vendors'},{cat:'food',text:'Snacks for the room'},{cat:'food',text:'Hydration plan'}],
+  'tech': [{cat:'supplies',text:'Phone fully charged'},{cat:'supplies',text:'Portable power bank'},{cat:'supplies',text:'Charging cables'},{cat:'supplies',text:'Earbuds or headphones'}],
+};
+
+function addPreset(pack) {
+  const items = PRESETS[pack]||[]; if (!items.length) return;
+  const list = getChecklist();
+  let added = 0;
+  items.forEach(p => { if (!list.find(i=>i.text===p.text)) { list.push({id:Date.now()+Math.random(),text:p.text,cat:p.cat,done:false,date:'',time:''}); added++; } });
+  saveChecklist(list); renderChecklist();
+  showToast(`✨ Added ${added} items`);
+}
+function addChecklistItem() {
+  const input = document.getElementById('clAddInput');
+  const text = (input.value||'').trim(); if (!text) { input.focus(); return; }
+  const cat = document.getElementById('clAddCat').value;
+  const date = document.getElementById('clAddDate').value;
+  const time = document.getElementById('clAddTime').value;
+  const list = getChecklist();
+  list.push({id:Date.now()+Math.random(),text,cat,done:false,date,time});
+  saveChecklist(list);
+  input.value = '';
+  document.getElementById('clAddDate').value = '';
+  document.getElementById('clAddTime').value = '';
+  renderChecklist();
+}
+function toggleChecklistItem(id) {
+  const list = getChecklist();
+  const item = list.find(i=>i.id==id); if (item) item.done = !item.done;
+  saveChecklist(list); renderChecklist();
+}
+function deleteChecklistItem(id) {
+  const list = getChecklist().filter(i=>i.id!=id);
+  saveChecklist(list); renderChecklist();
+}
+function setChecklistCat(cat, btn) {
+  checklistCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderChecklist();
+}
+function renderChecklist() {
+  const allItems = getChecklist();
+  const cats = ['packing','outfits','supplies','food','plans','todo'];
+  const catLabel = {packing:'🧳 Packing',outfits:'👗 Outfits',supplies:'🔧 Supplies',food:'🍔 Food & Drink',plans:'📋 Plans',todo:'✅ To-Do'};
+  const total = allItems.length, done = allItems.filter(i=>i.done).length;
+  document.getElementById('progressCount').textContent = `${done} / ${total}`;
+  document.getElementById('progressFill').style.width = total ? Math.round(done/total*100)+'%' : '0%';
+  // Tab counts
+  const countAll = document.getElementById('count-all'); if(countAll) countAll.textContent=total;
+  cats.forEach(c=>{const el=document.getElementById('count-'+c);if(el)el.textContent=allItems.filter(i=>i.cat===c).length;});
+  const listArea = document.getElementById('clListArea'); if (!listArea) return;
+  const toShow = checklistCat === 'all' ? cats : [checklistCat];
+  let html = '';
+  toShow.forEach(cat => {
+    const items = allItems.filter(i=>i.cat===cat);
+    if (!items.length) return;
+    html += `<div class="checklist-group"><div class="group-header"><div class="group-title">${catLabel[cat]}<span style="font-size:12px;color:var(--text-muted);font-weight:500;">(${items.filter(i=>i.done).length}/${items.length})</span></div></div><div class="group-items">`;
+    items.forEach(item=>{
+      html+=`<div class="cl-item${item.done?' done':''}">`+
+        `<div class="cl-check${item.done?' checked':''}" onclick="toggleChecklistItem(${item.id})">${item.done?'✓':''}</div>`+
+        `<div style="flex:1;min-width:0;"><div class="cl-text">${item.text}</div>`+
+        `${(item.date||item.time)?`<div class="cl-meta">${item.date||''} ${item.time||''}</div>`:''}` +
+        `</div><div class="cl-actions">`+
+        `<button class="cl-action-btn delete" onclick="deleteChecklistItem(${item.id})">🗑️</button></div></div>`;
+    });
+    html += '</div></div>';
+  });
+  listArea.innerHTML = html || `<div class="no-items">No items in this category yet.<br><small style="margin-top:8px;display:block;">Use the form above or a preset pack to add items.</small></div>`;
+}
+
+/* ════════════════════════════════════════════════════════════
+   GAMES PAGE
+════════════════════════════════════════════════════════════ */
+// ─────────────────────────────────────────────────────
+// GAMES — ADD NEW GAMES HERE
+// Each entry: { icon, name, desc, players, color, ready, link }
+//   ready: true  = game is live, tapping opens it
+//   ready: false = shows "coming soon" toast
+//   link:  URL to open when ready:true (optional, leave '' to use navigate())
+// ─────────────────────────────────────────────────────
+const GAMES_DATA = [
+  {icon:'🎵', name:'Music Trivia',      desc:'Test your DnB & house knowledge. How well do you know the artists?', players:'1–8 players',  color:'rgba(155,61,255,0.25)',  ready:false, link:''},
+  {icon:'🏴‍☠️', name:'Mutiny Bingo',      desc:'Festival bingo — check off what you see and hear at Sunken Suite!', players:'Any number', color:'rgba(245,200,66,0.2)',   ready:false, link:''},
+  {icon:'🎲', name:'Crew Trivia',       desc:'Random trivia battle. Play against your squad.',                       players:'2–6 players',  color:'rgba(0,212,200,0.2)',    ready:false, link:''},
+  {icon:'📸', name:'Photo Scavenger',   desc:'Find and photograph items around the festival for points.',            players:'Any number', color:'rgba(255,77,141,0.2)',   ready:false, link:''},
+  {icon:'🎯', name:'Set Prediction',    desc:'Guess which tracks artists will drop in their sets.',                  players:'1–4 players',  color:'rgba(255,107,26,0.2)',   ready:false, link:''},
+  {icon:'🃏', name:'Crew Cards',        desc:'Icebreaker card game for meeting new people at the fest.',             players:'2–8 players',  color:'rgba(74,222,128,0.15)',  ready:false, link:''},
+  // ── ADD NEW GAMES BELOW THIS LINE ──
+  {icon:'🪱', name:'Rave Worm',       desc:'Neon snake game. Eat the rave snacks, dodge yourself, survive the worm.',  players:'1 player',     color:'rgba(255,0,255,0.25)',   ready:true,  link:''},
+  // Example: {icon:'🎸', name:'Name That Drop', desc:'Identify the song from a 5-second clip.', players:'1–10 players', color:'rgba(255,77,141,0.2)', ready:false, link:''},
+];
+let gamesInitted = false;
+function initGames() {
+  if (gamesInitted) return;
+  gamesInitted = true;
+  const grid = document.getElementById('gamesGrid');
+  if (!grid) return;
+  grid.innerHTML = GAMES_DATA.map(g=>{
+    const onclick = !g.ready
+      ? `showToast('${g.name} — coming soon!')`
+      : g.link
+        ? `window.open('${g.link}','_blank')`
+        : g.name==='Rave Worm'
+          ? `openRaveworm()`
+          : `showToast('Opening ${g.name}')`;
+    const badge = g.ready
+      ? '<div class="game-badge live">&#9654; Play Now</div>'
+      : '<div class="game-badge soon">Coming Soon</div>';
+    return '<div class="game-card' + (g.ready?' game-ready':'') + '" onclick="' + onclick + '">'
+      + '<div class="game-icon" style="background:' + g.color + ';">' + g.icon + '</div>'
+      + '<div class="game-name">' + g.name + '</div>'
+      + '<div class="game-desc">' + g.desc + '</div>'
+      + '<div class="game-players">' + g.players + '</div>'
+      + badge + '</div>';
+  }).join('');
+}
+
+/* ════════════════════════════════════════════════════════════
+   NAVIGATION / DRAWER / MORE
+════════════════════════════════════════════════════════════ */
+function toggleDrawer() {
+  const drawer = document.getElementById('mobileDrawer');
+  const btn = document.getElementById('hamburgerBtn');
+  const open = drawer.classList.toggle('open');
+  btn.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeDrawer() {
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('hamburgerBtn').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function toggleMore(triggerEl) {
+  const overlay = document.getElementById('moreOverlay');
+  if (overlay.classList.contains('open')) { closeMore(); return; }
+  overlay.classList.add('open');
+  document.querySelectorAll('.more-trigger').forEach(t=>t.classList.add('more-active'));
+  document.body.style.overflow = 'hidden';
+}
+function closeMore() {
+  document.getElementById('moreOverlay').classList.remove('open');
+  document.querySelectorAll('.more-trigger').forEach(t=>t.classList.remove('more-active'));
+  document.body.style.overflow = '';
+}
+function showInfo() { showToast('ℹ️ Info page coming in Phase 2!'); }
+function showBoard() { showToast('🏴‍☠️ Mutiny Board coming in Phase 2!'); }
+
+/* ════════════════════════════════════════════════════════════
+   SOS — original self-contained system
+════════════════════════════════════════════════════════════ */
+// openSOS / closeSOS stubs so nav onclick= calls still work
+function openSOS()  { document.getElementById('sosOverlay').classList.add('open');    document.body.style.overflow='hidden'; }
+function closeSOS() { document.getElementById('sosOverlay').classList.remove('open'); document.body.style.overflow=''; }
+
+/* ════════════════════════════════════════════════════════════
+   WEATHER
+════════════════════════════════════════════════════════════ */
+(function() {
+  const widget = document.getElementById('weatherWidget');
+  const panel  = document.getElementById('weatherPanel');
+  if (!widget) return;
+  widget.addEventListener('click', e=>{
+    e.stopPropagation();
+    panel.classList.toggle('open');
+  });
+  document.addEventListener('click', ()=>panel.classList.remove('open'));
+  // Fetch weather via Open-Meteo (no API key needed)
+  const LAT=42.1167, LON=-72.0898;
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true&hourly=relativehumidity_2m,precipitation_probability,apparent_temperature&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/New_York`)
+    .then(r=>r.json()).then(d=>{
+      const cw=d.current_weather; if(!cw)return;
+      const temp=Math.round(cw.temperature);
+      const wc=cw.weathercode;
+      const icon=wc<=1?'☀️':wc<=3?'⛅':wc<=67?'🌧️':wc<=77?'❄️':wc<=99?'⛈️':'🌤️';
+      const desc=wc===0?'Clear sky':wc<=2?'Partly cloudy':wc<=3?'Overcast':wc<=45?'Foggy':wc<=67?'Rainy':wc<=77?'Snowy':'Stormy';
+      document.getElementById('wTemp').textContent=temp+'°F';
+      document.getElementById('wIcon').textContent=icon;
+      document.getElementById('wpTemp').textContent=temp+'°F';
+      document.getElementById('wpIcon').textContent=icon;
+      document.getElementById('wpDesc').textContent=desc;
+      const now=new Date();
+      const hr=now.getHours();
+      if(d.hourly){
+        const feel=d.hourly.apparent_temperature?.[hr];
+        const hum=d.hourly.relativehumidity_2m?.[hr];
+        const rain=d.hourly.precipitation_probability?.[hr];
+        if(feel!=null) document.getElementById('wpFeel').textContent='Feels like '+Math.round(feel)+'°F';
+        if(hum!=null)  document.getElementById('wpHumid').textContent=hum+'%';
+        if(rain!=null) document.getElementById('wpRain').textContent=rain+'%';
+      }
+      document.getElementById('wpWind').textContent=Math.round(cw.windspeed)+' mph';
+      document.getElementById('wpUpdated').textContent='Updated: '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+      const festDate=new Date('2026-07-17');const diffDays=Math.ceil((festDate-now)/(1000*60*60*24));
+      const note=document.getElementById('wpFestNote');
+      note.textContent = diffDays>0 ? `Festival in ${diffDays} day${diffDays===1?'':'s'} · Jul 17–19` : diffDays===0 ? '🔥 Festival starts TODAY!' : '🏴‍☠️ Festival Weekend!';
+    }).catch(()=>{document.getElementById('wTemp').textContent='--°F';});
+})();
+
+/* ════════════════════════════════════════════════════════════
+   MAP TOOLTIP
+════════════════════════════════════════════════════════════ */
+function showMapTooltip(el, e) {
+  const name = el.dataset.name, sub = el.dataset.sub;
+  const tt = document.getElementById('mapTooltip');
+  document.getElementById('mapTooltipName').textContent = name||'';
+  document.getElementById('mapTooltipSub').textContent  = sub||'';
+  tt.style.display = 'block';
+  const x = Math.min(e.clientX+12, window.innerWidth-240);
+  const y = Math.min(e.clientY+12, window.innerHeight-80);
+  tt.style.left = x+'px'; tt.style.top = y+'px';
+  clearTimeout(tt._hide);
+  tt._hide = setTimeout(()=>tt.style.display='none', 3000);
+}
+document.addEventListener('click', e=>{
+  if (!e.target.closest('.map-pin')) document.getElementById('mapTooltip').style.display='none';
+});
+
+/* ════════════════════════════════════════════════════════════
+   UTILITIES
+════════════════════════════════════════════════════════════ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tid); t._tid = setTimeout(()=>t.classList.remove('show'),2200);
+}
+function copyAddress() {
+  const text = 'Sturbridge Host Hotel & Conference Center\n366 Main St, Sturbridge, MA 01566\n(508) 347-7393';
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(()=>showToast('📋 Address copied!'));
+  } else {
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0;';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('📋 Address copied!');
+  }
+}
+function esc(str) { return String(str).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+function refreshAllAddBtns() {
+  const mine = getMySchedule();
+  document.querySelectorAll('[data-key]').forEach(btn=>{
+    const key = btn.dataset.key;
+    const saved = mine.includes(key);
+    btn.classList.toggle('added', saved);
+    btn.textContent = saved ? '✓' : '+';
+  });
+  renderMySchedWidget();
+  if (currentPage === 'artists') renderArtists();
+}
+
+/* ════════════════════════════════════════════════════════════
+   PWA INSTALL
+════════════════════════════════════════════════════════════ */
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (!localStorage.getItem(PWA_DISMISSED_KEY)) {
+    setTimeout(()=>document.getElementById('pwaInstallBanner').classList.add('show'), 3000);
+  }
+});
+window.addEventListener('appinstalled', ()=>{
+  document.getElementById('pwaInstallBanner').classList.remove('show');
+  showToast('✅ App installed! Find it on your home screen.');
+});
+function installPWA() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(c=>{
+    if (c.outcome==='accepted') showToast('✅ Installing Sunken Suite app…');
+    deferredInstallPrompt=null;
+    document.getElementById('pwaInstallBanner').classList.remove('show');
+  });
+}
+function dismissInstall() {
+  localStorage.setItem(PWA_DISMISSED_KEY,'1');
+  document.getElementById('pwaInstallBanner').classList.remove('show');
+}
+// iOS Safari — no beforeinstallprompt, show manual instructions
+(function() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone;
+  const dismissed = localStorage.getItem(PWA_DISMISSED_KEY+'_ios');
+  if (isIOS && !isStandalone && !dismissed) {
+    setTimeout(()=>{
+      const tip = document.getElementById('iosInstallTip');
+      tip.classList.add('show'); tip.style.display='block';
+    }, 4000);
+  }
+})();
+
+/* ════════════════════════════════════════════════════════════
+   SERVICE WORKER
+════════════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+/* ════════════════════════════════════════════════════════════
+   DEEP LINK / URL ROUTING
+════════════════════════════════════════════════════════════ */
+(function() {
+  const page = location.hash.slice(1);
+  if (page && document.getElementById('page-'+page)) navigate(page);
+  window.addEventListener('hashchange', ()=>{ const p=location.hash.slice(1); if(p && document.getElementById('page-'+p)) navigate(p); });
+})();
+
+/* ════════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════════ */
+renderMySchedWidget();
+renderChecklist();
+
+// Keyboard: Escape closes modals
+document.addEventListener('keydown', e=>{
+  if (e.key==='Escape') {
+    closeModal(); closeSOS(); closeMore(); closeDrawer();
+  }
+});
+/* ── SOS SYSTEM (original) ── */
+(function() {
+  const overlay  = document.getElementById('sosOverlay');
+  const backdrop = document.getElementById('sosBackdrop');
+  const closeBtn = document.getElementById('sosClose');
+  const form     = document.getElementById('sosForm');
+  const sentScr  = document.getElementById('sosSentScreen');
+  const gpsBtn   = document.getElementById('sosGpsBtn');
+  const gpsDisp  = document.getElementById('sosGpsDisplay');
+  const gpsStat  = document.getElementById('sosGpsStatus');
+  const sendBtn  = document.getElementById('sosSendBtn');
+
+  if (!overlay) return;
+
+  let gpsCoords = null;
+
+  function openSOSPanel() {
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    form.style.display = 'flex';
+    sentScr.style.display = 'none';
+    sendBtn.disabled = false;
+    sendBtn.innerHTML = '🆘 Send Emergency Alert';
+  }
+  function closeSOSPanel() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Override the stub so both onclick= and event listeners work
+  window.openSOS  = openSOSPanel;
+  window.closeSOS = closeSOSPanel;
+
+  closeBtn.addEventListener('click', closeSOSPanel);
+  backdrop.addEventListener('click', closeSOSPanel);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSOSPanel(); });
+
+  // GPS
+  gpsBtn.addEventListener('click', function() {
+    if (!navigator.geolocation) { gpsStat.textContent = 'GPS not available on this device.'; return; }
+    gpsStat.textContent = '⏳ Getting location…';
+    gpsBtn.disabled = true;
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lng = pos.coords.longitude.toFixed(6);
+        const acc = Math.round(pos.coords.accuracy);
+        gpsCoords = { lat, lng, acc };
+        gpsDisp.value = lat + ', ' + lng;
+        gpsStat.textContent = '✓ Location captured (±' + acc + 'm accuracy)';
+        gpsBtn.classList.add('got');
+        gpsBtn.innerHTML = '✓ Got GPS';
+        gpsBtn.disabled = false;
+      },
+      function(err) {
+        gpsStat.textContent = '⚠ Could not get location: ' + err.message;
+        gpsBtn.disabled = false;
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+
+  // Send
+  sendBtn.addEventListener('click', async function() {
+    const message = document.getElementById('sosMessage').value.trim();
+    const room    = document.getElementById('sosRoom').value.trim();
+    const stage   = document.getElementById('sosStage').value;
+
+    if (!message) {
+      document.getElementById('sosMessage').focus();
+      document.getElementById('sosMessage').style.borderColor = 'var(--pink-coral)';
+      setTimeout(() => document.getElementById('sosMessage').style.borderColor = '', 2000);
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '⏳ Sending…';
+
+    const ref = 'SOS-' + Date.now().toString(36).toUpperCase();
+    const now = new Date().toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+      month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true
+    });
+
+    const gpsStr  = gpsCoords ? gpsCoords.lat + ', ' + gpsCoords.lng + ' (±' + gpsCoords.acc + 'm)' : 'Not captured';
+    const gpsLink = gpsCoords ? 'https://maps.google.com/?q=' + gpsCoords.lat + ',' + gpsCoords.lng : null;
+
+    const smsBody = encodeURIComponent(
+      '[SUNKEN SUITE SOS] ' + ref + '\n' +
+      'Time: ' + now + '\n' +
+      'Room: ' + (room || 'Not specified') + '\n' +
+      'Area: ' + (stage || 'Not specified') + '\n' +
+      'GPS: ' + gpsStr + '\n' +
+      (gpsLink ? gpsLink + '\n' : '') +
+      'Message: ' + message
+    );
+
+    const mailSubject = encodeURIComponent('[SOS] ' + ref + ' — Sunken Suite 2026');
+    const mailBody = encodeURIComponent(
+      'SUNKEN SUITE EMERGENCY ALERT\n' +
+      '================================\n' +
+      'Ref: ' + ref + '\n' +
+      'Time: ' + now + '\n\n' +
+      'LOCATION\n' +
+      'Room/Area: ' + (room || 'Not specified') + '\n' +
+      'Stage: ' + (stage || 'Not specified') + '\n' +
+      'GPS: ' + gpsStr + '\n' +
+      (gpsLink ? 'Map: ' + gpsLink + '\n' : '') +
+      '\nMESSAGE\n' + message
+    );
+
+    try {
+      if (/iPhone|Android|iPad/i.test(navigator.userAgent)) {
+        const a = document.createElement('a');
+        a.href = 'sms:+15083470000?body=' + smsBody;
+        a.click();
+      } else {
+        window.location.href = 'mailto:staff@sunkensuite.com?subject=' + mailSubject + '&body=' + mailBody;
+      }
+    } catch(e) {
+      window.location.href = 'mailto:staff@sunkensuite.com?subject=' + mailSubject + '&body=' + mailBody;
+    }
+
+    setTimeout(function() {
+      form.style.display = 'none';
+      sentScr.style.display = 'block';
+      document.getElementById('sosSentRef').textContent = 'Reference: ' + ref;
+    }, 600);
+  });
+})();
+
+
+/* ════════════════════════════════════════════════════════════
+   RAVEWORM GAME
+════════════════════════════════════════════════════════════ */
+function openRaveworm() {
+  var overlay = document.getElementById('ravewormOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ if(typeof initGame==='function') initGame(); }, 80);
+}
+function closeRaveworm() {
+  if (typeof snakeReset==='function') snakeReset();
+  document.getElementById('ravewormOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+(function() {
+  var COLS=20,ROWS=20,CELL=14;
+  var snake,dir,nextDir,food,running,gameLoop,snakeHiScore;
+  var RAVE_FOOD=['💊','🍄','⚡','💎','🌀','✨','🔮','💫','🌈','🎆','🍬','🍭','🧿','🔵','🟣','🟡','💛','🫧','🪩','👁️'];
+  var curEmoji='🎆';
+  function pickEmoji(){var p=curEmoji;do{curEmoji=RAVE_FOOD[Math.floor(Math.random()*RAVE_FOOD.length)];}while(curEmoji===p&&RAVE_FOOD.length>1);}
+  function cvs(){return document.getElementById('snakeCanvas');}
+  function ctx(){var c=cvs();return c?c.getContext('2d'):null;}
+
+  window.initGame=function(){
+    var c=cvs();
+    if(c){var w=c.parentElement?c.parentElement.clientWidth:320;if(w<10)w=Math.min(window.innerWidth-40,440);CELL=Math.floor(w/COLS);var s=CELL*COLS;c.width=s;c.height=s;}
+    snake=[{x:10,y:8},{x:9,y:8},{x:8,y:8}];dir={x:1,y:0};nextDir={x:1,y:0};food=rndFood();running=false;
+    snakeHiScore=parseInt(localStorage.getItem('snakeHi')||'0');
+    var h=document.getElementById('snakeHi'),sc=document.getElementById('snakeScore'),mg=document.getElementById('snakeMsg');
+    if(h)h.textContent=snakeHiScore;if(sc)sc.textContent='0';if(mg)mg.textContent='TAP ► TO START';
+    draw();
+  };
+
+  function rndFood(){var p;do{p={x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)};}while(snake&&snake.some(function(s){return s.x===p.x&&s.y===p.y;}));pickEmoji();return p;}
+
+  function draw(){
+    var x=ctx();if(!x)return;var c=cvs();
+    var RC=['#00ffff','#ffff00','#ff6600','#cc00ff','#00ff66'];
+    var po=Math.floor(Date.now()/120);
+    x.fillStyle='#ff007f';x.fillRect(0,0,c.width,c.height);
+    x.fillStyle='#cc0066';var dot=Math.max(1,Math.floor(CELL/6)),off=Math.floor(CELL/3);
+    for(var gx=0;gx<COLS;gx++)for(var gy=0;gy<ROWS;gy++)x.fillRect(gx*CELL+off,gy*CELL+off,dot,dot);
+    var es=Math.max(10,CELL-2);x.font=es+'px serif';x.textAlign='center';x.textBaseline='middle';
+    x.fillText(curEmoji,food.x*CELL+CELL/2,food.y*CELL+CELL/2+1);x.textBaseline='alphabetic';
+    snake.forEach(function(seg,i){
+      var ci=(i+po)%RC.length;
+      if(i===0){x.fillStyle=RC[po%RC.length];x.fillRect(seg.x*CELL,seg.y*CELL,CELL,CELL);x.fillStyle='#000';var ey=Math.max(2,Math.floor(CELL/5));x.fillRect(seg.x*CELL+2,seg.y*CELL+2,ey,ey);x.fillRect(seg.x*CELL+CELL-4,seg.y*CELL+2,ey,ey);}
+      else{x.fillStyle=RC[ci];x.fillRect(seg.x*CELL,seg.y*CELL,CELL,CELL);x.fillStyle='rgba(0,0,0,0.3)';x.fillRect(seg.x*CELL+1,seg.y*CELL+1,CELL-2,CELL-2);x.fillStyle=RC[ci];x.fillRect(seg.x*CELL+2,seg.y*CELL+2,CELL-4,CELL-4);}
+    });
+  }
+
+  function step(){
+    dir=nextDir;var h={x:(snake[0].x+dir.x+COLS)%COLS, y:(snake[0].y+dir.y+ROWS)%ROWS};
+    if(snake.some(function(s){return s.x===h.x&&s.y===h.y;})){gameOver();return;}
+    snake.unshift(h);
+    if(h.x===food.x&&h.y===food.y){var sc=snake.length-3;var el=document.getElementById('snakeScore');if(el)el.textContent=sc;if(sc>snakeHiScore){snakeHiScore=sc;localStorage.setItem('snakeHi',snakeHiScore);var hi=document.getElementById('snakeHi');if(hi)hi.textContent=snakeHiScore;}food=rndFood();}
+    else snake.pop();
+    draw();
+  }
+
+  function gameOver(){
+    running=false;clearInterval(gameLoop);var x=ctx();
+    if(x){x.fillStyle='rgba(200,0,60,0.6)';x.fillRect(0,0,cvs().width,cvs().height);x.fillStyle='#ffff00';x.font='bold 14px "VT323",monospace';x.textAlign='center';x.fillText('GAME OVER',cvs().width/2,cvs().height/2-8);x.fillText('SCORE:'+(snake.length-3),cvs().width/2,cvs().height/2+8);}
+    var mg=document.getElementById('snakeMsg');if(mg)mg.textContent='TAP ► TO RETRY';
+    setBtns('↺');
+  }
+
+  window.snakeStart=function(){
+    if(running){running=false;clearInterval(gameLoop);setBtns('►');var mg=document.getElementById('snakeMsg');if(mg)mg.textContent='PAUSED';return;}
+    window.initGame();running=true;var mg=document.getElementById('snakeMsg');if(mg)mg.textContent='';setBtns('■');
+    gameLoop=setInterval(step,150);
+    (function rp(){if(!running)return;draw();requestAnimationFrame(rp);})();
+  };
+  window.snakeReset=function(){running=false;clearInterval(gameLoop);window.initGame();setBtns('►');};
+  window.snakeDir=function(dx,dy){if(dx!==0&&dir.x!==0)return;if(dy!==0&&dir.y!==0)return;nextDir={x:dx,y:dy};};
+  window.snakeDirBtn=window.snakeDir;
+
+  function setBtns(t){['snakeStartBtn','snakeMobileStartBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t;});}
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var ov=document.getElementById('ravewormOverlay');if(!ov)return;
+    var tx=0,ty=0,MS=25;
+    ov.addEventListener('touchstart',function(e){if(!ov.classList.contains('open'))return;if(e.target&&(e.target.id==='snakeStartBtn'||e.target.id==='snakeMobileStartBtn'))return;var t=e.touches[0];tx=t.clientX;ty=t.clientY;e.preventDefault();},{passive:false});
+    ov.addEventListener('touchmove',function(e){if(!ov.classList.contains('open'))return;e.preventDefault();},{passive:false});
+    ov.addEventListener('touchend',function(e){if(!ov.classList.contains('open'))return;if(e.target&&(e.target.id==='snakeStartBtn'||e.target.id==='snakeMobileStartBtn'))return;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty,ax=Math.abs(dx),ay=Math.abs(dy);if(Math.max(ax,ay)<MS){snakeStart();e.preventDefault();return;}if(ax>ay)window.snakeDir(dx>0?1:-1,0);else window.snakeDir(0,dy>0?1:-1);e.preventDefault();},{passive:false});
+  });
+
+  document.addEventListener('keydown',function(e){
+    var ov=document.getElementById('ravewormOverlay');if(!ov||!ov.classList.contains('open'))return;
+    switch(e.key){case 'ArrowUp':window.snakeDir(0,-1);e.preventDefault();break;case 'ArrowDown':window.snakeDir(0,1);e.preventDefault();break;case 'ArrowLeft':window.snakeDir(-1,0);e.preventDefault();break;case 'ArrowRight':window.snakeDir(1,0);e.preventDefault();break;case 'Enter':case ' ':snakeStart();e.preventDefault();break;case 'Escape':closeRaveworm();break;}
+  });
+})();
+</script>
+
+<!-- ══ RAVEWORM GAME OVERLAY ══ -->
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<div class="raveworm-overlay" id="ravewormOverlay">
+  <div class="raveworm-header">
+    <div class="raveworm-title">🪱 RAVE WORM 🪩</div>
+    <button class="raveworm-close" onclick="closeRaveworm()">✕</button>
+  </div>
+  <div class="raveworm-body">
+    <div id="page-snake" style="width:100%;max-width:440px;padding:8px;">
+
+      <!-- Score bar -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;font-family:'VT323',monospace;font-size:20px;">
+        <span style="color:#33ff33;">Score: <span id="snakeScore">0</span></span>
+        <span style="flex:1;"></span>
+        <span style="color:#ffff00;">Best: <span id="snakeHi">0</span></span>
+      </div>
+
+      <!-- Canvas -->
+      <div class="snake-screen-wrap" style="background:#ff007f;border:3px solid #33ff33;border-radius:4px;box-shadow:0 0 12px rgba(51,255,51,0.27);margin-bottom:12px;line-height:0;position:relative;">
+        <canvas id="snakeCanvas" style="display:block;width:100%;"></canvas>
+        <div id="snakeMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'VT323',monospace;font-size:22px;color:#33ff33;text-shadow:0 0 8px #33ff33;pointer-events:none;">TAP ▶ TO START</div>
+      </div>
+
+      <!-- Desktop controls -->
+      <div class="snake-dpad-wrap" style="display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:0 8px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <button class="snake-btn snake-gb-btn" id="snakeStartBtn" onclick="snakeStart()" style="margin-left:94px;">
+            <span style="font-size:13px;line-height:1;">▶/■</span>
+            <span class="snake-gb-label">START</span>
+          </button>
+          <button class="snake-btn snake-gb-btn" onclick="snakeReset()" style="margin-left:94px;">
+            <span style="font-size:16px;line-height:1;">↺</span>
+            <span class="snake-gb-label">RESET</span>
+          </button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:132px;flex-shrink:0;">
+          <div></div>
+          <button class="snake-btn" onclick="snakeDirBtn(0,-1)">▲</button>
+          <div></div>
+          <button class="snake-btn" onclick="snakeDirBtn(-1,0)">◀</button>
+          <div style="background:#111;border:2px solid rgba(51,255,51,0.13);border-radius:50%;"></div>
+          <button class="snake-btn" onclick="snakeDirBtn(1,0)">▶</button>
+          <div></div>
+          <button class="snake-btn" onclick="snakeDirBtn(0,1)">▼</button>
+          <div></div>
+        </div>
+      </div>
+
+      <!-- Mobile start button -->
+      <div class="snake-mobile-start" style="display:none;justify-content:center;margin-bottom:8px;">
+        <button class="snake-btn" id="snakeMobileStartBtn" onclick="snakeStart()" style="width:80px;font-size:22px;background:#111;color:#33ff33;border-color:#33ff33;">▶</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
