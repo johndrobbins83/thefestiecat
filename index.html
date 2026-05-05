@@ -1464,6 +1464,174 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   color:var(--text-muted);cursor:pointer;transition:all .15s;}
 .assign-toggle-btn.active{background:rgba(245,200,66,0.12);
   border-color:rgba(245,200,66,0.4);color:var(--gold-bright);}
+
+/* ══════════════════════════════════════════════════
+   SOCIAL — FEED, PEOPLE, DMs, PROFILE
+══════════════════════════════════════════════════ */
+
+/* Profile setup overlay */
+.profile-setup-overlay{
+  position:fixed;inset:0;z-index:60000;background:#000;
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+.profile-setup-overlay.open{display:flex;}
+.profile-setup-box{width:100%;max-width:400px;background:#0a0a0a;
+  border:1px solid rgba(245,200,66,0.3);padding:32px 28px;}
+.avatar-color-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.avatar-color-swatch{width:32px;height:32px;cursor:pointer;border:2px solid transparent;transition:all .15s;}
+.avatar-color-swatch.selected{border-color:#fff;transform:scale(1.15);}
+.profile-avatar-preview{width:64px;height:64px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-size:22px;font-weight:900;
+  color:#fff;margin:0 auto 16px;transition:background .2s;}
+
+/* Feed */
+.feed-compose{background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);
+  padding:14px;margin-bottom:14px;}
+.feed-compose-row{display:flex;align-items:flex-start;gap:10px;}
+.feed-compose-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;}
+.feed-compose-input{flex:1;padding:10px 12px;background:#111;
+  border:1px solid rgba(255,255,255,0.08);color:var(--text-light);
+  font-family:'Poppins',sans-serif;font-size:14px;outline:none;resize:none;
+  min-height:60px;transition:border-color .15s;}
+.feed-compose-input:focus{border-color:rgba(245,200,66,0.35);}
+.feed-compose-input::placeholder{color:rgba(122,184,224,0.35);}
+.feed-compose-actions{display:flex;align-items:center;gap:8px;margin-top:10px;padding-left:48px;}
+.feed-compose-btn{padding:7px 14px;background:transparent;border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.feed-compose-btn:hover{border-color:rgba(245,200,66,0.35);color:var(--gold-bright);}
+.feed-compose-btn.selected{border-color:rgba(0,212,200,0.4);color:var(--teal-glow);background:rgba(0,212,200,0.07);}
+.feed-post-btn{margin-left:auto;padding:8px 18px;background:var(--gold-bright);
+  border:none;color:#000;font-family:'Poppins',sans-serif;font-size:13px;
+  font-weight:800;cursor:pointer;transition:all .15s;}
+.feed-post-btn:hover{filter:brightness(1.08);}
+.feed-post-btn:disabled{opacity:0.4;cursor:default;}
+.checkin-select{padding:7px 10px;background:#111;border:1px solid rgba(0,212,200,0.25);
+  color:var(--teal-glow);font-family:'Poppins',sans-serif;font-size:12px;
+  outline:none;cursor:pointer;margin-top:8px;margin-left:48px;display:none;}
+.checkin-select.show{display:block;}
+
+/* Feed filter tabs */
+.feed-filters{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.07);
+  margin-bottom:14px;overflow-x:auto;}
+.feed-filter-btn{padding:8px 14px;font-size:12px;font-weight:700;color:var(--text-muted);
+  cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;
+  background:transparent;border-top:none;border-left:none;border-right:none;transition:all .15s;}
+.feed-filter-btn:hover{color:var(--text-light);}
+.feed-filter-btn.active{color:var(--gold-bright);border-bottom-color:var(--gold-bright);}
+
+/* Post card */
+.post-card{background:#0a0a0a;border:1px solid rgba(255,255,255,0.07);
+  margin-bottom:10px;transition:border-color .15s;}
+.post-card:hover{border-color:rgba(255,255,255,0.12);}
+.post-header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px;}
+.post-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;}
+.post-meta{flex:1;}
+.post-handle{font-size:14px;font-weight:800;color:var(--text-light);}
+.post-time{font-size:11px;color:var(--text-muted);margin-top:1px;}
+.post-delete{background:transparent;border:none;color:rgba(122,184,224,0.3);
+  font-size:16px;cursor:pointer;padding:4px;transition:color .15s;}
+.post-delete:hover{color:var(--pink-coral);}
+.post-checkin{display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;background:rgba(0,212,200,0.1);border:1px solid rgba(0,212,200,0.2);
+  color:var(--teal-glow);font-size:11px;font-weight:700;margin:0 14px 8px;}
+.post-body{padding:0 14px 10px;font-size:14px;color:var(--text-light);line-height:1.6;}
+.post-photo{width:100%;display:block;max-height:400px;object-fit:cover;cursor:pointer;}
+.post-actions{display:flex;align-items:center;gap:0;border-top:1px solid rgba(255,255,255,0.05);}
+.post-action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;
+  background:transparent;border:none;font-family:'Poppins',sans-serif;transition:all .15s;}
+.post-action-btn:hover{color:var(--text-light);background:rgba(255,255,255,0.03);}
+.post-action-btn.liked{color:var(--pink-coral);}
+.feed-empty{text-align:center;padding:48px 24px;color:var(--text-muted);}
+.feed-empty-icon{font-size:40px;margin-bottom:10px;}
+.feed-load-more{width:100%;padding:12px;background:transparent;
+  border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);
+  font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .15s;margin-top:4px;}
+.feed-load-more:hover{border-color:rgba(245,200,66,0.3);color:var(--gold-bright);}
+
+/* People page */
+.people-search-wrap{position:relative;margin-bottom:14px;}
+.people-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;}
+.people-search-input{width:100%;padding:11px 14px 11px 40px;background:#111;
+  border:1px solid rgba(255,255,255,0.1);color:var(--text-light);
+  font-family:'Poppins',sans-serif;font-size:14px;outline:none;transition:border-color .15s;}
+.people-search-input:focus{border-color:var(--gold-bright);}
+.people-search-input::placeholder{color:rgba(122,184,224,0.35);}
+.people-results{display:flex;flex-direction:column;gap:8px;}
+.person-card{display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:#0a0a0a;border:1px solid rgba(255,255,255,0.07);transition:all .15s;cursor:pointer;}
+.person-card:hover{border-color:rgba(255,255,255,0.15);}
+.person-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;}
+.person-info{flex:1;min-width:0;}
+.person-handle{font-size:15px;font-weight:800;color:var(--text-light);}
+.person-bio{font-size:12px;color:var(--text-muted);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.person-follow-btn{flex-shrink:0;padding:7px 14px;font-size:12px;font-weight:800;
+  cursor:pointer;font-family:'Poppins',sans-serif;border:none;transition:all .15s;text-transform:uppercase;}
+.person-follow-btn.follow{background:var(--gold-bright);color:#000;}
+.person-follow-btn.follow:hover{filter:brightness(1.08);}
+.person-follow-btn.requested{background:rgba(255,255,255,0.08);color:var(--text-muted);border:1px solid rgba(255,255,255,0.1);}
+.person-follow-btn.friends{background:rgba(0,212,200,0.15);color:var(--teal-glow);border:1px solid rgba(0,212,200,0.3);}
+
+/* Friend requests */
+.request-card{display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:#0a0a0a;border:1px solid rgba(155,61,255,0.2);margin-bottom:8px;}
+.request-actions{display:flex;gap:6px;flex-shrink:0;}
+.req-accept-btn{padding:6px 12px;background:var(--teal-glow);border:none;
+  color:#000;font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;cursor:pointer;}
+.req-decline-btn{padding:6px 12px;background:transparent;
+  border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);
+  font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+
+/* DM page */
+.dm-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.dm-convo-card{display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:#0a0a0a;border:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:all .15s;}
+.dm-convo-card:hover{border-color:rgba(255,255,255,0.15);}
+.dm-convo-card.unread{border-color:rgba(155,61,255,0.3);}
+.dm-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;}
+.dm-convo-info{flex:1;min-width:0;}
+.dm-convo-handle{font-size:15px;font-weight:800;color:var(--text-light);}
+.dm-convo-preview{font-size:12px;color:var(--text-muted);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dm-unread-badge{background:var(--purple-mutiny);color:#fff;font-size:10px;font-weight:900;
+  min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;padding:0 4px;}
+
+/* DM thread */
+.dm-thread-overlay{position:fixed;inset:0;z-index:15000;background:#000;
+  display:none;flex-direction:column;}
+.dm-thread-overlay.open{display:flex;}
+.dm-thread-header{display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:#0a0a0a;border-bottom:1px solid rgba(255,255,255,0.07);
+  padding-top:max(12px, env(safe-area-inset-top));flex-shrink:0;}
+.dm-thread-back{background:transparent;border:none;color:var(--text-light);
+  font-size:20px;cursor:pointer;padding:4px 8px;}
+.dm-thread-name{font-size:16px;font-weight:800;color:var(--text-light);}
+.dm-thread-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;}
+.dm-msg{max-width:75%;padding:10px 13px;font-size:14px;line-height:1.5;}
+.dm-msg.mine{align-self:flex-end;background:var(--purple-mutiny);color:#fff;}
+.dm-msg.theirs{align-self:flex-start;background:#1a1a1a;color:var(--text-light);
+  border:1px solid rgba(255,255,255,0.07);}
+.dm-msg-time{font-size:10px;opacity:0.5;margin-top:3px;}
+.dm-thread-input-row{display:flex;gap:8px;padding:12px 16px;
+  background:#0a0a0a;border-top:1px solid rgba(255,255,255,0.07);
+  padding-bottom:max(12px, env(safe-area-inset-bottom));flex-shrink:0;}
+.dm-thread-input{flex:1;padding:11px 14px;background:#111;
+  border:1px solid rgba(255,255,255,0.1);color:var(--text-light);
+  font-family:'Poppins',sans-serif;font-size:14px;outline:none;
+  transition:border-color .15s;}
+.dm-thread-input:focus{border-color:var(--purple-mutiny);}
+.dm-send-btn{padding:11px 18px;background:var(--purple-mutiny);border:none;
+  color:#fff;font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;cursor:pointer;}
+.dm-send-btn:hover{filter:brightness(1.1);}
+.dm-empty{text-align:center;padding:48px 24px;color:var(--text-muted);}
 </style>
 </head>
 <body>
@@ -1486,6 +1654,9 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <span class="desktop-nav-link"        data-page="artists"  onclick="navigate('artists')">🎤 Artists</span>
     <span class="desktop-nav-link"        data-page="map"      onclick="navigate('map')">🗺️ Map</span>
     <span class="desktop-nav-link"        data-page="checklist" onclick="navigate('checklist')">✅ List</span>
+    <span class="desktop-nav-link" data-page="feed"   onclick="navigate('feed')">📡 Feed</span>
+    <span class="desktop-nav-link" data-page="people" onclick="navigate('people')">👥 People</span>
+    <span class="desktop-nav-link" data-page="dms"    onclick="navigate('dms')">💬 DMs<span id="dmBadgeDesktop" style="display:none;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;padding:1px 5px;margin-left:4px;">0</span></span>
     <span class="desktop-nav-link more-trigger" onclick="toggleMore(this)">⋯ More</span>
     <span class="desktop-nav-link nav-admin-only" data-page="admin"   onclick="navigate('admin')"  style="color:#f5c842;border-color:rgba(245,200,66,0.3);">⚙ Admin</span>
     <span class="desktop-nav-link nav-staff-only" data-page="staff"   onclick="navigate('staff')"  style="color:#c084fc;border-color:rgba(155,61,255,0.3);">📋 Staff</span>
@@ -2107,6 +2278,84 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
     </div>
   </div><!-- /page-staff -->
+
+  <!-- ── FEED PAGE ── -->
+  <div class="page" id="page-feed">
+    <div class="page-header"><div class="page-title">📡 Feed</div><div class="page-sub">What's happening at The Mutiny</div></div>
+    <!-- Compose -->
+    <div class="feed-compose" id="feedCompose">
+      <div class="feed-compose-row">
+        <div class="feed-compose-avatar" id="feedComposeAvatar" style="background:#9b3dff;">?</div>
+        <textarea class="feed-compose-input" id="feedPostText" placeholder="What's happening at The Mutiny? 🏴‍☠️" rows="2"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      </div>
+      <div class="feed-compose-actions">
+        <button class="feed-compose-btn" id="checkinToggleBtn" onclick="toggleCheckin()">📍 Check-in</button>
+        <button class="feed-compose-btn" id="photoComposeBtn" onclick="triggerFeedPhoto()">📷 Photo</button>
+        <input type="file" id="feedPhotoInput" accept="image/*" style="display:none;" onchange="previewFeedPhoto(this)">
+        <button class="feed-post-btn" id="feedPostBtn" onclick="submitPost()" disabled>Post</button>
+      </div>
+      <select class="checkin-select" id="checkinSelect">
+        <option value="">Select location…</option>
+        <option value="DNB Stage (BP²)">🥁 DNB Stage (BP²)</option>
+        <option value="Oasis Stage">🌴 Oasis Stage</option>
+        <option value="Pool">🏊 Pool</option>
+        <option value="Beach">🏖️ Beach</option>
+        <option value="Hotel Lobby">🏨 Hotel Lobby</option>
+        <option value="Greenhouse Restaurant">🍽️ Greenhouse Restaurant</option>
+        <option value="Oxhead Tavern">🍺 Oxhead Tavern</option>
+        <option value="Parking Lot">🅿️ Parking Lot</option>
+      </select>
+      <div id="feedPhotoPreviewWrap" style="display:none;margin-top:10px;position:relative;">
+        <img id="feedPhotoPreviewImg" style="max-height:180px;max-width:100%;display:block;">
+        <button onclick="clearFeedPhoto()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+      </div>
+    </div>
+    <!-- Filters -->
+    <div class="feed-filters">
+      <button class="feed-filter-btn active" onclick="loadFeed('all',this)">All</button>
+      <button class="feed-filter-btn" onclick="loadFeed('dnb',this)">🥁 DNB</button>
+      <button class="feed-filter-btn" onclick="loadFeed('oasis',this)">🌴 Oasis</button>
+      <button class="feed-filter-btn" onclick="loadFeed('fri',this)">Fri</button>
+      <button class="feed-filter-btn" onclick="loadFeed('sat',this)">Sat</button>
+      <button class="feed-filter-btn" onclick="loadFeed('sun',this)">Sun</button>
+    </div>
+    <div id="feedList"></div>
+  </div>
+
+  <!-- ── PEOPLE PAGE ── -->
+  <div class="page" id="page-people">
+    <div class="page-header"><div class="page-title">👥 People</div><div class="page-sub">Find your crew at The Mutiny</div></div>
+    <!-- Friend requests -->
+    <div id="friendRequestsSection" style="display:none;margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:8px;">🔔 Friend Requests</div>
+      <div id="friendRequestsList"></div>
+    </div>
+    <!-- Friends -->
+    <div id="friendsSection" style="margin-bottom:20px;">
+      <div class="section-header"><div class="section-title">🤝 My Crew</div></div>
+      <div id="friendsList"></div>
+    </div>
+    <!-- Search -->
+    <div class="section-title" style="margin-bottom:10px;">🔍 Find Festies</div>
+    <div class="people-search-wrap">
+      <span class="people-search-icon">🔍</span>
+      <input type="text" class="people-search-input" id="peopleSearchInput"
+        placeholder="Search by @handle…" oninput="searchPeople(this.value)" autocomplete="off">
+    </div>
+    <div class="people-results" id="peopleResults">
+      <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">
+        Type a handle to search for Festies
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DMs PAGE ── -->
+  <div class="page" id="page-dms">
+    <div class="page-header"><div class="page-title">💬 Messages</div><div class="page-sub">Direct messages with your crew</div></div>
+    <div class="dm-list" id="dmList"></div>
+  </div>
+
 </div><!-- /app -->
 
 <!-- ══ BOTTOM NAV ══ -->
@@ -2116,6 +2365,9 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <span class="nav-item"        data-page="artists"   onclick="navigate('artists')"><div class="nav-icon-wrap">♪</div><span class="nav-label">Artists</span></span>
   <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">⊕</div><span class="nav-label">Map</span></span>
   <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">☑</div><span class="nav-label">List</span></span>
+  <span class="nav-item" data-page="feed"   onclick="navigate('feed')"><div class="nav-icon-wrap">📡</div><span class="nav-label">Feed</span></span>
+  <span class="nav-item" data-page="people" onclick="navigate('people')"><div class="nav-icon-wrap">👥</div><span class="nav-label">People</span></span>
+  <span class="nav-item" data-page="dms"    onclick="navigate('dms')"><div class="nav-icon-wrap" style="position:relative;">💬<span id="dmBadgeMobile" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;">0</span></div><span class="nav-label">DMs</span></span>
   <span class="nav-item more-trigger" onclick="toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
   <span class="nav-item nav-admin-only" data-page="admin" onclick="navigate('admin')"><div class="nav-icon-wrap" style="font-size:16px;">⚙</div><span class="nav-label">Admin</span></span>
   <span class="nav-item nav-staff-only" data-page="staff" onclick="navigate('staff')"><div class="nav-icon-wrap" style="font-size:16px;">📋</div><span class="nav-label">Staff</span></span>
@@ -2468,8 +2720,11 @@ function navigate(page) {
   if (page === 'artists') initArtists();
   if (page === 'games') initGames();
   if (page === 'checklist') renderChecklist();
-  if (page === 'admin') initAdminDashboard();
-  if (page === 'staff') initStaffDashboard();
+  if (page === 'admin')  initAdminDashboard();
+  if (page === 'staff')  initStaffDashboard();
+  if (page === 'feed')   initFeed();
+  if (page === 'people') initPeople();
+  if (page === 'dms')    initDMs();
   // Update URL hash for deep-linking
   window.location.hash = page;
 }
@@ -3452,6 +3707,12 @@ function setCurrentUser(user, token) {
 
   // Show edit pen on artist cards for admin
   if (isAdmin) document.body.classList.add('is-admin');
+
+  // Check if profile setup needed
+  setTimeout(checkProfileSetup, 800);
+
+  // Start DM polling
+  startDMPolling();
 
   // Close auth overlay
   closeAuth();
@@ -4951,6 +5212,585 @@ function deletePersonalBlock(blockId, containerId) {
 }
 
 /* ════════════════════════════════════════════════════════════
+   SOCIAL SYSTEM — PROFILE, FEED, PEOPLE, DMs
+════════════════════════════════════════════════════════════ */
+const AVATAR_COLORS = [
+  '#9b3dff','#00d4c8','#ff4d8d','#f5c842','#ff6b1a',
+  '#4ade80','#60a5fa','#e879f9','#fb923c','#a3e635'
+];
+let selectedAvatarColor = '#9b3dff';
+let currentDMFriendId   = null;
+let currentDMFriendHandle = null;
+let feedPage = 0;
+let feedFilter = 'all';
+let dmPollTimer = null;
+let feedPhotoFile = null;
+
+// ── Profile setup ──────────────────────────────────────────
+function checkProfileSetup() {
+  if (!currentUser) return;
+  if (!currentUser.handle) {
+    showProfileSetup();
+  } else {
+    updateFeedComposeAvatar();
+  }
+}
+
+function showProfileSetup() {
+  const overlay = document.getElementById('profileSetupOverlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Build color picker
+  const picker = document.getElementById('avatarColorPicker');
+  if (picker) {
+    picker.innerHTML = AVATAR_COLORS.map((c,i) =>
+      `<div class="avatar-color-swatch ${i===0?'selected':''}" style="background:${c};"
+        onclick="selectAvatarColor('${c}',this)"></div>`
+    ).join('');
+  }
+  // Set preview
+  const preview = document.getElementById('profileAvatarPreview');
+  if (preview) {
+    preview.style.background = selectedAvatarColor;
+    preview.textContent = currentUser.name?.[0]?.toUpperCase() || '?';
+  }
+}
+
+function selectAvatarColor(color, el) {
+  selectedAvatarColor = color;
+  document.querySelectorAll('.avatar-color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  const preview = document.getElementById('profileAvatarPreview');
+  if (preview) preview.style.background = color;
+}
+
+function updateHandlePreview(val) {
+  const clean = val.replace(/[^a-zA-Z0-9_]/g,'').slice(0,20);
+  const input = document.getElementById('profileHandleInput');
+  if (input && input.value !== clean) input.value = clean;
+}
+
+async function submitProfileSetup() {
+  const handle = (document.getElementById('profileHandleInput')?.value||'').trim().replace(/[^a-zA-Z0-9_]/g,'');
+  const bio    = (document.getElementById('profileBioInput')?.value||'').trim();
+  const errEl  = document.getElementById('profileSetupError');
+  const btn    = document.getElementById('profileSetupBtn');
+  if (!handle || handle.length < 3) {
+    if(errEl){errEl.textContent='Handle must be at least 3 characters';errEl.classList.add('show');}
+    return;
+  }
+  if(errEl) errEl.classList.remove('show');
+  btn.disabled=true; btn.textContent='Saving…';
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/profile', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ handle, bio, avatarColor:selectedAvatarColor })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      currentUser.handle = data.user.handle;
+      currentUser.bio    = data.user.bio;
+      currentUser.avatarColor = data.user.avatarColor;
+      localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      closeProfileSetup();
+      updateFeedComposeAvatar();
+      showToast('Profile set! Welcome to The Mutiny, @'+handle+' 🏴‍☠️');
+    } else {
+      if(errEl){errEl.textContent=data.error||'Could not save';errEl.classList.add('show');}
+    }
+  } catch {
+    if(errEl){errEl.textContent='Could not connect';errEl.classList.add('show');}
+  } finally { btn.disabled=false; btn.textContent="Let's Go! 🏴‍☠️"; }
+}
+
+function skipProfileSetup() {
+  closeProfileSetup();
+}
+function closeProfileSetup() {
+  const overlay = document.getElementById('profileSetupOverlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function updateFeedComposeAvatar() {
+  const el = document.getElementById('feedComposeAvatar');
+  if (!el || !currentUser) return;
+  el.style.background = currentUser.avatarColor || '#9b3dff';
+  el.textContent = (currentUser.handle?.[0] || currentUser.name?.[0] || '?').toUpperCase();
+}
+
+// ── FEED ───────────────────────────────────────────────────
+function initFeed() {
+  feedPage = 0;
+  updateFeedComposeAvatar();
+  loadFeed(feedFilter);
+  // Enable post button when text entered
+  const textEl = document.getElementById('feedPostText');
+  if (textEl) textEl.addEventListener('input', () => {
+    const btn = document.getElementById('feedPostBtn');
+    if (btn) btn.disabled = !textEl.value.trim() && !feedPhotoFile;
+  });
+}
+
+function toggleCheckin() {
+  const sel = document.getElementById('checkinSelect');
+  const btn = document.getElementById('checkinToggleBtn');
+  if (!sel) return;
+  const show = sel.classList.toggle('show');
+  if (btn) btn.classList.toggle('selected', show);
+}
+
+function triggerFeedPhoto() { document.getElementById('feedPhotoInput')?.click(); }
+
+function previewFeedPhoto(input) {
+  feedPhotoFile = input.files[0];
+  if (!feedPhotoFile) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wrap = document.getElementById('feedPhotoPreviewWrap');
+    const img  = document.getElementById('feedPhotoPreviewImg');
+    if (wrap) wrap.style.display = 'block';
+    if (img)  img.src = e.target.result;
+    const btn = document.getElementById('feedPostBtn');
+    if (btn) btn.disabled = false;
+  };
+  reader.readAsDataURL(feedPhotoFile);
+}
+
+function clearFeedPhoto() {
+  feedPhotoFile = null;
+  const wrap  = document.getElementById('feedPhotoPreviewWrap');
+  const input = document.getElementById('feedPhotoInput');
+  if (wrap)  wrap.style.display = 'none';
+  if (input) input.value = '';
+  const btn = document.getElementById('feedPostBtn');
+  const textEl = document.getElementById('feedPostText');
+  if (btn) btn.disabled = !textEl?.value?.trim();
+}
+
+async function submitPost() {
+  const text     = (document.getElementById('feedPostText')?.value||'').trim();
+  const checkIn  = document.getElementById('checkinSelect')?.value||'';
+  const btn      = document.getElementById('feedPostBtn');
+  if (!text && !feedPhotoFile) return;
+  if (btn) { btn.disabled=true; btn.textContent='Posting…'; }
+
+  let photoUrl = '';
+  // Upload photo if attached
+  if (feedPhotoFile) {
+    const token = localStorage.getItem('ss_auth_token');
+    const slug  = 'feed_'+(currentUser.handle||currentUser.id)+'_'+Date.now();
+    try {
+      const res = await fetch(AUTH_URL+'/media/upload?artist='+slug, {
+        method:'POST',
+        headers:{'Content-Type':feedPhotoFile.type,'Authorization':'Bearer '+token},
+        body: feedPhotoFile
+      });
+      if (res.ok) { const d=await res.json(); photoUrl=d.url||''; }
+    } catch {}
+  }
+
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/posts', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ text, photoUrl, checkIn })
+    });
+    if (res.ok) {
+      document.getElementById('feedPostText').value = '';
+      document.getElementById('feedPostText').style.height = 'auto';
+      clearFeedPhoto();
+      const selEl = document.getElementById('checkinSelect');
+      if (selEl) { selEl.value=''; selEl.classList.remove('show'); }
+      const cBtn = document.getElementById('checkinToggleBtn');
+      if (cBtn) cBtn.classList.remove('selected');
+      feedPage = 0;
+      loadFeed(feedFilter);
+      showToast('Posted! 🏴‍☠️');
+    } else { showToast('Could not post — try again'); }
+  } catch { showToast('Could not connect'); }
+  if (btn) { btn.disabled=false; btn.textContent='Post'; }
+}
+
+async function loadFeed(filter, btn) {
+  feedFilter = filter||'all';
+  if (btn) {
+    document.querySelectorAll('.feed-filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  feedPage = 0;
+  const listEl = document.getElementById('feedList');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading feed…</div>';
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/posts?filter='+feedFilter+'&page=0', {
+      headers:{'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    renderFeedPosts(data.posts||[], data.hasMore, false);
+  } catch {
+    listEl.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Could not load feed.</div>';
+  }
+}
+
+function renderFeedPosts(posts, hasMore, append) {
+  const listEl = document.getElementById('feedList');
+  if (!listEl) return;
+  if (!posts.length && !append) {
+    listEl.innerHTML = `<div class="feed-empty">
+      <div class="feed-empty-icon">📡</div>
+      <div>No posts yet.<br><small style="font-size:12px;">Connect with people and start posting!</small></div>
+    </div>`;
+    return;
+  }
+  const isAdmin = currentUser?.role === 'admin';
+  const newHTML = posts.map(p => {
+    const initials = (p.authorHandle?.[0]||'?').toUpperCase();
+    const timeAgo  = getTimeAgo(p.createdAt);
+    return `<div class="post-card" id="post-${p.id}">
+      <div class="post-header">
+        <div class="post-avatar" style="background:${p.authorColor||'#9b3dff'};">${initials}</div>
+        <div class="post-meta">
+          <div class="post-handle">@${p.authorHandle||'unknown'}</div>
+          <div class="post-time">${timeAgo}</div>
+        </div>
+        ${(p.authorId===currentUser?.id||isAdmin)?`<button class="post-delete" onclick="deletePost('${p.id}')" title="Delete post">✕</button>`:''}
+      </div>
+      ${p.checkIn?`<div class="post-checkin">📍 ${p.checkIn}</div>`:''}
+      ${p.text?`<div class="post-body">${escapeHTML(p.text)}</div>`:''}
+      ${p.photoUrl?`<img class="post-photo" src="${p.photoUrl}" loading="lazy" alt="Post photo">`:''}
+      <div class="post-actions">
+        <button class="post-action-btn ${p.liked?'liked':''}" onclick="toggleLike('${p.id}',this)">
+          ${p.liked?'❤️':'🤍'} ${p.likeCount||0}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (append) {
+    // Remove load more button first
+    const old = document.getElementById('feedLoadMoreBtn');
+    if (old) old.remove();
+    listEl.insertAdjacentHTML('beforeend', newHTML);
+  } else {
+    listEl.innerHTML = newHTML;
+  }
+
+  if (hasMore) {
+    const loadMore = document.createElement('button');
+    loadMore.className = 'feed-load-more';
+    loadMore.id = 'feedLoadMoreBtn';
+    loadMore.textContent = 'Load more';
+    loadMore.onclick = () => loadMoreFeed();
+    listEl.appendChild(loadMore);
+  }
+}
+
+async function loadMoreFeed() {
+  feedPage++;
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/posts?filter='+feedFilter+'&page='+feedPage, {
+      headers:{'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    renderFeedPosts(data.posts||[], data.hasMore, true);
+  } catch {}
+}
+
+async function toggleLike(postId, btn) {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/posts/'+postId+'/like', {
+      method:'POST', headers:{'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    if (res.ok) {
+      btn.textContent = (data.liked?'❤️':'🤍')+' '+data.likeCount;
+      btn.classList.toggle('liked', data.liked);
+    }
+  } catch {}
+}
+
+async function deletePost(postId) {
+  if (!confirm('Delete this post?')) return;
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/posts/'+postId, {
+      method:'DELETE', headers:{'Authorization':'Bearer '+token}
+    });
+    if (res.ok) {
+      const el = document.getElementById('post-'+postId);
+      if (el) el.remove();
+      showToast('Post deleted');
+    }
+  } catch {}
+}
+
+// ── PEOPLE ─────────────────────────────────────────────────
+function initPeople() {
+  loadFriendRequests();
+  loadFriends();
+}
+
+let searchTimer = null;
+function searchPeople(query) {
+  clearTimeout(searchTimer);
+  if (!query || query.length < 2) {
+    document.getElementById('peopleResults').innerHTML =
+      '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">Type a handle to search</div>';
+    return;
+  }
+  searchTimer = setTimeout(() => doSearchPeople(query), 400);
+}
+
+async function doSearchPeople(query) {
+  const token = localStorage.getItem('ss_auth_token');
+  const res   = await fetch(AUTH_URL+'/users/search?q='+encodeURIComponent(query), {
+    headers:{'Authorization':'Bearer '+token}
+  });
+  const data  = await res.json();
+  const results = document.getElementById('peopleResults');
+  if (!results) return;
+  if (!data.users?.length) {
+    results.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">No users found</div>';
+    return;
+  }
+  results.innerHTML = data.users.map(u =>
+    `<div class="person-card">
+      <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${(u.handle?.[0]||'?').toUpperCase()}</div>
+      <div class="person-info">
+        <div class="person-handle">@${u.handle}</div>
+        <div class="person-bio">${u.bio||'No bio yet'}</div>
+      </div>
+      <button class="person-follow-btn follow" id="followBtn-${u.id}"
+        onclick="sendFollowRequest('${u.id}',this)">+ Connect</button>
+    </div>`
+  ).join('');
+}
+
+async function sendFollowRequest(userId, btn) {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/follow/'+userId, {
+      method:'POST', headers:{'Authorization':'Bearer '+token}
+    });
+    if (res.ok) {
+      btn.textContent = 'Requested';
+      btn.className = 'person-follow-btn requested';
+      showToast('Connection request sent!');
+    }
+  } catch { showToast('Could not send request'); }
+}
+
+async function loadFriendRequests() {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/follow/requests', { headers:{'Authorization':'Bearer '+token} });
+    const data = await res.json();
+    const requests = data.requests||[];
+    const section  = document.getElementById('friendRequestsSection');
+    const listEl   = document.getElementById('friendRequestsList');
+    if (!section||!listEl) return;
+    if (!requests.length) { section.style.display='none'; return; }
+    section.style.display = 'block';
+    // Update bell
+    updateDMBadge(requests.length);
+    listEl.innerHTML = requests.map(u =>
+      `<div class="request-card">
+        <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${(u.handle?.[0]||'?').toUpperCase()}</div>
+        <div class="person-info" style="flex:1;">
+          <div class="person-handle">@${u.handle}</div>
+          <div class="person-bio">Wants to connect with you</div>
+        </div>
+        <div class="request-actions">
+          <button class="req-accept-btn" onclick="acceptFollowRequest('${u.id}',this)">Accept</button>
+          <button class="req-decline-btn">Decline</button>
+        </div>
+      </div>`
+    ).join('');
+  } catch {}
+}
+
+async function acceptFollowRequest(userId, btn) {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/follow/'+userId+'/accept', {
+      method:'POST', headers:{'Authorization':'Bearer '+token}
+    });
+    if (res.ok) {
+      btn.closest('.request-card').remove();
+      showToast('✓ You\'re now connected!');
+      loadFriends();
+    }
+  } catch { showToast('Could not accept'); }
+}
+
+async function loadFriends() {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/friends', { headers:{'Authorization':'Bearer '+token} });
+    const data = await res.json();
+    const listEl = document.getElementById('friendsList');
+    if (!listEl) return;
+    const friends = data.friends||[];
+    if (!friends.length) {
+      listEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">No crew yet — search for Festies above to connect!</div>';
+      return;
+    }
+    listEl.innerHTML = friends.map(f =>
+      `<div class="person-card" onclick="openDMThread('${f.id}','${esc(f.handle)}','${f.avatarColor||'#9b3dff'}')">
+        <div class="person-avatar" style="background:${f.avatarColor||'#9b3dff'};">${(f.handle?.[0]||'?').toUpperCase()}</div>
+        <div class="person-info">
+          <div class="person-handle">@${f.handle}</div>
+          <div class="person-bio">${f.bio||'No bio yet'}</div>
+        </div>
+        <span class="person-follow-btn friends">💬 DM</span>
+      </div>`
+    ).join('');
+  } catch {}
+}
+
+// ── DMs ────────────────────────────────────────────────────
+function initDMs() {
+  loadDMList();
+  startDMPolling();
+}
+
+async function loadDMList() {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/dm', { headers:{'Authorization':'Bearer '+token} });
+    const data = await res.json();
+    const listEl = document.getElementById('dmList');
+    if (!listEl) return;
+    const convos = data.conversations||[];
+    if (!convos.length) {
+      listEl.innerHTML = '<div class="dm-empty"><div style="font-size:36px;margin-bottom:10px;">💬</div>No messages yet.<br><small style="font-size:12px;">Connect with people to start chatting!</small></div>';
+      return;
+    }
+    // Update unread badge
+    const totalUnread = convos.reduce((sum,c)=>sum+(c.unread||0),0);
+    updateDMBadge(totalUnread);
+    listEl.innerHTML = convos.map(c =>
+      `<div class="dm-convo-card ${c.unread?'unread':''}"
+        onclick="openDMThread('${c.friendId}','${esc(c.handle)}','${c.avatarColor||'#9b3dff'}')">
+        <div class="dm-avatar" style="background:${c.avatarColor||'#9b3dff'};">${(c.handle?.[0]||'?').toUpperCase()}</div>
+        <div class="dm-convo-info">
+          <div class="dm-convo-handle">@${c.handle}</div>
+          <div class="dm-convo-preview">${c.lastMessage||'No messages yet'}</div>
+        </div>
+        ${c.unread?`<div class="dm-unread-badge">${c.unread}</div>`:''}
+      </div>`
+    ).join('');
+  } catch {}
+}
+
+function updateDMBadge(count) {
+  ['dmBadgeDesktop','dmBadgeMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (count > 0) { el.style.display='flex'; el.textContent=count; }
+    else           { el.style.display='none'; }
+  });
+}
+
+function openDMThread(friendId, handle, color) {
+  currentDMFriendId     = friendId;
+  currentDMFriendHandle = handle;
+  const overlay  = document.getElementById('dmThreadOverlay');
+  const nameEl   = document.getElementById('dmThreadName');
+  const avatarEl = document.getElementById('dmThreadAvatar');
+  if (overlay)  overlay.classList.add('open');
+  if (nameEl)   nameEl.textContent  = '@'+handle;
+  if (avatarEl) { avatarEl.style.background=color; avatarEl.textContent=(handle?.[0]||'?').toUpperCase(); }
+  document.body.style.overflow = 'hidden';
+  loadDMThread(friendId);
+}
+
+function closeDMThread() {
+  const overlay = document.getElementById('dmThreadOverlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  currentDMFriendId = null;
+  loadDMList(); // refresh unread counts
+}
+
+async function loadDMThread(friendId) {
+  const msgs = document.getElementById('dmThreadMessages');
+  if (!msgs) return;
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/dm/'+friendId, { headers:{'Authorization':'Bearer '+token} });
+    const data = await res.json();
+    renderDMMessages(data.messages||[]);
+  } catch {
+    msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>';
+  }
+}
+
+function renderDMMessages(messages) {
+  const msgs = document.getElementById('dmThreadMessages');
+  if (!msgs) return;
+  if (!messages.length) {
+    msgs.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet. Say hi! 👋</div>';
+    return;
+  }
+  msgs.innerHTML = messages.map(m => {
+    const mine = m.fromId === currentUser?.id;
+    return `<div class="dm-msg ${mine?'mine':'theirs'}">
+      ${escapeHTML(m.text)}
+      <div class="dm-msg-time">${getTimeAgo(m.createdAt)}</div>
+    </div>`;
+  }).join('');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendDM() {
+  const input = document.getElementById('dmThreadInput');
+  const text  = (input?.value||'').trim();
+  if (!text || !currentDMFriendId) return;
+  input.value = '';
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/dm/'+currentDMFriendId, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ text })
+    });
+    if (res.ok) loadDMThread(currentDMFriendId);
+    else showToast('Could not send message');
+  } catch { showToast('Could not send message'); }
+}
+
+function startDMPolling() {
+  if (dmPollTimer) clearInterval(dmPollTimer);
+  dmPollTimer = setInterval(() => {
+    if (currentPage === 'dms' || currentDMFriendId) loadDMList();
+    if (currentDMFriendId) loadDMThread(currentDMFriendId);
+  }, 30000);
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function getTimeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff/60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return m+'m ago';
+  const h = Math.floor(m/60);
+  if (h < 24) return h+'h ago';
+  return Math.floor(h/24)+'d ago';
+}
+function escapeHTML(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ════════════════════════════════════════════════════════════
    RAVEWORM GAME
 ════════════════════════════════════════════════════════════ */
 function openRaveworm() {
@@ -5267,6 +6107,51 @@ function closeRaveworm() {
       </div>
       <button class="site-alert-dismiss" onclick="dismissSiteAlert()">Dismiss</button>
     </div>
+  </div>
+</div>
+
+
+<!-- ══ PROFILE SETUP OVERLAY ══ -->
+<div class="profile-setup-overlay" id="profileSetupOverlay">
+  <div class="profile-setup-box">
+    <div class="auth-logo">☠ SUNKEN SUITE<span>Set Up Your Profile</span></div>
+    <div style="margin-top:20px;">
+      <div class="profile-avatar-preview" id="profileAvatarPreview">?</div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Choose your handle</label>
+        <input class="auth-input" id="profileHandleInput" type="text" maxlength="20"
+          placeholder="@yourhandle" autocomplete="off" oninput="updateHandlePreview(this.value)">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Letters, numbers and underscores only</div>
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Bio <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileBioInput" type="text" maxlength="200" placeholder="Tell the crew about yourself…">
+      </div>
+      <div class="auth-field" style="margin-bottom:20px;">
+        <label class="auth-label">Avatar Color</label>
+        <div class="avatar-color-picker" id="avatarColorPicker"></div>
+      </div>
+      <div class="auth-error" id="profileSetupError"></div>
+      <button class="auth-btn" id="profileSetupBtn" onclick="submitProfileSetup()">Let's Go! 🏴‍☠️</button>
+      <div style="text-align:center;margin-top:12px;">
+        <a onclick="skipProfileSetup()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">Skip for now →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DM THREAD OVERLAY ══ -->
+<div class="dm-thread-overlay" id="dmThreadOverlay">
+  <div class="dm-thread-header">
+    <button class="dm-thread-back" onclick="closeDMThread()">‹</button>
+    <div class="dm-avatar" id="dmThreadAvatar" style="width:36px;height:36px;font-size:13px;"></div>
+    <div class="dm-thread-name" id="dmThreadName"></div>
+  </div>
+  <div class="dm-thread-messages" id="dmThreadMessages"></div>
+  <div class="dm-thread-input-row">
+    <input class="dm-thread-input" id="dmThreadInput" type="text"
+      placeholder="Message…" maxlength="1000" onkeydown="if(event.key==='Enter')sendDM()">
+    <button class="dm-send-btn" onclick="sendDM()">▶</button>
   </div>
 </div>
 
