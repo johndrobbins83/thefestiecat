@@ -1487,7 +1487,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <span class="desktop-nav-link"        data-page="map"      onclick="navigate('map')">🗺️ Map</span>
     <span class="desktop-nav-link"        data-page="checklist" onclick="navigate('checklist')">✅ List</span>
     <span class="desktop-nav-link more-trigger" onclick="toggleMore(this)">⋯ More</span>
-    <span class="desktop-nav-link sos" onclick="openSOS()">🆘 SOS</span>
     <span class="desktop-nav-link nav-admin-only" data-page="admin"   onclick="navigate('admin')"  style="color:#f5c842;border-color:rgba(245,200,66,0.3);">⚙ Admin</span>
     <span class="desktop-nav-link nav-staff-only" data-page="staff"   onclick="navigate('staff')"  style="color:#c084fc;border-color:rgba(155,61,255,0.3);">📋 Staff</span>
   </nav>
@@ -2118,7 +2117,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">⊕</div><span class="nav-label">Map</span></span>
   <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">☑</div><span class="nav-label">List</span></span>
   <span class="nav-item more-trigger" onclick="toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
-  <span class="nav-item nav-sos" onclick="openSOS()"><div class="nav-icon-wrap" style="font-size:13px;font-weight:900;letter-spacing:0;">SOS</div><span class="nav-label">SOS</span></span>
   <span class="nav-item nav-admin-only" data-page="admin" onclick="navigate('admin')"><div class="nav-icon-wrap" style="font-size:16px;">⚙</div><span class="nav-label">Admin</span></span>
   <span class="nav-item nav-staff-only" data-page="staff" onclick="navigate('staff')"><div class="nav-icon-wrap" style="font-size:16px;">📋</div><span class="nav-label">Staff</span></span>
 </nav>
@@ -2143,6 +2141,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="more-btn-icon">🏴‍☠️</div>
         <div class="more-btn-label">Mutiny Board</div>
         <div class="more-btn-sub">Community</div>
+      </span>
+      <span class="more-btn" onclick="openSOS();closeMore()" style="border-color:rgba(255,77,141,0.3);background:rgba(255,77,141,0.05);">
+        <div class="more-btn-icon" style="background:rgba(255,77,141,0.2);color:var(--pink-coral);">🆘</div>
+        <div class="more-btn-label" style="color:var(--pink-coral);">Emergency SOS</div>
+        <div class="more-btn-sub">Alert staff</div>
       </span>
     </div>
   </div>
