@@ -3851,7 +3851,7 @@ async function uploadArtistPhoto(artistKey) {
     }
     status.textContent = '✓ Uploaded!';
     status.style.color = '#4ade80';
-    return AUTH_URL + '/media/artists/' + artistKey.toLowerCase().replace(/[^a-z0-9]/g,'-') + '.' + file.type.split('/')[1].replace('jpeg','jpg');
+    return data.url;  // use the exact URL the server returned
   } catch(e) {
     status.textContent = '⚠ Upload failed — check connection';
     status.style.color = 'var(--pink-coral)';
