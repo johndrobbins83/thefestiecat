@@ -2202,6 +2202,27 @@ const artists = {
   "ELIJAH DIVINE":     {initials:"ED",  color:"linear-gradient(135deg,#9b3dff,#f5c842)",stage:"DNB Stage",  time:"All Night",day:"All",genre:"Emcee",bio:"Elijah Divine brings divine lyrical energy to the dance floor — a master emcee who elevates every performance he touches."},
 };
 
+// ── Artist overrides: persist edits to localStorage ──────
+const ARTIST_OVERRIDES_KEY = 'ss_artist_overrides_v1';
+(function loadArtistOverrides() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ARTIST_OVERRIDES_KEY) || '{}');
+    Object.entries(saved).forEach(([key, overrides]) => {
+      if (artists[key]) Object.assign(artists[key], overrides);
+      else artists[key] = overrides;
+    });
+  } catch(e) { console.warn('Could not load artist overrides', e); }
+})();
+
+function saveArtistOverride(key, data) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ARTIST_OVERRIDES_KEY) || '{}');
+    saved[key] = { ...saved[key], ...data };
+    localStorage.setItem(ARTIST_OVERRIDES_KEY, JSON.stringify(saved));
+  } catch(e) { console.warn('Could not save artist override', e); }
+}
+
+
 /* ════════════════════════════════════════════════════════════
    STATE
 ════════════════════════════════════════════════════════════ */
@@ -3515,10 +3536,19 @@ async function saveArtistEdit() {
 
   if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Changes'; }
   closeArtistEdit();
+
+  // Re-render everything with updated data
   renderAdminArtistGrid();
   renderArtists();
   renderSchedule();
-  showToast('✓ ' + name + ' saved');
+  renderMySchedWidget();
+
+  // Persist the override to localStorage so it survives refresh
+  saveArtistOverride(name, updated);
+
+  const msg = photoUrl ? '✓ ' + name + ' saved with photo' : '✓ ' + name + ' saved';
+  showToast(msg);
+  console.log('Saved artist:', name, 'photo:', photoUrl);
 }
 
 // ── Schedule editor ────────────────────────────────────────
@@ -3824,39 +3854,63 @@ async function uploadArtistPhoto(artistKey) {
   const file = fileInput?.files[0];
   if (!file) return null;
 
-  const status = document.getElementById('editPhotoStatus');
-  status.textContent = '⏳ Uploading…';
-  status.style.color = 'var(--teal-glow)';
+  const status   = document.getElementById('editPhotoStatus');
+  const progress = document.getElementById('editPhotoProgress');
+  const bar      = document.getElementById('editPhotoBar');
+  const token    = localStorage.getItem('ss_auth_token');
 
-  const token = localStorage.getItem('ss_auth_token');
   if (!token) { status.textContent = '⚠ Not authenticated'; return null; }
 
-  try {
-    const res = await fetch(
-      AUTH_URL + '/media/upload?artist=' + encodeURIComponent(artistKey),
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': file.type,
-          'Authorization': 'Bearer ' + token,
-        },
-        body: file,
+  // Show progress bar
+  if (progress) progress.style.display = 'block';
+  if (bar) bar.style.width = '0%';
+  status.textContent = 'Uploading…';
+  status.style.color = 'var(--teal-glow)';
+
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', e => {
+      if (e.lengthComputable && bar) {
+        const pct = Math.round(e.loaded / e.total * 100);
+        bar.style.width = pct + '%';
+        status.textContent = 'Uploading… ' + pct + '%';
       }
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      status.textContent = '⚠ ' + (data.error || 'Upload failed');
+    });
+
+    xhr.addEventListener('load', () => {
+      if (progress) progress.style.display = 'none';
+      try {
+        const data = JSON.parse(xhr.responseText);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          status.textContent = '✓ Uploaded!';
+          status.style.color = '#4ade80';
+          console.log('Photo URL from server:', data.url);
+          resolve(data.url);
+        } else {
+          status.textContent = '⚠ ' + (data.error || 'Upload failed');
+          status.style.color = 'var(--pink-coral)';
+          resolve(null);
+        }
+      } catch(e) {
+        status.textContent = '⚠ Bad server response';
+        status.style.color = 'var(--pink-coral)';
+        resolve(null);
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      if (progress) progress.style.display = 'none';
+      status.textContent = '⚠ Upload failed — check connection';
       status.style.color = 'var(--pink-coral)';
-      return null;
-    }
-    status.textContent = '✓ Uploaded!';
-    status.style.color = '#4ade80';
-    return data.url;  // use the exact URL the server returned
-  } catch(e) {
-    status.textContent = '⚠ Upload failed — check connection';
-    status.style.color = 'var(--pink-coral)';
-    return null;
-  }
+      resolve(null);
+    });
+
+    xhr.open('POST', AUTH_URL + '/media/upload?artist=' + encodeURIComponent(artistKey));
+    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.send(file);
+  });
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -4146,7 +4200,11 @@ function closeRaveworm() {
               <input type="file" id="editPhotoFile" accept="image/*"
                 style="display:none;" onchange="previewArtistPhoto(this)">
             </label>
-            <div id="editPhotoStatus" style="font-size:11px;color:var(--text-muted);"></div>
+            <div id="editPhotoStatus" style="font-size:11px;color:var(--text-muted);line-height:1.5;"></div>
+            <!-- Progress bar -->
+            <div id="editPhotoProgress" style="display:none;height:4px;background:rgba(255,255,255,0.08);overflow:hidden;">
+              <div id="editPhotoBar" style="height:100%;width:0%;background:var(--teal-glow);transition:width .1s linear;"></div>
+            </div>
             <input type="hidden" id="editArtistPhoto">
           </div>
         </div>
