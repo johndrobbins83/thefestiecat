@@ -45,7 +45,8 @@ body{
   position:fixed;top:0;left:0;right:0;height:var(--nav-height);
   background:#000000;backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(245,200,66,0.25);
-  z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+  z-index:200;display:flex;align-items:center;justify-content:space-between;
+  padding:0 max(24px, calc((100vw - 1280px) / 2 + 24px));
 }
 .nav-logo{font-family:'Pirata One',cursive;font-size:22px;color:var(--gold-bright);
   text-shadow:0 0 18px rgba(245,200,66,0.45);line-height:1;white-space:nowrap;
@@ -184,14 +185,18 @@ body{
 }
 @media(min-width:768px){#app{bottom:0;}}
 /* ensure pages have enough bottom padding on mobile so content isn't hidden under nav */
-@media(max-width:767px){.page{padding-bottom:88px!important;}}
 .page{
   position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
   padding:16px 16px 24px;opacity:0;pointer-events:none;
   transition:opacity .2s ease,transform .2s ease;transform:translateX(24px);
 }
 @media(min-width:768px){.page{padding:24px 32px 40px;}}
+@media(max-width:767px){.page{padding-bottom:88px!important;}}
 .page.active{opacity:1;pointer-events:all;transform:translateX(0);}
+/* Max-width content container — centered on wide screens */
+.page > *{max-width:1280px;margin-left:auto;margin-right:auto;}
+/* Nav inner content also capped */
+.top-nav > *{flex-shrink:0;}
 
 /* ── PAGE TRANSITIONS ── */
 .page-enter{animation:pageIn .22s ease forwards;}
@@ -238,6 +243,19 @@ body{
   border:2px solid rgba(245,200,66,0.45);margin-bottom:16px;
   box-shadow:0 0 40px rgba(245,200,66,0.15),0 0 80px rgba(0,212,200,0.08);}
 .flyer-img{width:100%;display:block;}
+/* Placeholder shown when flyer.jpg is missing */
+.flyer-placeholder{display:none;padding:48px 24px;text-align:center;
+  background:linear-gradient(180deg,#0a0010 0%,#000 100%);}
+.flyer-section.flyer-missing .flyer-placeholder{display:block;}
+.flyer-section:not(.flyer-missing) .flyer-placeholder{display:none;}
+.flyer-placeholder-skull{font-size:52px;margin-bottom:8px;opacity:0.6;}
+.flyer-placeholder-title{font-family:'Pirata One',cursive;font-size:36px;
+  color:var(--gold-bright);text-shadow:0 0 20px rgba(245,200,66,0.4);margin-bottom:4px;}
+.flyer-placeholder-sub{font-size:14px;color:var(--teal-glow);font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.flyer-placeholder-date{font-size:13px;color:var(--text-muted);margin-bottom:16px;}
+.flyer-placeholder-note{font-size:10px;color:rgba(255,255,255,0.2);
+  border:1px solid rgba(255,255,255,0.1);padding:4px 12px;display:inline-block;}
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
 .stat-card{background:rgba(10,10,10,0.95);border:1px solid rgba(0,212,200,0.15);
   border-radius:0;padding:11px 8px;text-align:center;}
@@ -247,11 +265,11 @@ body{
 
 /* Desktop two-col */
 @media(min-width:768px){
-  .desktop-grid{display:grid;grid-template-columns:420px 1fr;gap:28px;align-items:start;}
+  .desktop-grid{display:grid;grid-template-columns:380px 1fr;gap:28px;align-items:start;}
   .desktop-col-left{position:sticky;top:16px;}
   .stats-row{grid-template-columns:repeat(3,1fr);}
 }
-@media(min-width:1100px){.desktop-grid{grid-template-columns:480px 1fr;}}
+@media(min-width:1100px){.desktop-grid{grid-template-columns:440px 1fr;}}
 
 /* Schedule widget on home */
 .schedule-card{background:rgba(10,10,10,0.95);border:1px solid rgba(245,200,66,0.2);
@@ -1102,7 +1120,14 @@ body{
       <div class="desktop-col-left">
         <div class="flyer-section">
           <img src="flyer.jpg" alt="Sunken Suite 2026 Official Flyer" class="flyer-img" id="flyerImg"
-               onerror="this.style.display='none';this.parentElement.style.background='rgba(4,29,58,0.8)';this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;font-family:Pirata One,cursive;font-size:28px;color:#f5c842;\'>☠ SUNKEN SUITE<br><span style=\'font-family:Poppins,sans-serif;font-size:14px;color:#7ab8e0;\'>The Mutiny 2026<br>July 17–19 · Sturbridge, MA</span></div>'">
+               onerror="this.style.display='none';this.parentElement.classList.add('flyer-missing')">
+          <div class="flyer-placeholder">
+            <div class="flyer-placeholder-skull">☠</div>
+            <div class="flyer-placeholder-title">SUNKEN SUITE</div>
+            <div class="flyer-placeholder-sub">The Mutiny 2026</div>
+            <div class="flyer-placeholder-date">July 17–19 · Sturbridge, MA</div>
+            <div class="flyer-placeholder-note">flyer.jpg not found — add it to your repo</div>
+          </div>
         </div>
       </div>
       <div class="desktop-col-right">
