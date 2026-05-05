@@ -3438,6 +3438,23 @@ function adminEditArtist(key) {
   document.getElementById('editArtistHeadliner').value  = a.headliner ? 'true' : 'false';
   document.getElementById('editArtistBio').value        = a.bio   || '';
   document.getElementById('editArtistSpotify').value    = a.spotify || '';
+  document.getElementById('editArtistPhoto').value      = a.photo || '';
+  // Reset file input and status
+  const fi = document.getElementById('editPhotoFile');
+  if (fi) fi.value = '';
+  const st = document.getElementById('editPhotoStatus');
+  if (st) { st.textContent = ''; st.style.color = ''; }
+  // Show current photo or gradient placeholder in preview
+  const preview = document.getElementById('editPhotoPreview');
+  if (preview) {
+    if (a.photo) {
+      preview.innerHTML = `<img src="${a.photo}" style="width:100%;height:100%;object-fit:cover;">`;
+    } else {
+      preview.innerHTML = `<div style="width:100%;height:100%;background:${a.color};
+        display:flex;align-items:center;justify-content:center;
+        font-size:18px;font-weight:900;color:#fff;">${a.initials}</div>`;
+    }
+  }
   document.getElementById('artistEditModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -3462,10 +3479,21 @@ function closeArtistEdit() {
   document.body.style.overflow = '';
 }
 
-function saveArtistEdit() {
+async function saveArtistEdit() {
   const oldKey = document.getElementById('editArtistKey').value;
   const name   = document.getElementById('editArtistName').value.trim().toUpperCase();
   if (!name) { showToast('Artist name is required'); return; }
+
+  const saveBtn = document.querySelector('.edit-modal-footer .dash-btn.primary');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+
+  // Upload photo if one was selected
+  let photoUrl = document.getElementById('editArtistPhoto')?.value || artists[oldKey]?.photo || null;
+  const fileInput = document.getElementById('editPhotoFile');
+  if (fileInput?.files[0]) {
+    const uploaded = await uploadArtistPhoto(name);
+    if (uploaded) photoUrl = uploaded;
+  }
 
   const updated = {
     ...(artists[oldKey] || {}),
@@ -3476,6 +3504,7 @@ function saveArtistEdit() {
     headliner: document.getElementById('editArtistHeadliner').value === 'true',
     bio:       document.getElementById('editArtistBio').value,
     spotify:   document.getElementById('editArtistSpotify').value,
+    photo:     photoUrl,
     initials:  artists[oldKey]?.initials || name.slice(0,2),
     color:     artists[oldKey]?.color    || 'linear-gradient(135deg,#9b3dff,#00d4c8)',
   };
@@ -3484,6 +3513,7 @@ function saveArtistEdit() {
   if (oldKey && oldKey !== name) delete artists[oldKey];
   artists[name] = updated;
 
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Changes'; }
   closeArtistEdit();
   renderAdminArtistGrid();
   renderArtists();
@@ -3772,6 +3802,64 @@ function renderStaffShifts() {
 }
 
 /* ════════════════════════════════════════════════════════════
+   ARTIST PHOTO UPLOAD
+════════════════════════════════════════════════════════════ */
+function previewArtistPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status  = document.getElementById('editPhotoStatus');
+  const preview = document.getElementById('editPhotoPreview');
+  status.textContent = file.name + ' · ' + (file.size / 1024).toFixed(0) + ' KB';
+
+  // Show preview
+  const reader = new FileReader();
+  reader.onload = e => {
+    preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadArtistPhoto(artistKey) {
+  const fileInput = document.getElementById('editPhotoFile');
+  const file = fileInput?.files[0];
+  if (!file) return null;
+
+  const status = document.getElementById('editPhotoStatus');
+  status.textContent = '⏳ Uploading…';
+  status.style.color = 'var(--teal-glow)';
+
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) { status.textContent = '⚠ Not authenticated'; return null; }
+
+  try {
+    const res = await fetch(
+      AUTH_URL + '/media/upload?artist=' + encodeURIComponent(artistKey),
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': file.type,
+          'Authorization': 'Bearer ' + token,
+        },
+        body: file,
+      }
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      status.textContent = '⚠ ' + (data.error || 'Upload failed');
+      status.style.color = 'var(--pink-coral)';
+      return null;
+    }
+    status.textContent = '✓ Uploaded!';
+    status.style.color = '#4ade80';
+    return AUTH_URL + '/media/artists/' + artistKey.toLowerCase().replace(/[^a-z0-9]/g,'-') + '.' + file.type.split('/')[1].replace('jpeg','jpg');
+  } catch(e) {
+    status.textContent = '⚠ Upload failed — check connection';
+    status.style.color = 'var(--pink-coral)';
+    return null;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
    RAVEWORM GAME
 ════════════════════════════════════════════════════════════ */
 function openRaveworm() {
@@ -4038,6 +4126,30 @@ function closeRaveworm() {
       <div class="edit-field">
         <label class="edit-label">Spotify URL</label>
         <input class="edit-input" id="editArtistSpotify" placeholder="https://open.spotify.com/artist/…">
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Artist Photo</label>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div id="editPhotoPreview" style="width:72px;height:72px;flex-shrink:0;
+            display:flex;align-items:center;justify-content:center;
+            font-size:18px;font-weight:900;color:#fff;background:#333;
+            overflow:hidden;position:relative;">
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:center;justify-content:center;gap:8px;
+              padding:10px;border:1px dashed rgba(245,200,66,0.3);cursor:pointer;
+              color:var(--gold-bright);font-size:12px;font-weight:700;
+              text-transform:uppercase;letter-spacing:0.5px;transition:all .15s;"
+              id="editPhotoLabel" onmouseover="this.style.background='rgba(245,200,66,0.05)'"
+              onmouseout="this.style.background='transparent'">
+              📷 Choose Photo
+              <input type="file" id="editPhotoFile" accept="image/*"
+                style="display:none;" onchange="previewArtistPhoto(this)">
+            </label>
+            <div id="editPhotoStatus" style="font-size:11px;color:var(--text-muted);"></div>
+            <input type="hidden" id="editArtistPhoto">
+          </div>
+        </div>
       </div>
     </div>
     <div class="edit-modal-footer">
