@@ -2895,11 +2895,14 @@ function roleLabel(role) {
 
 // ── Show/hide auth overlay ─────────────────────────────────
 function showAuth(mode='login') {
-  document.getElementById('authOverlay').classList.add('open');
-  document.getElementById('authLogin').style.display    = mode==='login'    ? 'block' : 'none';
-  document.getElementById('authRegister').style.display = mode==='register' ? 'block' : 'none';
+  const overlay = document.getElementById('authOverlay');
+  const loginEl = document.getElementById('authLogin');
+  const regEl   = document.getElementById('authRegister');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  if (loginEl) loginEl.style.display    = mode==='login'    ? 'block' : 'none';
+  if (regEl)   regEl.style.display      = mode==='register' ? 'block' : 'none';
   document.body.style.overflow = 'hidden';
-  // Focus first input
   setTimeout(()=>{
     const el = document.getElementById(mode==='login' ? 'loginEmail' : 'registerName');
     if (el) el.focus();
@@ -2998,8 +3001,12 @@ function showAuthError(el, msg) {
   el.classList.add('show');
 }
 
-// Run auth on load
-authInit();
+// Run auth after DOM is fully loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', authInit);
+} else {
+  setTimeout(authInit, 0);
+}
 
 /* ════════════════════════════════════════════════════════════
    RAVEWORM GAME
