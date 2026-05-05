@@ -1134,11 +1134,9 @@ body{
 ══════════════════════════════════════════════════ */
 
 /* Role-gated nav items — hidden until JS shows them */
-.nav-admin-only  { display:none!important; }
-.nav-staff-only  { display:none!important; }
-body.role-admin    .nav-admin-only { display:flex!important; }
-body.role-employee .nav-staff-only { display:flex!important; }
-body.role-admin    .nav-staff-only { display:flex!important; }
+/* Role-gated nav — controlled by JS, not CSS */
+.nav-admin-only { display:none; }
+.nav-staff-only { display:none; }
 
 /* Dashboard header */
 .dash-header{margin-bottom:24px;}
@@ -1298,11 +1296,174 @@ body.role-admin    .nav-staff-only { display:flex!important; }
 .announce-card-time{font-size:11px;color:rgba(122,184,224,0.4);margin-top:6px;}
 
 /* Edit pen overlay on artist cards when admin */
-body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
+body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .artist-admin-pen{display:none;position:absolute;top:6px;left:6px;
   width:26px;height:26px;background:rgba(245,200,66,0.9);
   align-items:center;justify-content:center;font-size:12px;
   cursor:pointer;z-index:5;border:none;color:#000;}
+
+/* ══════════════════════════════════════════════════
+   ADMIN ALERT SYSTEM
+══════════════════════════════════════════════════ */
+/* Notification bell badge */
+.nav-bell{position:relative;}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;
+  background:var(--pink-coral);border-radius:50%;border:1.5px solid #000;
+  display:none;}
+.notif-dot.show{display:block;}
+.notif-count{position:absolute;top:-4px;right:-6px;
+  background:var(--pink-coral);color:#fff;font-size:9px;font-weight:900;
+  min-width:16px;height:16px;border-radius:8px;display:none;
+  align-items:center;justify-content:center;padding:0 3px;
+  border:1.5px solid #000;}
+.notif-count.show{display:flex;}
+
+/* Full-screen alert banner */
+.site-alert-overlay{
+  position:fixed;inset:0;z-index:99000;
+  display:none;align-items:flex-start;justify-content:center;
+  padding-top:var(--nav-height);pointer-events:none;
+}
+.site-alert-overlay.show{display:flex;}
+.site-alert-banner{
+  width:100%;max-width:100%;pointer-events:all;
+  animation:alertSlideDown .4s cubic-bezier(.4,0,.2,1);
+}
+@keyframes alertSlideDown{
+  from{transform:translateY(-100%);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+.site-alert-inner{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:16px 20px;
+  border-bottom:3px solid;
+}
+.site-alert-inner.warning  {background:#1a0a00;border-color:var(--gold-bright);}
+.site-alert-inner.emergency{background:#1a0008;border-color:var(--pink-coral);
+  animation:alertPulse 1.5s ease-in-out infinite;}
+.site-alert-inner.info     {background:#001a10;border-color:var(--teal-glow);}
+@keyframes alertPulse{
+  0%,100%{background:#1a0008;}
+  50%{background:#2a0010;}
+}
+.site-alert-icon{font-size:24px;flex-shrink:0;margin-top:2px;}
+.site-alert-body{flex:1;min-width:0;}
+.site-alert-title{font-size:14px;font-weight:900;text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:4px;}
+.site-alert-inner.warning   .site-alert-title{color:var(--gold-bright);}
+.site-alert-inner.emergency .site-alert-title{color:var(--pink-coral);}
+.site-alert-inner.info      .site-alert-title{color:var(--teal-glow);}
+.site-alert-message{font-size:14px;color:var(--text-light);line-height:1.5;}
+.site-alert-meta{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.site-alert-dismiss{flex-shrink:0;background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);color:var(--text-light);
+  padding:6px 12px;font-family:'Poppins',sans-serif;font-size:12px;
+  font-weight:700;cursor:pointer;white-space:nowrap;margin-top:2px;}
+.site-alert-dismiss:hover{background:rgba(255,255,255,0.15);}
+
+/* Bell dropdown */
+.bell-dropdown{position:absolute;top:calc(100% + 10px);right:0;
+  background:#0a0a0a;border:1px solid rgba(255,77,141,0.3);
+  min-width:280px;z-index:600;display:none;
+  box-shadow:0 16px 48px rgba(0,0,0,0.8);}
+.bell-dropdown.open{display:block;}
+.bell-dropdown-header{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);
+  font-size:11px;font-weight:800;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:1px;}
+.bell-alert-item{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.bell-alert-item:last-child{border-bottom:none;}
+.bell-alert-title{font-size:13px;font-weight:700;color:var(--pink-coral);margin-bottom:3px;}
+.bell-alert-msg{font-size:12px;color:var(--text-muted);line-height:1.5;}
+.bell-alert-time{font-size:10px;color:rgba(122,184,224,0.4);margin-top:4px;}
+.bell-no-alerts{padding:16px 14px;font-size:13px;color:var(--text-muted);text-align:center;}
+
+/* ══════════════════════════════════════════════════
+   TASK & SCHEDULE ASSIGNMENT
+══════════════════════════════════════════════════ */
+/* Shared task manager panel */
+.task-mgr-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:16px;}
+.task-mgr-tab{padding:9px 16px;font-size:12px;font-weight:700;color:var(--text-muted);
+  cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;
+  background:transparent;border-top:none;border-left:none;border-right:none;transition:all .15s;}
+.task-mgr-tab:hover{color:var(--text-light);}
+.task-mgr-tab.active{color:var(--gold-bright);border-bottom-color:var(--gold-bright);}
+
+/* Create task form */
+.create-task-form{background:#0d0d0d;border:1px solid rgba(255,255,255,0.07);padding:16px;margin-bottom:14px;}
+.create-task-form .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:560px){.create-task-form .form-row{grid-template-columns:1fr;}}
+.form-field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.form-label{font-size:10px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:1px;}
+.form-input{padding:9px 11px;background:#111;border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;outline:none;
+  transition:border-color .15s;width:100%;}
+.form-input:focus{border-color:var(--gold-bright);}
+.form-select{padding:9px 11px;background:#111;border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;
+  outline:none;cursor:pointer;width:100%;}
+.form-textarea{padding:9px 11px;background:#111;border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;
+  outline:none;resize:vertical;min-height:64px;width:100%;}
+
+/* Task card */
+.task-card{border:1px solid rgba(255,255,255,0.07);margin-bottom:8px;transition:border-color .15s;}
+.task-card:hover{border-color:rgba(255,255,255,0.12);}
+.task-card.locked{border-left:3px solid var(--gold-bright);}
+.task-card-header{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer;}
+.task-card-check{width:20px;height:20px;border:1.5px solid rgba(255,255,255,0.2);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:11px;transition:all .15s;margin-top:1px;}
+.task-card-check.done{background:var(--teal-glow);border-color:var(--teal-glow);color:#000;}
+.task-card-check.inprogress{background:rgba(245,200,66,0.2);border-color:var(--gold-bright);color:var(--gold-bright);}
+.task-card-body{flex:1;min-width:0;}
+.task-card-title{font-size:14px;font-weight:700;color:var(--text-light);line-height:1.3;}
+.task-card-title.done{text-decoration:line-through;color:var(--text-muted);}
+.task-card-meta{font-size:11px;color:var(--text-muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;}
+.task-card-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.task-status-pill{font-size:9px;font-weight:800;letter-spacing:0.5px;
+  padding:3px 7px;text-transform:uppercase;cursor:pointer;border:none;}
+.task-status-pill.pending   {background:rgba(122,184,224,0.1);color:var(--text-muted);}
+.task-status-pill.inprogress{background:rgba(245,200,66,0.15);color:var(--gold-bright);}
+.task-status-pill.done      {background:rgba(0,212,200,0.15);color:var(--teal-glow);}
+.task-assigned-badge{font-size:9px;font-weight:700;padding:2px 6px;
+  background:rgba(155,61,255,0.15);color:#c084fc;}
+
+/* Shift / schedule blocks */
+.schedule-day-section{margin-bottom:20px;}
+.schedule-day-label{font-size:11px;font-weight:800;color:var(--gold-bright);
+  letter-spacing:2px;text-transform:uppercase;padding:8px 0;
+  border-bottom:1px solid rgba(245,200,66,0.15);margin-bottom:10px;}
+.shift-block{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;
+  margin-bottom:6px;border:1px solid rgba(255,255,255,0.07);position:relative;}
+.shift-block.locked-shift{border-left:3px solid var(--gold-bright);background:rgba(245,200,66,0.04);}
+.shift-block.personal-block{border-left:3px solid var(--teal-glow);background:rgba(0,212,200,0.04);}
+.shift-block-time{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;
+  color:var(--teal-glow);min-width:110px;flex-shrink:0;line-height:1.4;}
+.shift-block-body{flex:1;min-width:0;}
+.shift-block-title{font-size:14px;font-weight:700;color:var(--text-light);line-height:1.3;}
+.shift-block-meta{font-size:11px;color:var(--text-muted);margin-top:3px;}
+.shift-lock-badge{font-size:9px;font-weight:800;padding:2px 6px;
+  background:rgba(245,200,66,0.15);color:var(--gold-bright);letter-spacing:0.5px;}
+.shift-personal-badge{font-size:9px;font-weight:800;padding:2px 6px;
+  background:rgba(0,212,200,0.15);color:var(--teal-glow);letter-spacing:0.5px;}
+.shift-block-del{background:transparent;border:none;color:var(--text-muted);
+  font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;transition:color .15s;}
+.shift-block-del:hover{color:var(--pink-coral);}
+.add-personal-btn{display:flex;align-items:center;gap:6px;padding:10px 14px;
+  border:1px dashed rgba(0,212,200,0.25);color:var(--teal-glow);
+  font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;background:transparent;width:100%;justify-content:center;
+  transition:all .15s;margin-top:4px;}
+.add-personal-btn:hover{background:rgba(0,212,200,0.07);border-color:rgba(0,212,200,0.4);}
+
+/* Assign to selector */
+.assign-toggle{display:flex;gap:0;margin-bottom:10px;}
+.assign-toggle-btn{flex:1;padding:7px;font-size:12px;font-weight:700;
+  border:1px solid rgba(255,255,255,0.1);background:transparent;
+  color:var(--text-muted);cursor:pointer;transition:all .15s;}
+.assign-toggle-btn.active{background:rgba(245,200,66,0.12);
+  border-color:rgba(245,200,66,0.4);color:var(--gold-bright);}
 </style>
 </head>
 <body>
@@ -1357,7 +1518,17 @@ body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
         <div class="weather-panel-footer" id="wpUpdated">Fetching weather…</div>
       </div>
     </div>
-    <div class="nav-bell">🔔<div class="notif-dot"></div></div>
+    <div style="position:relative;" id="bellWrap">
+      <div class="nav-bell" id="navBell" onclick="toggleBellDropdown()" style="cursor:pointer;">
+        🔔
+        <div class="notif-dot" id="notifDot"></div>
+        <div class="notif-count" id="notifCount">0</div>
+      </div>
+      <div class="bell-dropdown" id="bellDropdown">
+        <div class="bell-dropdown-header">🔔 Notifications</div>
+        <div id="bellAlertList"><div class="bell-no-alerts">No active alerts</div></div>
+      </div>
+    </div>
     <div class="nav-avatar-wrap" id="navAvatarWrap" onclick="toggleUserMenu()" style="display:none;position:relative;">
       <div class="nav-avatar" id="navAvatar">?</div>
       <div class="nav-role-badge festie" id="navRoleBadge">Fan</div>
@@ -1373,28 +1544,9 @@ body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
       </div>
     </div>
     <button class="auth-btn" id="navSignInBtn" onclick="showAuth('login')" style="width:auto;padding:8px 16px;font-size:12px;margin-top:0;">Sign In</button>
-    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()">
-      <span></span><span></span><span></span>
-    </button>
+
   </div>
 </nav>
-
-<!-- ══ MOBILE DRAWER ══ -->
-<div class="mobile-drawer" id="mobileDrawer">
-  <div class="drawer-backdrop" onclick="closeDrawer()"></div>
-  <div class="drawer-panel">
-    <div class="drawer-links">
-      <span class="drawer-link active" data-page="home"     onclick="navigate('home');closeDrawer()">🏠 Home</span>
-      <span class="drawer-link"        data-page="schedule" onclick="navigate('schedule');closeDrawer()">📅 Schedule</span>
-      <span class="drawer-link"        data-page="artists"  onclick="navigate('artists');closeDrawer()">🎤 Artists</span>
-      <span class="drawer-link"        data-page="map"      onclick="navigate('map');closeDrawer()">🗺️ Map</span>
-      <span class="drawer-link"        data-page="checklist" onclick="navigate('checklist');closeDrawer()">✅ Checklist</span>
-      <span class="drawer-link"        data-page="games"    onclick="navigate('games');closeDrawer()">🎮 Games</span>
-      <div class="drawer-divider"></div>
-      <span class="drawer-link sos" onclick="openSOS();closeDrawer()">🆘 Emergency SOS</span>
-    </div>
-  </div>
-</div>
 
 <!-- ══ APP SHELL ══ -->
 <div id="app">
@@ -1774,6 +1926,8 @@ body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
     <div class="dash-tabs">
       <button class="dash-tab active" onclick="switchAdminTab('artists',this)">🎤 Artists</button>
       <button class="dash-tab" onclick="switchAdminTab('schedule',this)">📅 Schedule</button>
+      <button class="dash-tab" onclick="switchAdminTab('tasks',this)">✅ Tasks</button>
+      <button class="dash-tab" onclick="switchAdminTab('shifts',this)">🕐 Shifts</button>
       <button class="dash-tab" onclick="switchAdminTab('users',this)">👥 Users</button>
       <button class="dash-tab" onclick="switchAdminTab('settings',this)">⚙ Settings</button>
     </div>
@@ -1815,6 +1969,16 @@ body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
       </div>
     </div>
 
+    <!-- Tasks Tab (admin) -->
+    <div id="adminTab-tasks" style="display:none;">
+      <div id="sharedTaskManager" data-context="admin"></div>
+    </div>
+
+    <!-- Shifts Tab (admin) -->
+    <div id="adminTab-shifts" style="display:none;">
+      <div id="sharedShiftManager" data-context="admin"></div>
+    </div>
+
     <!-- Users Tab -->
     <div id="adminTab-users" style="display:none;">
       <div class="dash-section">
@@ -1854,6 +2018,36 @@ body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
           <button class="dash-btn primary" onclick="saveSettings()">Save Settings</button>
         </div>
       </div>
+
+      <!-- Send Alert Section -->
+      <div class="dash-section" style="border-color:rgba(255,77,141,0.3);">
+        <div class="dash-section-header" style="border-color:rgba(255,77,141,0.15);">
+          <div class="dash-section-title" style="color:var(--pink-coral);">🚨 Send Site-Wide Alert</div>
+        </div>
+        <div class="dash-section-body" style="display:flex;flex-direction:column;gap:14px;">
+          <div class="edit-field">
+            <label class="edit-label">Alert Type</label>
+            <select class="edit-select" id="alertType">
+              <option value="warning">⚠️ Warning — yellow banner</option>
+              <option value="emergency">🚨 Emergency — red pulsing banner</option>
+              <option value="info">ℹ️ Info — teal banner</option>
+            </select>
+          </div>
+          <div class="edit-field">
+            <label class="edit-label">Title</label>
+            <input class="edit-input" id="alertTitle" placeholder="e.g. Stage Delay, Medical Emergency…">
+          </div>
+          <div class="edit-field">
+            <label class="edit-label">Message</label>
+            <textarea class="edit-textarea" id="alertMessage" rows="3" placeholder="Full alert message shown to all users…"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="dash-btn danger" style="flex:1;padding:12px;" onclick="sendSiteAlert()">🚨 Send Alert to All Users</button>
+            <button class="dash-btn" onclick="clearSiteAlert()">✕ Clear Alert</button>
+          </div>
+          <div id="alertSendStatus" style="font-size:12px;color:var(--text-muted);"></div>
+        </div>
+      </div>
     </div>
   </div><!-- /page-admin -->
 
@@ -1874,25 +2068,12 @@ body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
 
     <!-- Tasks Tab -->
     <div id="staffTab-tasks">
-      <div class="dash-section">
-        <div class="dash-section-header">
-          <div class="dash-section-title">✅ Your Tasks</div>
-          <span id="staffTaskProgress" style="font-size:12px;color:var(--text-muted);">0 / 0 done</span>
-        </div>
-        <div id="staffTaskList"></div>
-      </div>
+      <div id="staffTaskManager" data-context="staff"></div>
     </div>
 
     <!-- Shift Schedule Tab -->
     <div id="staffTab-schedule" style="display:none;">
-      <div class="dash-section">
-        <div class="dash-section-header">
-          <div class="dash-section-title">🕐 Shift Schedule</div>
-        </div>
-        <div class="dash-section-body">
-          <div id="staffShiftList"></div>
-        </div>
-      </div>
+      <div id="staffShiftView" data-context="staff"></div>
     </div>
 
     <!-- Announcements Tab -->
@@ -1930,7 +2111,7 @@ body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
 </div><!-- /app -->
 
 <!-- ══ BOTTOM NAV ══ -->
-<nav class="bottom-nav">
+<nav class="bottom-nav" id="bottomNav">
   <span class="nav-item active" data-page="home"      onclick="navigate('home')"><div class="nav-icon-wrap">⌂</div><span class="nav-label">Home</span></span>
   <span class="nav-item"        data-page="schedule"  onclick="navigate('schedule')"><div class="nav-icon-wrap">◈</div><span class="nav-label">Schedule</span></span>
   <span class="nav-item"        data-page="artists"   onclick="navigate('artists')"><div class="nav-icon-wrap">♪</div><span class="nav-label">Artists</span></span>
@@ -1938,6 +2119,8 @@ body.role-admin .artist-card .artist-admin-pen{display:flex!important;}
   <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">☑</div><span class="nav-label">List</span></span>
   <span class="nav-item more-trigger" onclick="toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
   <span class="nav-item nav-sos" onclick="openSOS()"><div class="nav-icon-wrap" style="font-size:13px;font-weight:900;letter-spacing:0;">SOS</div><span class="nav-label">SOS</span></span>
+  <span class="nav-item nav-admin-only" data-page="admin" onclick="navigate('admin')"><div class="nav-icon-wrap" style="font-size:16px;">⚙</div><span class="nav-label">Admin</span></span>
+  <span class="nav-item nav-staff-only" data-page="staff" onclick="navigate('staff')"><div class="nav-icon-wrap" style="font-size:16px;">📋</div><span class="nav-label">Staff</span></span>
 </nav>
 
 <!-- ══ MORE POPOUT ══ -->
@@ -2879,18 +3062,8 @@ function initGames() {
 /* ════════════════════════════════════════════════════════════
    NAVIGATION / DRAWER / MORE
 ════════════════════════════════════════════════════════════ */
-function toggleDrawer() {
-  const drawer = document.getElementById('mobileDrawer');
-  const btn = document.getElementById('hamburgerBtn');
-  const open = drawer.classList.toggle('open');
-  btn.classList.toggle('open', open);
-  document.body.style.overflow = open ? 'hidden' : '';
-}
-function closeDrawer() {
-  document.getElementById('mobileDrawer').classList.remove('open');
-  document.getElementById('hamburgerBtn').classList.remove('open');
-  document.body.style.overflow = '';
-}
+function toggleDrawer() {}
+function closeDrawer() {}
 
 function toggleMore(triggerEl) {
   const overlay = document.getElementById('moreOverlay');
@@ -3260,9 +3433,22 @@ function setCurrentUser(user, token) {
   if (email)  email.textContent    = user.email;
   if (role)   { role.textContent   = roleLabel(user.role); role.className = `user-menu-role ${user.role}`; }
 
-  // Apply role class to body for CSS gating
+  // Apply role class to body
   document.body.classList.remove('role-festie','role-employee','role-admin');
   document.body.classList.add('role-' + user.role);
+
+  // Show/hide role-gated nav items via JS (avoids CSS specificity wars)
+  const isAdmin  = user.role === 'admin';
+  const isStaff  = user.role === 'employee' || user.role === 'admin';
+  document.querySelectorAll('.nav-admin-only').forEach(el => {
+    el.style.display = isAdmin ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.nav-staff-only').forEach(el => {
+    el.style.display = isStaff ? 'flex' : 'none';
+  });
+
+  // Show edit pen on artist cards for admin
+  if (isAdmin) document.body.classList.add('is-admin');
 
   // Close auth overlay
   closeAuth();
@@ -3397,11 +3583,22 @@ let adminSchedDay = 'fri';
 function initAdminDashboard() {
   renderAdminArtistGrid();
   renderAdminSchedule();
+  // Pre-cache users for task assignment autocomplete
+  loadUsersForAssign();
+}
+
+async function loadUsersForAssign() {
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) return;
+  try {
+    const res = await fetch(AUTH_URL + '/auth/users', { headers: {'Authorization':'Bearer '+token} });
+    if (res.ok) { const d = await res.json(); window._cachedUsers = d.users || []; }
+  } catch {}
 }
 
 // ── Tab switching ──────────────────────────────────────────
 function switchAdminTab(tab, btn) {
-  ['artists','schedule','users','settings'].forEach(t => {
+  ['artists','schedule','tasks','shifts','users','settings'].forEach(t => {
     const el = document.getElementById('adminTab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
@@ -3409,6 +3606,8 @@ function switchAdminTab(tab, btn) {
   if (btn) btn.classList.add('active');
   if (tab === 'artists') renderAdminArtistGrid();
   if (tab === 'schedule') renderAdminSchedule();
+  if (tab === 'tasks')   renderTaskManager('sharedTaskManager');
+  if (tab === 'shifts')  renderShiftManager('sharedShiftManager');
 }
 
 // ── Artist grid ────────────────────────────────────────────
@@ -3621,27 +3820,19 @@ async function adminLoadUsers() {
   const list = document.getElementById('adminUsersList');
   if (!list) return;
   list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>';
-
   const token = localStorage.getItem('ss_auth_token');
   if (!token) { list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">Not authenticated</div>'; return; }
-
   try {
-    const res  = await fetch(AUTH_URL + '/auth/users', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (res.status === 404) {
-      // Endpoint not built yet — show placeholder
-      list.innerHTML = buildUserTableHTML([
-        { id: currentUser.id, name: currentUser.name, email: currentUser.email, role: 'admin', createdAt: new Date().toISOString() }
-      ]);
-      return;
-    }
+    const res  = await fetch(AUTH_URL + '/auth/users', { headers: {'Authorization':'Bearer '+token} });
     const data = await res.json();
-    list.innerHTML = buildUserTableHTML(data.users || []);
+    if (res.ok) {
+      window._cachedUsers = data.users || [];
+      list.innerHTML = buildUserTableHTML(data.users || []);
+    } else {
+      list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">' + (data.error||'Failed to load') + '</div>';
+    }
   } catch {
-    list.innerHTML = buildUserTableHTML([
-      { id: currentUser?.id, name: currentUser?.name, email: currentUser?.email, role: currentUser?.role, createdAt: '—' }
-    ]);
+    list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">Could not connect to server</div>';
   }
 }
 
@@ -3649,12 +3840,11 @@ function buildUserTableHTML(users) {
   if (!users.length) return '<div style="padding:16px;color:var(--text-muted);">No users found</div>';
   return `<div style="overflow-x:auto;"><table class="user-table">
     <thead><tr>
-      <th>Name</th><th>Email</th><th>Role</th><th>Actions</th>
+      <th>Name</th><th>Email</th><th>App Role</th><th>Staff Role</th><th>Actions</th>
     </tr></thead>
     <tbody>${users.map(u => `<tr>
       <td style="font-weight:700;">${u.name || '—'}</td>
-      <td style="color:var(--text-muted);">${u.email}</td>
-      <td><span class="role-pill ${u.role}">${u.role}</span></td>
+      <td style="color:var(--text-muted);font-size:12px;">${u.email}</td>
       <td>
         <select onchange="adminSetRole('${u.id}',this.value)"
           style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);
@@ -3664,8 +3854,45 @@ function buildUserTableHTML(users) {
           <option ${u.role==='admin'?'selected':''} value="admin">Admin</option>
         </select>
       </td>
+      <td>
+        ${u.role === 'employee' || u.role === 'admin' ? `
+        <select onchange="adminSetStaffRole('${u.id}',this.value)"
+          style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);
+          color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;outline:none;">
+          <option value="">— None —</option>
+          <option ${u.staffRole==='security'?'selected':''} value="security">Security</option>
+          <option ${u.staffRole==='stage-crew'?'selected':''} value="stage-crew">Stage Crew</option>
+          <option ${u.staffRole==='ticketing'?'selected':''} value="ticketing">Ticketing/Front</option>
+          <option ${u.staffRole==='engineers'?'selected':''} value="engineers">Engineers</option>
+          <option ${u.staffRole==='management'?'selected':''} value="management">Management</option>
+        </select>` : '<span style="color:rgba(122,184,224,0.3);font-size:12px;">N/A</span>'}
+      </td>
+      <td>
+        <button class="dash-btn danger" onclick="adminDeleteUser('${u.id}','${esc(u.name||u.email)}')"
+          style="padding:4px 10px;font-size:11px;">✕ Remove</button>
+      </td>
     </tr>`).join('')}</tbody>
   </table></div>`;
+}
+
+async function adminSetStaffRole(userId, staffRole) {
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token || !staffRole) return;
+  try {
+    const res = await fetch(AUTH_URL + '/auth/staffrole', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ userId, staffRole })
+    });
+    const data = await res.json();
+    if (res.ok) showToast('✓ Staff role set to ' + staffRole);
+    else showToast('Error: ' + data.error);
+  } catch { showToast('Could not update staff role'); }
+}
+
+async function adminDeleteUser(userId, userName) {
+  if (!confirm('Remove user ' + userName + '? This cannot be undone.')) return;
+  showToast('User removal coming in Phase 6');
 }
 
 async function adminSetRole(userId, role) {
@@ -3760,13 +3987,12 @@ const STAFF_TASK_KEY = 'ss_staff_tasks_done';
 let staffDoneTasks = new Set();
 
 function initStaffDashboard() {
-  try { staffDoneTasks = new Set(JSON.parse(localStorage.getItem(STAFF_TASK_KEY)) || []); } catch { staffDoneTasks = new Set(); }
   const role = currentUser?.staffRole || 'management';
   const roleLabels = { security:'🔴 Security', 'stage-crew':'🟣 Stage Crew', ticketing:'🟦 Ticketing/Front', engineers:'🟡 Engineers', management:'🟠 Management' };
   const el = document.getElementById('staffRoleDisplay');
   if (el) el.textContent = roleLabels[role] || 'Staff · Sunken Suite 2026';
-  renderStaffTasks();
-  renderStaffShifts();
+  // Render shared task manager (default tab)
+  renderTaskManager('staffTaskManager');
 }
 
 function switchStaffTab(tab, btn) {
@@ -3776,6 +4002,8 @@ function switchStaffTab(tab, btn) {
   });
   document.querySelectorAll('#page-staff .dash-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  if (tab === 'tasks')    renderTaskManager('staffTaskManager');
+  if (tab === 'schedule') renderShiftManager('staffShiftView');
 }
 
 function getStaffRole() {
@@ -3911,6 +4139,812 @@ async function uploadArtistPhoto(artistKey) {
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.send(file);
   });
+}
+
+/* ════════════════════════════════════════════════════════════
+   SITE-WIDE ALERT SYSTEM
+════════════════════════════════════════════════════════════ */
+const ALERT_DISMISSED_KEY = 'ss_dismissed_alerts';
+let lastAlertId = null;
+let alertPollInterval = null;
+
+const ALERT_ICONS = { warning:'⚠️', emergency:'🚨', info:'ℹ️' };
+
+// ── Show alert banner ──────────────────────────────────────
+function showSiteAlert(alert) {
+  if (!alert || !alert.active) return;
+
+  // Don't show if user already dismissed this alert
+  try {
+    const dismissed = JSON.parse(localStorage.getItem(ALERT_DISMISSED_KEY) || '[]');
+    if (dismissed.includes(alert.id)) return;
+  } catch {}
+
+  lastAlertId = alert.id;
+
+  // Update banner
+  const inner   = document.getElementById('siteAlertInner');
+  const icon    = document.getElementById('siteAlertIcon');
+  const title   = document.getElementById('siteAlertTitle');
+  const message = document.getElementById('siteAlertMessage');
+  const meta    = document.getElementById('siteAlertMeta');
+  const overlay = document.getElementById('siteAlertOverlay');
+
+  if (!inner) return;
+  inner.className   = 'site-alert-inner ' + (alert.type || 'warning');
+  if (icon)    icon.textContent    = ALERT_ICONS[alert.type] || '⚠️';
+  if (title)   title.textContent   = alert.title || 'Alert';
+  if (message) message.textContent = alert.message;
+  if (meta)    meta.textContent    = 'Sent by ' + (alert.createdBy || 'Admin') + ' · ' +
+    new Date(alert.createdAt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  if (overlay) overlay.classList.add('show');
+
+  // Update bell
+  updateBell(alert);
+
+  // For emergency — also vibrate if supported
+  if (alert.type === 'emergency' && navigator.vibrate) {
+    navigator.vibrate([200,100,200,100,200]);
+  }
+}
+
+function dismissSiteAlert() {
+  const overlay = document.getElementById('siteAlertOverlay');
+  if (overlay) overlay.classList.remove('show');
+  // Remember dismissal
+  if (lastAlertId) {
+    try {
+      const dismissed = JSON.parse(localStorage.getItem(ALERT_DISMISSED_KEY) || '[]');
+      if (!dismissed.includes(lastAlertId)) dismissed.push(lastAlertId);
+      // Keep only last 20
+      localStorage.setItem(ALERT_DISMISSED_KEY, JSON.stringify(dismissed.slice(-20)));
+    } catch {}
+  }
+}
+
+// ── Bell dropdown ──────────────────────────────────────────
+function updateBell(alert) {
+  const dot   = document.getElementById('notifDot');
+  const count = document.getElementById('notifCount');
+  const list  = document.getElementById('bellAlertList');
+
+  if (!alert || !alert.active) {
+    if (dot)   dot.classList.remove('show');
+    if (count) count.classList.remove('show');
+    if (list)  list.innerHTML = '<div class="bell-no-alerts">No active alerts</div>';
+    return;
+  }
+
+  if (dot)   dot.classList.add('show');
+  if (count) { count.textContent = '1'; count.classList.add('show'); }
+  if (list)  list.innerHTML = `
+    <div class="bell-alert-item">
+      <div class="bell-alert-title">${ALERT_ICONS[alert.type]||'⚠️'} ${alert.title || 'Alert'}</div>
+      <div class="bell-alert-msg">${alert.message}</div>
+      <div class="bell-alert-time">From ${alert.createdBy||'Admin'} · ${new Date(alert.createdAt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div>
+    </div>`;
+}
+
+function toggleBellDropdown() {
+  const dd = document.getElementById('bellDropdown');
+  if (dd) dd.classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#bellWrap')) {
+    const dd = document.getElementById('bellDropdown');
+    if (dd) dd.classList.remove('open');
+  }
+});
+
+// ── Poll for alerts every 30 seconds ──────────────────────
+async function pollAlerts() {
+  try {
+    const res  = await fetch(AUTH_URL + '/alerts');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.alert) {
+      showSiteAlert(data.alert);
+    } else {
+      // No active alert — clear bell
+      updateBell(null);
+      const overlay = document.getElementById('siteAlertOverlay');
+      if (overlay) overlay.classList.remove('show');
+    }
+  } catch {}
+}
+
+function startAlertPolling() {
+  pollAlerts(); // immediate first check
+  alertPollInterval = setInterval(pollAlerts, 30000);
+}
+
+// ── Admin: send alert ──────────────────────────────────────
+async function sendSiteAlert() {
+  const type    = document.getElementById('alertType')?.value || 'warning';
+  const title   = document.getElementById('alertTitle')?.value.trim();
+  const message = document.getElementById('alertMessage')?.value.trim();
+  const status  = document.getElementById('alertSendStatus');
+
+  if (!title)   { if (status) { status.textContent = '⚠ Title required'; status.style.color='var(--pink-coral)'; } return; }
+  if (!message) { if (status) { status.textContent = '⚠ Message required'; status.style.color='var(--pink-coral)'; } return; }
+
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) return;
+
+  if (status) { status.textContent = 'Sending…'; status.style.color = 'var(--text-muted)'; }
+
+  try {
+    const res = await fetch(AUTH_URL + '/alerts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ type, title, message })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      if (status) { status.textContent = '✓ Alert sent to all users'; status.style.color = '#4ade80'; }
+      // Show it on this screen immediately too
+      showSiteAlert(data.alert);
+      // Clear form
+      setTimeout(() => { if (status) status.textContent = ''; }, 4000);
+    } else {
+      if (status) { status.textContent = '⚠ ' + (data.error || 'Failed'); status.style.color = 'var(--pink-coral)'; }
+    }
+  } catch {
+    if (status) { status.textContent = '⚠ Could not send — check connection'; status.style.color = 'var(--pink-coral)'; }
+  }
+}
+
+async function clearSiteAlert() {
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) return;
+  const status = document.getElementById('alertSendStatus');
+  try {
+    const res = await fetch(AUTH_URL + '/alerts', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      updateBell(null);
+      const overlay = document.getElementById('siteAlertOverlay');
+      if (overlay) overlay.classList.remove('show');
+      if (status) { status.textContent = '✓ Alert cleared'; status.style.color = 'var(--teal-glow)'; }
+      setTimeout(() => { if (status) status.textContent = ''; }, 3000);
+    }
+  } catch {
+    if (status) { status.textContent = '⚠ Could not clear'; status.style.color = 'var(--pink-coral)'; }
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   SHARED TASK & SCHEDULE SYSTEM
+════════════════════════════════════════════════════════════ */
+const PERSONAL_BLOCKS_KEY = 'ss_personal_blocks_v1';
+const ROLES = ['security','stage-crew','ticketing','engineers','management'];
+const ROLE_LABELS = {
+  security:'Security', 'stage-crew':'Stage Crew',
+  ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management'
+};
+const DAYS = ['Fri','Sat','Sun'];
+const DAY_LABELS = {'Fri':'Friday Jul 17','Sat':'Saturday Jul 18','Sun':'Sunday Jul 19'};
+
+let cachedTasks  = [];
+let cachedShifts = [];
+let taskAssignMode = 'role'; // 'role' or 'user'
+
+function isAdminOrMgmt() {
+  if (!currentUser) return false;
+  return currentUser.role === 'admin' || currentUser.staffRole === 'management';
+}
+
+// ══════════════════════════════════════════════════════════
+// TASK MANAGER
+// ══════════════════════════════════════════════════════════
+async function renderTaskManager(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const isMgmt = isAdminOrMgmt();
+
+  let tasks = [];
+  try {
+    const token = localStorage.getItem('ss_auth_token');
+    const endpoint = isMgmt ? '/tasks/all' : '/tasks?userId=' + currentUser?.id;
+    const res = await fetch(AUTH_URL + endpoint, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) { const d = await res.json(); tasks = d.tasks || []; }
+  } catch {}
+  cachedTasks = tasks;
+
+  const pending    = tasks.filter(t => t.status === 'pending').length;
+  const inprogress = tasks.filter(t => t.status === 'inprogress').length;
+  const done       = tasks.filter(t => t.status === 'done').length;
+
+  el.innerHTML = `
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <div class="dash-section-title">✅ Tasks
+          <span style="font-size:11px;color:var(--text-muted);font-weight:400;">
+            ${pending} pending · ${inprogress} in progress · ${done} done
+          </span>
+        </div>
+        ${isMgmt ? `<button class="dash-btn primary" onclick="showCreateTask('${containerId}')">+ New Task</button>` : ''}
+      </div>
+      <div class="dash-section-body" style="padding:0;">
+        <!-- Filter row -->
+        <div style="display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;">
+          <button class="dash-btn active" style="border-color:rgba(245,200,66,0.4);color:var(--gold-bright);"
+            onclick="filterTasks('all','${containerId}',this)">All</button>
+          <button class="dash-btn" onclick="filterTasks('pending','${containerId}',this)">Pending</button>
+          <button class="dash-btn" onclick="filterTasks('inprogress','${containerId}',this)">In Progress</button>
+          <button class="dash-btn" onclick="filterTasks('done','${containerId}',this)">Done</button>
+          ${isMgmt ? `
+          <button class="dash-btn" onclick="filterTasks('role:security','${containerId}',this)">Security</button>
+          <button class="dash-btn" onclick="filterTasks('role:stage-crew','${containerId}',this)">Stage Crew</button>
+          <button class="dash-btn" onclick="filterTasks('role:ticketing','${containerId}',this)">Ticketing</button>
+          <button class="dash-btn" onclick="filterTasks('role:engineers','${containerId}',this)">Engineers</button>
+          <button class="dash-btn" onclick="filterTasks('role:management','${containerId}',this)">Management</button>
+          ` : ''}
+        </div>
+        <div id="${containerId}-tasklist"></div>
+      </div>
+    </div>
+    <!-- Create task form (hidden) -->
+    <div id="${containerId}-createform" style="display:none;">
+      ${buildCreateTaskForm(containerId)}
+    </div>`;
+
+  renderTaskList(containerId, 'all', tasks);
+}
+
+function buildCreateTaskForm(containerId) {
+  return `
+    <div class="dash-section" style="border-color:rgba(245,200,66,0.3);">
+      <div class="dash-section-header"><div class="dash-section-title">+ New Task</div>
+        <button class="dash-btn" onclick="hideCreateTask('${containerId}')">✕ Cancel</button>
+      </div>
+      <div class="dash-section-body">
+        <div class="create-task-form">
+          <!-- Assign mode toggle -->
+          <div class="form-field">
+            <label class="form-label">Assign To</label>
+            <div class="assign-toggle">
+              <button class="assign-toggle-btn active" id="${containerId}-toggleRole"
+                onclick="setAssignMode('role','${containerId}')">Role Group</button>
+              <button class="assign-toggle-btn" id="${containerId}-toggleUser"
+                onclick="setAssignMode('user','${containerId}')">Specific Person</button>
+            </div>
+            <!-- Role selector -->
+            <select class="form-select" id="${containerId}-assignRole">
+              ${ROLES.map(r => `<option value="${r}">${ROLE_LABELS[r]}</option>`).join('')}
+            </select>
+            <!-- User selector (hidden by default) -->
+            <div id="${containerId}-assignUserWrap" style="display:none;margin-top:6px;">
+              <input class="form-input" id="${containerId}-assignUserName"
+                placeholder="Type employee name or email…" oninput="searchUsersForAssign('${containerId}',this.value)">
+              <div id="${containerId}-userSuggestions" style="background:#111;border:1px solid rgba(255,255,255,0.1);display:none;max-height:140px;overflow-y:auto;"></div>
+              <input type="hidden" id="${containerId}-assignUserId">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Title</label>
+              <input class="form-input" id="${containerId}-taskTitle" placeholder="Task name…">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Priority</label>
+              <select class="form-select" id="${containerId}-taskPriority">
+                <option value="high">🔴 High</option>
+                <option value="medium" selected>🟡 Medium</option>
+                <option value="low">🟢 Low</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="${containerId}-taskDesc" placeholder="Details…"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Due Date</label>
+              <select class="form-select" id="${containerId}-taskDay">
+                <option value="">Any day</option>
+                ${DAYS.map(d => `<option value="${d}">${DAY_LABELS[d]}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Due Time</label>
+              <input class="form-input" id="${containerId}-taskTime" type="time">
+            </div>
+          </div>
+          <div style="margin-top:4px;">
+            <button class="dash-btn primary" style="width:100%;padding:12px;"
+              onclick="submitCreateTask('${containerId}')">✓ Create Task</button>
+          </div>
+          <div id="${containerId}-taskCreateStatus" style="font-size:12px;margin-top:8px;color:var(--text-muted);"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function showCreateTask(containerId) {
+  const f = document.getElementById(containerId + '-createform');
+  if (f) { f.style.display='block'; f.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+function hideCreateTask(containerId) {
+  const f = document.getElementById(containerId + '-createform');
+  if (f) f.style.display = 'none';
+}
+
+function setAssignMode(mode, containerId) {
+  taskAssignMode = mode;
+  const roleBtn  = document.getElementById(containerId + '-toggleRole');
+  const userBtn  = document.getElementById(containerId + '-toggleUser');
+  const roleEl   = document.getElementById(containerId + '-assignRole');
+  const userWrap = document.getElementById(containerId + '-assignUserWrap');
+  if (roleBtn) roleBtn.classList.toggle('active', mode === 'role');
+  if (userBtn) userBtn.classList.toggle('active', mode === 'user');
+  if (roleEl)   roleEl.style.display   = mode === 'role' ? 'block' : 'none';
+  if (userWrap) userWrap.style.display = mode === 'user' ? 'block' : 'none';
+}
+
+async function searchUsersForAssign(containerId, query) {
+  const sugg = document.getElementById(containerId + '-userSuggestions');
+  const idEl = document.getElementById(containerId + '-assignUserId');
+  if (!sugg) return;
+  if (!query || query.length < 2) { sugg.style.display='none'; return; }
+  // Filter from any cached user data we have
+  const q = query.toLowerCase();
+  const matches = (window._cachedUsers||[]).filter(u =>
+    u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+  );
+  if (!matches.length) { sugg.style.display='none'; return; }
+  sugg.style.display = 'block';
+  sugg.innerHTML = matches.map(u => `
+    <div onclick="selectUserForAssign('${containerId}','${u.id}','${esc(u.name)}')"
+      style="padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);"
+      onmouseover="this.style.background='rgba(255,255,255,0.05)'"
+      onmouseout="this.style.background=''">
+      <strong>${u.name}</strong> <span style="color:var(--text-muted);font-size:11px;">${u.email}</span>
+      <span style="float:right;" class="role-pill ${u.role}">${u.role}</span>
+    </div>`).join('');
+}
+
+function selectUserForAssign(containerId, userId, userName) {
+  const nameEl = document.getElementById(containerId + '-assignUserName');
+  const idEl   = document.getElementById(containerId + '-assignUserId');
+  const sugg   = document.getElementById(containerId + '-userSuggestions');
+  if (nameEl) nameEl.value = userName;
+  if (idEl)   idEl.value   = userId;
+  if (sugg)   sugg.style.display = 'none';
+}
+
+async function submitCreateTask(containerId) {
+  const title    = document.getElementById(containerId + '-taskTitle')?.value.trim();
+  const desc     = document.getElementById(containerId + '-taskDesc')?.value.trim();
+  const priority = document.getElementById(containerId + '-taskPriority')?.value;
+  const day      = document.getElementById(containerId + '-taskDay')?.value;
+  const time     = document.getElementById(containerId + '-taskTime')?.value;
+  const status   = document.getElementById(containerId + '-taskCreateStatus');
+
+  if (!title) { if(status){status.textContent='⚠ Title required';status.style.color='var(--pink-coral)';} return; }
+
+  let assignedTo = null, assignedRole = null;
+  if (taskAssignMode === 'role') {
+    assignedRole = document.getElementById(containerId + '-assignRole')?.value;
+  } else {
+    assignedTo = document.getElementById(containerId + '-assignUserId')?.value;
+    if (!assignedTo) { if(status){status.textContent='⚠ Select a person';status.style.color='var(--pink-coral)';} return; }
+  }
+
+  const token = localStorage.getItem('ss_auth_token');
+  if (status) { status.textContent='Creating…';status.style.color='var(--text-muted)'; }
+
+  try {
+    const res = await fetch(AUTH_URL + '/tasks', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({
+        title, description:desc, priority,
+        dueDate: day ? day + (time?' '+time:'') : '',
+        assignedTo, assignedRole
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      if (status) { status.textContent='✓ Task created!'; status.style.color='#4ade80'; }
+      setTimeout(() => { hideCreateTask(containerId); renderTaskManager(containerId); }, 1200);
+    } else {
+      if (status) { status.textContent='⚠ '+(data.error||'Failed'); status.style.color='var(--pink-coral)'; }
+    }
+  } catch {
+    if (status) { status.textContent='⚠ Could not connect'; status.style.color='var(--pink-coral)'; }
+  }
+}
+
+function renderTaskList(containerId, filter, tasks) {
+  const el = document.getElementById(containerId + '-tasklist');
+  if (!el) return;
+  let filtered = tasks;
+  if (filter === 'all') {/* keep all */}
+  else if (filter.startsWith('role:')) { const r=filter.slice(5); filtered=tasks.filter(t=>t.assignedRole===r); }
+  else filtered = tasks.filter(t => t.status === filter);
+
+  if (!filtered.length) {
+    el.innerHTML = '<div style="padding:20px 14px;text-align:center;color:var(--text-muted);">No tasks found.</div>';
+    return;
+  }
+
+  // Sort: pending first, then inprogress, then done
+  const order = {pending:0,inprogress:1,done:2};
+  filtered.sort((a,b) => (order[a.status]||0)-(order[b.status]||0));
+
+  el.innerHTML = filtered.map(t => {
+    const isMgmt = isAdminOrMgmt();
+    const assignedTo = t.assignedRole ? ROLE_LABELS[t.assignedRole]||t.assignedRole : (t.assignedToName||'Specific user');
+    const due = t.dueDate ? `· Due: ${t.dueDate}` : '';
+    const priorityColors = {high:'var(--pink-coral)',medium:'var(--gold-bright)',low:'var(--teal-glow)'};
+    return `<div class="task-card">
+      <div class="task-card-header">
+        <div class="task-card-check ${t.status}" onclick="cycleTaskStatus('${t.id}','${containerId}')">
+          ${t.status==='done'?'✓':t.status==='inprogress'?'↻':''}
+        </div>
+        <div class="task-card-body">
+          <div class="task-card-title ${t.status==='done'?'done':''}">${t.title}</div>
+          ${t.description?`<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">${t.description}</div>`:''}
+          <div class="task-card-meta">
+            <span style="color:${priorityColors[t.priority]||'var(--text-muted)'};">⬤ ${t.priority}</span>
+            <span class="task-assigned-badge">${assignedTo}</span>
+            <span>by ${t.assignedByName||'Admin'} ${due}</span>
+          </div>
+        </div>
+        <div class="task-card-actions">
+          <span class="task-status-pill ${t.status}" onclick="cycleTaskStatus('${t.id}','${containerId}')">
+            ${t.status}
+          </span>
+          ${isMgmt?`<button class="shift-block-del" onclick="deleteTask('${t.id}','${containerId}')">✕</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterTasks(filter, containerId, btn) {
+  document.querySelectorAll('#'+containerId+' .dash-btn').forEach(b=>{b.style.borderColor='';b.style.color='';});
+  if(btn){btn.style.borderColor='rgba(245,200,66,0.4)';btn.style.color='var(--gold-bright)';}
+  renderTaskList(containerId, filter, cachedTasks);
+}
+
+async function cycleTaskStatus(taskId, containerId) {
+  const task = cachedTasks.find(t => t.id === taskId);
+  if (!task) return;
+  const next = {pending:'inprogress',inprogress:'done',done:'pending'};
+  const newStatus = next[task.status] || 'pending';
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL + '/tasks/' + taskId, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({status:newStatus})
+    });
+    if (res.ok) {
+      task.status = newStatus;
+      renderTaskList(containerId, 'all', cachedTasks);
+      showToast('Task ' + newStatus);
+    }
+  } catch { showToast('Could not update task'); }
+}
+
+async function deleteTask(taskId, containerId) {
+  if (!confirm('Delete this task?')) return;
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    await fetch(AUTH_URL + '/tasks/' + taskId, {
+      method:'DELETE', headers:{'Authorization':'Bearer '+token}
+    });
+    cachedTasks = cachedTasks.filter(t => t.id !== taskId);
+    renderTaskList(containerId, 'all', cachedTasks);
+    showToast('Task deleted');
+  } catch { showToast('Could not delete task'); }
+}
+
+// ══════════════════════════════════════════════════════════
+// SHIFT / SCHEDULE MANAGER
+// ══════════════════════════════════════════════════════════
+function getPersonalBlocks() {
+  try { return JSON.parse(localStorage.getItem(PERSONAL_BLOCKS_KEY) || '[]'); } catch { return []; }
+}
+function savePersonalBlocks(blocks) {
+  localStorage.setItem(PERSONAL_BLOCKS_KEY, JSON.stringify(blocks));
+}
+
+async function renderShiftManager(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const isMgmt = isAdminOrMgmt();
+  const role = currentUser?.staffRole || (isMgmt ? null : 'management');
+
+  // Fetch locked shifts
+  let shifts = [];
+  try {
+    const token = localStorage.getItem('ss_auth_token');
+    const endpoint = isMgmt ? '/shifts/all' : '/shifts?role=' + (role||'');
+    const res = await fetch(AUTH_URL + endpoint, {
+      headers:{'Authorization':'Bearer '+token}
+    });
+    if (res.ok) { const d = await res.json(); shifts = d.shifts || []; }
+  } catch {}
+  cachedShifts = shifts;
+
+  const personalBlocks = getPersonalBlocks();
+
+  el.innerHTML = `
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <div class="dash-section-title">🕐 Shift Schedule</div>
+        ${isMgmt ? `<button class="dash-btn primary" onclick="showCreateShift('${containerId}')">+ Lock Shift</button>` : ''}
+      </div>
+      <div class="dash-section-body" style="padding:0;">
+        ${isMgmt ? `
+        <!-- Role filter for admin/mgmt -->
+        <div style="display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;">
+          <button class="dash-btn active" style="border-color:rgba(245,200,66,0.4);color:var(--gold-bright);"
+            onclick="filterShifts('all','${containerId}',this)">All Roles</button>
+          ${ROLES.map(r=>`<button class="dash-btn" onclick="filterShifts('${r}','${containerId}',this)">${ROLE_LABELS[r]}</button>`).join('')}
+        </div>` : ''}
+        <div id="${containerId}-shiftlist" style="padding:14px;">
+          ${buildShiftDayBlocks(shifts, personalBlocks, containerId, isMgmt, 'all')}
+        </div>
+      </div>
+    </div>
+    <!-- Create shift form -->
+    <div id="${containerId}-shiftform" style="display:none;">
+      ${buildCreateShiftForm(containerId)}
+    </div>
+    <!-- Add personal block form -->
+    <div id="${containerId}-personalform" style="display:none;">
+      ${buildPersonalBlockForm(containerId)}
+    </div>`;
+}
+
+function buildShiftDayBlocks(shifts, personalBlocks, containerId, isMgmt, roleFilter) {
+  let html = '';
+  DAYS.forEach(day => {
+    const dayShifts = shifts.filter(s => s.day === day && (roleFilter === 'all' || s.role === roleFilter));
+    const dayPersonal = personalBlocks.filter(b => b.day === day);
+    if (!dayShifts.length && !dayPersonal.length) return;
+
+    html += `<div class="schedule-day-section">
+      <div class="schedule-day-label">${DAY_LABELS[day]}</div>`;
+
+    // Locked shifts
+    dayShifts.forEach(s => {
+      html += `<div class="shift-block locked-shift">
+        <div class="shift-block-time">${s.startTime} — ${s.endTime}</div>
+        <div class="shift-block-body">
+          <div class="shift-block-title">${s.title}
+            <span class="shift-lock-badge">🔒 LOCKED · ${ROLE_LABELS[s.role]||s.role}</span>
+          </div>
+          <div class="shift-block-meta">${s.location?'📍 '+s.location:''}${s.notes?' · '+s.notes:''}</div>
+          <div class="shift-block-meta" style="margin-top:2px;">Set by ${s.createdByName||'Admin'}</div>
+        </div>
+        ${isMgmt?`<button class="shift-block-del" onclick="deleteShift('${s.id}','${containerId}')" title="Delete locked shift">✕</button>`:''}
+      </div>`;
+    });
+
+    // Personal blocks
+    dayPersonal.forEach(b => {
+      html += `<div class="shift-block personal-block">
+        <div class="shift-block-time">${b.startTime} — ${b.endTime}</div>
+        <div class="shift-block-body">
+          <div class="shift-block-title">${b.title}
+            <span class="shift-personal-badge">Personal</span>
+          </div>
+          ${b.notes?`<div class="shift-block-meta">${b.notes}</div>`:''}
+        </div>
+        <button class="shift-block-del" onclick="deletePersonalBlock('${b.id}','${containerId}')" title="Remove">✕</button>
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  if (!html) html = '<div style="text-align:center;padding:24px;color:var(--text-muted);">No shifts scheduled yet.</div>';
+
+  // Add personal block button for all users
+  html += `<button class="add-personal-btn" onclick="showPersonalBlockForm('${containerId}')">
+    + Add personal block to my schedule
+  </button>`;
+
+  return html;
+}
+
+function filterShifts(roleFilter, containerId, btn) {
+  document.querySelectorAll('#'+containerId+' .dash-section-body .dash-btn').forEach(b=>{b.style.borderColor='';b.style.color='';});
+  if(btn){btn.style.borderColor='rgba(245,200,66,0.4)';btn.style.color='var(--gold-bright)';}
+  const listEl = document.getElementById(containerId+'-shiftlist');
+  if (listEl) listEl.innerHTML = buildShiftDayBlocks(cachedShifts, getPersonalBlocks(), containerId, isAdminOrMgmt(), roleFilter);
+}
+
+function buildCreateShiftForm(containerId) {
+  return `<div class="dash-section" style="border-color:rgba(245,200,66,0.3);">
+    <div class="dash-section-header">
+      <div class="dash-section-title">🔒 Create Locked Shift</div>
+      <button class="dash-btn" onclick="hideShiftForm('${containerId}')">✕ Cancel</button>
+    </div>
+    <div class="dash-section-body">
+      <div class="create-task-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Title</label>
+            <input class="form-input" id="${containerId}-shiftTitle" placeholder="e.g. Security Post A">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Role</label>
+            <select class="form-select" id="${containerId}-shiftRole">
+              ${ROLES.map(r=>`<option value="${r}">${ROLE_LABELS[r]}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Day</label>
+            <select class="form-select" id="${containerId}-shiftDay">
+              ${DAYS.map(d=>`<option value="${d}">${DAY_LABELS[d]}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Location</label>
+            <input class="form-input" id="${containerId}-shiftLocation" placeholder="e.g. Main Entrance">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Start Time</label>
+            <input class="form-input" id="${containerId}-shiftStart" type="time">
+          </div>
+          <div class="form-field">
+            <label class="form-label">End Time</label>
+            <input class="form-input" id="${containerId}-shiftEnd" type="time">
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Notes</label>
+          <input class="form-input" id="${containerId}-shiftNotes" placeholder="Optional notes…">
+        </div>
+        <button class="dash-btn primary" style="width:100%;padding:12px;margin-top:4px;"
+          onclick="submitCreateShift('${containerId}')">🔒 Lock This Shift</button>
+        <div id="${containerId}-shiftCreateStatus" style="font-size:12px;margin-top:8px;color:var(--text-muted);"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showCreateShift(containerId) {
+  const f = document.getElementById(containerId+'-shiftform');
+  if (f) { f.style.display='block'; f.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+function hideShiftForm(containerId) {
+  const f = document.getElementById(containerId+'-shiftform');
+  if (f) f.style.display='none';
+}
+
+async function submitCreateShift(containerId) {
+  const title    = document.getElementById(containerId+'-shiftTitle')?.value.trim();
+  const role     = document.getElementById(containerId+'-shiftRole')?.value;
+  const day      = document.getElementById(containerId+'-shiftDay')?.value;
+  const start    = document.getElementById(containerId+'-shiftStart')?.value;
+  const end      = document.getElementById(containerId+'-shiftEnd')?.value;
+  const location = document.getElementById(containerId+'-shiftLocation')?.value.trim();
+  const notes    = document.getElementById(containerId+'-shiftNotes')?.value.trim();
+  const status   = document.getElementById(containerId+'-shiftCreateStatus');
+
+  if (!title||!start||!end) { if(status){status.textContent='⚠ Title, start and end time required';status.style.color='var(--pink-coral)';} return; }
+
+  const token = localStorage.getItem('ss_auth_token');
+  if (status) { status.textContent='Creating…'; status.style.color='var(--text-muted)'; }
+
+  try {
+    const res = await fetch(AUTH_URL + '/shifts', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({title,role,day,startTime:start,endTime:end,location,notes})
+    });
+    const data = await res.json();
+    if (res.ok) {
+      if(status){status.textContent='✓ Shift locked!';status.style.color='#4ade80';}
+      setTimeout(()=>{ hideShiftForm(containerId); renderShiftManager(containerId); },1200);
+    } else {
+      if(status){status.textContent='⚠ '+(data.error||'Failed');status.style.color='var(--pink-coral)';}
+    }
+  } catch {
+    if(status){status.textContent='⚠ Could not connect';status.style.color='var(--pink-coral)';}
+  }
+}
+
+async function deleteShift(shiftId, containerId) {
+  if (!confirm('Delete this locked shift? This cannot be undone.')) return;
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    await fetch(AUTH_URL + '/shifts/' + shiftId, {
+      method:'DELETE', headers:{'Authorization':'Bearer '+token}
+    });
+    cachedShifts = cachedShifts.filter(s => s.id !== shiftId);
+    renderShiftManager(containerId);
+    showToast('Shift deleted');
+  } catch { showToast('Could not delete shift'); }
+}
+
+// Personal blocks (localStorage only)
+function buildPersonalBlockForm(containerId) {
+  return `<div class="dash-section" style="border-color:rgba(0,212,200,0.3);">
+    <div class="dash-section-header">
+      <div class="dash-section-title" style="color:var(--teal-glow);">+ Personal Block</div>
+      <button class="dash-btn" onclick="hidePersonalForm('${containerId}')">✕</button>
+    </div>
+    <div class="dash-section-body">
+      <div class="create-task-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Label</label>
+            <input class="form-input" id="${containerId}-pTitle" placeholder="e.g. Meal break, Personal time…">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Day</label>
+            <select class="form-select" id="${containerId}-pDay">
+              ${DAYS.map(d=>`<option value="${d}">${DAY_LABELS[d]}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Start</label>
+            <input class="form-input" id="${containerId}-pStart" type="time">
+          </div>
+          <div class="form-field">
+            <label class="form-label">End</label>
+            <input class="form-input" id="${containerId}-pEnd" type="time">
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Notes</label>
+          <input class="form-input" id="${containerId}-pNotes" placeholder="Optional…">
+        </div>
+        <button class="dash-btn success" style="width:100%;padding:12px;margin-top:4px;"
+          onclick="submitPersonalBlock('${containerId}')">+ Add to My Schedule</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showPersonalBlockForm(containerId) {
+  const f = document.getElementById(containerId+'-personalform');
+  if (f) { f.style.display='block'; f.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+function hidePersonalForm(containerId) {
+  const f = document.getElementById(containerId+'-personalform');
+  if (f) f.style.display='none';
+}
+
+function submitPersonalBlock(containerId) {
+  const title = document.getElementById(containerId+'-pTitle')?.value.trim();
+  const day   = document.getElementById(containerId+'-pDay')?.value;
+  const start = document.getElementById(containerId+'-pStart')?.value;
+  const end   = document.getElementById(containerId+'-pEnd')?.value;
+  const notes = document.getElementById(containerId+'-pNotes')?.value.trim();
+  if (!title||!start||!end) { showToast('Title, start and end time required'); return; }
+  const blocks = getPersonalBlocks();
+  blocks.push({ id: Date.now().toString(), title, day, startTime:start, endTime:end, notes });
+  savePersonalBlocks(blocks);
+  hidePersonalForm(containerId);
+  renderShiftManager(containerId);
+  showToast('✓ Personal block added');
+}
+
+function deletePersonalBlock(blockId, containerId) {
+  const blocks = getPersonalBlocks().filter(b => b.id !== blockId);
+  savePersonalBlocks(blocks);
+  renderShiftManager(containerId);
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -4213,6 +5247,22 @@ function closeRaveworm() {
     <div class="edit-modal-footer">
       <button class="dash-btn" onclick="closeArtistEdit()">Cancel</button>
       <button class="dash-btn primary" onclick="saveArtistEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ SITE ALERT OVERLAY ══ -->
+<div class="site-alert-overlay" id="siteAlertOverlay">
+  <div class="site-alert-banner">
+    <div class="site-alert-inner warning" id="siteAlertInner">
+      <div class="site-alert-icon" id="siteAlertIcon">⚠️</div>
+      <div class="site-alert-body">
+        <div class="site-alert-title" id="siteAlertTitle">Alert</div>
+        <div class="site-alert-message" id="siteAlertMessage"></div>
+        <div class="site-alert-meta" id="siteAlertMeta"></div>
+      </div>
+      <button class="site-alert-dismiss" onclick="dismissSiteAlert()">Dismiss</button>
     </div>
   </div>
 </div>
