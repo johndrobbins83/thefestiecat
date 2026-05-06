@@ -1480,9 +1480,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .avatar-color-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
 .avatar-color-swatch{width:32px;height:32px;cursor:pointer;border:2px solid transparent;transition:all .15s;}
 .avatar-color-swatch.selected{border-color:#fff;transform:scale(1.15);}
-.profile-avatar-preview{width:64px;height:64px;border-radius:50%;display:flex;
-  align-items:center;justify-content:center;font-size:22px;font-weight:900;
-  color:#fff;margin:0 auto 16px;transition:background .2s;}
+.profile-avatar-preview{width:80px;height:80px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-size:24px;font-weight:900;
+  color:#fff;margin:0 auto 0;transition:background .2s;overflow:hidden;}
+.profile-avatar-preview:hover #profilePicOverlay{opacity:1!important;}
+.profile-avatar-preview img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 
 /* Feed */
 .feed-compose{background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);
@@ -1696,7 +1698,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
     </div>
     <div class="nav-avatar-wrap" id="navAvatarWrap" onclick="toggleUserMenu()" style="display:none;position:relative;">
-      <div class="nav-avatar" id="navAvatar">?</div>
+      <div class="nav-avatar" id="navAvatar" style="overflow:hidden;">?</div>
       <div class="nav-role-badge festie" id="navRoleBadge">Fan</div>
       <div class="user-menu" id="userMenu">
         <div class="user-menu-header">
@@ -1706,6 +1708,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </div>
         <button class="user-menu-item" onclick="navigate('schedule');closeUserMenu()">📅 My Schedule</button>
         <button class="user-menu-item" onclick="navigate('people');closeUserMenu()">👥 People &amp; Feed</button>
+        <button class="user-menu-item" onclick="openProfilePicChange();closeUserMenu()">📷 Change Photo</button>
         <button class="user-menu-item nav-admin-only" style="color:#f5c842;display:none;" onclick="navigate('admin');closeUserMenu()">⚙ Admin Dashboard</button>
         <button class="user-menu-item nav-staff-only" style="color:#c084fc;display:none;" onclick="navigate('staff');closeUserMenu()">📋 Staff Dashboard</button>
         <button class="user-menu-item logout" onclick="authLogout()">Sign out</button>
@@ -3688,7 +3691,13 @@ function setCurrentUser(user, token) {
 
   if (wrap)   wrap.style.display   = 'block';
   if (signIn) signIn.style.display = 'none';
-  if (avatar) avatar.textContent   = user.avatar || user.name.slice(0,2).toUpperCase();
+  if (avatar) {
+    if (user.profilePic) {
+      avatar.innerHTML = '<img src="' + user.profilePic + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">';
+    } else {
+      avatar.textContent = user.avatar || user.name.slice(0,2).toUpperCase();
+    }
+  }
   if (badge)  { badge.textContent  = roleLabel(user.role); badge.className = `nav-role-badge ${user.role}`; }
   if (name)   name.textContent     = user.name;
   if (email)  email.textContent    = user.email;
@@ -5457,7 +5466,7 @@ function renderFeedPosts(posts, hasMore, append) {
     const timeAgo  = getTimeAgo(p.createdAt);
     return `<div class="post-card" id="post-${p.id}">
       <div class="post-header">
-        <div class="post-avatar" style="background:${p.authorColor||'#9b3dff'};">${initials}</div>
+        <div class="post-avatar" style="background:${p.authorColor||'#9b3dff'};">${p.authorProfilePic?'<img src="'+p.authorProfilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':initials}</div>
         <div class="post-meta">
           <div class="post-handle">@${p.authorHandle||'unknown'}</div>
           <div class="post-time">${timeAgo}</div>
@@ -5566,7 +5575,7 @@ async function doSearchPeople(query) {
   }
   results.innerHTML = data.users.map(u =>
     `<div class="person-card">
-      <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${(u.handle?.[0]||'?').toUpperCase()}</div>
+      <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
       <div class="person-info">
         <div class="person-handle">@${u.handle}</div>
         <div class="person-bio">${u.bio||'No bio yet'}</div>
@@ -5606,7 +5615,7 @@ async function loadFriendRequests() {
     updateDMBadge(requests.length);
     listEl.innerHTML = requests.map(u =>
       `<div class="request-card">
-        <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${(u.handle?.[0]||'?').toUpperCase()}</div>
+        <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
         <div class="person-info" style="flex:1;">
           <div class="person-handle">@${u.handle}</div>
           <div class="person-bio">Wants to connect with you</div>
@@ -5791,6 +5800,119 @@ function getTimeAgo(iso) {
 }
 function escapeHTML(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ════════════════════════════════════════
+   PROFILE PICTURE UPLOAD
+════════════════════════════════════════ */
+let pendingProfilePicFile = null;
+
+function previewProfilePic(input) {
+  const file = input.files[0];
+  if (!file) return;
+  pendingProfilePicFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('profileAvatarPreview');
+    if (preview) {
+      preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><div id="profilePicOverlay" style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;">&#128247;</div>';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadProfilePic(file) {
+  if (!file) return null;
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) return null;
+  const slug = 'profile_' + (currentUser?.id || 'user');
+  try {
+    const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
+      method: 'POST',
+      headers: { 'Content-Type': file.type, 'Authorization': 'Bearer ' + token },
+      body: file
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.url || null;
+    }
+  } catch {}
+  return null;
+}
+
+// Hook into submitProfileSetup to upload pic first
+const _origSubmitProfile = submitProfileSetup;
+window.submitProfileSetup = async function() {
+  // If there's a pending pic, upload it first then proceed
+  if (pendingProfilePicFile) {
+    const btn = document.getElementById('profileSetupBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Uploading photo…'; }
+    const picUrl = await uploadProfilePic(pendingProfilePicFile);
+    if (picUrl) {
+      // Store temporarily so profile save can include it
+      window._pendingProfilePicUrl = picUrl;
+    }
+    if (btn) { btn.disabled = false; btn.textContent = "Let's Go! 🏴‍☠️"; }
+    pendingProfilePicFile = null;
+  }
+  _origSubmitProfile();
+};
+
+// Change photo from dropdown
+function openProfilePicChange() {
+  // Create a hidden file input and trigger it
+  let input = document.getElementById('profilePicChangeInput');
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'file';
+    input.id = 'profilePicChangeInput';
+    input.accept = 'image/*';
+    input.style.display = 'none';
+    input.onchange = async function() {
+      const file = this.files[0];
+      if (!file) return;
+      showToast('Uploading photo…');
+      const url = await uploadProfilePic(file);
+      if (url) {
+        // Update profile with new pic
+        const token = localStorage.getItem('ss_auth_token');
+        try {
+          const res = await fetch(AUTH_URL + '/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+              handle: currentUser.handle,
+              bio: currentUser.bio || '',
+              avatarColor: currentUser.avatarColor || '#9b3dff',
+              profilePic: url
+            })
+          });
+          if (res.ok) {
+            currentUser.profilePic = url;
+            localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+            updateNavAvatar();
+            showToast('✓ Profile photo updated!');
+          }
+        } catch { showToast('Could not save photo'); }
+      } else {
+        showToast('Upload failed — try again');
+      }
+    };
+    document.body.appendChild(input);
+  }
+  input.click();
+}
+
+function updateNavAvatar() {
+  const avatar = document.getElementById('navAvatar');
+  if (!avatar || !currentUser) return;
+  if (currentUser.profilePic) {
+    avatar.innerHTML = '<img src="' + currentUser.profilePic + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">';
+    avatar.style.background = currentUser.avatarColor || '#9b3dff';
+  } else {
+    avatar.innerHTML = (currentUser.handle?.[0] || currentUser.name?.[0] || '?').toUpperCase();
+    avatar.style.background = currentUser.avatarColor || '#9b3dff';
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -6205,6 +6327,19 @@ function updateDMBadge(count) {
     <div class="auth-logo">☠ SUNKEN SUITE<span>Set Up Your Profile</span></div>
     <div style="margin-top:20px;">
       <div class="profile-avatar-preview" id="profileAvatarPreview">?</div>
+      <!-- Profile pic upload -->
+      <div style="text-align:center;margin-bottom:16px;position:relative;display:inline-block;left:50%;transform:translateX(-50%);">
+        <div class="profile-avatar-preview" id="profileAvatarPreview" style="cursor:pointer;position:relative;"
+          onclick="document.getElementById('profilePicInput').click()">
+          ?
+          <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.4);
+            display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;"
+            id="profilePicOverlay">📷</div>
+        </div>
+        <input type="file" id="profilePicInput" accept="image/*" style="display:none;"
+          onchange="previewProfilePic(this)">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Tap to upload photo</div>
+      </div>
       <div class="auth-field" style="margin-bottom:14px;">
         <label class="auth-label">Choose your handle</label>
         <input class="auth-input" id="profileHandleInput" type="text" maxlength="20"
