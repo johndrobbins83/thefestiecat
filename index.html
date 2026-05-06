@@ -6281,38 +6281,6 @@ function hideEditProfileForm() {
   if (f) f.style.display='none';
 }
 
-async function saveProfileEdits() {
-  const handle      = (document.getElementById('editHandle')?.value||'').trim();
-  const bio         = (document.getElementById('editBio')?.value||'').trim();
-  const hometown    = (document.getElementById('editHometown')?.value||'').trim();
-  const musicStyles = (document.getElementById('editMusicStyles')?.value||'').trim();
-  const favoriteArtists = (document.getElementById('editFaveArtists')?.value||'').trim();
-  const firstRave   = (document.getElementById('editFirstRave')?.value||'').trim();
-  const status      = document.getElementById('editProfileStatus');
-  if (!handle || handle.length < 3) { if(status){status.textContent='Handle must be 3+ chars';status.style.color='var(--pink-coral)';} return; }
-  if(status){status.textContent='Saving…';status.style.color='var(--text-muted)';}
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res = await fetch(AUTH_URL+'/profile', {
-      method:'PUT',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({ handle, bio, hometown, musicStyles, favoriteArtists, firstRave,
-        avatarColor: currentUser.avatarColor||'#9b3dff',
-        profilePic: currentUser.profilePic||'' })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      Object.assign(currentUser, data.user);
-      localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-      updateNavAvatar();
-      hideEditProfileForm();
-      initProfile(); // re-render
-      showToast('✓ Profile updated!');
-    } else {
-      if(status){status.textContent=data.error||'Failed';status.style.color='var(--pink-coral)';}
-    }
-  } catch { if(status){status.textContent='Could not connect';status.style.color='var(--pink-coral)';} }
-}
 
 /* ════════════════════════════════════════
    EDIT PROFILE MODAL
