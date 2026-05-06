@@ -6303,7 +6303,13 @@ function openEditProfileModal() {
 function closeEditProfileModal() {
   const modal = document.getElementById('editProfileModal');
   if (modal) modal.classList.remove('open');
-  document.body.style.overflow = '';
+  // Restore overflow:hidden if profile overlay is still open
+  const profileOverlay = document.getElementById('profileOverlay');
+  if (profileOverlay && profileOverlay.classList.contains('open')) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
 }
 
 function previewEditBanner(input) {
@@ -6371,8 +6377,11 @@ async function saveProfileEdits() {
       localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
       updateNavAvatar();
       closeEditProfileModal();
+      // Re-render profile overlay with new data (keep it open)
       const overlay = document.getElementById('profileOverlay');
-      if (overlay && overlay.classList.contains('open')) initProfile();
+      if (overlay && overlay.classList.contains('open')) {
+        await initProfile();
+      }
       showToast('Profile updated!');
     } else {
       if (statusEl) { statusEl.textContent=data.error||'Failed'; statusEl.style.color='var(--pink-coral)'; }
