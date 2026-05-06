@@ -1077,8 +1077,8 @@ body{
 .auth-btn:disabled{opacity:0.5;cursor:default;}
 .auth-error{
   background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.35);
-  color:var(--pink-coral);font-size:13px;font-weight:600;
-  padding:10px 14px;margin-bottom:14px;display:none;
+  color:var(--pink-coral);font-size:12px;font-weight:600;
+  padding:8px 12px;margin-bottom:10px;display:none;word-break:break-word;
 }
 .auth-error.show{display:block;}
 .auth-switch{
@@ -5386,7 +5386,13 @@ function closeProfileSetup() {
 }
 
 function skipProfileSetup() {
-  closeProfileSetup();
+  // Force close and go home - no network call
+  const overlay = document.getElementById('profileSetupOverlay');
+  if (overlay) {
+    overlay.classList.remove('open');
+    overlay.style.cssText = 'display:none!important;visibility:hidden!important;pointer-events:none!important;';
+  }
+  document.body.style.overflow = '';
   navigate('home');
 }
 
@@ -5439,8 +5445,10 @@ async function submitProfileSetup() {
   if(errEl) errEl.classList.remove('show');
   btn.disabled = true;
   const token = localStorage.getItem('ss_auth_token');
+  console.log('Token present:', !!token, 'Length:', token?.length);
+  console.log('AUTH_URL:', AUTH_URL);
   if (!token) {
-    if(errEl){errEl.textContent='Not logged in - please refresh';errEl.classList.add('show');}
+    if(errEl){errEl.textContent='Not logged in - please sign out and back in';errEl.classList.add('show');}
     btn.disabled = false;
     return;
   }
@@ -5484,7 +5492,8 @@ async function submitProfileSetup() {
     }
   } catch(e) {
     console.error('Profile setup error:', e);
-    if(errEl){errEl.textContent = 'Connection error - check console';errEl.classList.add('show');}
+    const msg = e?.message || String(e) || 'Unknown error';
+    if(errEl){errEl.textContent = 'Error: ' + msg;errEl.classList.add('show');}
     btn.disabled = false;
     btn.textContent = "Let's Go!";
   }
