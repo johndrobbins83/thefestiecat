@@ -2439,12 +2439,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   </div><!-- /page-people -->
 
 
-  <!-- ── PROFILE PAGE ── -->
-  <div class="page" id="page-profile">
-    <div class="profile-page-wrap" id="profilePageContent">
-      <div style="text-align:center;padding:48px;color:var(--text-muted);">Loading profile…</div>
-    </div>
-  </div>
+
 
 </div><!-- /app -->
 
@@ -2809,7 +2804,6 @@ function navigate(page) {
   if (page === 'admin')  initAdminDashboard();
   if (page === 'staff')  initStaffDashboard();
   if (page === 'people')  { initPeople(); }
-  if (page === 'profile') { navigateToProfile(viewingUserId); }
   if (page === 'profile') { initProfile(); }
   // Update URL hash for deep-linking
   window.location.hash = page;
@@ -3578,7 +3572,8 @@ if ('serviceWorker' in navigator) {
 ════════════════════════════════════════════════════════════ */
 (function() {
   const page = location.hash.slice(1);
-  if (page && document.getElementById('page-'+page)) navigate(page);
+  // Don't restore profile page on refresh — it needs auth context
+  if (page && page !== 'profile' && document.getElementById('page-'+page)) navigate(page);
   window.addEventListener('hashchange', ()=>{ const p=location.hash.slice(1); if(p && document.getElementById('page-'+p)) navigate(p); });
 })();
 
@@ -6039,7 +6034,8 @@ async function initProfile() {
     } catch {}
   }
   if (!currentUser) {
-    wrap.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Please sign in to view your profile.</div>';
+    closeProfileOverlay();
+    navigate('home');
     return;
   }
 
