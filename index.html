@@ -6163,7 +6163,12 @@ function openProfilePicChange() {
             currentUser.profilePic = url;
             localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
             updateNavAvatar();
-            showToast('✓ Profile photo updated!');
+            // Update profile avatar in overlay directly
+            const avatarEl = document.querySelector('.profile-avatar-large');
+            if (avatarEl) {
+              avatarEl.innerHTML = '<img src="'+url+'?v='+Date.now()+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()"><div class="profile-avatar-edit-hint">&#x270F;</div>';
+            }
+            showToast('Profile photo updated!');
           }
         } catch { showToast('Could not save photo'); }
       } else {
@@ -6208,7 +6213,16 @@ async function initProfile() {
   if (isOwnProfile) {
     try {
       const res = await fetch(AUTH_URL + '/auth/me', { headers: {'Authorization':'Bearer '+token} });
-      if (res.ok) { const d = await res.json(); user = {...user,...d.user}; if(currentUser) Object.assign(currentUser,d.user); localStorage.setItem(USER_KEY,JSON.stringify(currentUser)); }
+      if (res.ok) {
+        const d = await res.json();
+        // Keep local profilePic/bannerPic if server doesn't have them yet
+        const keepPic    = currentUser?.profilePic || '';
+        const keepBanner = currentUser?.bannerPic   || '';
+        user = {...user, ...d.user};
+        if (keepPic    && !d.user.profilePic) user.profilePic = keepPic;
+        if (keepBanner && !d.user.bannerPic)  user.bannerPic  = keepBanner;
+        if (currentUser) { Object.assign(currentUser, user); localStorage.setItem(USER_KEY, JSON.stringify(currentUser)); }
+      }
     } catch(e) { console.warn('auth/me failed:',e.message); }
   } else {
     // Look up from any cached user list
