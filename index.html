@@ -3850,7 +3850,7 @@ function setCurrentUser(user, token) {
   if (signIn) signIn.style.display = 'none';
   if (avatar) {
     if (user.profilePic) {
-      avatar.innerHTML = '<img src="' + user.profilePic + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">';
+      avatar.innerHTML = '<img src="' + user.profilePic + '?v=' + Date.now() + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">';
     } else {
       avatar.textContent = user.avatar || user.name.slice(0,2).toUpperCase();
     }
@@ -3877,14 +3877,32 @@ function setCurrentUser(user, token) {
   // Show edit pen on artist cards for admin
   if (isAdmin) document.body.classList.add('is-admin');
 
-  // Check if profile setup needed
-  setTimeout(checkProfileSetup, 800);
-
-  // Start DM polling
-  startDMPolling();
-
-  // Close auth overlay
+  // Close auth overlay first
   closeAuth();
+
+  // Navigate to home
+  navigate('home');
+
+  // Fresh data load sequence
+  setTimeout(function() {
+    // 1. Check profile setup
+    checkProfileSetup();
+    // 2. Start DM polling
+    startDMPolling();
+    // 3. Pre-load friends so Connect tab is ready
+    loadFriendRequests();
+    loadFriends();
+    // 4. Pre-load admin users if admin
+    if (user.role === 'admin') {
+      loadUsersForAssign();
+      // Also trigger admin dashboard pre-cache
+      fetch(AUTH_URL + '/auth/users', {
+        headers: {'Authorization': 'Bearer ' + localStorage.getItem(TOKEN_KEY)}
+      }).then(r => r.json()).then(d => {
+        if (d.users) window._allUsers = d.users;
+      }).catch(() => {});
+    }
+  }, 300);
 }
 
 function roleLabel(role) {
@@ -4016,8 +4034,24 @@ let adminSchedDay = 'fri';
 function initAdminDashboard() {
   renderAdminArtistGrid();
   renderAdminSchedule();
-  // Pre-cache users for task assignment autocomplete
   loadUsersForAssign();
+  // Always reload users list fresh
+  loadAdminUsers();
+}
+
+async function loadAdminUsers() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return;
+  try {
+    const res = await fetch(AUTH_URL + '/auth/users', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (res.ok) {
+      const d = await res.json();
+      window._allUsers = d.users || [];
+      renderAdminUsersTab();
+    }
+  } catch(e) { console.warn('loadAdminUsers failed:', e); }
 }
 
 async function loadUsersForAssign() {
@@ -6136,7 +6170,7 @@ function updateNavAvatar() {
   const avatar = document.getElementById('navAvatar');
   if (!avatar || !currentUser) return;
   if (currentUser.profilePic) {
-    avatar.innerHTML = '<img src="' + currentUser.profilePic + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">';
+    avatar.innerHTML = '<img src="' + currentUser.profilePic + '?v=' + Date.now() + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">';
     avatar.style.background = currentUser.avatarColor || '#9b3dff';
   } else {
     avatar.innerHTML = (currentUser.handle?.[0] || currentUser.name?.[0] || '?').toUpperCase();
