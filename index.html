@@ -4077,6 +4077,7 @@ function switchAdminTab(tab, btn) {
   if (tab === 'schedule') renderAdminSchedule();
   if (tab === 'tasks')   renderTaskManager('sharedTaskManager');
   if (tab === 'shifts')  renderShiftManager('sharedShiftManager');
+  if (tab === 'users')   loadAdminUsers();
 }
 
 // ── Artist grid ────────────────────────────────────────────
