@@ -5524,7 +5524,10 @@ async function loadFeed(filter, btn) {
   listEl.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading feed…</div>';
   const token = localStorage.getItem('ss_auth_token');
   try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(()=>ctrl.abort(), 10000);
     const res  = await fetch(AUTH_URL+'/posts?filter='+feedFilter+'&page=0', {
+      signal: ctrl.signal,
       headers:{'Authorization':'Bearer '+token}
     });
     const data = await res.json();
