@@ -2383,12 +2383,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <!-- Filters -->
     <div class="feed-filters">
-      <button class="feed-filter-btn active" onclick="loadFeed('all',this)">All</button>
-      <button class="feed-filter-btn" onclick="loadFeed('dnb',this)">DNB</button>
-      <button class="feed-filter-btn" onclick="loadFeed('oasis',this)">Oasis</button>
-      <button class="feed-filter-btn" onclick="loadFeed('fri',this)">Fri</button>
-      <button class="feed-filter-btn" onclick="loadFeed('sat',this)">Sat</button>
-      <button class="feed-filter-btn" onclick="loadFeed('sun',this)">Sun</button>
+      <button class="feed-filter-btn active" onclick="loadFeed(\'all\',this)">All</button>
+      <button class="feed-filter-btn" onclick="loadFeed(\'dnb\',this)">DNB</button>
+      <button class="feed-filter-btn" onclick="loadFeed(\'oasis\',this)">Oasis</button>
+      <button class="feed-filter-btn" onclick="loadFeed(\'fri\',this)">Fri</button>
+      <button class="feed-filter-btn" onclick="loadFeed(\'sat\',this)">Sat</button>
+      <button class="feed-filter-btn" onclick="loadFeed(\'sun\',this)">Sun</button>
     </div>
     <div id="feedList"></div>
   </div>
@@ -6237,7 +6237,7 @@ function buildFeedHTML() {
   h += '<div class="feed-compose" id="feedCompose">';
   h += '<div class="feed-compose-row">';
   h += '<div class="feed-compose-avatar" id="feedComposeAvatar" style="background:#9b3dff;">?</div>';
-    h += '<textarea class="feed-compose-input" id="feedPostText" placeholder="What is happening at The Mutiny?" rows="2" oninput="var t=this;t.style.height=\'auto\';t.style.height=t.scrollHeight+\'px\'"></textarea>';
+    h += '<textarea class="feed-compose-input" id="feedPostText" placeholder="What is happening at The Mutiny?" rows="2" oninput="this.style.height=this.scrollHeight+&quot;px&quot;"></textarea>';
   h += '</div>';
   h += '<div class="feed-compose-actions">';
   h += '<button class="feed-compose-btn" id="checkinToggleBtn" onclick="toggleCheckin()">&#128205; Check-in</button>';
@@ -6262,12 +6262,12 @@ function buildFeedHTML() {
   h += '</div>';
   h += '</div>';
   h += '<div class="feed-filters">';
-  h += '<button class="feed-filter-btn active" onclick="loadFeed(&quot;all&quot;,this)">All</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;dnb&quot;,this)">&#x1F941; DNB</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;oasis&quot;,this)">&#127796; Oasis</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;fri&quot;,this)">Fri</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;sat&quot;,this)">Sat</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;sun&quot;,this)">Sun</button>';
+  h += '<button class="feed-filter-btn active" onclick="loadFeed(\'all\',this)">All</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(\'dnb\',this)">&#x1F941; DNB</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(\'oasis\',this)">&#127796; Oasis</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(\'fri\',this)">Fri</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(\'sat\',this)">Sat</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(\'sun\',this)">Sun</button>';
   h += '</div>';
   h += '<div id="feedList"></div>';
   return h;
