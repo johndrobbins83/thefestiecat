@@ -6240,24 +6240,24 @@ function buildFeedHTML() {
   h += '<div class="feed-compose" id="feedCompose">';
   h += '<div class="feed-compose-row">';
   h += '<div class="feed-compose-avatar" id="feedComposeAvatar" style="background:#9b3dff;">?</div>';
-    h += '<textarea class="feed-compose-input" id="feedPostText" placeholder="What is happening at The Mutiny?" rows="2" oninput="this.style.height=this.scrollHeight+&quot;px&quot;"></textarea>';
+  h += '<textarea class="feed-compose-input" id="feedPostText" placeholder="What is happening at The Mutiny?" rows="2"></textarea>';
   h += '</div>';
   h += '<div class="feed-compose-actions">';
   h += '<button class="feed-compose-btn" id="checkinToggleBtn" onclick="toggleCheckin()">&#128205; Check-in</button>';
   h += '<button class="feed-compose-btn" id="photoComposeBtn" onclick="triggerFeedPhoto()">&#128247; Photo</button>';
-  h += '<input type="file" id="feedPhotoInput" accept="image/*" style="display:none;" onchange="previewFeedPhoto(this)">';
+  h += '<input type="file" id="feedPhotoInput" accept="image/*" style="display:none;">';
   h += '<button class="feed-post-btn" id="feedPostBtn" onclick="submitPost()" disabled>Post</button>';
   h += '</div>';
   h += '<select class="checkin-select" id="checkinSelect">';
   h += '<option value="">Select location…</option>';
-  h += '<option value="DNB Stage">&#x1F941; DNB Stage</option>';
-  h += '<option value="Oasis Stage">&#127796; Oasis Stage</option>';
-  h += '<option value="Pool">&#127946; Pool</option>';
-  h += '<option value="Beach">&#127958; Beach</option>';
-  h += '<option value="Hotel Lobby">&#127968; Hotel Lobby</option>';
-  h += '<option value="Greenhouse Restaurant">&#127374; Greenhouse</option>';
-  h += '<option value="Oxhead Tavern">&#127866; Oxhead Tavern</option>';
-  h += '<option value="Parking Lot">&#127359; Parking Lot</option>';
+  h += '<option value="DNB Stage">DNB Stage</option>';
+  h += '<option value="Oasis Stage">Oasis Stage</option>';
+  h += '<option value="Pool">Pool</option>';
+  h += '<option value="Beach">Beach</option>';
+  h += '<option value="Hotel Lobby">Hotel Lobby</option>';
+  h += '<option value="Greenhouse Restaurant">Greenhouse</option>';
+  h += '<option value="Oxhead Tavern">Oxhead Tavern</option>';
+  h += '<option value="Parking Lot">Parking Lot</option>';
   h += '</select>';
   h += '<div id="feedPhotoPreviewWrap" style="display:none;margin-top:10px;position:relative;">';
   h += '<img id="feedPhotoPreviewImg" style="max-height:180px;max-width:100%;display:block;">';
@@ -6265,12 +6265,12 @@ function buildFeedHTML() {
   h += '</div>';
   h += '</div>';
   h += '<div class="feed-filters">';
-  h += '<button class="feed-filter-btn active" onclick="loadFeed(\'all\',this)">All</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(\'dnb\',this)">&#x1F941; DNB</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(\'oasis\',this)">&#127796; Oasis</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(\'fri\',this)">Fri</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(\'sat\',this)">Sat</button>';
-  h += '<button class="feed-filter-btn" onclick="loadFeed(\'sun\',this)">Sun</button>';
+  h += '<button class="feed-filter-btn active" onclick="loadFeed(&apos;all&apos;,this)">All</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&apos;dnb&apos;,this)">DNB</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&apos;oasis&apos;,this)">Oasis</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&apos;fri&apos;,this)">Fri</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&apos;sat&apos;,this)">Sat</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&apos;sun&apos;,this)">Sun</button>';
   h += '</div>';
   h += '<div id="feedList"></div>';
   return h;
@@ -6278,11 +6278,23 @@ function buildFeedHTML() {
 
 function initFeedCompose() {
   updateFeedComposeAvatar();
+  // Wire textarea input to enable Post button
   const textEl = document.getElementById('feedPostText');
-  if (textEl) textEl.addEventListener('input', () => {
-    const btn = document.getElementById('feedPostBtn');
-    if (btn) btn.disabled = !textEl.value.trim() && !feedPhotoFile;
-  });
+  if (textEl) {
+    textEl.addEventListener('input', function() {
+      const btn = document.getElementById('feedPostBtn');
+      if (btn) btn.disabled = !this.value.trim() && !feedPhotoFile;
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+  }
+  // Wire photo input change
+  const photoInput = document.getElementById('feedPhotoInput');
+  if (photoInput) {
+    photoInput.addEventListener('change', function() {
+      previewFeedPhoto(this);
+    });
+  }
 }
 
 function updateDMBadge(count) {
