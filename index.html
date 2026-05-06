@@ -2809,6 +2809,7 @@ function navigate(page) {
   if (page === 'admin')  initAdminDashboard();
   if (page === 'staff')  initStaffDashboard();
   if (page === 'people')  { initPeople(); }
+  if (page === 'profile') { navigateToProfile(viewingUserId); }
   if (page === 'profile') { initProfile(); }
   // Update URL hash for deep-linking
   window.location.hash = page;
@@ -6030,15 +6031,26 @@ async function initProfile() {
   wrap.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Loading…</div>';
 
   const token = localStorage.getItem('ss_auth_token');
+  // If no currentUser yet, wait for auth then retry
+  if (!currentUser && token) {
+    try {
+      const res = await fetch(AUTH_URL + '/auth/me', { headers:{'Authorization':'Bearer '+token} });
+      if (res.ok) { const d = await res.json(); setCurrentUser(d.user, token); }
+    } catch {}
+  }
+  if (!currentUser) {
+    wrap.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Please sign in to view your profile.</div>';
+    return;
+  }
+
   const isOwnProfile = !viewingUserId || viewingUserId === currentUser?.id;
 
   let user;
   if (isOwnProfile) {
-    // Use current user data + fetch fresh
     user = { ...currentUser };
     try {
       const res = await fetch(AUTH_URL + '/auth/me', { headers:{'Authorization':'Bearer '+token} });
-      if (res.ok) { const d = await res.json(); user = { ...user, ...d.user }; }
+      if (res.ok) { const d = await res.json(); user = { ...user, ...d.user }; Object.assign(currentUser, d.user); }
     } catch {}
   } else {
     // Fetch other user by ID — we need handle first
