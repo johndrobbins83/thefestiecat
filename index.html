@@ -6995,5 +6995,43 @@ function updateDMBadge(count) {
   </div>
 </div>
 
+
+<!-- ══ PROFILE OVERLAY ══ -->
+<style>
+.profile-overlay{position:fixed;inset:0;z-index:20000;pointer-events:none;display:none;}
+.profile-overlay.open{pointer-events:all;display:block;}
+.profile-overlay-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.8);}
+.profile-overlay-sheet{
+  position:absolute;bottom:0;left:0;right:0;background:#0a0a0a;
+  border-top:1px solid rgba(245,200,66,0.2);max-height:92vh;overflow-y:auto;
+}
+@media(min-width:768px){
+  .profile-overlay-sheet{
+    position:absolute;top:50%;left:50%;bottom:auto;
+    transform:translate(-50%,-50%);width:520px;max-height:88vh;
+    border:1px solid rgba(245,200,66,0.2);
+  }
+}
+.profile-sheet-header{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);
+  position:sticky;top:0;background:#0a0a0a;z-index:1;}
+.profile-sheet-close{width:32px;height:32px;background:rgba(255,255,255,0.07);
+  border:none;color:var(--text-light);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;}
+</style>
+<div class="profile-overlay" id="profileOverlay">
+  <div class="profile-overlay-backdrop" onclick="closeProfileOverlay()"></div>
+  <div class="profile-overlay-sheet">
+    <div class="profile-sheet-header">
+      <span style="font-size:13px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;">Profile</span>
+      <button class="profile-sheet-close" onclick="closeProfileOverlay()">&#x2715;</button>
+    </div>
+    <div class="profile-page-wrap" id="profilePageContent" style="padding-bottom:24px;">
+      <div style="text-align:center;padding:48px;color:var(--text-muted);">Loading…</div>
+    </div>
+  </div>
+</div>
+<input type="file" id="profilePicChangeInput" accept="image/*" style="display:none;">
+
 </body>
 </html>
