@@ -6411,6 +6411,11 @@ async function saveProfileEdits() {
       localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
       updateNavAvatar();
       closeEditProfileModal();
+      // Update profile avatar directly in the overlay DOM
+      const profileAvatarEl = document.querySelector('.profile-avatar-large');
+      if (profileAvatarEl && profilePic) {
+        profileAvatarEl.innerHTML = '<img src="'+profilePic+'?v='+Date.now()+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()"><div class="profile-avatar-edit-hint">&#x270F;</div>';
+      }
       // Re-render profile in place without re-fetching (use currentUser directly)
       const overlay = document.getElementById('profileOverlay');
       if (overlay && overlay.classList.contains('open')) {
