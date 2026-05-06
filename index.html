@@ -2809,8 +2809,8 @@ function navigate(page) {
   if (page === 'admin')  initAdminDashboard();
   if (page === 'staff')  initStaffDashboard();
   if (page === 'people')  { initPeople(); }
-  // Update URL hash for deep-linking
-  window.location.hash = page;
+  // Update URL hash for deep-linking (never set profile - it's an overlay)
+  if (page !== 'profile') window.location.hash = page;
 }
 
 function updateNavActive(page) {
@@ -5421,6 +5421,8 @@ function closeProfileOverlay() {
   const overlay = document.getElementById('profileOverlay');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
+  // Clear profile hash so refresh doesn't reopen it
+  if (window.location.hash === '#profile') history.replaceState(null, '', ' ');
 }
 
 function updateFeedComposeAvatar() {
@@ -6019,6 +6021,8 @@ let viewingUserId = null;   // null = own profile
 
 async function navigateToProfile(userId) {
   viewingUserId = userId || null;
+  // Clear any profile hash so refresh doesn't reopen
+  if (window.location.hash === '#profile') history.replaceState(null, '', ' ');
   const overlay = document.getElementById('profileOverlay');
   if (overlay) { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
   await initProfile();
