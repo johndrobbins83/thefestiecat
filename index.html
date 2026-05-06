@@ -5435,6 +5435,7 @@ async function submitProfileSetup() {
       updateNavAvatar();
       updateFeedComposeAvatar();
       closeProfileSetup();
+      navigate('home');
       showToast('Welcome to The Mutiny, @'+handle+'!');
     } else {
       if(errEl){errEl.textContent=data.error||'Could not save';errEl.classList.add('show');}
@@ -5450,10 +5451,11 @@ async function submitProfileSetup() {
 
 function skipProfileSetup() {
   closeProfileSetup();
+  navigate('home');
 }
 function closeProfileSetup() {
   const overlay = document.getElementById('profileSetupOverlay');
-  if (overlay) overlay.classList.remove('open');
+  if (overlay) { overlay.classList.remove('open'); overlay.style.display = 'none'; }
   document.body.style.overflow = '';
 }
 
