@@ -1704,20 +1704,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .profile-edit-title{font-size:13px;font-weight:800;color:var(--gold-bright);
   text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
 
-/* ══ EDIT PROFILE MODAL ══ */
 .edit-profile-modal{position:fixed;inset:0;z-index:25000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);padding:16px;}
 .edit-profile-modal.open{display:flex;}
 .edit-profile-box{width:100%;max-width:480px;background:#0a0a0a;border:1px solid rgba(245,200,66,0.25);max-height:90vh;overflow-y:auto;}
 .edit-profile-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07);position:sticky;top:0;background:#0a0a0a;z-index:1;}
-.edit-profile-title{font-size:13px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;}
-.edit-profile-body{padding:16px;}
-
-/* Banner upload */
 .banner-upload-wrap{position:relative;height:100px;background:linear-gradient(135deg,#1a0030,#000820);cursor:pointer;margin-bottom:44px;overflow:visible;}
-.banner-upload-wrap:hover::after{content:'Click to change banner';position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:700;}
-.banner-upload-wrap img{width:100%;height:100%;object-fit:cover;}
 .banner-avatar-overlap{position:absolute;bottom:-36px;left:16px;width:72px;height:72px;border-radius:50%;border:3px solid #0a0a0a;overflow:hidden;background:#9b3dff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;cursor:pointer;}
-.banner-avatar-overlap:hover::after{content:'📷';position:absolute;inset:0;background:rgba(0,0,0,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;}
 </style>
 </head>
 <body>
@@ -6269,7 +6261,7 @@ async function initProfile() {
     (artistTags?'<div class="profile-card"><div class="profile-card-title">&#x2B50; Favorite Artists</div><div class="profile-card-content">'+artistTags+'</div></div>':'')+
     (user.firstRave?'<div class="profile-card"><div class="profile-card-title">&#x1F389; First Rave</div><div class="profile-card-content">'+escapeHTML(user.firstRave)+'</div></div>':'')+
     (isOwnProfile&&savedArtists.length ? (function(){ var c=savedArtists.map(function(a){return '<div class="profile-artist-chip" onclick="openArtist(\''+esc(a.key)+'\')"><div class="profile-artist-avatar" style="background:'+a.color+';">'+a.initials+'</div><div class="profile-artist-name">'+a.key+'</div></div>';}).join('');if(mine.length>8)c+='<div class="profile-artist-chip" style="color:var(--text-muted);" onclick="navigate(\'schedule\')">+'+(mine.length-8)+' more</div>';return '<div class="profile-card"><div class="profile-card-title">My Schedule</div><div class="profile-artists-grid">'+c+'</div></div>';})() : '')
-    + editForm+'</div>';
+    editForm+'</div>';
 }
 
 function showEditProfileForm() {
@@ -6281,10 +6273,6 @@ function hideEditProfileForm() {
   if (f) f.style.display='none';
 }
 
-
-/* ════════════════════════════════════════
-   EDIT PROFILE MODAL
-════════════════════════════════════════ */
 let pendingBannerFile = null;
 let pendingEditAvatarFile = null;
 
@@ -6292,39 +6280,22 @@ function openEditProfileModal() {
   if (!currentUser) return;
   const modal = document.getElementById('editProfileModal');
   if (!modal) return;
-
-  // Pre-fill fields
   document.getElementById('editHandle').value = currentUser.handle || '';
-  document.getElementById('editBio').value = currentUser.bio || '';
+  const bioEl = document.getElementById('editBio');
+  if (bioEl) bioEl.value = currentUser.bio || '';
   document.getElementById('editHometown').value = currentUser.hometown || '';
   document.getElementById('editMusicStyles').value = currentUser.musicStyles || '';
   document.getElementById('editFaveArtists').value = currentUser.favoriteArtists || '';
   document.getElementById('editFirstRave').value = currentUser.firstRave || '';
   document.getElementById('editProfileStatus').textContent = '';
-
-  // Set banner
   const bannerImg = document.getElementById('editBannerImg');
-  if (bannerImg) {
-    if (currentUser.bannerPic) {
-      bannerImg.innerHTML = '<img src="'+currentUser.bannerPic+'" style="width:100%;height:100%;object-fit:cover;">';
-    } else {
-      bannerImg.innerHTML = '';
-    }
+  if (bannerImg) bannerImg.innerHTML = currentUser.bannerPic ? '<img src="'+currentUser.bannerPic+'" style="width:100%;height:100%;object-fit:cover;">' : '';
+  const av = document.getElementById('editAvatarOverlap');
+  if (av) {
+    av.style.background = currentUser.avatarColor || '#9b3dff';
+    av.innerHTML = currentUser.profilePic ? '<img src="'+currentUser.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : (currentUser.handle?.[0]||'?').toUpperCase();
   }
-
-  // Set avatar
-  const avatarEl = document.getElementById('editAvatarOverlap');
-  if (avatarEl) {
-    avatarEl.style.background = currentUser.avatarColor || '#9b3dff';
-    if (currentUser.profilePic) {
-      avatarEl.innerHTML = '<img src="'+currentUser.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-    } else {
-      avatarEl.innerHTML = (currentUser.handle?.[0]||'?').toUpperCase();
-    }
-  }
-
-  pendingBannerFile = null;
-  pendingEditAvatarFile = null;
+  pendingBannerFile = null; pendingEditAvatarFile = null;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -6358,49 +6329,41 @@ function previewEditAvatar(input) {
 }
 
 async function saveProfileEdits() {
-  const handle        = (document.getElementById('editHandle')?.value||'').trim();
-  const bio           = (document.getElementById('editBio')?.value||'').trim();
-  const hometown      = (document.getElementById('editHometown')?.value||'').trim();
-  const musicStyles   = (document.getElementById('editMusicStyles')?.value||'').trim();
+  const handle          = (document.getElementById('editHandle')?.value||'').trim();
+  const bio             = (document.getElementById('editBio')?.value||'').trim();
+  const hometown        = (document.getElementById('editHometown')?.value||'').trim();
+  const musicStyles     = (document.getElementById('editMusicStyles')?.value||'').trim();
   const favoriteArtists = (document.getElementById('editFaveArtists')?.value||'').trim();
-  const firstRave     = (document.getElementById('editFirstRave')?.value||'').trim();
-  const statusEl      = document.getElementById('editProfileStatus');
-  const saveBtn       = document.getElementById('editProfileSaveBtn');
-
+  const firstRave       = (document.getElementById('editFirstRave')?.value||'').trim();
+  const statusEl        = document.getElementById('editProfileStatus');
+  const saveBtn         = document.getElementById('editProfileSaveBtn');
   if (!handle || handle.length < 3) {
-    if (statusEl) { statusEl.textContent = 'Handle must be 3+ characters'; statusEl.style.color = 'var(--pink-coral)'; }
+    if (statusEl) { statusEl.textContent='Handle must be 3+ chars'; statusEl.style.color='var(--pink-coral)'; }
     return;
   }
-
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+  if (saveBtn) { saveBtn.disabled=true; saveBtn.textContent='Saving...'; }
   const token = localStorage.getItem(TOKEN_KEY);
-
   try {
-    // Upload banner if changed
-    let bannerPic = currentUser.bannerPic || '';
+    let bannerPic  = currentUser.bannerPic  || '';
+    let profilePic = currentUser.profilePic || '';
     if (pendingBannerFile) {
-      if (saveBtn) saveBtn.textContent = 'Uploading banner…';
-      const url = await uploadProfilePic(pendingBannerFile, 'banner_');
+      if (saveBtn) saveBtn.textContent='Uploading banner...';
+      const url = await uploadProfilePic(pendingBannerFile);
       if (url) bannerPic = url;
       pendingBannerFile = null;
     }
-
-    // Upload avatar if changed
-    let profilePic = currentUser.profilePic || '';
     if (pendingEditAvatarFile) {
-      if (saveBtn) saveBtn.textContent = 'Uploading photo…';
-      const url = await uploadProfilePic(pendingEditAvatarFile, 'profile_');
+      if (saveBtn) saveBtn.textContent='Uploading photo...';
+      const url = await uploadProfilePic(pendingEditAvatarFile);
       if (url) profilePic = url;
       pendingEditAvatarFile = null;
     }
-
-    if (saveBtn) saveBtn.textContent = 'Saving…';
-    const res = await fetch(AUTH_URL + '/profile', {
+    if (saveBtn) saveBtn.textContent='Saving...';
+    const res = await fetch(AUTH_URL+'/profile', {
       method: 'PUT',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
       body: JSON.stringify({ handle, bio, hometown, musicStyles, favoriteArtists, firstRave,
-        avatarColor: currentUser.avatarColor || '#9b3dff',
-        profilePic, bannerPic })
+        avatarColor: currentUser.avatarColor||'#9b3dff', profilePic, bannerPic })
     });
     const data = await res.json();
     if (res.ok) {
@@ -6408,39 +6371,18 @@ async function saveProfileEdits() {
       localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
       updateNavAvatar();
       closeEditProfileModal();
-      // Re-render profile if open
       const overlay = document.getElementById('profileOverlay');
       if (overlay && overlay.classList.contains('open')) initProfile();
       showToast('Profile updated!');
     } else {
-      if (statusEl) { statusEl.textContent = data.error || 'Could not save'; statusEl.style.color = 'var(--pink-coral)'; }
+      if (statusEl) { statusEl.textContent=data.error||'Failed'; statusEl.style.color='var(--pink-coral)'; }
     }
   } catch(e) {
-    console.error('saveProfileEdits error:', e);
-    if (statusEl) { statusEl.textContent = 'Error: ' + e.message; statusEl.style.color = 'var(--pink-coral)'; }
+    if (statusEl) { statusEl.textContent='Error: '+e.message; statusEl.style.color='var(--pink-coral)'; }
   } finally {
-    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Changes'; }
+    if (saveBtn) { saveBtn.disabled=false; saveBtn.textContent='Save Changes'; }
   }
 }
-
-// Update uploadProfilePic to accept prefix parameter
-const _origUploadProfilePic = uploadProfilePic;
-uploadProfilePic = async function(file, prefix) {
-  if (!file) return null;
-  prefix = prefix || 'profile_';
-  const token = localStorage.getItem(TOKEN_KEY);
-  if (!token) return null;
-  const slug = prefix + (currentUser?.id || 'user');
-  try {
-    const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
-      method: 'POST',
-      headers: {'Content-Type': file.type, 'Authorization': 'Bearer ' + token},
-      body: file
-    });
-    if (res.ok) { const d = await res.json(); return d.url || null; }
-  } catch {}
-  return null;
-};
 
 /* ════════════════════════════════════════════════════════════
    RAVEWORM GAME
@@ -6938,35 +6880,32 @@ function updateDMBadge(count) {
 </div>
 
 
-<!-- ══ EDIT PROFILE MODAL ══ -->
 <div class="edit-profile-modal" id="editProfileModal">
   <div class="edit-profile-box">
     <div class="edit-profile-header">
-      <span class="edit-profile-title">Edit Profile</span>
+      <span style="font-size:13px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;">Edit Profile</span>
       <button onclick="closeEditProfileModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-light);font-size:16px;cursor:pointer;width:32px;height:32px;">&#x2715;</button>
     </div>
-    <div class="edit-profile-body">
-      <!-- Banner + avatar -->
+    <div style="padding:16px;">
       <div class="banner-upload-wrap" id="editBannerWrap" onclick="document.getElementById('editBannerInput').click()">
         <div id="editBannerImg" style="width:100%;height:100%;"></div>
         <div class="banner-avatar-overlap" id="editAvatarOverlap" onclick="event.stopPropagation();document.getElementById('editAvatarInput').click()"></div>
       </div>
       <input type="file" id="editBannerInput" accept="image/*" style="display:none;" onchange="previewEditBanner(this)">
       <input type="file" id="editAvatarInput" accept="image/*" style="display:none;" onchange="previewEditAvatar(this)">
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Click banner to change · click avatar to change photo</div>
-      
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Click banner to change &middot; click avatar to change photo</div>
       <div class="auth-field"><label class="auth-label">Handle</label>
-        <input class="auth-input" id="editHandle" type="text" maxlength="20" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'')"></div>
+        <input class="auth-input" id="editHandle" type="text" maxlength="20"></div>
       <div class="auth-field"><label class="auth-label">Bio</label>
-        <textarea class="auth-input" id="editBio" maxlength="300" rows="2" placeholder="About you…" style="resize:none;"></textarea></div>
+        <textarea class="auth-input" id="editBio" maxlength="300" rows="2" style="resize:none;"></textarea></div>
       <div class="auth-field"><label class="auth-label">Hometown</label>
-        <input class="auth-input" id="editHometown" type="text" maxlength="80" placeholder="Where are you from?"></div>
+        <input class="auth-input" id="editHometown" type="text" maxlength="80"></div>
       <div class="auth-field"><label class="auth-label">Music Styles</label>
-        <input class="auth-input" id="editMusicStyles" type="text" maxlength="200" placeholder="Drum and Bass, Techno, House…"></div>
+        <input class="auth-input" id="editMusicStyles" type="text" maxlength="200" placeholder="Drum and Bass, Techno..."></div>
       <div class="auth-field"><label class="auth-label">Favorite Artists</label>
-        <input class="auth-input" id="editFaveArtists" type="text" maxlength="200" placeholder="Roni Size, Spor, J. Phlip…"></div>
+        <input class="auth-input" id="editFaveArtists" type="text" maxlength="200" placeholder="Roni Size, Spor..."></div>
       <div class="auth-field"><label class="auth-label">First Rave</label>
-        <input class="auth-input" id="editFirstRave" type="text" maxlength="100" placeholder="When and where?"></div>
+        <input class="auth-input" id="editFirstRave" type="text" maxlength="100"></div>
       <div id="editProfileStatus" style="font-size:12px;color:var(--text-muted);margin-bottom:8px;"></div>
       <button class="auth-btn" id="editProfileSaveBtn" onclick="saveProfileEdits()">Save Changes</button>
     </div>
