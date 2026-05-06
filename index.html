@@ -6373,14 +6373,41 @@ async function saveProfileEdits() {
     });
     const data = await res.json();
     if (res.ok) {
+      // Update currentUser with saved data
       Object.assign(currentUser, data.user, { profilePic, bannerPic });
       localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
       updateNavAvatar();
       closeEditProfileModal();
-      // Re-render profile overlay with new data (keep it open)
+      // Re-render profile in place without re-fetching (use currentUser directly)
       const overlay = document.getElementById('profileOverlay');
       if (overlay && overlay.classList.contains('open')) {
-        await initProfile();
+        viewingUserId = null; // ensure own profile
+        const wrap = document.getElementById('profilePageContent');
+        if (wrap) {
+          // Render using current updated data - skip the /auth/me fetch
+          const savedUser = { ...currentUser };
+          const mine = getMySchedule ? getMySchedule() : [];
+          const initials = (savedUser.handle?.[0]||savedUser.name?.[0]||'?').toUpperCase();
+          const avatarHtml = savedUser.profilePic
+            ? '<img src="'+savedUser.profilePic+'?v='+Date.now()+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()">'
+            : initials;
+          const bannerBg = ['linear-gradient(135deg,#1a0030,#000820)','linear-gradient(135deg,#001a10,#000820)','linear-gradient(135deg,#1a0a00,#000820)','linear-gradient(135deg,#00101a,#000820)'][Math.abs((savedUser.handle||'x').charCodeAt(0))%4];
+          const musicTags = (savedUser.musicStyles||'').split(',').filter(Boolean).map(function(s){return '<span class="profile-tag teal">'+s.trim()+'</span>';}).join('');
+          const artistTags = (savedUser.favoriteArtists||'').split(',').filter(Boolean).map(function(a){return '<span class="profile-tag gold">'+a.trim()+'</span>';}).join('');
+          wrap.innerHTML =
+            '<div class="profile-hero"><div class="profile-hero-banner" style="background:'+bannerBg+';">'+(savedUser.bannerPic?'<img src="'+savedUser.bannerPic+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">':'')+'<div class="profile-hero-banner-pattern"></div></div>'+
+            '<div class="profile-avatar-large" style="background:'+(savedUser.avatarColor||'#9b3dff')+'" onclick="openProfilePicChange()">'+avatarHtml+'<div class="profile-avatar-edit-hint">&#x270F;</div></div></div>'+
+            '<div class="profile-info"><div class="profile-handle">@'+(savedUser.handle||'unknown')+'</div>'+
+            (savedUser.hometown?'<div class="profile-hometown">&#x1F4CD; '+escapeHTML(savedUser.hometown)+'</div>':'')+
+            (savedUser.bio?'<div class="profile-bio">'+escapeHTML(savedUser.bio)+'</div>':'<div class="profile-bio" style="opacity:0.4;font-style:italic;">No bio yet</div>')+
+            '<div class="profile-stats-row"><div class="profile-stat"><div class="profile-stat-num">'+(savedUser.followerCount||0)+'</div><div class="profile-stat-label">Crew</div></div><div class="profile-stat"><div class="profile-stat-num">'+(savedUser.followingCount||0)+'</div><div class="profile-stat-label">Following</div></div><div class="profile-stat"><div class="profile-stat-num">'+mine.length+'</div><div class="profile-stat-label">Saved</div></div></div>'+
+            '<div class="profile-action-row"><button class="profile-action-btn edit" onclick="openEditProfileModal()">&#x270F; Edit</button><button class="profile-action-btn edit" onclick="openProfilePicChange()">&#x1F4F7; Photo</button></div></div>'+
+            '<div class="profile-cards">'+
+            (musicTags?'<div class="profile-card"><div class="profile-card-title">&#x1F3B5; Music Styles</div><div class="profile-card-content">'+musicTags+'</div></div>':'')+
+            (artistTags?'<div class="profile-card"><div class="profile-card-title">&#x2B50; Favorite Artists</div><div class="profile-card-content">'+artistTags+'</div></div>':'')+
+            (savedUser.firstRave?'<div class="profile-card"><div class="profile-card-title">&#x1F389; First Rave</div><div class="profile-card-content">'+escapeHTML(savedUser.firstRave)+'</div></div>':'')+
+            '</div>';
+        }
       }
       showToast('Profile updated!');
     } else {
