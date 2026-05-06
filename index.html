@@ -3901,7 +3901,13 @@ function setCurrentUser(user, token) {
     // 3. Pre-load friends so Connect tab is ready
     loadFriendRequests();
     loadFriends();
-    // 4. Pre-load admin users if admin
+    // 4. Restore profile overlay if hash says so
+    var _hash = window.location.hash.slice(1);
+    if (_hash.startsWith('profile')) {
+      var _uid = _hash.split('/')[1] || null;
+      setTimeout(function() { navigateToProfile(_uid); }, 200);
+    }
+    // 5. Pre-load admin users if admin
     if (user.role === 'admin') {
       loadUsersForAssign();
       // Also trigger admin dashboard pre-cache
@@ -6199,7 +6205,10 @@ let viewingUserId = null;   // null = own profile
 
 async function navigateToProfile(userId) {
   viewingUserId = userId || null;
-  navigate('profile');
+  history.replaceState(null, '', '#profile' + (userId ? '/' + userId : ''));
+  const overlay = document.getElementById('profileOverlay');
+  if (overlay) { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  await initProfile();
 }
 
 async function initProfile() {
