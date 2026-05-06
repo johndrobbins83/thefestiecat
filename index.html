@@ -1654,12 +1654,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <span class="desktop-nav-link"        data-page="artists"  onclick="navigate('artists')">🎤 Artists</span>
     <span class="desktop-nav-link"        data-page="map"      onclick="navigate('map')">🗺️ Map</span>
     <span class="desktop-nav-link"        data-page="checklist" onclick="navigate('checklist')">✅ List</span>
-    <span class="desktop-nav-link" data-page="feed"   onclick="navigate('feed')">📡 Feed</span>
     <span class="desktop-nav-link" data-page="people" onclick="navigate('people')">👥 People</span>
-    <span class="desktop-nav-link" data-page="dms"    onclick="navigate('dms')">💬 DMs<span id="dmBadgeDesktop" style="display:none;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;padding:1px 5px;margin-left:4px;">0</span></span>
     <span class="desktop-nav-link more-trigger" onclick="toggleMore(this)">⋯ More</span>
-    <span class="desktop-nav-link nav-admin-only" data-page="admin"   onclick="navigate('admin')"  style="color:#f5c842;border-color:rgba(245,200,66,0.3);">⚙ Admin</span>
-    <span class="desktop-nav-link nav-staff-only" data-page="staff"   onclick="navigate('staff')"  style="color:#c084fc;border-color:rgba(155,61,255,0.3);">📋 Staff</span>
   </nav>
   <div class="nav-right">
     <!-- Weather -->
@@ -1709,7 +1705,9 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <div class="user-menu-role festie" id="menuRole">Festie</div>
         </div>
         <button class="user-menu-item" onclick="navigate('schedule');closeUserMenu()">📅 My Schedule</button>
-        <button class="user-menu-item" onclick="showToast('Profile coming in Phase 4!')">👤 Profile</button>
+        <button class="user-menu-item" onclick="navigate('people');closeUserMenu()">👥 People &amp; Feed</button>
+        <button class="user-menu-item nav-admin-only" style="color:#f5c842;display:none;" onclick="navigate('admin');closeUserMenu()">⚙ Admin Dashboard</button>
+        <button class="user-menu-item nav-staff-only" style="color:#c084fc;display:none;" onclick="navigate('staff');closeUserMenu()">📋 Staff Dashboard</button>
         <button class="user-menu-item logout" onclick="authLogout()">Sign out</button>
       </div>
     </div>
@@ -2325,7 +2323,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── PEOPLE PAGE ── -->
   <div class="page" id="page-people">
-    <div class="page-header"><div class="page-title">👥 People</div><div class="page-sub">Find your crew at The Mutiny</div></div>
+    <div class="page-header" style="margin-bottom:0;"><div class="page-title">👥 People</div></div>
+    <div class="dash-tabs" style="margin-bottom:14px;">
+      <button class="dash-tab active" onclick="switchPeopleTab('connect',this)">🤝 Connect</button>
+      <button class="dash-tab" onclick="switchPeopleTab('feed',this)">📡 Feed</button>
+      <button class="dash-tab" onclick="switchPeopleTab('messages',this)">💬 Messages<span id="dmBadgeTab" style="display:none;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;padding:1px 5px;margin-left:4px;border-radius:4px;">0</span></button>
+    </div>
+    <div id="peopleTab-connect">
     <!-- Friend requests -->
     <div id="friendRequestsSection" style="display:none;margin-bottom:16px;">
       <div class="section-title" style="margin-bottom:8px;">🔔 Friend Requests</div>
@@ -2348,13 +2352,18 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         Type a handle to search for Festies
       </div>
     </div>
-  </div>
+    </div><!-- /peopleTab-connect -->
 
-  <!-- ── DMs PAGE ── -->
-  <div class="page" id="page-dms">
-    <div class="page-header"><div class="page-title">💬 Messages</div><div class="page-sub">Direct messages with your crew</div></div>
-    <div class="dm-list" id="dmList"></div>
-  </div>
+    <!-- Feed Tab -->
+    <div id="peopleTab-feed" style="display:none;">
+      <div id="peopleFeedInner"></div>
+    </div>
+
+    <!-- Messages Tab -->
+    <div id="peopleTab-messages" style="display:none;">
+      <div class="dm-list" id="dmList"></div>
+    </div>
+  </div><!-- /page-people -->
 
 </div><!-- /app -->
 
@@ -2365,12 +2374,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <span class="nav-item"        data-page="artists"   onclick="navigate('artists')"><div class="nav-icon-wrap">♪</div><span class="nav-label">Artists</span></span>
   <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">⊕</div><span class="nav-label">Map</span></span>
   <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">☑</div><span class="nav-label">List</span></span>
-  <span class="nav-item" data-page="feed"   onclick="navigate('feed')"><div class="nav-icon-wrap">📡</div><span class="nav-label">Feed</span></span>
   <span class="nav-item" data-page="people" onclick="navigate('people')"><div class="nav-icon-wrap">👥</div><span class="nav-label">People</span></span>
-  <span class="nav-item" data-page="dms"    onclick="navigate('dms')"><div class="nav-icon-wrap" style="position:relative;">💬<span id="dmBadgeMobile" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;">0</span></div><span class="nav-label">DMs</span></span>
   <span class="nav-item more-trigger" onclick="toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
-  <span class="nav-item nav-admin-only" data-page="admin" onclick="navigate('admin')"><div class="nav-icon-wrap" style="font-size:16px;">⚙</div><span class="nav-label">Admin</span></span>
-  <span class="nav-item nav-staff-only" data-page="staff" onclick="navigate('staff')"><div class="nav-icon-wrap" style="font-size:16px;">📋</div><span class="nav-label">Staff</span></span>
 </nav>
 
 <!-- ══ MORE POPOUT ══ -->
@@ -2722,9 +2727,7 @@ function navigate(page) {
   if (page === 'checklist') renderChecklist();
   if (page === 'admin')  initAdminDashboard();
   if (page === 'staff')  initStaffDashboard();
-  if (page === 'feed')   initFeed();
-  if (page === 'people') initPeople();
-  if (page === 'dms')    initDMs();
+  if (page === 'people') { initPeople(); }
   // Update URL hash for deep-linking
   window.location.hash = page;
 }
@@ -5883,6 +5886,91 @@ function closeRaveworm() {
     switch(e.key){case 'ArrowUp':window.snakeDir(0,-1);e.preventDefault();break;case 'ArrowDown':window.snakeDir(0,1);e.preventDefault();break;case 'ArrowLeft':window.snakeDir(-1,0);e.preventDefault();break;case 'ArrowRight':window.snakeDir(1,0);e.preventDefault();break;case 'Enter':case ' ':snakeStart();e.preventDefault();break;case 'Escape':closeRaveworm();break;}
   });
 })();
+
+/* ════════════════════════════════════════
+   PEOPLE PAGE SUB-TABS
+════════════════════════════════════════ */
+function switchPeopleTab(tab, btn) {
+  ['connect','feed','messages'].forEach(t => {
+    const el = document.getElementById('peopleTab-'+t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#page-people .dash-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (tab === 'feed') {
+    // Render feed compose + list inside the tab
+    const inner = document.getElementById('peopleFeedInner');
+    if (inner && !inner.dataset.built) {
+      inner.dataset.built = '1';
+      inner.innerHTML = buildFeedHTML();
+      initFeedCompose();
+    }
+    loadFeed(feedFilter);
+  }
+  if (tab === 'messages') {
+    loadDMList();
+  }
+}
+
+function buildFeedHTML() {
+  var h = '';
+  h += '<div class="feed-compose" id="feedCompose">';
+  h += '<div class="feed-compose-row">';
+  h += '<div class="feed-compose-avatar" id="feedComposeAvatar" style="background:#9b3dff;">?</div>';
+    h += '<textarea class="feed-compose-input" id="feedPostText" placeholder="What is happening at The Mutiny?" rows="2" oninput="var t=this;t.style.height=\'auto\';t.style.height=t.scrollHeight+\'px\'"></textarea>';
+  h += '</div>';
+  h += '<div class="feed-compose-actions">';
+  h += '<button class="feed-compose-btn" id="checkinToggleBtn" onclick="toggleCheckin()">&#128205; Check-in</button>';
+  h += '<button class="feed-compose-btn" id="photoComposeBtn" onclick="triggerFeedPhoto()">&#128247; Photo</button>';
+  h += '<input type="file" id="feedPhotoInput" accept="image/*" style="display:none;" onchange="previewFeedPhoto(this)">';
+  h += '<button class="feed-post-btn" id="feedPostBtn" onclick="submitPost()" disabled>Post</button>';
+  h += '</div>';
+  h += '<select class="checkin-select" id="checkinSelect">';
+  h += '<option value="">Select location…</option>';
+  h += '<option value="DNB Stage">&#x1F941; DNB Stage</option>';
+  h += '<option value="Oasis Stage">&#127796; Oasis Stage</option>';
+  h += '<option value="Pool">&#127946; Pool</option>';
+  h += '<option value="Beach">&#127958; Beach</option>';
+  h += '<option value="Hotel Lobby">&#127968; Hotel Lobby</option>';
+  h += '<option value="Greenhouse Restaurant">&#127374; Greenhouse</option>';
+  h += '<option value="Oxhead Tavern">&#127866; Oxhead Tavern</option>';
+  h += '<option value="Parking Lot">&#127359; Parking Lot</option>';
+  h += '</select>';
+  h += '<div id="feedPhotoPreviewWrap" style="display:none;margin-top:10px;position:relative;">';
+  h += '<img id="feedPhotoPreviewImg" style="max-height:180px;max-width:100%;display:block;">';
+  h += '<button onclick="clearFeedPhoto()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:16px;cursor:pointer;width:28px;height:28px;">&#x2715;</button>';
+  h += '</div>';
+  h += '</div>';
+  h += '<div class="feed-filters">';
+  h += '<button class="feed-filter-btn active" onclick="loadFeed(&quot;all&quot;,this)">All</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;dnb&quot;,this)">&#x1F941; DNB</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;oasis&quot;,this)">&#127796; Oasis</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;fri&quot;,this)">Fri</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;sat&quot;,this)">Sat</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;sun&quot;,this)">Sun</button>';
+  h += '</div>';
+  h += '<div id="feedList"></div>';
+  return h;
+}
+
+function initFeedCompose() {
+  updateFeedComposeAvatar();
+  const textEl = document.getElementById('feedPostText');
+  if (textEl) textEl.addEventListener('input', () => {
+    const btn = document.getElementById('feedPostBtn');
+    if (btn) btn.disabled = !textEl.value.trim() && !feedPhotoFile;
+  });
+}
+
+function updateDMBadge(count) {
+  ['dmBadgeDesktop','dmBadgeMobile','dmBadgeTab'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (count > 0) { el.style.display='inline-flex'; el.textContent=count; }
+    else           { el.style.display='none'; }
+  });
+}
+
 </script>
 
 <!-- ══ RAVEWORM GAME OVERLAY ══ -->
