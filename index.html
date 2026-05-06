@@ -2809,8 +2809,9 @@ function navigate(page) {
   if (page === 'admin')  initAdminDashboard();
   if (page === 'staff')  initStaffDashboard();
   if (page === 'people')  { initPeople(); }
-  // Update URL hash for deep-linking (never set profile - it's an overlay)
-  if (page !== 'profile') window.location.hash = page;
+  if (page === 'profile') { initProfile(); }
+  // Update URL hash for deep-linking
+  window.location.hash = page;
 }
 
 function updateNavActive(page) {
@@ -2854,7 +2855,6 @@ function updateNavActive(page) {
 
 /* ── My Schedule Widget (home) ── */
 function renderMySchedWidget() {
-
   const mine = getMySchedule();
   const listEl = document.getElementById('mySchedList');
   const emptyEl = document.getElementById('mySchedEmpty');
@@ -2986,7 +2986,6 @@ function renderSchedule() {
 
   const data = SCHEDULE_DATA[day];
   if (!data) return;
-
   const mine = getMySchedule();
   const q = search.toLowerCase();
 
@@ -3065,7 +3064,6 @@ function renderSchedule() {
 }
 
 function renderMySchedPage() {
-
   const mine = getMySchedule();
   const listEl = document.getElementById('mySchedPageList');
   const emptyEl = document.getElementById('mySchedPageEmpty');
@@ -3113,7 +3111,6 @@ function setView(v) {
 
 /* ── Calendar Export ── */
 function exportGCal() {
-
   const mine = getMySchedule();
   if (!mine.length) { showToast('No artists in your schedule yet!'); return; }
   const a = artists[mine[0]];
@@ -3123,7 +3120,6 @@ function exportGCal() {
   window.open(url, '_blank');
 }
 function exportICS() {
-
   const mine = getMySchedule();
   let ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Sunken Suite//App//EN\n';
   mine.forEach(key => {
@@ -3194,7 +3190,6 @@ function renderArtists() {
   const grid = document.getElementById('artistsGrid');
   if (!grid) return;
   const q = ((document.getElementById('artistSearchInput')||{}).value||'').toLowerCase();
-
   const mine = getMySchedule();
   let keys = Object.keys(artists);
 
@@ -3519,7 +3514,6 @@ function copyAddress() {
 function esc(str) { return String(str).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 
 function refreshAllAddBtns() {
-
   const mine = getMySchedule();
   document.querySelectorAll('[data-key]').forEach(btn=>{
     const key = btn.dataset.key;
@@ -3583,7 +3577,7 @@ if ('serviceWorker' in navigator) {
 ════════════════════════════════════════════════════════════ */
 (function() {
   const page = location.hash.slice(1);
-  if (page && page !== 'profile' && document.getElementById('page-'+page)) navigate(page);
+  if (page && document.getElementById('page-'+page)) navigate(page);
   window.addEventListener('hashchange', ()=>{ const p=location.hash.slice(1); if(p && document.getElementById('page-'+p)) navigate(p); });
 })();
 
@@ -5326,14 +5320,11 @@ let feedPhotoFile = null;
 // ── Profile setup ──────────────────────────────────────────
 function checkProfileSetup() {
   if (!currentUser) return;
-  if (currentUser.handle) {
-    updateNavAvatar();
+  if (!currentUser.handle) {
+    showProfileSetup();
+  } else {
     updateFeedComposeAvatar();
-    return;
   }
-  // Only show once per account
-  if (localStorage.getItem('ss_profile_setup_dismissed_' + currentUser.id)) return;
-  setTimeout(showProfileSetup, 1000);
 }
 
 function showProfileSetup() {
@@ -5413,23 +5404,12 @@ async function submitProfileSetup() {
 }
 
 function skipProfileSetup() {
-  if (currentUser?.id) localStorage.setItem('ss_profile_setup_dismissed_' + currentUser.id, '1');
-  const overlay = document.getElementById('profileSetupOverlay');
-  if (overlay) { overlay.classList.remove('open'); overlay.style.display = 'none'; }
-  document.body.style.overflow = '';
-  navigate('home');
+  closeProfileSetup();
 }
 function closeProfileSetup() {
   const overlay = document.getElementById('profileSetupOverlay');
-  if (overlay) { overlay.classList.remove('open'); overlay.style.display = 'none'; }
-  document.body.style.overflow = '';
-}
-function closeProfileOverlay() {
-  const overlay = document.getElementById('profileOverlay');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
-  // Clear profile hash so refresh doesn't reopen it
-  if (window.location.hash === '#profile') history.replaceState(null, '', ' ');
 }
 
 function updateFeedComposeAvatar() {
@@ -6025,120 +6005,593 @@ function updateNavAvatar() {
 ════════════════════════════════════════ */
 let viewingUserId = null;   // null = own profile
 
-
 async function navigateToProfile(userId) {
   viewingUserId = userId || null;
-  // Clear any profile hash so refresh doesn't reopen
-  if (window.location.hash === '#profile') history.replaceState(null, '', ' ');
-  const overlay = document.getElementById('profileOverlay');
-  if (overlay) { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  await initProfile();
+  navigate('profile');
 }
 
 async function initProfile() {
   const wrap = document.getElementById('profilePageContent');
   if (!wrap) return;
   wrap.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Loading…</div>';
-
   const token = localStorage.getItem('ss_auth_token');
   if (!token) { wrap.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Please sign in.</div>'; return; }
-
   const isOwnProfile = !viewingUserId || viewingUserId === currentUser?.id;
-  let user = currentUser ? { ...currentUser } : null;
-
-  // Always fetch fresh data for own profile
+  let user = currentUser ? { ...currentUser } : {};
   if (isOwnProfile) {
     try {
-      const res = await fetch(AUTH_URL + '/auth/me', { headers: {'Authorization': 'Bearer ' + token} });
-      if (res.ok) {
-        const d = await res.json();
-        user = { ...(user||{}), ...d.user };
-        if (currentUser) Object.assign(currentUser, d.user);
-        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-      }
-    } catch(e) { console.warn('auth/me fetch failed:', e.message); }
+      const res = await fetch(AUTH_URL + '/auth/me', { headers: {'Authorization':'Bearer '+token} });
+      if (res.ok) { const d = await res.json(); user = {...user,...d.user}; if(currentUser) Object.assign(currentUser,d.user); localStorage.setItem(USER_KEY,JSON.stringify(currentUser)); }
+    } catch(e) { console.warn('auth/me failed:',e.message); }
   } else {
-    const friend = (window._cachedUsers||[]).find(u => u.id === viewingUserId);
+    const friend = (window._cachedUsers||[]).find(u=>u.id===viewingUserId);
     if (friend?.handle) {
-      try {
-        const res = await fetch(AUTH_URL + '/profile/' + friend.handle, { headers: {'Authorization': 'Bearer ' + token} });
-        if (res.ok) { const d = await res.json(); user = d.user; }
-      } catch(e) { console.warn('profile fetch failed:', e.message); }
+      try { const res = await fetch(AUTH_URL+'/profile/'+friend.handle,{headers:{'Authorization':'Bearer '+token}}); if(res.ok){const d=await res.json();user=d.user;} } catch{}
     }
+    if (!user?.id) { wrap.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Profile not found.</div>'; return; }
   }
-
-  if (!user) {
-    wrap.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Could not load profile.</div>';
-    return;
-  }
-
+  if (!user.handle && !user.name && !user.email) { wrap.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Could not load profile.<br><button onclick="navigateToProfile(null)" style="margin-top:12px;padding:8px 16px;background:var(--gold-bright);border:none;color:#000;cursor:pointer;font-weight:700;">Retry</button></div>'; return; }
   const mine = getMySchedule ? getMySchedule() : [];
-  const savedArtists = mine.slice(0,8).map((k,i) => artists[k] ? {key:k,...artists[k]} : null).filter(Boolean);
-  const isMutual    = user.isMutual || false;
-  const isFollowing = user.isFollowing || false;
-  const hasPending  = user.hasPendingReq || false;
-  const initials    = (user.handle?.[0] || user.name?.[0] || '?').toUpperCase();
-  const avatarHTML  = user.profilePic
-    ? '<img src="' + user.profilePic + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()">'
-    : initials;
-
-  const bannerColors = ['linear-gradient(135deg,#1a0030,#000820)','linear-gradient(135deg,#001a10,#000820)','linear-gradient(135deg,#1a0a00,#000820)','linear-gradient(135deg,#00101a,#000820)'];
-  const bannerBg = bannerColors[Math.abs((user.handle||'x').charCodeAt(0)) % bannerColors.length];
-
-  let followBtn = '';
+  const savedArtists = mine.slice(0,8).map(k=>artists[k]?{key:k,...artists[k]}:null).filter(Boolean);
+  const initials = (user.handle?.[0]||user.name?.[0]||'?').toUpperCase();
+  const avatarHTML = user.profilePic ? '<img src="'+user.profilePic+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()">' : initials;
+  const bannerBg = ['linear-gradient(135deg,#1a0030,#000820)','linear-gradient(135deg,#001a10,#000820)','linear-gradient(135deg,#1a0a00,#000820)','linear-gradient(135deg,#00101a,#000820)'][Math.abs((user.handle||'x').charCodeAt(0))%4];
+  const musicTags = (user.musicStyles||'').split(',').filter(Boolean).map(s=>'<span class="profile-tag teal">'+s.trim()+'</span>').join('');
+  const artistTags = (user.favoriteArtists||'').split(',').filter(Boolean).map(a=>'<span class="profile-tag gold">'+a.trim()+'</span>').join('');
+  const isMutual = user.isMutual||false, hasPending = user.hasPendingReq||false;
+  var dmColor = user.avatarColor || '#9b3dff';
+  var dmHandle = esc(user.handle||'');
+  var dmId = user.id;
+  var followBtn = '';
   if (!isOwnProfile) {
-    if (isMutual)    followBtn = '<button class="profile-action-btn friends" onclick="openDMThread(''+user.id+'',''+esc(user.handle||'')+'',''+( user.avatarColor||'#9b3dff')+'')">&#x1F4AC; Message</button>';
+    if (isMutual) followBtn = '<button class="profile-action-btn friends" onclick="openDMThread(\'' + dmId + '\',\'' + dmHandle + '\',\'' + dmColor + '\')">Message</button>';
     else if (hasPending) followBtn = '<button class="profile-action-btn requested">Requested</button>';
-    else followBtn = '<button class="profile-action-btn connect" onclick="sendFollowRequest(''+user.id+'',this)">+ Connect</button>';
+    else followBtn = '<button class="profile-action-btn connect" onclick="sendFollowRequest(\'' + dmId + '\',this)">+ Connect</button>';
+  }
+  const editForm = isOwnProfile ? '<div id="editProfileForm" style="display:none;"><div class="profile-edit-section"><div class="profile-edit-title">&#x270F; Edit Profile</div>' +
+    '<div class="auth-field"><label class="auth-label">Handle</label><input class="auth-input" id="editHandle" value="'+(user.handle||'')+'" maxlength="20"></div>' +
+    '<div class="auth-field"><label class="auth-label">Bio</label><input class="auth-input" id="editBio" value="'+escapeHTML(user.bio||'')+'" maxlength="300" placeholder="About you"></div>' +
+    '<div class="auth-field"><label class="auth-label">Hometown</label><input class="auth-input" id="editHometown" value="'+escapeHTML(user.hometown||'')+'" maxlength="80"></div>' +
+    '<div class="auth-field"><label class="auth-label">Music Styles</label><input class="auth-input" id="editMusicStyles" value="'+escapeHTML(user.musicStyles||'')+'" maxlength="200" placeholder="Drum and Bass, Techno..."></div>' +
+    '<div class="auth-field"><label class="auth-label">Favorite Artists</label><input class="auth-input" id="editFaveArtists" value="'+escapeHTML(user.favoriteArtists||'')+'" maxlength="200" placeholder="Roni Size, Spor..."></div>' +
+    '<div class="auth-field"><label class="auth-label">First Rave</label><input class="auth-input" id="editFirstRave" value="'+escapeHTML(user.firstRave||'')+'" maxlength="100" placeholder="When and where?"></div>' +
+    '<div style="display:flex;gap:8px;margin-top:4px;"><button class="profile-action-btn connect" style="flex:1;padding:12px;" onclick="saveProfileEdits()">Save</button><button class="profile-action-btn edit" onclick="hideEditProfileForm()">Cancel</button></div>' +
+    '<div id="editProfileStatus" style="font-size:12px;margin-top:8px;color:var(--text-muted);"></div></div></div>' : '';
+  wrap.innerHTML =
+    '<div class="profile-hero"><div class="profile-hero-banner" style="background:'+bannerBg+';"><div class="profile-hero-banner-pattern"></div></div>' +
+    '<div class="profile-avatar-large" style="background:'+(user.avatarColor||'#9b3dff')+';"'+(isOwnProfile?' onclick="openProfilePicChange()" title="Change photo"':'')+'>'+avatarHTML+(isOwnProfile?'<div class="profile-avatar-edit-hint">&#x270F;</div>':'')+' </div></div>' +
+    '<div class="profile-info"><div class="profile-handle">@'+(user.handle||'unknown')+'</div>' +
+    (user.hometown?'<div class="profile-hometown">&#x1F4CD; '+escapeHTML(user.hometown)+'</div>':'')+
+    (user.bio?'<div class="profile-bio">'+escapeHTML(user.bio)+'</div>':(isOwnProfile?'<div class="profile-bio" style="opacity:0.4;font-style:italic;">No bio yet</div>':''))+
+    '<div class="profile-stats-row"><div class="profile-stat"><div class="profile-stat-num">'+(user.followerCount||0)+'</div><div class="profile-stat-label">Crew</div></div><div class="profile-stat"><div class="profile-stat-num">'+(user.followingCount||0)+'</div><div class="profile-stat-label">Following</div></div>'+(isOwnProfile?'<div class="profile-stat"><div class="profile-stat-num">'+mine.length+'</div><div class="profile-stat-label">Saved</div></div>':'')+' </div>' +
+    '<div class="profile-action-row">'+(isOwnProfile?'<button class="profile-action-btn edit" onclick="showEditProfileForm()">&#x270F; Edit</button><button class="profile-action-btn edit" onclick="openProfilePicChange()">&#x1F4F7; Photo</button>':followBtn)+'</div></div>' +
+    '<div class="profile-cards">'+(musicTags?'<div class="profile-card"><div class="profile-card-title">&#x1F3B5; Music Styles</div><div class="profile-card-content">'+musicTags+'</div></div>':'')+
+    (artistTags?'<div class="profile-card"><div class="profile-card-title">&#x2B50; Favorite Artists</div><div class="profile-card-content">'+artistTags+'</div></div>':'')+
+    (user.firstRave?'<div class="profile-card"><div class="profile-card-title">&#x1F389; First Rave</div><div class="profile-card-content">'+escapeHTML(user.firstRave)+'</div></div>':'')+
+    (isOwnProfile&&savedArtists.length ? (function(){ var c=savedArtists.map(function(a){return '<div class="profile-artist-chip" onclick="openArtist(\''+esc(a.key)+'\')"><div class="profile-artist-avatar" style="background:'+a.color+';">'+a.initials+'</div><div class="profile-artist-name">'+a.key+'</div></div>';}).join('');if(mine.length>8)c+='<div class="profile-artist-chip" style="color:var(--text-muted);" onclick="navigate(\'schedule\')">+'+(mine.length-8)+' more</div>';return '<div class="profile-card"><div class="profile-card-title">My Schedule</div><div class="profile-artists-grid">'+c+'</div></div>';})() : '')
+    editForm+'</div>';
+}
+
+function showEditProfileForm() {
+  const f = document.getElementById('editProfileForm');
+  if (f) { f.style.display='block'; f.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+function hideEditProfileForm() {
+  const f = document.getElementById('editProfileForm');
+  if (f) f.style.display='none';
+}
+
+async function saveProfileEdits() {
+  const handle      = (document.getElementById('editHandle')?.value||'').trim();
+  const bio         = (document.getElementById('editBio')?.value||'').trim();
+  const hometown    = (document.getElementById('editHometown')?.value||'').trim();
+  const musicStyles = (document.getElementById('editMusicStyles')?.value||'').trim();
+  const favoriteArtists = (document.getElementById('editFaveArtists')?.value||'').trim();
+  const firstRave   = (document.getElementById('editFirstRave')?.value||'').trim();
+  const status      = document.getElementById('editProfileStatus');
+  if (!handle || handle.length < 3) { if(status){status.textContent='Handle must be 3+ chars';status.style.color='var(--pink-coral)';} return; }
+  if(status){status.textContent='Saving…';status.style.color='var(--text-muted)';}
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/profile', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ handle, bio, hometown, musicStyles, favoriteArtists, firstRave,
+        avatarColor: currentUser.avatarColor||'#9b3dff',
+        profilePic: currentUser.profilePic||'' })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      Object.assign(currentUser, data.user);
+      localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      updateNavAvatar();
+      hideEditProfileForm();
+      initProfile(); // re-render
+      showToast('✓ Profile updated!');
+    } else {
+      if(status){status.textContent=data.error||'Failed';status.style.color='var(--pink-coral)';}
+    }
+  } catch { if(status){status.textContent='Could not connect';status.style.color='var(--pink-coral)';} }
+}
+
+/* ════════════════════════════════════════════════════════════
+   RAVEWORM GAME
+════════════════════════════════════════════════════════════ */
+function openRaveworm() {
+  var overlay = document.getElementById('ravewormOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ if(typeof initGame==='function') initGame(); }, 80);
+}
+function closeRaveworm() {
+  if (typeof snakeReset==='function') snakeReset();
+  document.getElementById('ravewormOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+(function() {
+  var COLS=20,ROWS=20,CELL=14;
+  var snake,dir,nextDir,food,running,gameLoop,snakeHiScore;
+  var RAVE_FOOD=['💊','🍄','⚡','💎','🌀','✨','🔮','💫','🌈','🎆','🍬','🍭','🧿','🔵','🟣','🟡','💛','🫧','🪩','👁️'];
+  var curEmoji='🎆';
+  function pickEmoji(){var p=curEmoji;do{curEmoji=RAVE_FOOD[Math.floor(Math.random()*RAVE_FOOD.length)];}while(curEmoji===p&&RAVE_FOOD.length>1);}
+  function cvs(){return document.getElementById('snakeCanvas');}
+  function ctx(){var c=cvs();return c?c.getContext('2d'):null;}
+
+  window.initGame=function(){
+    var c=cvs();
+    if(c){var w=c.parentElement?c.parentElement.clientWidth:320;if(w<10)w=Math.min(window.innerWidth-40,440);CELL=Math.floor(w/COLS);var s=CELL*COLS;c.width=s;c.height=s;}
+    snake=[{x:10,y:8},{x:9,y:8},{x:8,y:8}];dir={x:1,y:0};nextDir={x:1,y:0};food=rndFood();running=false;
+    snakeHiScore=parseInt(localStorage.getItem('snakeHi')||'0');
+    var h=document.getElementById('snakeHi'),sc=document.getElementById('snakeScore'),mg=document.getElementById('snakeMsg');
+    if(h)h.textContent=snakeHiScore;if(sc)sc.textContent='0';if(mg)mg.textContent='TAP ► TO START';
+    draw();
+  };
+
+  function rndFood(){var p;do{p={x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)};}while(snake&&snake.some(function(s){return s.x===p.x&&s.y===p.y;}));pickEmoji();return p;}
+
+  function draw(){
+    var x=ctx();if(!x)return;var c=cvs();
+    var RC=['#00ffff','#ffff00','#ff6600','#cc00ff','#00ff66'];
+    var po=Math.floor(Date.now()/120);
+    x.fillStyle='#ff007f';x.fillRect(0,0,c.width,c.height);
+    x.fillStyle='#cc0066';var dot=Math.max(1,Math.floor(CELL/6)),off=Math.floor(CELL/3);
+    for(var gx=0;gx<COLS;gx++)for(var gy=0;gy<ROWS;gy++)x.fillRect(gx*CELL+off,gy*CELL+off,dot,dot);
+    var es=Math.max(10,CELL-2);x.font=es+'px serif';x.textAlign='center';x.textBaseline='middle';
+    x.fillText(curEmoji,food.x*CELL+CELL/2,food.y*CELL+CELL/2+1);x.textBaseline='alphabetic';
+    snake.forEach(function(seg,i){
+      var ci=(i+po)%RC.length;
+      if(i===0){x.fillStyle=RC[po%RC.length];x.fillRect(seg.x*CELL,seg.y*CELL,CELL,CELL);x.fillStyle='#000';var ey=Math.max(2,Math.floor(CELL/5));x.fillRect(seg.x*CELL+2,seg.y*CELL+2,ey,ey);x.fillRect(seg.x*CELL+CELL-4,seg.y*CELL+2,ey,ey);}
+      else{x.fillStyle=RC[ci];x.fillRect(seg.x*CELL,seg.y*CELL,CELL,CELL);x.fillStyle='rgba(0,0,0,0.3)';x.fillRect(seg.x*CELL+1,seg.y*CELL+1,CELL-2,CELL-2);x.fillStyle=RC[ci];x.fillRect(seg.x*CELL+2,seg.y*CELL+2,CELL-4,CELL-4);}
+    });
   }
 
-  const musicTags = user.musicStyles ? user.musicStyles.split(',').map(s=>'<span class="profile-tag teal">'+s.trim()+'</span>').join('') : '';
-  const artistTags = user.favoriteArtists ? user.favoriteArtists.split(',').map(a=>'<span class="profile-tag gold">'+a.trim()+'</span>').join('') : '';
+  function step(){
+    dir=nextDir;var h={x:(snake[0].x+dir.x+COLS)%COLS, y:(snake[0].y+dir.y+ROWS)%ROWS};
+    if(snake.some(function(s){return s.x===h.x&&s.y===h.y;})){gameOver();return;}
+    snake.unshift(h);
+    if(h.x===food.x&&h.y===food.y){var sc=snake.length-3;var el=document.getElementById('snakeScore');if(el)el.textContent=sc;if(sc>snakeHiScore){snakeHiScore=sc;localStorage.setItem('snakeHi',snakeHiScore);var hi=document.getElementById('snakeHi');if(hi)hi.textContent=snakeHiScore;}food=rndFood();}
+    else snake.pop();
+    draw();
+  }
 
-  wrap.innerHTML =
-    '<div class="profile-hero">' +
-      '<div class="profile-hero-banner" style="background:'+bannerBg+';">' +
-        '<div class="profile-hero-banner-pattern"></div>' +
-      '</div>' +
-      '<div class="profile-avatar-large" style="background:'+(user.avatarColor||'#9b3dff')+';"' +
-        (isOwnProfile ? ' onclick="openProfilePicChange()" title="Change photo"' : '') + '>' +
-        avatarHTML +
-        (isOwnProfile ? '<div class="profile-avatar-edit-hint">&#x270F;</div>' : '') +
-      '</div>' +
-    '</div>' +
-    '<div class="profile-info">' +
-      '<div class="profile-handle">@'+(user.handle||'unknown')+'</div>' +
-      (user.hometown ? '<div class="profile-hometown">&#x1F4CD; '+escapeHTML(user.hometown)+'</div>' : '') +
-      (user.bio ? '<div class="profile-bio">'+escapeHTML(user.bio)+'</div>' : (isOwnProfile ? '<div class="profile-bio" style="opacity:0.4;font-style:italic;">No bio yet</div>' : '')) +
-      '<div class="profile-stats-row">' +
-        '<div class="profile-stat"><div class="profile-stat-num">'+(user.followerCount||0)+'</div><div class="profile-stat-label">Crew</div></div>' +
-        '<div class="profile-stat"><div class="profile-stat-num">'+(user.followingCount||0)+'</div><div class="profile-stat-label">Following</div></div>' +
-        (isOwnProfile ? '<div class="profile-stat"><div class="profile-stat-num">'+mine.length+'</div><div class="profile-stat-label">Saved</div></div>' : '') +
-      '</div>' +
-      '<div class="profile-action-row">' +
-        (isOwnProfile ? '<button class="profile-action-btn edit" onclick="showEditProfileForm()">&#x270F; Edit Profile</button><button class="profile-action-btn edit" onclick="openProfilePicChange()">&#x1F4F7; Photo</button>' : followBtn) +
-      '</div>' +
-    '</div>' +
-    '<div class="profile-cards">' +
-      (musicTags ? '<div class="profile-card"><div class="profile-card-title">&#x1F3B5; Music Styles</div><div class="profile-card-content">'+musicTags+'</div></div>' : '') +
-      (artistTags ? '<div class="profile-card"><div class="profile-card-title">&#x2B50; Favorite Artists</div><div class="profile-card-content">'+artistTags+'</div></div>' : '') +
-      (user.firstRave ? '<div class="profile-card"><div class="profile-card-title">&#x1F389; First Rave</div><div class="profile-card-content">'+escapeHTML(user.firstRave)+'</div></div>' : '') +
-      (isOwnProfile && savedArtists.length ? '<div class="profile-card"><div class="profile-card-title">&#x1F4C5; My Schedule</div><div class="profile-artists-grid">' +
-        savedArtists.map(a=>'<div class="profile-artist-chip" onclick="openArtist(''+esc(a.key)+'')"><div class="profile-artist-avatar" style="background:'+a.color+';">'+a.initials+'</div><div class="profile-artist-name">'+a.key+'</div></div>').join('') +
-        (mine.length>8 ? '<div class="profile-artist-chip" style="color:var(--text-muted);cursor:pointer;" onclick="navigate('schedule')">+'+( mine.length-8)+' more</div>' : '') +
-      '</div></div>' : '') +
-      (isOwnProfile ? '<div id="editProfileForm" style="display:none;">' +
-        '<div class="profile-edit-section">' +
-          '<div class="profile-edit-title">&#x270F; Edit Profile</div>' +
-          '<div class="auth-field"><label class="auth-label">Handle</label><input class="auth-input" id="editHandle" value="'+(user.handle||'')+'" maxlength="20" oninput="updateHandlePreview(this.value)"></div>' +
-          '<div class="auth-field"><label class="auth-label">Bio</label><input class="auth-input" id="editBio" value="'+escapeHTML(user.bio||'')+'" maxlength="300" placeholder="About you…"></div>' +
-          '<div class="auth-field"><label class="auth-label">Hometown</label><input class="auth-input" id="editHometown" value="'+escapeHTML(user.hometown||'')+'" maxlength="80" placeholder="Where are you from?"></div>' +
-          '<div class="auth-field"><label class="auth-label">Music Styles</label><input class="auth-input" id="editMusicStyles" value="'+escapeHTML(user.musicStyles||'')+'" maxlength="200" placeholder="Drum &amp; Bass, Techno, House…"></div>' +
-          '<div class="auth-field"><label class="auth-label">Favorite Artists</label><input class="auth-input" id="editFaveArtists" value="'+escapeHTML(user.favoriteArtists||'')+'" maxlength="200" placeholder="Roni Size, Spor, J. Phlip…"></div>' +
-          '<div class="auth-field"><label class="auth-label">First Rave</label><input class="auth-input" id="editFirstRave" value="'+escapeHTML(user.firstRave||'')+'" maxlength="100" placeholder="When &amp; where?"></div>' +
-          '<div style="display:flex;gap:8px;margin-top:4px;"><button class="profile-action-btn connect" style="flex:1;padding:12px;" onclick="saveProfileEdits()">Save</button><button class="profile-action-btn edit" onclick="hideEditProfileForm()">Cancel</button></div>' +
-          '<div id="editProfileStatus" style="font-size:12px;margin-top:8px;color:var(--text-muted);"></div>' +
-        '</div>' +
-      '</div>' : '') +
-    '</div>';
+  function gameOver(){
+    running=false;clearInterval(gameLoop);var x=ctx();
+    if(x){x.fillStyle='rgba(200,0,60,0.6)';x.fillRect(0,0,cvs().width,cvs().height);x.fillStyle='#ffff00';x.font='bold 14px "VT323",monospace';x.textAlign='center';x.fillText('GAME OVER',cvs().width/2,cvs().height/2-8);x.fillText('SCORE:'+(snake.length-3),cvs().width/2,cvs().height/2+8);}
+    var mg=document.getElementById('snakeMsg');if(mg)mg.textContent='TAP ► TO RETRY';
+    setBtns('↺');
+  }
+
+  window.snakeStart=function(){
+    if(running){running=false;clearInterval(gameLoop);setBtns('►');var mg=document.getElementById('snakeMsg');if(mg)mg.textContent='PAUSED';return;}
+    window.initGame();running=true;var mg=document.getElementById('snakeMsg');if(mg)mg.textContent='';setBtns('■');
+    gameLoop=setInterval(step,150);
+    (function rp(){if(!running)return;draw();requestAnimationFrame(rp);})();
+  };
+  window.snakeReset=function(){running=false;clearInterval(gameLoop);window.initGame();setBtns('►');};
+  window.snakeDir=function(dx,dy){if(dx!==0&&dir.x!==0)return;if(dy!==0&&dir.y!==0)return;nextDir={x:dx,y:dy};};
+  window.snakeDirBtn=window.snakeDir;
+
+  function setBtns(t){['snakeStartBtn','snakeMobileStartBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t;});}
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var ov=document.getElementById('ravewormOverlay');if(!ov)return;
+    var tx=0,ty=0,MS=25;
+    ov.addEventListener('touchstart',function(e){if(!ov.classList.contains('open'))return;if(e.target&&(e.target.id==='snakeStartBtn'||e.target.id==='snakeMobileStartBtn'))return;var t=e.touches[0];tx=t.clientX;ty=t.clientY;e.preventDefault();},{passive:false});
+    ov.addEventListener('touchmove',function(e){if(!ov.classList.contains('open'))return;e.preventDefault();},{passive:false});
+    ov.addEventListener('touchend',function(e){if(!ov.classList.contains('open'))return;if(e.target&&(e.target.id==='snakeStartBtn'||e.target.id==='snakeMobileStartBtn'))return;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty,ax=Math.abs(dx),ay=Math.abs(dy);if(Math.max(ax,ay)<MS){snakeStart();e.preventDefault();return;}if(ax>ay)window.snakeDir(dx>0?1:-1,0);else window.snakeDir(0,dy>0?1:-1);e.preventDefault();},{passive:false});
+  });
+
+  document.addEventListener('keydown',function(e){
+    var ov=document.getElementById('ravewormOverlay');if(!ov||!ov.classList.contains('open'))return;
+    switch(e.key){case 'ArrowUp':window.snakeDir(0,-1);e.preventDefault();break;case 'ArrowDown':window.snakeDir(0,1);e.preventDefault();break;case 'ArrowLeft':window.snakeDir(-1,0);e.preventDefault();break;case 'ArrowRight':window.snakeDir(1,0);e.preventDefault();break;case 'Enter':case ' ':snakeStart();e.preventDefault();break;case 'Escape':closeRaveworm();break;}
+  });
+})();
+
+/* ════════════════════════════════════════
+   PEOPLE PAGE SUB-TABS
+════════════════════════════════════════ */
+function switchPeopleTab(tab, btn) {
+  ['connect','feed','messages'].forEach(t => {
+    const el = document.getElementById('peopleTab-'+t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#page-people .dash-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (tab === 'feed') {
+    // Render feed compose + list inside the tab
+    const inner = document.getElementById('peopleFeedInner');
+    if (inner && !inner.dataset.built) {
+      inner.dataset.built = '1';
+      inner.innerHTML = buildFeedHTML();
+      initFeedCompose();
+    }
+    loadFeed(feedFilter);
+  }
+  if (tab === 'messages') {
+    loadDMList();
+  }
 }
+
+function buildFeedHTML() {
+  var h = '';
+  h += '<div class="feed-compose" id="feedCompose">';
+  h += '<div class="feed-compose-row">';
+  h += '<div class="feed-compose-avatar" id="feedComposeAvatar" style="background:#9b3dff;">?</div>';
+    h += '<textarea class="feed-compose-input" id="feedPostText" placeholder="What is happening at The Mutiny?" rows="2" oninput="var t=this;t.style.height=\'auto\';t.style.height=t.scrollHeight+\'px\'"></textarea>';
+  h += '</div>';
+  h += '<div class="feed-compose-actions">';
+  h += '<button class="feed-compose-btn" id="checkinToggleBtn" onclick="toggleCheckin()">&#128205; Check-in</button>';
+  h += '<button class="feed-compose-btn" id="photoComposeBtn" onclick="triggerFeedPhoto()">&#128247; Photo</button>';
+  h += '<input type="file" id="feedPhotoInput" accept="image/*" style="display:none;" onchange="previewFeedPhoto(this)">';
+  h += '<button class="feed-post-btn" id="feedPostBtn" onclick="submitPost()" disabled>Post</button>';
+  h += '</div>';
+  h += '<select class="checkin-select" id="checkinSelect">';
+  h += '<option value="">Select location…</option>';
+  h += '<option value="DNB Stage">&#x1F941; DNB Stage</option>';
+  h += '<option value="Oasis Stage">&#127796; Oasis Stage</option>';
+  h += '<option value="Pool">&#127946; Pool</option>';
+  h += '<option value="Beach">&#127958; Beach</option>';
+  h += '<option value="Hotel Lobby">&#127968; Hotel Lobby</option>';
+  h += '<option value="Greenhouse Restaurant">&#127374; Greenhouse</option>';
+  h += '<option value="Oxhead Tavern">&#127866; Oxhead Tavern</option>';
+  h += '<option value="Parking Lot">&#127359; Parking Lot</option>';
+  h += '</select>';
+  h += '<div id="feedPhotoPreviewWrap" style="display:none;margin-top:10px;position:relative;">';
+  h += '<img id="feedPhotoPreviewImg" style="max-height:180px;max-width:100%;display:block;">';
+  h += '<button onclick="clearFeedPhoto()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:16px;cursor:pointer;width:28px;height:28px;">&#x2715;</button>';
+  h += '</div>';
+  h += '</div>';
+  h += '<div class="feed-filters">';
+  h += '<button class="feed-filter-btn active" onclick="loadFeed(&quot;all&quot;,this)">All</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;dnb&quot;,this)">&#x1F941; DNB</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;oasis&quot;,this)">&#127796; Oasis</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;fri&quot;,this)">Fri</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;sat&quot;,this)">Sat</button>';
+  h += '<button class="feed-filter-btn" onclick="loadFeed(&quot;sun&quot;,this)">Sun</button>';
+  h += '</div>';
+  h += '<div id="feedList"></div>';
+  return h;
+}
+
+function initFeedCompose() {
+  updateFeedComposeAvatar();
+  const textEl = document.getElementById('feedPostText');
+  if (textEl) textEl.addEventListener('input', () => {
+    const btn = document.getElementById('feedPostBtn');
+    if (btn) btn.disabled = !textEl.value.trim() && !feedPhotoFile;
+  });
+}
+
+function updateDMBadge(count) {
+  ['dmBadgeDesktop','dmBadgeMobile','dmBadgeTab'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (count > 0) { el.style.display='inline-flex'; el.textContent=count; }
+    else           { el.style.display='none'; }
+  });
+}
+
+</script>
+
+<!-- ══ RAVEWORM GAME OVERLAY ══ -->
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<div class="raveworm-overlay" id="ravewormOverlay">
+  <div class="raveworm-header">
+    <div class="raveworm-title">🪱 RAVE WORM 🪩</div>
+    <button class="raveworm-close" onclick="closeRaveworm()">✕</button>
+  </div>
+  <div class="raveworm-body">
+    <div id="page-snake" style="width:100%;max-width:440px;padding:8px;">
+
+      <!-- Score bar -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;font-family:'VT323',monospace;font-size:20px;">
+        <span style="color:#33ff33;">Score: <span id="snakeScore">0</span></span>
+        <span style="flex:1;"></span>
+        <span style="color:#ffff00;">Best: <span id="snakeHi">0</span></span>
+      </div>
+
+      <!-- Canvas -->
+      <div class="snake-screen-wrap" style="background:#ff007f;border:3px solid #33ff33;border-radius:4px;box-shadow:0 0 12px rgba(51,255,51,0.27);margin-bottom:12px;line-height:0;position:relative;">
+        <canvas id="snakeCanvas" style="display:block;width:100%;"></canvas>
+        <div id="snakeMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'VT323',monospace;font-size:22px;color:#33ff33;text-shadow:0 0 8px #33ff33;pointer-events:none;">TAP ▶ TO START</div>
+      </div>
+
+      <!-- Desktop controls -->
+      <div class="snake-dpad-wrap" style="display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:0 8px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <button class="snake-btn snake-gb-btn" id="snakeStartBtn" onclick="snakeStart()" style="margin-left:94px;">
+            <span style="font-size:13px;line-height:1;">▶/■</span>
+            <span class="snake-gb-label">START</span>
+          </button>
+          <button class="snake-btn snake-gb-btn" onclick="snakeReset()" style="margin-left:94px;">
+            <span style="font-size:16px;line-height:1;">↺</span>
+            <span class="snake-gb-label">RESET</span>
+          </button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:132px;flex-shrink:0;">
+          <div></div>
+          <button class="snake-btn" onclick="snakeDirBtn(0,-1)">▲</button>
+          <div></div>
+          <button class="snake-btn" onclick="snakeDirBtn(-1,0)">◀</button>
+          <div style="background:#111;border:2px solid rgba(51,255,51,0.13);border-radius:50%;"></div>
+          <button class="snake-btn" onclick="snakeDirBtn(1,0)">▶</button>
+          <div></div>
+          <button class="snake-btn" onclick="snakeDirBtn(0,1)">▼</button>
+          <div></div>
+        </div>
+      </div>
+
+      <!-- Mobile start button -->
+      <div class="snake-mobile-start" style="display:none;justify-content:center;margin-bottom:8px;">
+        <button class="snake-btn" id="snakeMobileStartBtn" onclick="snakeStart()" style="width:80px;font-size:22px;background:#111;color:#33ff33;border-color:#33ff33;">▶</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ AUTH OVERLAY ══ -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">☠ SUNKEN SUITE<span>The Mutiny 2026</span></div>
+
+    <!-- LOGIN FORM -->
+    <div id="authLogin">
+      <div class="auth-title">Welcome Back</div>
+      <div class="auth-sub">Sign in to your Mutiny account</div>
+      <div class="auth-error" id="loginError"></div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="loginEmail" type="email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')submitLogin()">
+      </div>
+      <button class="auth-btn" id="loginBtn" onclick="submitLogin()">Sign In</button>
+      <div class="auth-divider"></div>
+      <div class="auth-switch">No account? <a onclick="showAuth('register')">Create one free</a></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="authRegister" style="display:none;">
+      <div class="auth-title">Join The Mutiny</div>
+      <div class="auth-sub">Create your free Festie account</div>
+      <div class="auth-error" id="registerError"></div>
+      <div class="auth-field">
+        <label class="auth-label">Your Name</label>
+        <input class="auth-input" id="registerName" type="text" placeholder="Pirate name or real name" autocomplete="name">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="registerEmail" type="email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="registerPassword" type="password" placeholder="Min 8 characters" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter')submitRegister()">
+      </div>
+      <button class="auth-btn" id="registerBtn" onclick="submitRegister()">Create Account</button>
+      <div class="auth-divider"></div>
+      <div class="auth-switch">Already have an account? <a onclick="showAuth('login')">Sign in</a></div>
+    </div>
+
+    <!-- Skip for now (closes overlay without logging in) -->
+    <div style="text-align:center;margin-top:16px;">
+      <a onclick="closeAuth()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">
+        Continue without signing in →
+      </a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ ARTIST EDIT MODAL ══ -->
+<div class="edit-modal-overlay" id="artistEditModal">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div class="edit-modal-title" id="editModalTitle">Edit Artist</div>
+      <button class="edit-modal-close" onclick="closeArtistEdit()">✕</button>
+    </div>
+    <div class="edit-modal-body">
+      <input type="hidden" id="editArtistKey">
+      <div class="edit-field">
+        <label class="edit-label">Artist Name</label>
+        <input class="edit-input" id="editArtistName" placeholder="e.g. RONI SIZE">
+      </div>
+      <div class="edit-row">
+        <div class="edit-field">
+          <label class="edit-label">Stage</label>
+          <select class="edit-select" id="editArtistStage">
+            <option value="DNB Stage">DNB Stage</option>
+            <option value="Oasis Stage">Oasis Stage</option>
+            <option value="TBA">TBA</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Day</label>
+          <select class="edit-select" id="editArtistDay">
+            <option value="Fri">Friday 7/17</option>
+            <option value="Sat">Saturday 7/18</option>
+            <option value="Sun">Sunday 7/19</option>
+            <option value="All">All Days</option>
+            <option value="TBA">TBA</option>
+          </select>
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-field">
+          <label class="edit-label">Set Time</label>
+          <input class="edit-input" id="editArtistTime" placeholder="e.g. 10:30 PM">
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Genre</label>
+          <input class="edit-input" id="editArtistGenre" placeholder="e.g. Drum & Bass">
+        </div>
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Headliner</label>
+        <select class="edit-select" id="editArtistHeadliner">
+          <option value="false">No</option>
+          <option value="true">Yes — Headliner</option>
+        </select>
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Bio</label>
+        <textarea class="edit-textarea" id="editArtistBio" rows="4" placeholder="Artist bio…"></textarea>
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Spotify URL</label>
+        <input class="edit-input" id="editArtistSpotify" placeholder="https://open.spotify.com/artist/…">
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Artist Photo</label>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div id="editPhotoPreview" style="width:72px;height:72px;flex-shrink:0;
+            display:flex;align-items:center;justify-content:center;
+            font-size:18px;font-weight:900;color:#fff;background:#333;
+            overflow:hidden;position:relative;">
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:center;justify-content:center;gap:8px;
+              padding:10px;border:1px dashed rgba(245,200,66,0.3);cursor:pointer;
+              color:var(--gold-bright);font-size:12px;font-weight:700;
+              text-transform:uppercase;letter-spacing:0.5px;transition:all .15s;"
+              id="editPhotoLabel" onmouseover="this.style.background='rgba(245,200,66,0.05)'"
+              onmouseout="this.style.background='transparent'">
+              📷 Choose Photo
+              <input type="file" id="editPhotoFile" accept="image/*"
+                style="display:none;" onchange="previewArtistPhoto(this)">
+            </label>
+            <div id="editPhotoStatus" style="font-size:11px;color:var(--text-muted);line-height:1.5;"></div>
+            <!-- Progress bar -->
+            <div id="editPhotoProgress" style="display:none;height:4px;background:rgba(255,255,255,0.08);overflow:hidden;">
+              <div id="editPhotoBar" style="height:100%;width:0%;background:var(--teal-glow);transition:width .1s linear;"></div>
+            </div>
+            <input type="hidden" id="editArtistPhoto">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="edit-modal-footer">
+      <button class="dash-btn" onclick="closeArtistEdit()">Cancel</button>
+      <button class="dash-btn primary" onclick="saveArtistEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ SITE ALERT OVERLAY ══ -->
+<div class="site-alert-overlay" id="siteAlertOverlay">
+  <div class="site-alert-banner">
+    <div class="site-alert-inner warning" id="siteAlertInner">
+      <div class="site-alert-icon" id="siteAlertIcon">⚠️</div>
+      <div class="site-alert-body">
+        <div class="site-alert-title" id="siteAlertTitle">Alert</div>
+        <div class="site-alert-message" id="siteAlertMessage"></div>
+        <div class="site-alert-meta" id="siteAlertMeta"></div>
+      </div>
+      <button class="site-alert-dismiss" onclick="dismissSiteAlert()">Dismiss</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ PROFILE SETUP OVERLAY ══ -->
+<div class="profile-setup-overlay" id="profileSetupOverlay">
+  <div class="profile-setup-box">
+    <div class="auth-logo">☠ SUNKEN SUITE<span>Set Up Your Profile</span></div>
+    <div style="margin-top:20px;">
+      <div class="profile-avatar-preview" id="profileAvatarPreview">?</div>
+      <!-- Profile pic upload -->
+      <div style="text-align:center;margin-bottom:16px;position:relative;display:inline-block;left:50%;transform:translateX(-50%);">
+        <div class="profile-avatar-preview" id="profileAvatarPreview" style="cursor:pointer;position:relative;"
+          onclick="document.getElementById('profilePicInput').click()">
+          ?
+          <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.4);
+            display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;"
+            id="profilePicOverlay">📷</div>
+        </div>
+        <input type="file" id="profilePicInput" accept="image/*" style="display:none;"
+          onchange="previewProfilePic(this)">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Tap to upload photo</div>
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Choose your handle</label>
+        <input class="auth-input" id="profileHandleInput" type="text" maxlength="20"
+          placeholder="@yourhandle" autocomplete="off" oninput="updateHandlePreview(this.value)">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Letters, numbers and underscores only</div>
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Bio <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileBioInput" type="text" maxlength="300" placeholder="Tell the crew about yourself…">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Hometown <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileHometownInput" type="text" maxlength="80" placeholder="Where are you from?">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Favorite Artists <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileFaveArtistsInput" type="text" maxlength="200" placeholder="e.g. Roni Size, Spor, J. Phlip…">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Music Styles <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileMusicStylesInput" type="text" maxlength="200" placeholder="e.g. Drum & Bass, Techno, House…">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">First Rave <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileFirstRaveInput" type="text" maxlength="100" placeholder="When/where was your first rave?">
+      </div>
+      <div class="auth-field" style="margin-bottom:20px;">
+        <label class="auth-label">Avatar Color</label>
+        <div class="avatar-color-picker" id="avatarColorPicker"></div>
+      </div>
+      <div class="auth-error" id="profileSetupError"></div>
+      <button class="auth-btn" id="profileSetupBtn" onclick="submitProfileSetup()">Let's Go! 🏴‍☠️</button>
+      <div style="text-align:center;margin-top:12px;">
+        <a onclick="skipProfileSetup()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">Skip for now →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DM THREAD OVERLAY ══ -->
+<div class="dm-thread-overlay" id="dmThreadOverlay">
+  <div class="dm-thread-header">
+    <button class="dm-thread-back" onclick="closeDMThread()">‹</button>
+    <div class="dm-avatar" id="dmThreadAvatar" style="width:36px;height:36px;font-size:13px;"></div>
+    <div class="dm-thread-name" id="dmThreadName"></div>
+  </div>
+  <div class="dm-thread-messages" id="dmThreadMessages"></div>
+  <div class="dm-thread-input-row">
+    <input class="dm-thread-input" id="dmThreadInput" type="text"
+      placeholder="Message…" maxlength="1000" onkeydown="if(event.key==='Enter')sendDM()">
+    <button class="dm-send-btn" onclick="sendDM()">▶</button>
+  </div>
+</div>
+
+</body>
+</html>
