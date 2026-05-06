@@ -2854,6 +2854,7 @@ function updateNavActive(page) {
 
 /* ── My Schedule Widget (home) ── */
 function renderMySchedWidget() {
+
   const mine = getMySchedule();
   const listEl = document.getElementById('mySchedList');
   const emptyEl = document.getElementById('mySchedEmpty');
@@ -2985,6 +2986,7 @@ function renderSchedule() {
 
   const data = SCHEDULE_DATA[day];
   if (!data) return;
+
   const mine = getMySchedule();
   const q = search.toLowerCase();
 
@@ -3063,6 +3065,7 @@ function renderSchedule() {
 }
 
 function renderMySchedPage() {
+
   const mine = getMySchedule();
   const listEl = document.getElementById('mySchedPageList');
   const emptyEl = document.getElementById('mySchedPageEmpty');
@@ -3110,6 +3113,7 @@ function setView(v) {
 
 /* ── Calendar Export ── */
 function exportGCal() {
+
   const mine = getMySchedule();
   if (!mine.length) { showToast('No artists in your schedule yet!'); return; }
   const a = artists[mine[0]];
@@ -3119,6 +3123,7 @@ function exportGCal() {
   window.open(url, '_blank');
 }
 function exportICS() {
+
   const mine = getMySchedule();
   let ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Sunken Suite//App//EN\n';
   mine.forEach(key => {
@@ -3189,6 +3194,7 @@ function renderArtists() {
   const grid = document.getElementById('artistsGrid');
   if (!grid) return;
   const q = ((document.getElementById('artistSearchInput')||{}).value||'').toLowerCase();
+
   const mine = getMySchedule();
   let keys = Object.keys(artists);
 
@@ -3513,6 +3519,7 @@ function copyAddress() {
 function esc(str) { return String(str).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 
 function refreshAllAddBtns() {
+
   const mine = getMySchedule();
   document.querySelectorAll('[data-key]').forEach(btn=>{
     const key = btn.dataset.key;
@@ -6036,14 +6043,26 @@ async function initProfile() {
   const token = localStorage.getItem('ss_auth_token');
   const isOwnProfile = !viewingUserId || viewingUserId === currentUser?.id;
 
-  let user;
+  let user = currentUser ? { ...currentUser } : {};
   if (isOwnProfile) {
-    // Use current user data + fetch fresh
-    user = { ...currentUser };
     try {
-      const res = await fetch(AUTH_URL + '/auth/me', { headers:{'Authorization':'Bearer '+token} });
-      if (res.ok) { const d = await res.json(); user = { ...user, ...d.user }; }
-    } catch {}
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(AUTH_URL + '/auth/me', {
+        headers: {'Authorization': 'Bearer ' + token},
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      if (res.ok) {
+        const d = await res.json();
+        user = { ...user, ...d.user };
+        // Update currentUser with fresh data
+        if (currentUser) Object.assign(currentUser, d.user);
+      }
+    } catch(e) {
+      console.warn('Profile fetch error:', e.message);
+      // Use cached data if available
+    }
   } else {
     // Fetch other user by ID — we need handle first
     // For now get from cached friends list
@@ -6057,6 +6076,11 @@ async function initProfile() {
     if (!user) { wrap.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Profile not found.</div>'; return; }
   }
 
+  // Fallback if user data is empty
+  if (!user || (!user.handle && !user.name && !user.email)) {
+    wrap.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Could not load profile.<br><button onclick="navigateToProfile(null)" style="margin-top:12px;padding:8px 16px;background:var(--gold-bright);border:none;color:#000;cursor:pointer;font-weight:700;">Retry</button></div>';
+    return;
+  }
   const mine = getMySchedule();
   const savedArtists = mine.slice(0,8).map(k => artists[k]).filter(Boolean).map((a,i) => ({
     key: mine[i], ...a
