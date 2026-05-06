@@ -1644,6 +1644,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   border:1px solid rgba(155,61,255,0.2);margin-bottom:0;}
 .profile-hero-banner{height:120px;background:linear-gradient(135deg,#1a0030,#000820,#001a10);
   position:relative;overflow:hidden;}
+.profile-hero-banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
+.profile-hero-banner-pattern{position:relative;z-index:1;}
 .profile-hero-banner-pattern{position:absolute;inset:0;opacity:0.15;
   background-image:repeating-linear-gradient(45deg,var(--purple-mutiny) 0,var(--purple-mutiny) 1px,transparent 0,transparent 50%);
   background-size:20px 20px;}
@@ -6276,6 +6278,23 @@ function hideEditProfileForm() {
 let pendingBannerFile = null;
 let pendingEditAvatarFile = null;
 
+
+async function uploadFileToR2(file, prefix) {
+  if (!file) return null;
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return null;
+  const slug = (prefix || 'profile_') + (currentUser?.id || 'user');
+  try {
+    const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
+      method: 'POST',
+      headers: {'Content-Type': file.type, 'Authorization': 'Bearer ' + token},
+      body: file
+    });
+    if (res.ok) { const d = await res.json(); return d.url || null; }
+  } catch(e) { console.error('Upload failed:', e); }
+  return null;
+}
+
 function openEditProfileModal() {
   if (!currentUser) return;
   const modal = document.getElementById('editProfileModal');
@@ -6354,13 +6373,13 @@ async function saveProfileEdits() {
     let profilePic = currentUser.profilePic || '';
     if (pendingBannerFile) {
       if (saveBtn) saveBtn.textContent='Uploading banner...';
-      const url = await uploadProfilePic(pendingBannerFile);
+      const url = await uploadFileToR2(pendingBannerFile, 'banner_');
       if (url) bannerPic = url;
       pendingBannerFile = null;
     }
     if (pendingEditAvatarFile) {
       if (saveBtn) saveBtn.textContent='Uploading photo...';
-      const url = await uploadProfilePic(pendingEditAvatarFile);
+      const url = await uploadFileToR2(pendingEditAvatarFile, 'profile_');
       if (url) profilePic = url;
       pendingEditAvatarFile = null;
     }
