@@ -1077,8 +1077,8 @@ body{
 .auth-btn:disabled{opacity:0.5;cursor:default;}
 .auth-error{
   background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.35);
-  color:var(--pink-coral);font-size:12px;font-weight:600;
-  padding:8px 12px;margin-bottom:10px;display:none;word-break:break-word;
+  color:var(--pink-coral);font-size:13px;font-weight:600;
+  padding:10px 14px;margin-bottom:14px;display:none;
 }
 .auth-error.show{display:block;}
 .auth-switch{
@@ -1476,7 +1476,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 }
 .profile-setup-overlay.open{display:flex;}
 .profile-setup-box{width:100%;max-width:400px;background:#0a0a0a;
-  border:1px solid rgba(245,200,66,0.3);padding:20px 18px;margin:auto;flex-shrink:0;}
+  border:1px solid rgba(245,200,66,0.3);padding:32px 28px;}
 .avatar-color-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
 .avatar-color-swatch{width:32px;height:32px;cursor:pointer;border:2px solid transparent;transition:all .15s;}
 .avatar-color-swatch.selected{border-color:#fff;transform:scale(1.15);}
@@ -1704,50 +1704,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .profile-edit-section{background:#0a0a0a;border:1px solid rgba(245,200,66,0.2);padding:20px;margin-bottom:8px;}
 .profile-edit-title{font-size:13px;font-weight:800;color:var(--gold-bright);
   text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
-
-/* ══ PROFILE OVERLAY (slide-up sheet) ══ */
-.profile-overlay{
-  position:fixed;inset:0;z-index:20000;pointer-events:none;
-}
-.profile-overlay.open{pointer-events:all;}
-.profile-overlay-backdrop{
-  position:absolute;inset:0;background:rgba(0,0,0,0.8);
-  opacity:0;transition:opacity .25s ease;
-}
-.profile-overlay.open .profile-overlay-backdrop{opacity:1;}
-.profile-overlay-sheet{
-  position:absolute;bottom:0;left:0;right:0;
-  background:#0a0a0a;border-top:1px solid rgba(245,200,66,0.2);
-  border-radius:0;max-height:92vh;overflow-y:auto;
-  transform:translateY(100%);
-  transition:transform .3s cubic-bezier(.4,0,.2,1);
-}
-@media(min-width:768px){
-  .profile-overlay-sheet{
-    position:absolute;top:50%;left:50%;
-    transform:translate(-50%,-60%);
-    bottom:auto;width:520px;max-height:88vh;
-    border:1px solid rgba(245,200,66,0.2);
-    border-radius:0;
-  }
-  .profile-overlay.open .profile-overlay-sheet{
-    transform:translate(-50%,-50%);
-  }
-}
-.profile-overlay.open .profile-overlay-sheet{transform:translateY(0);}
-.profile-sheet-drag{width:40px;height:4px;background:rgba(255,255,255,0.2);
-  border-radius:2px;margin:12px auto 0;}
-@media(min-width:768px){.profile-sheet-drag{display:none;}}
-.profile-sheet-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);
-  position:sticky;top:0;background:#0a0a0a;z-index:1;
-}
-.profile-sheet-close{
-  width:32px;height:32px;background:rgba(255,255,255,0.07);
-  border:none;color:var(--text-light);font-size:16px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-}
 </style>
 </head>
 <body>
@@ -2483,6 +2439,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   </div><!-- /page-people -->
 
 
+  <!-- ── PROFILE PAGE ── -->
+  <div class="page" id="page-profile">
+    <div class="profile-page-wrap" id="profilePageContent">
+      <div style="text-align:center;padding:48px;color:var(--text-muted);">Loading profile…</div>
+    </div>
+  </div>
 
 </div><!-- /app -->
 
@@ -2847,6 +2809,7 @@ function navigate(page) {
   if (page === 'admin')  initAdminDashboard();
   if (page === 'staff')  initStaffDashboard();
   if (page === 'people')  { initPeople(); }
+  if (page === 'profile') { initProfile(); }
   // Update URL hash for deep-linking
   window.location.hash = page;
 }
@@ -5357,51 +5320,21 @@ let feedPhotoFile = null;
 // ── Profile setup ──────────────────────────────────────────
 function checkProfileSetup() {
   if (!currentUser) return;
-  // Check localStorage for cached handle too
-  try {
-    const cached = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
-    if (cached.handle) {
-      currentUser.handle = cached.handle;
-      currentUser.avatarColor = cached.avatarColor || currentUser.avatarColor;
-      currentUser.profilePic = cached.profilePic || '';
-    }
-  } catch(e) {}
-  if (!currentUser.handle) {
-    showProfileSetup();
-  } else {
+  // If already has handle, skip entirely
+  if (currentUser.handle) {
     updateNavAvatar();
     updateFeedComposeAvatar();
+    return;
   }
-}
-
-function closeProfileSetup() {
-  const overlay = document.getElementById('profileSetupOverlay');
-  if (overlay) {
-    overlay.classList.remove('open');
-    overlay.style.display = 'none';
-    overlay.style.visibility = 'hidden';
-    overlay.style.pointerEvents = 'none';
-  }
-  document.body.style.overflow = '';
-}
-
-function skipProfileSetup() {
-  // Force close and go home - no network call
-  const overlay = document.getElementById('profileSetupOverlay');
-  if (overlay) {
-    overlay.classList.remove('open');
-    overlay.style.cssText = 'display:none!important;visibility:hidden!important;pointer-events:none!important;';
-  }
-  document.body.style.overflow = '';
-  navigate('home');
+  // Only show setup if user hasn't dismissed it this session
+  if (sessionStorage.getItem('profile_setup_dismissed')) return;
+  // Small delay so home page loads first
+  setTimeout(showProfileSetup, 1200);
 }
 
 function showProfileSetup() {
   const overlay = document.getElementById('profileSetupOverlay');
   if (!overlay) return;
-  overlay.style.display = '';
-  overlay.style.visibility = '';
-  overlay.style.pointerEvents = '';
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   // Build color picker
@@ -5425,7 +5358,7 @@ function selectAvatarColor(color, el) {
   document.querySelectorAll('.avatar-color-swatch').forEach(s => s.classList.remove('selected'));
   el.classList.add('selected');
   const preview = document.getElementById('profileAvatarPreview');
-  if (preview && !preview.querySelector('img')) preview.style.background = color;
+  if (preview) preview.style.background = color;
 }
 
 function updateHandlePreview(val) {
@@ -5436,6 +5369,7 @@ function updateHandlePreview(val) {
 
 async function submitProfileSetup() {
   const handle = (document.getElementById('profileHandleInput')?.value||'').trim().replace(/[^a-zA-Z0-9_]/g,'');
+  const bio    = (document.getElementById('profileBioInput')?.value||'').trim();
   const errEl  = document.getElementById('profileSetupError');
   const btn    = document.getElementById('profileSetupBtn');
   if (!handle || handle.length < 3) {
@@ -5443,62 +5377,549 @@ async function submitProfileSetup() {
     return;
   }
   if(errEl) errEl.classList.remove('show');
-  btn.disabled = true;
+  btn.disabled=true; btn.textContent='Saving…';
   const token = localStorage.getItem('ss_auth_token');
-  console.log('Token present:', !!token, 'Length:', token?.length);
-  console.log('AUTH_URL:', AUTH_URL);
-  if (!token) {
-    if(errEl){errEl.textContent='Not logged in - please sign out and back in';errEl.classList.add('show');}
-    btn.disabled = false;
-    return;
-  }
   try {
-    // Upload photo first if one was chosen
-    let picUrl = '';
-    if (pendingProfilePicFile) {
-      btn.textContent = 'Uploading photo...';
-      picUrl = await uploadProfilePic(pendingProfilePicFile) || '';
-      pendingProfilePicFile = null;
-    }
-    btn.textContent = 'Saving...';
-    const res = await fetch(AUTH_URL + '/profile', {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
-      body: JSON.stringify({
-        handle: handle,
-        bio: '',
-        avatarColor: selectedAvatarColor || '#9b3dff',
-        profilePic: picUrl
-      })
+    const hometown      = (document.getElementById('profileHometownInput')?.value||'').trim();
+    const musicStyles   = (document.getElementById('profileMusicStylesInput')?.value||'').trim();
+    const favoriteArtists = (document.getElementById('profileFaveArtistsInput')?.value||'').trim();
+    const firstRave     = (document.getElementById('profileFirstRaveInput')?.value||'').trim();
+    const picUrl        = window._pendingProfilePicUrl || '';
+    const res = await fetch(AUTH_URL+'/profile', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ handle, bio, avatarColor:selectedAvatarColor,
+        hometown, musicStyles, favoriteArtists, firstRave, profilePic:picUrl })
     });
     const data = await res.json();
-    console.log('Profile save response:', res.status, data);
     if (res.ok) {
-      // Update currentUser with all returned fields
       currentUser.handle = data.user.handle;
+      currentUser.bio    = data.user.bio;
       currentUser.avatarColor = data.user.avatarColor;
-      currentUser.profilePic = data.user.profilePic || picUrl;
-      currentUser.profileComplete = true;
       localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-      updateNavAvatar();
-      updateFeedComposeAvatar();
       closeProfileSetup();
-      navigate('home');
-      showToast('Welcome to The Mutiny, @' + handle + '!');
+      updateFeedComposeAvatar();
+      showToast('Profile set! Welcome to The Mutiny, @'+handle+' 🏴‍☠️');
     } else {
-      if(errEl){errEl.textContent = data.error || 'Could not save - try again';errEl.classList.add('show');}
-      btn.disabled = false;
-      btn.textContent = "Let's Go!";
+      if(errEl){errEl.textContent=data.error||'Could not save';errEl.classList.add('show');}
     }
-  } catch(e) {
-    console.error('Profile setup error:', e);
-    const msg = e?.message || String(e) || 'Unknown error';
-    if(errEl){errEl.textContent = 'Error: ' + msg;errEl.classList.add('show');}
-    btn.disabled = false;
-    btn.textContent = "Let's Go!";
+  } catch {
+    if(errEl){errEl.textContent='Could not connect';errEl.classList.add('show');}
+  } finally { btn.disabled=false; btn.textContent="Let's Go! 🏴‍☠️"; }
+}
+
+function skipProfileSetup() {
+  sessionStorage.setItem('profile_setup_dismissed', '1');
+  const overlay = document.getElementById('profileSetupOverlay');
+  if (overlay) {
+    overlay.classList.remove('open');
+    overlay.style.display = 'none';
+  }
+  document.body.style.overflow = '';
+  navigate('home');
+}
+function closeProfileSetup() {
+  const overlay = document.getElementById('profileSetupOverlay');
+  if (overlay) {
+    overlay.classList.remove('open');
+    overlay.style.display = 'none';
+  }
+  document.body.style.overflow = '';
+}
+
+function updateFeedComposeAvatar() {
+  const el = document.getElementById('feedComposeAvatar');
+  if (!el || !currentUser) return;
+  el.style.background = currentUser.avatarColor || '#9b3dff';
+  el.textContent = (currentUser.handle?.[0] || currentUser.name?.[0] || '?').toUpperCase();
+}
+
+// ── FEED ───────────────────────────────────────────────────
+function initFeed() {
+  feedPage = 0;
+  updateFeedComposeAvatar();
+  loadFeed(feedFilter);
+  // Enable post button when text entered
+  const textEl = document.getElementById('feedPostText');
+  if (textEl) textEl.addEventListener('input', () => {
+    const btn = document.getElementById('feedPostBtn');
+    if (btn) btn.disabled = !textEl.value.trim() && !feedPhotoFile;
+  });
+}
+
+function toggleCheckin() {
+  const sel = document.getElementById('checkinSelect');
+  const btn = document.getElementById('checkinToggleBtn');
+  if (!sel) return;
+  const show = sel.classList.toggle('show');
+  if (btn) btn.classList.toggle('selected', show);
+}
+
+function triggerFeedPhoto() { document.getElementById('feedPhotoInput')?.click(); }
+
+function previewFeedPhoto(input) {
+  feedPhotoFile = input.files[0];
+  if (!feedPhotoFile) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wrap = document.getElementById('feedPhotoPreviewWrap');
+    const img  = document.getElementById('feedPhotoPreviewImg');
+    if (wrap) wrap.style.display = 'block';
+    if (img)  img.src = e.target.result;
+    const btn = document.getElementById('feedPostBtn');
+    if (btn) btn.disabled = false;
+  };
+  reader.readAsDataURL(feedPhotoFile);
+}
+
+function clearFeedPhoto() {
+  feedPhotoFile = null;
+  const wrap  = document.getElementById('feedPhotoPreviewWrap');
+  const input = document.getElementById('feedPhotoInput');
+  if (wrap)  wrap.style.display = 'none';
+  if (input) input.value = '';
+  const btn = document.getElementById('feedPostBtn');
+  const textEl = document.getElementById('feedPostText');
+  if (btn) btn.disabled = !textEl?.value?.trim();
+}
+
+async function submitPost() {
+  const text     = (document.getElementById('feedPostText')?.value||'').trim();
+  const checkIn  = document.getElementById('checkinSelect')?.value||'';
+  const btn      = document.getElementById('feedPostBtn');
+  if (!text && !feedPhotoFile) return;
+  if (btn) { btn.disabled=true; btn.textContent='Posting…'; }
+
+  let photoUrl = '';
+  // Upload photo if attached
+  if (feedPhotoFile) {
+    const token = localStorage.getItem('ss_auth_token');
+    const slug  = 'feed_'+(currentUser.handle||currentUser.id)+'_'+Date.now();
+    try {
+      const res = await fetch(AUTH_URL+'/media/upload?artist='+slug, {
+        method:'POST',
+        headers:{'Content-Type':feedPhotoFile.type,'Authorization':'Bearer '+token},
+        body: feedPhotoFile
+      });
+      if (res.ok) { const d=await res.json(); photoUrl=d.url||''; }
+    } catch {}
+  }
+
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/posts', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ text, photoUrl, checkIn })
+    });
+    if (res.ok) {
+      document.getElementById('feedPostText').value = '';
+      document.getElementById('feedPostText').style.height = 'auto';
+      clearFeedPhoto();
+      const selEl = document.getElementById('checkinSelect');
+      if (selEl) { selEl.value=''; selEl.classList.remove('show'); }
+      const cBtn = document.getElementById('checkinToggleBtn');
+      if (cBtn) cBtn.classList.remove('selected');
+      feedPage = 0;
+      loadFeed(feedFilter);
+      showToast('Posted! 🏴‍☠️');
+    } else { showToast('Could not post — try again'); }
+  } catch { showToast('Could not connect'); }
+  if (btn) { btn.disabled=false; btn.textContent='Post'; }
+}
+
+async function loadFeed(filter, btn) {
+  feedFilter = filter||'all';
+  if (btn) {
+    document.querySelectorAll('.feed-filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  feedPage = 0;
+  const listEl = document.getElementById('feedList');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading feed…</div>';
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/posts?filter='+feedFilter+'&page=0', {
+      headers:{'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    renderFeedPosts(data.posts||[], data.hasMore, false);
+  } catch {
+    listEl.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Could not load feed.</div>';
   }
 }
 
+function renderFeedPosts(posts, hasMore, append) {
+  const listEl = document.getElementById('feedList');
+  if (!listEl) return;
+  if (!posts.length && !append) {
+    listEl.innerHTML = `<div class="feed-empty">
+      <div class="feed-empty-icon">📡</div>
+      <div>No posts yet.<br><small style="font-size:12px;">Connect with people and start posting!</small></div>
+    </div>`;
+    return;
+  }
+  const isAdmin = currentUser?.role === 'admin';
+  const newHTML = posts.map(p => {
+    const initials = (p.authorHandle?.[0]||'?').toUpperCase();
+    const timeAgo  = getTimeAgo(p.createdAt);
+    return `<div class="post-card" id="post-${p.id}">
+      <div class="post-header">
+        <div class="post-avatar" style="background:${p.authorColor||'#9b3dff'};">${p.authorProfilePic?'<img src="'+p.authorProfilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':initials}</div>
+        <div class="post-meta">
+          <div class="post-handle">@${p.authorHandle||'unknown'}</div>
+          <div class="post-time">${timeAgo}</div>
+        </div>
+        ${(p.authorId===currentUser?.id||isAdmin)?`<button class="post-delete" onclick="deletePost('${p.id}')" title="Delete post">✕</button>`:''}
+      </div>
+      ${p.checkIn?`<div class="post-checkin">📍 ${p.checkIn}</div>`:''}
+      ${p.text?`<div class="post-body">${escapeHTML(p.text)}</div>`:''}
+      ${p.photoUrl?`<img class="post-photo" src="${p.photoUrl}" loading="lazy" alt="Post photo">`:''}
+      <div class="post-actions">
+        <button class="post-action-btn ${p.liked?'liked':''}" onclick="toggleLike('${p.id}',this)">
+          ${p.liked?'❤️':'🤍'} ${p.likeCount||0}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (append) {
+    // Remove load more button first
+    const old = document.getElementById('feedLoadMoreBtn');
+    if (old) old.remove();
+    listEl.insertAdjacentHTML('beforeend', newHTML);
+  } else {
+    listEl.innerHTML = newHTML;
+  }
+
+  if (hasMore) {
+    const loadMore = document.createElement('button');
+    loadMore.className = 'feed-load-more';
+    loadMore.id = 'feedLoadMoreBtn';
+    loadMore.textContent = 'Load more';
+    loadMore.onclick = () => loadMoreFeed();
+    listEl.appendChild(loadMore);
+  }
+}
+
+async function loadMoreFeed() {
+  feedPage++;
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/posts?filter='+feedFilter+'&page='+feedPage, {
+      headers:{'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    renderFeedPosts(data.posts||[], data.hasMore, true);
+  } catch {}
+}
+
+async function toggleLike(postId, btn) {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/posts/'+postId+'/like', {
+      method:'POST', headers:{'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    if (res.ok) {
+      btn.textContent = (data.liked?'❤️':'🤍')+' '+data.likeCount;
+      btn.classList.toggle('liked', data.liked);
+    }
+  } catch {}
+}
+
+async function deletePost(postId) {
+  if (!confirm('Delete this post?')) return;
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/posts/'+postId, {
+      method:'DELETE', headers:{'Authorization':'Bearer '+token}
+    });
+    if (res.ok) {
+      const el = document.getElementById('post-'+postId);
+      if (el) el.remove();
+      showToast('Post deleted');
+    }
+  } catch {}
+}
+
+// ── PEOPLE ─────────────────────────────────────────────────
+function initPeople() {
+  loadFriendRequests();
+  loadFriends();
+}
+
+let searchTimer = null;
+function searchPeople(query) {
+  clearTimeout(searchTimer);
+  if (!query || query.length < 2) {
+    document.getElementById('peopleResults').innerHTML =
+      '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">Type a handle to search</div>';
+    return;
+  }
+  searchTimer = setTimeout(() => doSearchPeople(query), 400);
+}
+
+async function doSearchPeople(query) {
+  const token = localStorage.getItem('ss_auth_token');
+  const res   = await fetch(AUTH_URL+'/users/search?q='+encodeURIComponent(query), {
+    headers:{'Authorization':'Bearer '+token}
+  });
+  const data  = await res.json();
+  const results = document.getElementById('peopleResults');
+  if (!results) return;
+  if (!data.users?.length) {
+    results.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">No users found</div>';
+    return;
+  }
+  results.innerHTML = data.users.map(u =>
+    `<div class="person-card">
+      <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
+      <div class="person-info">
+        <div class="person-handle">@${u.handle}</div>
+        <div class="person-bio">${u.bio||'No bio yet'}</div>
+      </div>
+      <button class="person-follow-btn follow" id="followBtn-${u.id}"
+        onclick="sendFollowRequest('${u.id}',this)">+ Connect</button>
+    </div>`
+  ).join('');
+}
+
+async function sendFollowRequest(userId, btn) {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/follow/'+userId, {
+      method:'POST', headers:{'Authorization':'Bearer '+token}
+    });
+    if (res.ok) {
+      btn.textContent = 'Requested';
+      btn.className = 'person-follow-btn requested';
+      showToast('Connection request sent!');
+    }
+  } catch { showToast('Could not send request'); }
+}
+
+async function loadFriendRequests() {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/follow/requests', { headers:{'Authorization':'Bearer '+token} });
+    const data = await res.json();
+    const requests = data.requests||[];
+    const section  = document.getElementById('friendRequestsSection');
+    const listEl   = document.getElementById('friendRequestsList');
+    if (!section||!listEl) return;
+    if (!requests.length) { section.style.display='none'; return; }
+    section.style.display = 'block';
+    // Update bell
+    updateDMBadge(requests.length);
+    listEl.innerHTML = requests.map(u =>
+      `<div class="request-card">
+        <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
+        <div class="person-info" style="flex:1;">
+          <div class="person-handle">@${u.handle}</div>
+          <div class="person-bio">Wants to connect with you</div>
+        </div>
+        <div class="request-actions">
+          <button class="req-accept-btn" onclick="acceptFollowRequest('${u.id}',this)">Accept</button>
+          <button class="req-decline-btn">Decline</button>
+        </div>
+      </div>`
+    ).join('');
+  } catch {}
+}
+
+async function acceptFollowRequest(userId, btn) {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/follow/'+userId+'/accept', {
+      method:'POST', headers:{'Authorization':'Bearer '+token}
+    });
+    if (res.ok) {
+      btn.closest('.request-card').remove();
+      showToast('✓ You\'re now connected!');
+      loadFriends();
+    }
+  } catch { showToast('Could not accept'); }
+}
+
+async function loadFriends() {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/friends', { headers:{'Authorization':'Bearer '+token} });
+    const data = await res.json();
+    const listEl = document.getElementById('friendsList');
+    if (!listEl) return;
+    const friends = data.friends||[];
+    if (!friends.length) {
+      listEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">No crew yet — search for Festies above to connect!</div>';
+      return;
+    }
+    listEl.innerHTML = friends.map(f =>
+      `<div class="person-card" onclick="viewingUserId='${f.id}';navigate('profile')">
+        <div class="person-avatar" style="background:${f.avatarColor||'#9b3dff'};">${(f.handle?.[0]||'?').toUpperCase()}</div>
+        <div class="person-info">
+          <div class="person-handle">@${f.handle}</div>
+          <div class="person-bio">${f.bio||'No bio yet'}</div>
+        </div>
+        <span class="person-follow-btn friends">💬 DM</span>
+      </div>`
+    ).join('');
+  } catch {}
+}
+
+// ── DMs ────────────────────────────────────────────────────
+function initDMs() {
+  loadDMList();
+  startDMPolling();
+}
+
+async function loadDMList() {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/dm', { headers:{'Authorization':'Bearer '+token} });
+    const data = await res.json();
+    const listEl = document.getElementById('dmList');
+    if (!listEl) return;
+    const convos = data.conversations||[];
+    if (!convos.length) {
+      listEl.innerHTML = '<div class="dm-empty"><div style="font-size:36px;margin-bottom:10px;">💬</div>No messages yet.<br><small style="font-size:12px;">Connect with people to start chatting!</small></div>';
+      return;
+    }
+    // Update unread badge
+    const totalUnread = convos.reduce((sum,c)=>sum+(c.unread||0),0);
+    updateDMBadge(totalUnread);
+    listEl.innerHTML = convos.map(c =>
+      `<div class="dm-convo-card ${c.unread?'unread':''}"
+        onclick="openDMThread('${c.friendId}','${esc(c.handle)}','${c.avatarColor||'#9b3dff'}')">
+        <div class="dm-avatar" style="background:${c.avatarColor||'#9b3dff'};">${(c.handle?.[0]||'?').toUpperCase()}</div>
+        <div class="dm-convo-info">
+          <div class="dm-convo-handle">@${c.handle}</div>
+          <div class="dm-convo-preview">${c.lastMessage||'No messages yet'}</div>
+        </div>
+        ${c.unread?`<div class="dm-unread-badge">${c.unread}</div>`:''}
+      </div>`
+    ).join('');
+  } catch {}
+}
+
+function updateDMBadge(count) {
+  ['dmBadgeDesktop','dmBadgeMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (count > 0) { el.style.display='flex'; el.textContent=count; }
+    else           { el.style.display='none'; }
+  });
+}
+
+function openDMThread(friendId, handle, color) {
+  currentDMFriendId     = friendId;
+  currentDMFriendHandle = handle;
+  const overlay  = document.getElementById('dmThreadOverlay');
+  const nameEl   = document.getElementById('dmThreadName');
+  const avatarEl = document.getElementById('dmThreadAvatar');
+  if (overlay)  overlay.classList.add('open');
+  if (nameEl)   nameEl.textContent  = '@'+handle;
+  if (avatarEl) { avatarEl.style.background=color; avatarEl.textContent=(handle?.[0]||'?').toUpperCase(); }
+  document.body.style.overflow = 'hidden';
+  loadDMThread(friendId);
+}
+
+function closeDMThread() {
+  const overlay = document.getElementById('dmThreadOverlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  currentDMFriendId = null;
+  loadDMList(); // refresh unread counts
+}
+
+async function loadDMThread(friendId) {
+  const msgs = document.getElementById('dmThreadMessages');
+  if (!msgs) return;
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res  = await fetch(AUTH_URL+'/dm/'+friendId, { headers:{'Authorization':'Bearer '+token} });
+    const data = await res.json();
+    renderDMMessages(data.messages||[]);
+  } catch {
+    msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>';
+  }
+}
+
+function renderDMMessages(messages) {
+  const msgs = document.getElementById('dmThreadMessages');
+  if (!msgs) return;
+  if (!messages.length) {
+    msgs.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet. Say hi! 👋</div>';
+    return;
+  }
+  msgs.innerHTML = messages.map(m => {
+    const mine = m.fromId === currentUser?.id;
+    return `<div class="dm-msg ${mine?'mine':'theirs'}">
+      ${escapeHTML(m.text)}
+      <div class="dm-msg-time">${getTimeAgo(m.createdAt)}</div>
+    </div>`;
+  }).join('');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendDM() {
+  const input = document.getElementById('dmThreadInput');
+  const text  = (input?.value||'').trim();
+  if (!text || !currentDMFriendId) return;
+  input.value = '';
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/dm/'+currentDMFriendId, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ text })
+    });
+    if (res.ok) loadDMThread(currentDMFriendId);
+    else showToast('Could not send message');
+  } catch { showToast('Could not send message'); }
+}
+
+function startDMPolling() {
+  if (dmPollTimer) clearInterval(dmPollTimer);
+  dmPollTimer = setInterval(() => {
+    if (currentPage === 'dms' || currentDMFriendId) loadDMList();
+    if (currentDMFriendId) loadDMThread(currentDMFriendId);
+  }, 30000);
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function getTimeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff/60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return m+'m ago';
+  const h = Math.floor(m/60);
+  if (h < 24) return h+'h ago';
+  return Math.floor(h/24)+'d ago';
+}
+function escapeHTML(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ════════════════════════════════════════
+   PROFILE PICTURE UPLOAD
+════════════════════════════════════════ */
+let pendingProfilePicFile = null;
+
+function previewProfilePic(input) {
+  const file = input.files[0];
+  if (!file) return;
+  pendingProfilePicFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('profileAvatarPreview');
+    if (preview) {
+      preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><div id="profilePicOverlay" style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;">&#128247;</div>';
+    }
+  };
+  reader.readAsDataURL(file);
+}
 
 async function uploadProfilePic(file) {
   if (!file) return null;
@@ -5519,44 +5940,66 @@ async function uploadProfilePic(file) {
   return null;
 }
 
-
+// Hook into submitProfileSetup to upload pic first
+const _origSubmitProfile = submitProfileSetup;
+window.submitProfileSetup = async function() {
+  // If there's a pending pic, upload it first then proceed
+  if (pendingProfilePicFile) {
+    const btn = document.getElementById('profileSetupBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Uploading photo…'; }
+    const picUrl = await uploadProfilePic(pendingProfilePicFile);
+    if (picUrl) {
+      // Store temporarily so profile save can include it
+      window._pendingProfilePicUrl = picUrl;
+    }
+    if (btn) { btn.disabled = false; btn.textContent = "Let's Go! 🏴‍☠️"; }
+    pendingProfilePicFile = null;
+  }
+  _origSubmitProfile();
+};
 
 // Change photo from dropdown
 function openProfilePicChange() {
-  const input = document.getElementById('profilePicChangeInput');
-  if (!input) return;
-  input.onchange = async function() {
-    const file = this.files[0];
-    if (!file) return;
-    showToast('Uploading photo...');
-    const url = await uploadProfilePic(file);
-    if (url) {
-      const token = localStorage.getItem('ss_auth_token');
-      try {
-        const res = await fetch(AUTH_URL + '/profile', {
-          method: 'PUT',
-          headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
-          body: JSON.stringify({
-            handle: currentUser.handle,
-            bio: currentUser.bio || '',
-            avatarColor: currentUser.avatarColor || '#9b3dff',
-            profilePic: url
-          })
-        });
-        if (res.ok) {
-          currentUser.profilePic = url;
-          localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-          updateNavAvatar();
-          // Re-render profile if open
-          if (document.getElementById('profileOverlay')?.classList.contains('open')) initProfile();
-          showToast('Profile photo updated!');
-        }
-      } catch { showToast('Could not save photo'); }
-    } else {
-      showToast('Upload failed - try again');
-    }
-    this.value = '';
-  };
+  // Create a hidden file input and trigger it
+  let input = document.getElementById('profilePicChangeInput');
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'file';
+    input.id = 'profilePicChangeInput';
+    input.accept = 'image/*';
+    input.style.display = 'none';
+    input.onchange = async function() {
+      const file = this.files[0];
+      if (!file) return;
+      showToast('Uploading photo…');
+      const url = await uploadProfilePic(file);
+      if (url) {
+        // Update profile with new pic
+        const token = localStorage.getItem('ss_auth_token');
+        try {
+          const res = await fetch(AUTH_URL + '/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+              handle: currentUser.handle,
+              bio: currentUser.bio || '',
+              avatarColor: currentUser.avatarColor || '#9b3dff',
+              profilePic: url
+            })
+          });
+          if (res.ok) {
+            currentUser.profilePic = url;
+            localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+            updateNavAvatar();
+            showToast('✓ Profile photo updated!');
+          }
+        } catch { showToast('Could not save photo'); }
+      } else {
+        showToast('Upload failed — try again');
+      }
+    };
+    document.body.appendChild(input);
+  }
   input.click();
 }
 
@@ -5577,19 +6020,9 @@ function updateNavAvatar() {
 ════════════════════════════════════════ */
 let viewingUserId = null;   // null = own profile
 
-function closeProfileOverlay() {
-  document.getElementById('profileOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
 async function navigateToProfile(userId) {
   viewingUserId = userId || null;
-  const overlay = document.getElementById('profileOverlay');
-  if (overlay) {
-    overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  await initProfile();
+  navigate('profile');
 }
 
 async function initProfile() {
@@ -6191,51 +6624,60 @@ function updateDMBadge(count) {
 <!-- ══ PROFILE SETUP OVERLAY ══ -->
 <div class="profile-setup-overlay" id="profileSetupOverlay">
   <div class="profile-setup-box">
-    <div class="auth-logo" style="font-size:20px;">&#9760; SUNKEN SUITE<span>Set Up Your Profile</span></div>
-
-    <!-- Avatar + photo upload -->
-    <div style="text-align:center;margin:14px 0 16px;">
-      <div style="position:relative;display:inline-block;">
-        <label for="profilePicInput" style="cursor:pointer;display:block;">
-          <div id="profileAvatarPreview"
-            style="width:80px;height:80px;border-radius:50%;background:#9b3dff;
-              display:flex;align-items:center;justify-content:center;
-              overflow:hidden;border:2px solid rgba(255,255,255,0.15);">
-            <span style="font-size:28px;">&#128247;</span>
-          </div>
-          <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;
-            background:var(--gold-bright);border-radius:50%;border:2px solid #000;
-            display:flex;align-items:center;justify-content:center;font-size:11px;">
-            &#128247;
-          </div>
-        </label>
+    <div class="auth-logo">☠ SUNKEN SUITE<span>Set Up Your Profile</span></div>
+    <div style="margin-top:20px;">
+      <div class="profile-avatar-preview" id="profileAvatarPreview">?</div>
+      <!-- Profile pic upload -->
+      <div style="text-align:center;margin-bottom:16px;position:relative;display:inline-block;left:50%;transform:translateX(-50%);">
+        <div class="profile-avatar-preview" id="profileAvatarPreview" style="cursor:pointer;position:relative;"
+          onclick="document.getElementById('profilePicInput').click()">
+          ?
+          <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.4);
+            display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;"
+            id="profilePicOverlay">📷</div>
+        </div>
         <input type="file" id="profilePicInput" accept="image/*" style="display:none;"
           onchange="previewProfilePic(this)">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Tap to upload photo</div>
       </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Tap to add a photo</div>
-    </div>
-
-    <div class="auth-field" style="margin-bottom:12px;">
-      <label class="auth-label">Choose your handle</label>
-      <input class="auth-input" id="profileHandleInput" type="text" maxlength="20"
-        placeholder="@yourhandle" autocomplete="off" oninput="updateHandlePreview(this.value)"
-        onkeydown="if(event.key==='Enter')submitProfileSetup()">
-      <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">Letters, numbers and underscores only</div>
-    </div>
-
-    <div class="auth-field" style="margin-bottom:14px;">
-      <label class="auth-label">Avatar Color</label>
-      <div class="avatar-color-picker" id="avatarColorPicker"></div>
-    </div>
-
-    <div class="auth-error" id="profileSetupError"></div>
-    <button class="auth-btn" id="profileSetupBtn" onclick="submitProfileSetup()">Let's Go!</button>
-    <div style="text-align:center;margin-top:10px;">
-      <a onclick="skipProfileSetup()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">Skip for now &#x2192;</a>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Choose your handle</label>
+        <input class="auth-input" id="profileHandleInput" type="text" maxlength="20"
+          placeholder="@yourhandle" autocomplete="off" oninput="updateHandlePreview(this.value)">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Letters, numbers and underscores only</div>
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Bio <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileBioInput" type="text" maxlength="300" placeholder="Tell the crew about yourself…">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Hometown <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileHometownInput" type="text" maxlength="80" placeholder="Where are you from?">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Favorite Artists <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileFaveArtistsInput" type="text" maxlength="200" placeholder="e.g. Roni Size, Spor, J. Phlip…">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Music Styles <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileMusicStylesInput" type="text" maxlength="200" placeholder="e.g. Drum & Bass, Techno, House…">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">First Rave <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileFirstRaveInput" type="text" maxlength="100" placeholder="When/where was your first rave?">
+      </div>
+      <div class="auth-field" style="margin-bottom:20px;">
+        <label class="auth-label">Avatar Color</label>
+        <div class="avatar-color-picker" id="avatarColorPicker"></div>
+      </div>
+      <div class="auth-error" id="profileSetupError"></div>
+      <button class="auth-btn" id="profileSetupBtn" onclick="submitProfileSetup()">Let's Go! 🏴‍☠️</button>
+      <div style="text-align:center;margin-top:12px;">
+        <a onclick="skipProfileSetup()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">Skip for now →</a>
+      </div>
     </div>
   </div>
 </div>
-
 
 <!-- ══ DM THREAD OVERLAY ══ -->
 <div class="dm-thread-overlay" id="dmThreadOverlay">
@@ -6251,26 +6693,6 @@ function updateDMBadge(count) {
     <button class="dm-send-btn" onclick="sendDM()">▶</button>
   </div>
 </div>
-
-
-<!-- ══ PROFILE OVERLAY ══ -->
-<div class="profile-overlay" id="profileOverlay">
-  <div class="profile-overlay-backdrop" onclick="closeProfileOverlay()"></div>
-  <div class="profile-overlay-sheet">
-    <div class="profile-sheet-drag"></div>
-    <div class="profile-sheet-header">
-      <span style="font-size:13px;font-weight:800;color:var(--gold-bright);
-        text-transform:uppercase;letter-spacing:1px;">Profile</span>
-      <button class="profile-sheet-close" onclick="closeProfileOverlay()">&#x2715;</button>
-    </div>
-    <div class="profile-page-wrap" id="profilePageContent" style="padding-bottom:24px;">
-      <div style="text-align:center;padding:48px;color:var(--text-muted);">Loading…</div>
-    </div>
-  </div>
-</div>
-
-<!-- Hidden file input for profile pic changes post-setup -->
-<input type="file" id="profilePicChangeInput" accept="image/*" style="display:none;">
 
 </body>
 </html>
