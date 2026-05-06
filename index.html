@@ -3063,30 +3063,86 @@ function renderSchedule() {
 }
 
 function renderMySchedPage() {
-  const mine = getMySchedule();
-  const listEl = document.getElementById('mySchedPageList');
-  const emptyEl = document.getElementById('mySchedPageEmpty');
+  var mine = getMySchedule();
+  var listEl  = document.getElementById('mySchedPageList');
+  var emptyEl = document.getElementById('mySchedPageEmpty');
   if (!mine.length) { listEl.innerHTML=''; emptyEl.style.display='block'; return; }
   emptyEl.style.display = 'none';
-  const days={Fri:[],Sat:[],Sun:[],TBA:[]};
-  mine.forEach(k=>{const a=artists[k];if(a)(days[a.day]||days.TBA).push(k);});
-  const dayLabels={Fri:'🎉 Friday · Jul 17',Sat:'🎉 Saturday · Jul 18',Sun:'🎉 Sunday · Jul 19',TBA:'📌 Day TBA'};
-  let html='';
-  Object.entries(days).forEach(([day,keys])=>{
-    if(!keys.length)return;
-    html+=`<div class="sched-stage-header">${dayLabels[day]}</div>`;
-    keys.forEach(key=>{
-      const a=artists[key];if(!a)return;
-      const dot={'DNB Stage':'#9b3dff','Oasis Stage':'#00d4c8'}[a.stage]||'#888';
-      html+=`<div class="sched-item" onclick="openArtist('${esc(key)}')">`+
-        `<div class="item-time" style="font-size:12px;">${a.time||'TBA'}</div>`+
-        `<div class="item-avatar" style="background:${a.color};width:32px;height:32px;font-size:10px;">${a.initials}</div>`+
-        `<div class="item-info"><div class="item-name">${key}</div><div class="item-meta">${a.stage}</div></div>`+
-        `<button class="add-btn added" data-key="${esc(key)}" onclick="event.stopPropagation();toggleSaved('${esc(key)}')">✓</button></div>`;
-    });
+
+  function timeToMins(t) {
+    if (!t || t==='TBA') return 9999;
+    var m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!m) return 9999;
+    var h=parseInt(m[1]), mn=parseInt(m[2]), pm=m[3].toUpperCase()==='PM';
+    if (pm&&h!==12) h+=12; if (!pm&&h===12) h=0; if (h<8) h+=24;
+    return h*60+mn;
+  }
+
+  // Group by day
+  var days = {Fri:[],Sat:[],Sun:[],TBA:[]};
+  mine.forEach(function(k){ var a=artists[k]; if(a)(days[a.day]||days.TBA).push(k); });
+
+  var dayLabels = {Fri:'Friday · Jul 17',Sat:'Saturday · Jul 18',Sun:'Sunday · Jul 19',TBA:'Day TBA'};
+  var out = '';
+
+  ['Fri','Sat','Sun','TBA'].forEach(function(day) {
+    var keys = days[day]; if (!keys.length) return;
+
+    // Split into DNB and Oasis
+    var dnb   = keys.filter(function(k){ return artists[k] && artists[k].stage==='DNB Stage'; });
+    var oasis = keys.filter(function(k){ return artists[k] && artists[k].stage==='Oasis Stage'; });
+
+    function byTime(a,b){ return timeToMins(artists[a]&&artists[a].time) - timeToMins(artists[b]&&artists[b].time); }
+    dnb.sort(byTime); oasis.sort(byTime);
+
+    out += '<div style="margin-bottom:4px;">';
+    out += '<div class="stage-section-header" style="background:rgba(255,255,255,0.04);color:var(--gold-bright);border:1px solid rgba(245,200,66,0.15);margin-bottom:8px;">ð ' + dayLabels[day] + '</div>';
+
+    // Render each stage as a section like the regular schedule
+    if (dnb.length) {
+      out += '<div class="stage-section">';
+      out += '<div class="stage-section-header dnb"><div class="stage-dot" style="background:#9b3dff;"></div>DNB Stage</div>';
+      out += '<div class="sched-list">';
+      dnb.forEach(function(key) {
+        var a = artists[key]; if (!a) return;
+        var hl = a.headliner ? 'headliner' : '';
+        var k1 = esc(key);
+        out += '<div class="sched-item ' + hl + '" onclick="openArtist(\'' + k1 + '\')">'+
+          '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>'+
+          '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>'+
+          '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>'+
+          '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + k1 + '\')">&#x2713;</button>'+
+          '</div>';
+      });
+      out += '</div></div>';
+    }
+
+    if (oasis.length) {
+      out += '<div class="stage-section">';
+      out += '<div class="stage-section-header oasis"><div class="stage-dot" style="background:#00d4c8;"></div>Oasis Stage</div>';
+      out += '<div class="sched-list">';
+      oasis.forEach(function(key) {
+        var a = artists[key]; if (!a) return;
+        var hl = a.headliner ? 'oasis-headliner' : '';
+        var k1 = esc(key);
+        out += '<div class="sched-item ' + hl + '" onclick="openArtist(\'' + k1 + '\')">'+
+          '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>'+
+          '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>'+
+          '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>'+
+          '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + k1 + '\')">&#x2713;</button>'+
+          '</div>';
+      });
+      out += '</div></div>';
+    }
+
+    out += '</div>';
   });
-  listEl.innerHTML=html;
+
+  listEl.innerHTML = out;
 }
+
+
+
 
 function switchDay(day, btn) {
   schedCurrentDay = day;
