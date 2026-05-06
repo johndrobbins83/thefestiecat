@@ -2439,7 +2439,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   </div><!-- /page-people -->
 
 
-
+  <!-- ── PROFILE PAGE ── -->
+  <div class="page" id="page-profile">
+    <div class="profile-page-wrap" id="profilePageContent">
+      <div style="text-align:center;padding:48px;color:var(--text-muted);">Loading profile…</div>
+    </div>
+  </div>
 
 </div><!-- /app -->
 
@@ -3572,8 +3577,7 @@ if ('serviceWorker' in navigator) {
 ════════════════════════════════════════════════════════════ */
 (function() {
   const page = location.hash.slice(1);
-  // Don't restore profile page on refresh — it needs auth context
-  if (page && page !== 'profile' && document.getElementById('page-'+page)) navigate(page);
+  if (page && document.getElementById('page-'+page)) navigate(page);
   window.addEventListener('hashchange', ()=>{ const p=location.hash.slice(1); if(p && document.getElementById('page-'+p)) navigate(p); });
 })();
 
@@ -5316,15 +5320,13 @@ let feedPhotoFile = null;
 // ── Profile setup ──────────────────────────────────────────
 function checkProfileSetup() {
   if (!currentUser) return;
-  // If already has handle, skip entirely
   if (currentUser.handle) {
     updateNavAvatar();
     updateFeedComposeAvatar();
     return;
   }
-  // Don't show if user has dismissed before
+  // Only show once per account
   if (localStorage.getItem('ss_profile_setup_dismissed_' + currentUser.id)) return;
-  // Small delay so home page loads first
   setTimeout(showProfileSetup, 1000);
 }
 
@@ -5393,11 +5395,9 @@ async function submitProfileSetup() {
       currentUser.bio    = data.user.bio;
       currentUser.avatarColor = data.user.avatarColor;
       localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-      if (currentUser?.id) localStorage.setItem('ss_profile_setup_dismissed_' + currentUser.id, '1');
-      if (currentUser?.id) localStorage.setItem('ss_profile_setup_dismissed_' + currentUser.id, '1');
       closeProfileSetup();
-      navigate('home');
-      showToast('Welcome to The Mutiny, @'+handle+'!');
+      updateFeedComposeAvatar();
+      showToast('Profile set! Welcome to The Mutiny, @'+handle+' 🏴‍☠️');
     } else {
       if(errEl){errEl.textContent=data.error||'Could not save';errEl.classList.add('show');}
     }
@@ -5415,10 +5415,12 @@ function skipProfileSetup() {
 }
 function closeProfileSetup() {
   const overlay = document.getElementById('profileSetupOverlay');
-  if (overlay) {
-    overlay.classList.remove('open');
-    overlay.style.display = 'none';
-  }
+  if (overlay) { overlay.classList.remove('open'); overlay.style.display = 'none'; }
+  document.body.style.overflow = '';
+}
+function closeProfileOverlay() {
+  const overlay = document.getElementById('profileOverlay');
+  if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
 }
 
@@ -6017,7 +6019,16 @@ let viewingUserId = null;   // null = own profile
 
 async function navigateToProfile(userId) {
   viewingUserId = userId || null;
-  navigate('profile');
+  const overlay = document.getElementById('profileOverlay');
+  if (overlay) { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  await initProfile();
+}
+
+async function navigateToProfile(userId) {
+  viewingUserId = userId || null;
+  const overlay = document.getElementById('profileOverlay');
+  if (overlay) { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  await initProfile();
 }
 
 async function initProfile() {
@@ -6026,27 +6037,15 @@ async function initProfile() {
   wrap.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Loading…</div>';
 
   const token = localStorage.getItem('ss_auth_token');
-  // If no currentUser yet, wait for auth then retry
-  if (!currentUser && token) {
-    try {
-      const res = await fetch(AUTH_URL + '/auth/me', { headers:{'Authorization':'Bearer '+token} });
-      if (res.ok) { const d = await res.json(); setCurrentUser(d.user, token); }
-    } catch {}
-  }
-  if (!currentUser) {
-    closeProfileOverlay();
-    navigate('home');
-    return;
-  }
-
   const isOwnProfile = !viewingUserId || viewingUserId === currentUser?.id;
 
   let user;
   if (isOwnProfile) {
+    // Use current user data + fetch fresh
     user = { ...currentUser };
     try {
       const res = await fetch(AUTH_URL + '/auth/me', { headers:{'Authorization':'Bearer '+token} });
-      if (res.ok) { const d = await res.json(); user = { ...user, ...d.user }; Object.assign(currentUser, d.user); }
+      if (res.ok) { const d = await res.json(); user = { ...user, ...d.user }; }
     } catch {}
   } else {
     // Fetch other user by ID — we need handle first
@@ -6631,46 +6630,57 @@ function updateDMBadge(count) {
 <!-- ══ PROFILE SETUP OVERLAY ══ -->
 <div class="profile-setup-overlay" id="profileSetupOverlay">
   <div class="profile-setup-box">
-    <div class="auth-logo" style="font-size:20px;">&#9760; SUNKEN SUITE<span>Set Up Your Profile</span></div>
-
-    <div style="text-align:center;margin:14px 0 16px;">
-      <div style="position:relative;display:inline-block;">
-        <label for="profilePicInput" style="cursor:pointer;display:block;">
-          <div id="profileAvatarPreview"
-            style="width:80px;height:80px;border-radius:50%;background:#9b3dff;
-              display:flex;align-items:center;justify-content:center;
-              overflow:hidden;border:2px solid rgba(255,255,255,0.15);margin:0 auto;">
-            <span style="font-size:28px;">&#128247;</span>
-          </div>
-        </label>
-        <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;
-          background:var(--gold-bright);border-radius:50%;border:2px solid #000;
-          display:flex;align-items:center;justify-content:center;font-size:11px;pointer-events:none;">
-          &#128247;
+    <div class="auth-logo">☠ SUNKEN SUITE<span>Set Up Your Profile</span></div>
+    <div style="margin-top:20px;">
+      <div class="profile-avatar-preview" id="profileAvatarPreview">?</div>
+      <!-- Profile pic upload -->
+      <div style="text-align:center;margin-bottom:16px;position:relative;display:inline-block;left:50%;transform:translateX(-50%);">
+        <div class="profile-avatar-preview" id="profileAvatarPreview" style="cursor:pointer;position:relative;"
+          onclick="document.getElementById('profilePicInput').click()">
+          ?
+          <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.4);
+            display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;"
+            id="profilePicOverlay">📷</div>
         </div>
         <input type="file" id="profilePicInput" accept="image/*" style="display:none;"
           onchange="previewProfilePic(this)">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Tap to upload photo</div>
       </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Tap to add a photo</div>
-    </div>
-
-    <div class="auth-field" style="margin-bottom:12px;">
-      <label class="auth-label">Choose your handle</label>
-      <input class="auth-input" id="profileHandleInput" type="text" maxlength="20"
-        placeholder="@yourhandle" autocomplete="off" oninput="updateHandlePreview(this.value)"
-        onkeydown="if(event.key==='Enter')submitProfileSetup()">
-      <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">Letters, numbers and underscores only</div>
-    </div>
-
-    <div class="auth-field" style="margin-bottom:14px;">
-      <label class="auth-label">Avatar Color</label>
-      <div class="avatar-color-picker" id="avatarColorPicker"></div>
-    </div>
-
-    <div class="auth-error" id="profileSetupError"></div>
-    <button class="auth-btn" id="profileSetupBtn" onclick="submitProfileSetup()">Let's Go!</button>
-    <div style="text-align:center;margin-top:10px;">
-      <a onclick="skipProfileSetup()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;text-decoration:underline;">Skip for now</a>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Choose your handle</label>
+        <input class="auth-input" id="profileHandleInput" type="text" maxlength="20"
+          placeholder="@yourhandle" autocomplete="off" oninput="updateHandlePreview(this.value)">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Letters, numbers and underscores only</div>
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Bio <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileBioInput" type="text" maxlength="300" placeholder="Tell the crew about yourself…">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Hometown <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileHometownInput" type="text" maxlength="80" placeholder="Where are you from?">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Favorite Artists <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileFaveArtistsInput" type="text" maxlength="200" placeholder="e.g. Roni Size, Spor, J. Phlip…">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">Music Styles <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileMusicStylesInput" type="text" maxlength="200" placeholder="e.g. Drum & Bass, Techno, House…">
+      </div>
+      <div class="auth-field" style="margin-bottom:14px;">
+        <label class="auth-label">First Rave <span style="opacity:0.5;">(optional)</span></label>
+        <input class="auth-input" id="profileFirstRaveInput" type="text" maxlength="100" placeholder="When/where was your first rave?">
+      </div>
+      <div class="auth-field" style="margin-bottom:20px;">
+        <label class="auth-label">Avatar Color</label>
+        <div class="avatar-color-picker" id="avatarColorPicker"></div>
+      </div>
+      <div class="auth-error" id="profileSetupError"></div>
+      <button class="auth-btn" id="profileSetupBtn" onclick="submitProfileSetup()">Let's Go! 🏴‍☠️</button>
+      <div style="text-align:center;margin-top:12px;">
+        <a onclick="skipProfileSetup()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">Skip for now →</a>
+      </div>
     </div>
   </div>
 </div>
@@ -6689,6 +6699,48 @@ function updateDMBadge(count) {
     <button class="dm-send-btn" onclick="sendDM()">▶</button>
   </div>
 </div>
+
+
+<!-- ══ PROFILE OVERLAY ══ -->
+<style>
+.profile-overlay{position:fixed;inset:0;z-index:20000;pointer-events:none;}
+.profile-overlay.open{pointer-events:all;}
+.profile-overlay-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.8);opacity:0;transition:opacity .25s;}
+.profile-overlay.open .profile-overlay-backdrop{opacity:1;}
+.profile-overlay-sheet{
+  position:absolute;bottom:0;left:0;right:0;background:#0a0a0a;
+  border-top:1px solid rgba(245,200,66,0.2);max-height:92vh;overflow-y:auto;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+@media(min-width:768px){
+  .profile-overlay-sheet{
+    position:absolute;top:50%;left:50%;bottom:auto;
+    transform:translate(-50%,-60%);width:520px;max-height:88vh;
+    border:1px solid rgba(245,200,66,0.2);
+  }
+  .profile-overlay.open .profile-overlay-sheet{transform:translate(-50%,-50%);}
+}
+.profile-overlay.open .profile-overlay-sheet{transform:translateY(0);}
+.profile-sheet-header{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);
+  position:sticky;top:0;background:#0a0a0a;z-index:1;}
+.profile-sheet-close{width:32px;height:32px;background:rgba(255,255,255,0.07);
+  border:none;color:var(--text-light);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;}
+</style>
+<div class="profile-overlay" id="profileOverlay">
+  <div class="profile-overlay-backdrop" onclick="closeProfileOverlay()"></div>
+  <div class="profile-overlay-sheet">
+    <div class="profile-sheet-header">
+      <span style="font-size:13px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;">Profile</span>
+      <button class="profile-sheet-close" onclick="closeProfileOverlay()">&#x2715;</button>
+    </div>
+    <div class="profile-page-wrap" id="profilePageContent" style="padding-bottom:24px;">
+      <div style="text-align:center;padding:48px;color:var(--text-muted);">Loading…</div>
+    </div>
+  </div>
+</div>
+<input type="file" id="profilePicChangeInput" accept="image/*" style="display:none;">
 
 </body>
 </html>
