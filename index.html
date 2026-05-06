@@ -1644,8 +1644,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   border:1px solid rgba(155,61,255,0.2);margin-bottom:0;}
 .profile-hero-banner{height:120px;background:linear-gradient(135deg,#1a0030,#000820,#001a10);
   position:relative;overflow:hidden;}
-.profile-hero-banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
-.profile-hero-banner-pattern{position:relative;z-index:1;}
 .profile-hero-banner-pattern{position:absolute;inset:0;opacity:0.15;
   background-image:repeating-linear-gradient(45deg,var(--purple-mutiny) 0,var(--purple-mutiny) 1px,transparent 0,transparent 50%);
   background-size:20px 20px;}
@@ -1705,13 +1703,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .profile-edit-section{background:#0a0a0a;border:1px solid rgba(245,200,66,0.2);padding:20px;margin-bottom:8px;}
 .profile-edit-title{font-size:13px;font-weight:800;color:var(--gold-bright);
   text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
-
-.edit-profile-modal{position:fixed;inset:0;z-index:25000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);padding:16px;}
-.edit-profile-modal.open{display:flex;}
-.edit-profile-box{width:100%;max-width:480px;background:#0a0a0a;border:1px solid rgba(245,200,66,0.25);max-height:90vh;overflow-y:auto;}
-.edit-profile-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07);position:sticky;top:0;background:#0a0a0a;z-index:1;}
-.banner-upload-wrap{position:relative;height:100px;background:linear-gradient(135deg,#1a0030,#000820);cursor:pointer;margin-bottom:44px;overflow:visible;}
-.banner-avatar-overlap{position:absolute;bottom:-36px;left:16px;width:72px;height:72px;border-radius:50%;border:3px solid #0a0a0a;overflow:hidden;background:#9b3dff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -2447,12 +2438,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   </div><!-- /page-people -->
 
 
-  <!-- ── PROFILE PAGE ── -->
-  <div class="page" id="page-profile">
-    <div class="profile-page-wrap" id="profilePageContent">
-      <div style="text-align:center;padding:48px;color:var(--text-muted);">Loading profile…</div>
-    </div>
-  </div>
+
 
 </div><!-- /app -->
 
@@ -3901,11 +3887,11 @@ function setCurrentUser(user, token) {
     // 3. Pre-load friends so Connect tab is ready
     loadFriendRequests();
     loadFriends();
-    // 4. Restore profile overlay if hash says so
-    var _hash = window.location.hash.slice(1);
-    if (_hash.startsWith('profile')) {
-      var _uid = _hash.split('/')[1] || null;
-      setTimeout(function() { navigateToProfile(_uid); }, 200);
+    // 4. Restore profile overlay if open before refresh
+    var _phash = window.location.hash.slice(1);
+    if (_phash.startsWith('profile')) {
+      var _puid = _phash.split('/')[1] || null;
+      setTimeout(function() { navigateToProfile(_puid); }, 300);
     }
     // 5. Pre-load admin users if admin
     if (user.role === 'admin') {
@@ -6103,7 +6089,7 @@ async function uploadProfilePic(file) {
   if (!file) return null;
   const token = localStorage.getItem('ss_auth_token');
   if (!token) return null;
-  const slug = 'profile_' + (currentUser?.id || 'user') + '_' + Date.now();
+  const slug = 'profile_' + (currentUser?.id || 'user');
   try {
     const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
       method: 'POST',
@@ -6169,12 +6155,7 @@ function openProfilePicChange() {
             currentUser.profilePic = url;
             localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
             updateNavAvatar();
-            // Update profile avatar in overlay directly
-            const avatarEl = document.querySelector('.profile-avatar-large');
-            if (avatarEl) {
-              avatarEl.innerHTML = '<img src="'+url+'?v='+Date.now()+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()"><div class="profile-avatar-edit-hint">&#x270F;</div>';
-            }
-            showToast('Profile photo updated!');
+            showToast('✓ Profile photo updated!');
           }
         } catch { showToast('Could not save photo'); }
       } else {
@@ -6210,6 +6191,12 @@ async function navigateToProfile(userId) {
   if (overlay) { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
   await initProfile();
 }
+function closeProfileOverlay() {
+  const overlay = document.getElementById('profileOverlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  history.replaceState(null, '', ' ');
+}
 
 async function initProfile() {
   const wrap = document.getElementById('profilePageContent');
@@ -6222,16 +6209,7 @@ async function initProfile() {
   if (isOwnProfile) {
     try {
       const res = await fetch(AUTH_URL + '/auth/me', { headers: {'Authorization':'Bearer '+token} });
-      if (res.ok) {
-        const d = await res.json();
-        // Keep local profilePic/bannerPic if server doesn't have them yet
-        const keepPic    = currentUser?.profilePic || '';
-        const keepBanner = currentUser?.bannerPic   || '';
-        user = {...user, ...d.user};
-        if (keepPic    && !d.user.profilePic) user.profilePic = keepPic;
-        if (keepBanner && !d.user.bannerPic)  user.bannerPic  = keepBanner;
-        if (currentUser) { Object.assign(currentUser, user); localStorage.setItem(USER_KEY, JSON.stringify(currentUser)); }
-      }
+      if (res.ok) { const d = await res.json(); user = {...user,...d.user}; if(currentUser) Object.assign(currentUser,d.user); localStorage.setItem(USER_KEY,JSON.stringify(currentUser)); }
     } catch(e) { console.warn('auth/me failed:',e.message); }
   } else {
     // Look up from any cached user list
@@ -6281,7 +6259,7 @@ async function initProfile() {
     (user.hometown?'<div class="profile-hometown">&#x1F4CD; '+escapeHTML(user.hometown)+'</div>':'')+
     (user.bio?'<div class="profile-bio">'+escapeHTML(user.bio)+'</div>':(isOwnProfile?'<div class="profile-bio" style="opacity:0.4;font-style:italic;">No bio yet</div>':''))+
     '<div class="profile-stats-row"><div class="profile-stat"><div class="profile-stat-num">'+(user.followerCount||0)+'</div><div class="profile-stat-label">Crew</div></div><div class="profile-stat"><div class="profile-stat-num">'+(user.followingCount||0)+'</div><div class="profile-stat-label">Following</div></div>'+(isOwnProfile?'<div class="profile-stat"><div class="profile-stat-num">'+mine.length+'</div><div class="profile-stat-label">Saved</div></div>':'')+' </div>' +
-    '<div class="profile-action-row">'+(isOwnProfile?'<button class="profile-action-btn edit" onclick="openEditProfileModal()">&#x270F; Edit</button><button class="profile-action-btn edit" onclick="openProfilePicChange()">&#x1F4F7; Photo</button>':followBtn)+'</div></div>' +
+    '<div class="profile-action-row">'+(isOwnProfile?'<button class="profile-action-btn edit" onclick="showEditProfileForm()">&#x270F; Edit</button><button class="profile-action-btn edit" onclick="openProfilePicChange()">&#x1F4F7; Photo</button>':followBtn)+'</div></div>' +
     '<div class="profile-cards">'+(musicTags?'<div class="profile-card"><div class="profile-card-title">&#x1F3B5; Music Styles</div><div class="profile-card-content">'+musicTags+'</div></div>':'')+
     (artistTags?'<div class="profile-card"><div class="profile-card-title">&#x2B50; Favorite Artists</div><div class="profile-card-content">'+artistTags+'</div></div>':'')+
     (user.firstRave?'<div class="profile-card"><div class="profile-card-title">&#x1F389; First Rave</div><div class="profile-card-content">'+escapeHTML(user.firstRave)+'</div></div>':'')+
@@ -6298,173 +6276,37 @@ function hideEditProfileForm() {
   if (f) f.style.display='none';
 }
 
-let pendingBannerFile = null;
-let pendingEditAvatarFile = null;
-
-
-async function uploadFileToR2(file, prefix) {
-  if (!file) return null;
-  const token = localStorage.getItem(TOKEN_KEY);
-  if (!token) return null;
-  const slug = (prefix || 'profile_') + (currentUser?.id || 'user') + '_' + Date.now();
-  try {
-    const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
-      method: 'POST',
-      headers: {'Content-Type': file.type, 'Authorization': 'Bearer ' + token},
-      body: file
-    });
-    if (res.ok) { const d = await res.json(); return d.url || null; }
-  } catch(e) { console.error('Upload failed:', e); }
-  return null;
-}
-
-function openEditProfileModal() {
-  if (!currentUser) return;
-  const modal = document.getElementById('editProfileModal');
-  if (!modal) return;
-  document.getElementById('editHandle').value = currentUser.handle || '';
-  const bioEl = document.getElementById('editBio');
-  if (bioEl) bioEl.value = currentUser.bio || '';
-  document.getElementById('editHometown').value = currentUser.hometown || '';
-  document.getElementById('editMusicStyles').value = currentUser.musicStyles || '';
-  document.getElementById('editFaveArtists').value = currentUser.favoriteArtists || '';
-  document.getElementById('editFirstRave').value = currentUser.firstRave || '';
-  document.getElementById('editProfileStatus').textContent = '';
-  const bannerImg = document.getElementById('editBannerImg');
-  if (bannerImg) bannerImg.innerHTML = currentUser.bannerPic ? '<img src="'+currentUser.bannerPic+'" style="width:100%;height:100%;object-fit:cover;">' : '';
-  const av = document.getElementById('editAvatarOverlap');
-  if (av) {
-    av.style.background = currentUser.avatarColor || '#9b3dff';
-    av.innerHTML = currentUser.profilePic ? '<img src="'+currentUser.profilePic+'?v='+Date.now()+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">' : (currentUser.handle?.[0]||'?').toUpperCase();
-  }
-  pendingBannerFile = null; pendingEditAvatarFile = null;
-  modal.classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeEditProfileModal() {
-  const modal = document.getElementById('editProfileModal');
-  if (modal) modal.classList.remove('open');
-  // Restore overflow:hidden if profile overlay is still open
-  const profileOverlay = document.getElementById('profileOverlay');
-  if (profileOverlay && profileOverlay.classList.contains('open')) {
-    document.body.style.overflow = 'hidden';
-  } else {
-    document.body.style.overflow = '';
-  }
-}
-
-function previewEditBanner(input) {
-  const file = input.files[0]; if (!file) return;
-  pendingBannerFile = file;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = document.getElementById('editBannerImg');
-    if (img) img.innerHTML = '<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;">';
-  };
-  reader.readAsDataURL(file);
-}
-
-function previewEditAvatar(input) {
-  const file = input.files[0]; if (!file) return;
-  pendingEditAvatarFile = file;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const av = document.getElementById('editAvatarOverlap');
-    if (av) av.innerHTML = '<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-  };
-  reader.readAsDataURL(file);
-}
-
 async function saveProfileEdits() {
-  const handle          = (document.getElementById('editHandle')?.value||'').trim();
-  const bio             = (document.getElementById('editBio')?.value||'').trim();
-  const hometown        = (document.getElementById('editHometown')?.value||'').trim();
-  const musicStyles     = (document.getElementById('editMusicStyles')?.value||'').trim();
+  const handle      = (document.getElementById('editHandle')?.value||'').trim();
+  const bio         = (document.getElementById('editBio')?.value||'').trim();
+  const hometown    = (document.getElementById('editHometown')?.value||'').trim();
+  const musicStyles = (document.getElementById('editMusicStyles')?.value||'').trim();
   const favoriteArtists = (document.getElementById('editFaveArtists')?.value||'').trim();
-  const firstRave       = (document.getElementById('editFirstRave')?.value||'').trim();
-  const statusEl        = document.getElementById('editProfileStatus');
-  const saveBtn         = document.getElementById('editProfileSaveBtn');
-  if (!handle || handle.length < 3) {
-    if (statusEl) { statusEl.textContent='Handle must be 3+ chars'; statusEl.style.color='var(--pink-coral)'; }
-    return;
-  }
-  if (saveBtn) { saveBtn.disabled=true; saveBtn.textContent='Saving...'; }
-  const token = localStorage.getItem(TOKEN_KEY);
+  const firstRave   = (document.getElementById('editFirstRave')?.value||'').trim();
+  const status      = document.getElementById('editProfileStatus');
+  if (!handle || handle.length < 3) { if(status){status.textContent='Handle must be 3+ chars';status.style.color='var(--pink-coral)';} return; }
+  if(status){status.textContent='Saving…';status.style.color='var(--text-muted)';}
+  const token = localStorage.getItem('ss_auth_token');
   try {
-    let bannerPic  = currentUser.bannerPic  || '';
-    let profilePic = currentUser.profilePic || '';
-    if (pendingBannerFile) {
-      if (saveBtn) saveBtn.textContent='Uploading banner...';
-      const url = await uploadFileToR2(pendingBannerFile, 'banner_');
-      if (url) bannerPic = url;
-      pendingBannerFile = null;
-    }
-    if (pendingEditAvatarFile) {
-      if (saveBtn) saveBtn.textContent='Uploading photo...';
-      const url = await uploadFileToR2(pendingEditAvatarFile, 'profile_');
-      if (url) profilePic = url;
-      pendingEditAvatarFile = null;
-    }
-    if (saveBtn) saveBtn.textContent='Saving...';
     const res = await fetch(AUTH_URL+'/profile', {
-      method: 'PUT',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
       body: JSON.stringify({ handle, bio, hometown, musicStyles, favoriteArtists, firstRave,
-        avatarColor: currentUser.avatarColor||'#9b3dff', profilePic, bannerPic })
+        avatarColor: currentUser.avatarColor||'#9b3dff',
+        profilePic: currentUser.profilePic||'' })
     });
     const data = await res.json();
     if (res.ok) {
-      // Update currentUser with saved data
-      Object.assign(currentUser, data.user, { profilePic, bannerPic });
+      Object.assign(currentUser, data.user);
       localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
       updateNavAvatar();
-      closeEditProfileModal();
-      // Update profile avatar directly in the overlay DOM
-      const profileAvatarEl = document.querySelector('.profile-avatar-large');
-      if (profileAvatarEl && profilePic) {
-        profileAvatarEl.innerHTML = '<img src="'+profilePic+'?v='+Date.now()+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()"><div class="profile-avatar-edit-hint">&#x270F;</div>';
-      }
-      // Re-render profile in place without re-fetching (use currentUser directly)
-      const overlay = document.getElementById('profileOverlay');
-      if (overlay && overlay.classList.contains('open')) {
-        viewingUserId = null; // ensure own profile
-        const wrap = document.getElementById('profilePageContent');
-        if (wrap) {
-          // Render using current updated data - skip the /auth/me fetch
-          const savedUser = { ...currentUser };
-          const mine = getMySchedule ? getMySchedule() : [];
-          const initials = (savedUser.handle?.[0]||savedUser.name?.[0]||'?').toUpperCase();
-          const avatarHtml = savedUser.profilePic
-            ? '<img src="'+savedUser.profilePic+'?v='+Date.now()+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()">'
-            : initials;
-          const bannerBg = ['linear-gradient(135deg,#1a0030,#000820)','linear-gradient(135deg,#001a10,#000820)','linear-gradient(135deg,#1a0a00,#000820)','linear-gradient(135deg,#00101a,#000820)'][Math.abs((savedUser.handle||'x').charCodeAt(0))%4];
-          const musicTags = (savedUser.musicStyles||'').split(',').filter(Boolean).map(function(s){return '<span class="profile-tag teal">'+s.trim()+'</span>';}).join('');
-          const artistTags = (savedUser.favoriteArtists||'').split(',').filter(Boolean).map(function(a){return '<span class="profile-tag gold">'+a.trim()+'</span>';}).join('');
-          wrap.innerHTML =
-            '<div class="profile-hero"><div class="profile-hero-banner" style="background:'+bannerBg+';">'+(savedUser.bannerPic?'<img src="'+savedUser.bannerPic+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">':'')+'<div class="profile-hero-banner-pattern"></div></div>'+
-            '<div class="profile-avatar-large" style="background:'+(savedUser.avatarColor||'#9b3dff')+'" onclick="openProfilePicChange()">'+avatarHtml+'<div class="profile-avatar-edit-hint">&#x270F;</div></div></div>'+
-            '<div class="profile-info"><div class="profile-handle">@'+(savedUser.handle||'unknown')+'</div>'+
-            (savedUser.hometown?'<div class="profile-hometown">&#x1F4CD; '+escapeHTML(savedUser.hometown)+'</div>':'')+
-            (savedUser.bio?'<div class="profile-bio">'+escapeHTML(savedUser.bio)+'</div>':'<div class="profile-bio" style="opacity:0.4;font-style:italic;">No bio yet</div>')+
-            '<div class="profile-stats-row"><div class="profile-stat"><div class="profile-stat-num">'+(savedUser.followerCount||0)+'</div><div class="profile-stat-label">Crew</div></div><div class="profile-stat"><div class="profile-stat-num">'+(savedUser.followingCount||0)+'</div><div class="profile-stat-label">Following</div></div><div class="profile-stat"><div class="profile-stat-num">'+mine.length+'</div><div class="profile-stat-label">Saved</div></div></div>'+
-            '<div class="profile-action-row"><button class="profile-action-btn edit" onclick="openEditProfileModal()">&#x270F; Edit</button><button class="profile-action-btn edit" onclick="openProfilePicChange()">&#x1F4F7; Photo</button></div></div>'+
-            '<div class="profile-cards">'+
-            (musicTags?'<div class="profile-card"><div class="profile-card-title">&#x1F3B5; Music Styles</div><div class="profile-card-content">'+musicTags+'</div></div>':'')+
-            (artistTags?'<div class="profile-card"><div class="profile-card-title">&#x2B50; Favorite Artists</div><div class="profile-card-content">'+artistTags+'</div></div>':'')+
-            (savedUser.firstRave?'<div class="profile-card"><div class="profile-card-title">&#x1F389; First Rave</div><div class="profile-card-content">'+escapeHTML(savedUser.firstRave)+'</div></div>':'')+
-            '</div>';
-        }
-      }
-      showToast('Profile updated!');
+      hideEditProfileForm();
+      initProfile(); // re-render
+      showToast('✓ Profile updated!');
     } else {
-      if (statusEl) { statusEl.textContent=data.error||'Failed'; statusEl.style.color='var(--pink-coral)'; }
+      if(status){status.textContent=data.error||'Failed';status.style.color='var(--pink-coral)';}
     }
-  } catch(e) {
-    if (statusEl) { statusEl.textContent='Error: '+e.message; statusEl.style.color='var(--pink-coral)'; }
-  } finally {
-    if (saveBtn) { saveBtn.disabled=false; saveBtn.textContent='Save Changes'; }
-  }
+  } catch { if(status){status.textContent='Could not connect';status.style.color='var(--pink-coral)';} }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -6963,61 +6805,15 @@ function updateDMBadge(count) {
 </div>
 
 
-<div class="edit-profile-modal" id="editProfileModal">
-  <div class="edit-profile-box">
-    <div class="edit-profile-header">
-      <span style="font-size:13px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;">Edit Profile</span>
-      <button onclick="closeEditProfileModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-light);font-size:16px;cursor:pointer;width:32px;height:32px;">&#x2715;</button>
-    </div>
-    <div style="padding:16px;">
-      <div class="banner-upload-wrap" id="editBannerWrap" onclick="document.getElementById('editBannerInput').click()">
-        <div id="editBannerImg" style="width:100%;height:100%;"></div>
-        <div class="banner-avatar-overlap" id="editAvatarOverlap" onclick="event.stopPropagation();document.getElementById('editAvatarInput').click()"></div>
-      </div>
-      <input type="file" id="editBannerInput" accept="image/*" style="display:none;" onchange="previewEditBanner(this)">
-      <input type="file" id="editAvatarInput" accept="image/*" style="display:none;" onchange="previewEditAvatar(this)">
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Click banner to change &middot; click avatar to change photo</div>
-      <div class="auth-field"><label class="auth-label">Handle</label>
-        <input class="auth-input" id="editHandle" type="text" maxlength="20"></div>
-      <div class="auth-field"><label class="auth-label">Bio</label>
-        <textarea class="auth-input" id="editBio" maxlength="300" rows="2" style="resize:none;"></textarea></div>
-      <div class="auth-field"><label class="auth-label">Hometown</label>
-        <input class="auth-input" id="editHometown" type="text" maxlength="80"></div>
-      <div class="auth-field"><label class="auth-label">Music Styles</label>
-        <input class="auth-input" id="editMusicStyles" type="text" maxlength="200" placeholder="Drum and Bass, Techno..."></div>
-      <div class="auth-field"><label class="auth-label">Favorite Artists</label>
-        <input class="auth-input" id="editFaveArtists" type="text" maxlength="200" placeholder="Roni Size, Spor..."></div>
-      <div class="auth-field"><label class="auth-label">First Rave</label>
-        <input class="auth-input" id="editFirstRave" type="text" maxlength="100"></div>
-      <div id="editProfileStatus" style="font-size:12px;color:var(--text-muted);margin-bottom:8px;"></div>
-      <button class="auth-btn" id="editProfileSaveBtn" onclick="saveProfileEdits()">Save Changes</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- ══ PROFILE OVERLAY ══ -->
+<!-- PROFILE OVERLAY -->
 <style>
 .profile-overlay{position:fixed;inset:0;z-index:20000;pointer-events:none;display:none;}
 .profile-overlay.open{pointer-events:all;display:block;}
 .profile-overlay-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.8);}
-.profile-overlay-sheet{
-  position:absolute;bottom:0;left:0;right:0;background:#0a0a0a;
-  border-top:1px solid rgba(245,200,66,0.2);max-height:92vh;overflow-y:auto;
-}
-@media(min-width:768px){
-  .profile-overlay-sheet{
-    position:absolute;top:50%;left:50%;bottom:auto;
-    transform:translate(-50%,-50%);width:520px;max-height:88vh;
-    border:1px solid rgba(245,200,66,0.2);
-  }
-}
-.profile-sheet-header{display:flex;align-items:center;justify-content:space-between;
-  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);
-  position:sticky;top:0;background:#0a0a0a;z-index:1;}
-.profile-sheet-close{width:32px;height:32px;background:rgba(255,255,255,0.07);
-  border:none;color:var(--text-light);font-size:16px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;}
+.profile-overlay-sheet{position:absolute;bottom:0;left:0;right:0;background:#0a0a0a;border-top:1px solid rgba(245,200,66,0.2);max-height:92vh;overflow-y:auto;}
+@media(min-width:768px){.profile-overlay-sheet{position:absolute;top:50%;left:50%;bottom:auto;transform:translate(-50%,-50%);width:520px;max-height:88vh;border:1px solid rgba(245,200,66,0.2);}}
+.profile-sheet-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);position:sticky;top:0;background:#0a0a0a;z-index:1;}
+.profile-sheet-close{width:32px;height:32px;background:rgba(255,255,255,0.07);border:none;color:var(--text-light);font-size:16px;cursor:pointer;}
 </style>
 <div class="profile-overlay" id="profileOverlay">
   <div class="profile-overlay-backdrop" onclick="closeProfileOverlay()"></div>
@@ -7027,7 +6823,7 @@ function updateDMBadge(count) {
       <button class="profile-sheet-close" onclick="closeProfileOverlay()">&#x2715;</button>
     </div>
     <div class="profile-page-wrap" id="profilePageContent" style="padding-bottom:24px;">
-      <div style="text-align:center;padding:48px;color:var(--text-muted);">Loading…</div>
+      <div style="text-align:center;padding:48px;color:var(--text-muted);">Loading...</div>
     </div>
   </div>
 </div>
