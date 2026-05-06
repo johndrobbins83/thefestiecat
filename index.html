@@ -5374,9 +5374,28 @@ function checkProfileSetup() {
   }
 }
 
+function closeProfileSetup() {
+  const overlay = document.getElementById('profileSetupOverlay');
+  if (overlay) {
+    overlay.classList.remove('open');
+    overlay.style.display = 'none';
+    overlay.style.visibility = 'hidden';
+    overlay.style.pointerEvents = 'none';
+  }
+  document.body.style.overflow = '';
+}
+
+function skipProfileSetup() {
+  closeProfileSetup();
+  navigate('home');
+}
+
 function showProfileSetup() {
   const overlay = document.getElementById('profileSetupOverlay');
   if (!overlay) return;
+  overlay.style.display = '';
+  overlay.style.visibility = '';
+  overlay.style.pointerEvents = '';
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   // Build color picker
@@ -6168,19 +6187,19 @@ function updateDMBadge(count) {
     <!-- Avatar + photo upload -->
     <div style="text-align:center;margin:14px 0 16px;">
       <div style="position:relative;display:inline-block;">
-        <div id="profileAvatarPreview"
-          style="width:80px;height:80px;border-radius:50%;background:#9b3dff;
-            display:flex;align-items:center;justify-content:center;
-            cursor:pointer;overflow:hidden;border:2px solid rgba(255,255,255,0.15);"
-          onclick="document.getElementById('profilePicInput').click()">
-          <span style="font-size:28px;">&#128247;</span>
-        </div>
-        <div onclick="document.getElementById('profilePicInput').click()"
-          style="position:absolute;bottom:0;right:0;width:24px;height:24px;
+        <label for="profilePicInput" style="cursor:pointer;display:block;">
+          <div id="profileAvatarPreview"
+            style="width:80px;height:80px;border-radius:50%;background:#9b3dff;
+              display:flex;align-items:center;justify-content:center;
+              overflow:hidden;border:2px solid rgba(255,255,255,0.15);">
+            <span style="font-size:28px;">&#128247;</span>
+          </div>
+          <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;
             background:var(--gold-bright);border-radius:50%;border:2px solid #000;
-            display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;">
-          &#128247;
-        </div>
+            display:flex;align-items:center;justify-content:center;font-size:11px;">
+            &#128247;
+          </div>
+        </label>
         <input type="file" id="profilePicInput" accept="image/*" style="display:none;"
           onchange="previewProfilePic(this)">
       </div>
