@@ -5716,16 +5716,17 @@ function initPeople() {
   loadFriends();
 }
 
-let searchTimer = null;
-function searchPeople(query) {
-  clearTimeout(searchTimer);
-  if (!query || query.length < 2) {
-    document.getElementById('peopleResults').innerHTML =
-      '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">Type a handle to search</div>';
-    return;
+// Also reload friends whenever connect tab is switched to
+const _origSwitchPeopleTab = switchPeopleTab;
+switchPeopleTab = function(tab, btn) {
+  _origSwitchPeopleTab(tab, btn);
+  if (tab === 'connect') {
+    loadFriendRequests();
+    loadFriends();
   }
-  searchTimer = setTimeout(() => doSearchPeople(query), 400);
-}
+};
+
+
 
 async function doSearchPeople(query) {
   const token = localStorage.getItem('ss_auth_token');
@@ -6368,6 +6369,10 @@ function switchPeopleTab(tab, btn) {
   });
   document.querySelectorAll('#page-people .dash-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  if (tab === 'connect') {
+    loadFriendRequests();
+    loadFriends();
+  }
   if (tab === 'feed') {
     // Render feed compose + list inside the tab
     const inner = document.getElementById('peopleFeedInner');
