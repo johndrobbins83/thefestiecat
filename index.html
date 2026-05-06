@@ -3078,68 +3078,91 @@ function renderMySchedPage() {
     return h*60+mn;
   }
 
-  // Group by day
   var days = {Fri:[],Sat:[],Sun:[],TBA:[]};
   mine.forEach(function(k){ var a=artists[k]; if(a)(days[a.day]||days.TBA).push(k); });
-
-  var dayLabels = {Fri:'Friday · Jul 17',Sat:'Saturday · Jul 18',Sun:'Sunday · Jul 19',TBA:'Day TBA'};
+  var dayLabels = {Fri:'Friday - Jul 17',Sat:'Saturday - Jul 18',Sun:'Sunday - Jul 19',TBA:'Day TBA'};
+  var isGrid = (schedView === 'grid');
   var out = '';
 
   ['Fri','Sat','Sun','TBA'].forEach(function(day) {
     var keys = days[day]; if (!keys.length) return;
-
-    // Split into DNB and Oasis
     var dnb   = keys.filter(function(k){ return artists[k] && artists[k].stage==='DNB Stage'; });
     var oasis = keys.filter(function(k){ return artists[k] && artists[k].stage==='Oasis Stage'; });
-
     function byTime(a,b){ return timeToMins(artists[a]&&artists[a].time) - timeToMins(artists[b]&&artists[b].time); }
     dnb.sort(byTime); oasis.sort(byTime);
 
-    out += '<div style="margin-bottom:4px;">';
-    out += '<div class="stage-section-header" style="background:rgba(255,255,255,0.04);color:var(--gold-bright);border:1px solid rgba(245,200,66,0.15);margin-bottom:8px;">ð ' + dayLabels[day] + '</div>';
+    out += '<div style="margin-bottom:20px;">';
+    out += '<div class="stage-section-header" style="background:rgba(255,255,255,0.04);color:var(--gold-bright);border:1px solid rgba(245,200,66,0.15);margin-bottom:8px;">** ' + dayLabels[day] + '</div>';
 
-    // Render each stage as a section like the regular schedule
-    if (dnb.length) {
-      out += '<div class="stage-section">';
-      out += '<div class="stage-section-header dnb"><div class="stage-dot" style="background:#9b3dff;"></div>DNB Stage</div>';
-      out += '<div class="sched-list">';
-      dnb.forEach(function(key) {
-        var a = artists[key]; if (!a) return;
-        var hl = a.headliner ? 'headliner' : '';
-        var k1 = esc(key);
-        out += '<div class="sched-item ' + hl + '" onclick="openArtist(\'' + k1 + '\')">'+
-          '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>'+
-          '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>'+
-          '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>'+
-          '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + k1 + '\')">&#x2713;</button>'+
-          '</div>';
+    if (isGrid) {
+      var cols = [];
+      if (dnb.length)   cols.push({name:'DNB Stage',  color:'#9b3dff', cls:'dnb-block',   keys:dnb});
+      if (oasis.length) cols.push({name:'Oasis Stage', color:'#00d4c8', cls:'oasis-block', keys:oasis});
+      if (!cols.length) { out += '</div>'; return; }
+      out += '<div class="tg-grid" style="grid-template-columns:repeat(' + cols.length + ',1fr);">';
+      cols.forEach(function(col) {
+        out += '<div>';
+        out += '<div class="tg-col-header" style="color:' + col.color + ';">' + col.name + '</div>';
+        var timed = col.keys.filter(function(k){ return artists[k] && artists[k].time && artists[k].time!=='TBA'; });
+        var tbas  = col.keys.filter(function(k){ return !artists[k] || !artists[k].time || artists[k].time==='TBA'; });
+        timed.forEach(function(key) {
+          var a = artists[key]; if (!a) return;
+          var sk = esc(key);
+          out += '<div class="tg-block ' + col.cls + (a.headliner?' headliner-block':'') + '" onclick="openArtist(\'' + sk + '\')">';
+          out += '<div class="tg-block-time">' + a.time + '</div>';
+          out += '<div class="tg-block-name">' + key + '</div>';
+          out += '<div class="tg-block-genre">' + (a.genre||'').split('-')[0].trim() + '</div>';
+          out += '<button class="tg-block-add added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button>';
+          out += '</div>';
+        });
+        if (tbas.length) {
+          out += '<div class="tg-tba-section"><div class="tg-tba-heading">TBA</div>';
+          tbas.forEach(function(key) {
+            var sk = esc(key);
+            out += '<div class="tg-tba-block" onclick="openArtist(\'' + sk + '\')">';
+            out += '<div class="tg-tba-name">' + key + '</div>';
+            out += '<button class="tg-block-add added" style="position:static;width:18px;height:18px;font-size:12px;" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button>';
+            out += '</div>';
+          });
+          out += '</div>';
+        }
+        out += '</div>';
       });
-      out += '</div></div>';
+      out += '</div>';
+    } else {
+      if (dnb.length) {
+        out += '<div class="stage-section"><div class="stage-section-header dnb"><div class="stage-dot" style="background:#9b3dff;"></div>DNB Stage</div><div class="sched-list">';
+        dnb.forEach(function(key) {
+          var a = artists[key]; if (!a) return;
+          var sk = esc(key);
+          out += '<div class="sched-item' + (a.headliner?' headliner':'') + '" onclick="openArtist(\'' + sk + '\')">';
+          out += '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>';
+          out += '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>';
+          out += '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>';
+          out += '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button></div>';
+        });
+        out += '</div></div>';
+      }
+      if (oasis.length) {
+        out += '<div class="stage-section"><div class="stage-section-header oasis"><div class="stage-dot" style="background:#00d4c8;"></div>Oasis Stage</div><div class="sched-list">';
+        oasis.forEach(function(key) {
+          var a = artists[key]; if (!a) return;
+          var sk = esc(key);
+          out += '<div class="sched-item' + (a.headliner?' oasis-headliner':'') + '" onclick="openArtist(\'' + sk + '\')">';
+          out += '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>';
+          out += '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>';
+          out += '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>';
+          out += '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button></div>';
+        });
+        out += '</div></div>';
+      }
     }
-
-    if (oasis.length) {
-      out += '<div class="stage-section">';
-      out += '<div class="stage-section-header oasis"><div class="stage-dot" style="background:#00d4c8;"></div>Oasis Stage</div>';
-      out += '<div class="sched-list">';
-      oasis.forEach(function(key) {
-        var a = artists[key]; if (!a) return;
-        var hl = a.headliner ? 'oasis-headliner' : '';
-        var k1 = esc(key);
-        out += '<div class="sched-item ' + hl + '" onclick="openArtist(\'' + k1 + '\')">'+
-          '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>'+
-          '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>'+
-          '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>'+
-          '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + k1 + '\')">&#x2713;</button>'+
-          '</div>';
-      });
-      out += '</div></div>';
-    }
-
     out += '</div>';
   });
 
   listEl.innerHTML = out;
 }
+
 
 
 
