@@ -2809,7 +2809,6 @@ function navigate(page) {
   if (page === 'admin')  initAdminDashboard();
   if (page === 'staff')  initStaffDashboard();
   if (page === 'people')  { initPeople(); }
-  if (page === 'profile') { initProfile(); }
   // Update URL hash for deep-linking
   window.location.hash = page;
 }
@@ -3577,7 +3576,7 @@ if ('serviceWorker' in navigator) {
 ════════════════════════════════════════════════════════════ */
 (function() {
   const page = location.hash.slice(1);
-  if (page && document.getElementById('page-'+page)) navigate(page);
+  if (page && page !== 'profile' && document.getElementById('page-'+page)) navigate(page);
   window.addEventListener('hashchange', ()=>{ const p=location.hash.slice(1); if(p && document.getElementById('page-'+p)) navigate(p); });
 })();
 
@@ -6017,12 +6016,6 @@ function updateNavAvatar() {
 ════════════════════════════════════════ */
 let viewingUserId = null;   // null = own profile
 
-async function navigateToProfile(userId) {
-  viewingUserId = userId || null;
-  const overlay = document.getElementById('profileOverlay');
-  if (overlay) { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  await initProfile();
-}
 
 async function navigateToProfile(userId) {
   viewingUserId = userId || null;
@@ -6703,7 +6696,7 @@ function updateDMBadge(count) {
 
 <!-- ══ PROFILE OVERLAY ══ -->
 <style>
-.profile-overlay{position:fixed;inset:0;z-index:20000;pointer-events:none;}
+.profile-overlay{position:fixed;inset:0;z-index:20000;pointer-events:none;isolation:isolate;}
 .profile-overlay.open{pointer-events:all;}
 .profile-overlay-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.8);opacity:0;transition:opacity .25s;}
 .profile-overlay.open .profile-overlay-backdrop{opacity:1;}
