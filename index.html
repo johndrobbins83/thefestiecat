@@ -5881,7 +5881,7 @@ function searchPeople(q) {
         var btn = '';
         if (isFriend) { btn = '<span class="person-follow-btn friends">&#x2713; Crew</span>'; }
         else if (isPending) { btn = '<span class="person-follow-btn" style="opacity:0.5;">Requested</span>'; }
-        else { btn = '<button class="person-follow-btn" onclick="event.stopPropagation();sendFollowRequest(' + JSON.stringify(u.id) + ',this)">+ Connect</button>'; }
+        else { btn = '<button class="person-follow-btn" onclick="event.stopPropagation();sendFollowRequest(\'' + u.id + '\',this)">+ Connect</button>'; }
         return '<div class="person-card">'+
           '<div class="person-avatar" style="background:'+(u.avatarColor||'#9b3dff')+';overflow:hidden;">'+avatarHtml+'</div>'+
           '<div class="person-info">'+
