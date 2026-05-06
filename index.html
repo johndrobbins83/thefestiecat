@@ -5357,9 +5357,19 @@ let feedPhotoFile = null;
 // ── Profile setup ──────────────────────────────────────────
 function checkProfileSetup() {
   if (!currentUser) return;
+  // Check localStorage for cached handle too
+  try {
+    const cached = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
+    if (cached.handle) {
+      currentUser.handle = cached.handle;
+      currentUser.avatarColor = cached.avatarColor || currentUser.avatarColor;
+      currentUser.profilePic = cached.profilePic || '';
+    }
+  } catch(e) {}
   if (!currentUser.handle) {
     showProfileSetup();
   } else {
+    updateNavAvatar();
     updateFeedComposeAvatar();
   }
 }
@@ -5401,7 +5411,6 @@ function updateHandlePreview(val) {
 
 async function submitProfileSetup() {
   const handle = (document.getElementById('profileHandleInput')?.value||'').trim().replace(/[^a-zA-Z0-9_]/g,'');
-  const bio    = (document.getElementById('profileBioInput')?.value||'').trim();
   const errEl  = document.getElementById('profileSetupError');
   const btn    = document.getElementById('profileSetupBtn');
   if (!handle || handle.length < 3) {
@@ -5411,7 +5420,13 @@ async function submitProfileSetup() {
   if(errEl) errEl.classList.remove('show');
   btn.disabled = true;
   const token = localStorage.getItem('ss_auth_token');
+  if (!token) {
+    if(errEl){errEl.textContent='Not logged in - please refresh';errEl.classList.add('show');}
+    btn.disabled = false;
+    return;
+  }
   try {
+    // Upload photo first if one was chosen
     let picUrl = '';
     if (pendingProfilePicFile) {
       btn.textContent = 'Uploading photo...';
@@ -5419,540 +5434,43 @@ async function submitProfileSetup() {
       pendingProfilePicFile = null;
     }
     btn.textContent = 'Saving...';
-    const res = await fetch(AUTH_URL+'/profile', {
+    const res = await fetch(AUTH_URL + '/profile', {
       method: 'PUT',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
       body: JSON.stringify({
-        handle, bio: '', avatarColor: selectedAvatarColor,
+        handle: handle,
+        bio: '',
+        avatarColor: selectedAvatarColor || '#9b3dff',
         profilePic: picUrl
       })
     });
     const data = await res.json();
+    console.log('Profile save response:', res.status, data);
     if (res.ok) {
-      Object.assign(currentUser, data.user);
-      if (picUrl) currentUser.profilePic = picUrl;
+      // Update currentUser with all returned fields
+      currentUser.handle = data.user.handle;
+      currentUser.avatarColor = data.user.avatarColor;
+      currentUser.profilePic = data.user.profilePic || picUrl;
+      currentUser.profileComplete = true;
       localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
       updateNavAvatar();
       updateFeedComposeAvatar();
       closeProfileSetup();
       navigate('home');
-      showToast('Welcome to The Mutiny, @'+handle+'!');
+      showToast('Welcome to The Mutiny, @' + handle + '!');
     } else {
-      if(errEl){errEl.textContent=data.error||'Could not save';errEl.classList.add('show');}
+      if(errEl){errEl.textContent = data.error || 'Could not save - try again';errEl.classList.add('show');}
+      btn.disabled = false;
+      btn.textContent = "Let's Go!";
     }
   } catch(e) {
     console.error('Profile setup error:', e);
-    if(errEl){errEl.textContent='Could not connect - try again';errEl.classList.add('show');}
-  } finally {
+    if(errEl){errEl.textContent = 'Connection error - check console';errEl.classList.add('show');}
     btn.disabled = false;
     btn.textContent = "Let's Go!";
   }
 }
 
-function skipProfileSetup() {
-  closeProfileSetup();
-  navigate('home');
-}
-function closeProfileSetup() {
-  const overlay = document.getElementById('profileSetupOverlay');
-  if (overlay) { overlay.classList.remove('open'); overlay.style.display = 'none'; }
-  document.body.style.overflow = '';
-}
-
-function updateFeedComposeAvatar() {
-  const el = document.getElementById('feedComposeAvatar');
-  if (!el || !currentUser) return;
-  el.style.background = currentUser.avatarColor || '#9b3dff';
-  el.textContent = (currentUser.handle?.[0] || currentUser.name?.[0] || '?').toUpperCase();
-}
-
-// ── FEED ───────────────────────────────────────────────────
-function initFeed() {
-  feedPage = 0;
-  updateFeedComposeAvatar();
-  loadFeed(feedFilter);
-  // Enable post button when text entered
-  const textEl = document.getElementById('feedPostText');
-  if (textEl) textEl.addEventListener('input', () => {
-    const btn = document.getElementById('feedPostBtn');
-    if (btn) btn.disabled = !textEl.value.trim() && !feedPhotoFile;
-  });
-}
-
-function toggleCheckin() {
-  const sel = document.getElementById('checkinSelect');
-  const btn = document.getElementById('checkinToggleBtn');
-  if (!sel) return;
-  const show = sel.classList.toggle('show');
-  if (btn) btn.classList.toggle('selected', show);
-}
-
-function triggerFeedPhoto() { document.getElementById('feedPhotoInput')?.click(); }
-
-function previewFeedPhoto(input) {
-  feedPhotoFile = input.files[0];
-  if (!feedPhotoFile) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const wrap = document.getElementById('feedPhotoPreviewWrap');
-    const img  = document.getElementById('feedPhotoPreviewImg');
-    if (wrap) wrap.style.display = 'block';
-    if (img)  img.src = e.target.result;
-    const btn = document.getElementById('feedPostBtn');
-    if (btn) btn.disabled = false;
-  };
-  reader.readAsDataURL(feedPhotoFile);
-}
-
-function clearFeedPhoto() {
-  feedPhotoFile = null;
-  const wrap  = document.getElementById('feedPhotoPreviewWrap');
-  const input = document.getElementById('feedPhotoInput');
-  if (wrap)  wrap.style.display = 'none';
-  if (input) input.value = '';
-  const btn = document.getElementById('feedPostBtn');
-  const textEl = document.getElementById('feedPostText');
-  if (btn) btn.disabled = !textEl?.value?.trim();
-}
-
-async function submitPost() {
-  const text     = (document.getElementById('feedPostText')?.value||'').trim();
-  const checkIn  = document.getElementById('checkinSelect')?.value||'';
-  const btn      = document.getElementById('feedPostBtn');
-  if (!text && !feedPhotoFile) return;
-  if (btn) { btn.disabled=true; btn.textContent='Posting…'; }
-
-  let photoUrl = '';
-  // Upload photo if attached
-  if (feedPhotoFile) {
-    const token = localStorage.getItem('ss_auth_token');
-    const slug  = 'feed_'+(currentUser.handle||currentUser.id)+'_'+Date.now();
-    try {
-      const res = await fetch(AUTH_URL+'/media/upload?artist='+slug, {
-        method:'POST',
-        headers:{'Content-Type':feedPhotoFile.type,'Authorization':'Bearer '+token},
-        body: feedPhotoFile
-      });
-      if (res.ok) { const d=await res.json(); photoUrl=d.url||''; }
-    } catch {}
-  }
-
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res = await fetch(AUTH_URL+'/posts', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({ text, photoUrl, checkIn })
-    });
-    if (res.ok) {
-      document.getElementById('feedPostText').value = '';
-      document.getElementById('feedPostText').style.height = 'auto';
-      clearFeedPhoto();
-      const selEl = document.getElementById('checkinSelect');
-      if (selEl) { selEl.value=''; selEl.classList.remove('show'); }
-      const cBtn = document.getElementById('checkinToggleBtn');
-      if (cBtn) cBtn.classList.remove('selected');
-      feedPage = 0;
-      loadFeed(feedFilter);
-      showToast('Posted! 🏴‍☠️');
-    } else { showToast('Could not post — try again'); }
-  } catch { showToast('Could not connect'); }
-  if (btn) { btn.disabled=false; btn.textContent='Post'; }
-}
-
-async function loadFeed(filter, btn) {
-  feedFilter = filter||'all';
-  if (btn) {
-    document.querySelectorAll('.feed-filter-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-  feedPage = 0;
-  const listEl = document.getElementById('feedList');
-  if (!listEl) return;
-  listEl.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading feed…</div>';
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res  = await fetch(AUTH_URL+'/posts?filter='+feedFilter+'&page=0', {
-      headers:{'Authorization':'Bearer '+token}
-    });
-    const data = await res.json();
-    renderFeedPosts(data.posts||[], data.hasMore, false);
-  } catch {
-    listEl.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Could not load feed.</div>';
-  }
-}
-
-function renderFeedPosts(posts, hasMore, append) {
-  const listEl = document.getElementById('feedList');
-  if (!listEl) return;
-  if (!posts.length && !append) {
-    listEl.innerHTML = `<div class="feed-empty">
-      <div class="feed-empty-icon">📡</div>
-      <div>No posts yet.<br><small style="font-size:12px;">Connect with people and start posting!</small></div>
-    </div>`;
-    return;
-  }
-  const isAdmin = currentUser?.role === 'admin';
-  const newHTML = posts.map(p => {
-    const initials = (p.authorHandle?.[0]||'?').toUpperCase();
-    const timeAgo  = getTimeAgo(p.createdAt);
-    return `<div class="post-card" id="post-${p.id}">
-      <div class="post-header">
-        <div class="post-avatar" style="background:${p.authorColor||'#9b3dff'};">${p.authorProfilePic?'<img src="'+p.authorProfilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':initials}</div>
-        <div class="post-meta">
-          <div class="post-handle">@${p.authorHandle||'unknown'}</div>
-          <div class="post-time">${timeAgo}</div>
-        </div>
-        ${(p.authorId===currentUser?.id||isAdmin)?`<button class="post-delete" onclick="deletePost('${p.id}')" title="Delete post">✕</button>`:''}
-      </div>
-      ${p.checkIn?`<div class="post-checkin">📍 ${p.checkIn}</div>`:''}
-      ${p.text?`<div class="post-body">${escapeHTML(p.text)}</div>`:''}
-      ${p.photoUrl?`<img class="post-photo" src="${p.photoUrl}" loading="lazy" alt="Post photo">`:''}
-      <div class="post-actions">
-        <button class="post-action-btn ${p.liked?'liked':''}" onclick="toggleLike('${p.id}',this)">
-          ${p.liked?'❤️':'🤍'} ${p.likeCount||0}
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-
-  if (append) {
-    // Remove load more button first
-    const old = document.getElementById('feedLoadMoreBtn');
-    if (old) old.remove();
-    listEl.insertAdjacentHTML('beforeend', newHTML);
-  } else {
-    listEl.innerHTML = newHTML;
-  }
-
-  if (hasMore) {
-    const loadMore = document.createElement('button');
-    loadMore.className = 'feed-load-more';
-    loadMore.id = 'feedLoadMoreBtn';
-    loadMore.textContent = 'Load more';
-    loadMore.onclick = () => loadMoreFeed();
-    listEl.appendChild(loadMore);
-  }
-}
-
-async function loadMoreFeed() {
-  feedPage++;
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res  = await fetch(AUTH_URL+'/posts?filter='+feedFilter+'&page='+feedPage, {
-      headers:{'Authorization':'Bearer '+token}
-    });
-    const data = await res.json();
-    renderFeedPosts(data.posts||[], data.hasMore, true);
-  } catch {}
-}
-
-async function toggleLike(postId, btn) {
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res  = await fetch(AUTH_URL+'/posts/'+postId+'/like', {
-      method:'POST', headers:{'Authorization':'Bearer '+token}
-    });
-    const data = await res.json();
-    if (res.ok) {
-      btn.textContent = (data.liked?'❤️':'🤍')+' '+data.likeCount;
-      btn.classList.toggle('liked', data.liked);
-    }
-  } catch {}
-}
-
-async function deletePost(postId) {
-  if (!confirm('Delete this post?')) return;
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res = await fetch(AUTH_URL+'/posts/'+postId, {
-      method:'DELETE', headers:{'Authorization':'Bearer '+token}
-    });
-    if (res.ok) {
-      const el = document.getElementById('post-'+postId);
-      if (el) el.remove();
-      showToast('Post deleted');
-    }
-  } catch {}
-}
-
-// ── PEOPLE ─────────────────────────────────────────────────
-function initPeople() {
-  loadFriendRequests();
-  loadFriends();
-}
-
-let searchTimer = null;
-function searchPeople(query) {
-  clearTimeout(searchTimer);
-  if (!query || query.length < 2) {
-    document.getElementById('peopleResults').innerHTML =
-      '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">Type a handle to search</div>';
-    return;
-  }
-  searchTimer = setTimeout(() => doSearchPeople(query), 400);
-}
-
-async function doSearchPeople(query) {
-  const token = localStorage.getItem('ss_auth_token');
-  const res   = await fetch(AUTH_URL+'/users/search?q='+encodeURIComponent(query), {
-    headers:{'Authorization':'Bearer '+token}
-  });
-  const data  = await res.json();
-  const results = document.getElementById('peopleResults');
-  if (!results) return;
-  if (!data.users?.length) {
-    results.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">No users found</div>';
-    return;
-  }
-  results.innerHTML = data.users.map(u =>
-    `<div class="person-card">
-      <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
-      <div class="person-info">
-        <div class="person-handle">@${u.handle}</div>
-        <div class="person-bio">${u.bio||'No bio yet'}</div>
-      </div>
-      <button class="person-follow-btn follow" id="followBtn-${u.id}"
-        onclick="sendFollowRequest('${u.id}',this)">+ Connect</button>
-    </div>`
-  ).join('');
-}
-
-async function sendFollowRequest(userId, btn) {
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res = await fetch(AUTH_URL+'/follow/'+userId, {
-      method:'POST', headers:{'Authorization':'Bearer '+token}
-    });
-    if (res.ok) {
-      btn.textContent = 'Requested';
-      btn.className = 'person-follow-btn requested';
-      showToast('Connection request sent!');
-    }
-  } catch { showToast('Could not send request'); }
-}
-
-async function loadFriendRequests() {
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res  = await fetch(AUTH_URL+'/follow/requests', { headers:{'Authorization':'Bearer '+token} });
-    const data = await res.json();
-    const requests = data.requests||[];
-    const section  = document.getElementById('friendRequestsSection');
-    const listEl   = document.getElementById('friendRequestsList');
-    if (!section||!listEl) return;
-    if (!requests.length) { section.style.display='none'; return; }
-    section.style.display = 'block';
-    // Update bell
-    updateDMBadge(requests.length);
-    listEl.innerHTML = requests.map(u =>
-      `<div class="request-card">
-        <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
-        <div class="person-info" style="flex:1;">
-          <div class="person-handle">@${u.handle}</div>
-          <div class="person-bio">Wants to connect with you</div>
-        </div>
-        <div class="request-actions">
-          <button class="req-accept-btn" onclick="acceptFollowRequest('${u.id}',this)">Accept</button>
-          <button class="req-decline-btn">Decline</button>
-        </div>
-      </div>`
-    ).join('');
-  } catch {}
-}
-
-async function acceptFollowRequest(userId, btn) {
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res = await fetch(AUTH_URL+'/follow/'+userId+'/accept', {
-      method:'POST', headers:{'Authorization':'Bearer '+token}
-    });
-    if (res.ok) {
-      btn.closest('.request-card').remove();
-      showToast('✓ You\'re now connected!');
-      loadFriends();
-    }
-  } catch { showToast('Could not accept'); }
-}
-
-async function loadFriends() {
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res  = await fetch(AUTH_URL+'/friends', { headers:{'Authorization':'Bearer '+token} });
-    const data = await res.json();
-    const listEl = document.getElementById('friendsList');
-    if (!listEl) return;
-    const friends = data.friends||[];
-    if (!friends.length) {
-      listEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">No crew yet — search for Festies above to connect!</div>';
-      return;
-    }
-    listEl.innerHTML = friends.map(f =>
-      `<div class="person-card" onclick="navigateToProfile('${f.id}')">
-        <div class="person-avatar" style="background:${f.avatarColor||'#9b3dff'};">${(f.handle?.[0]||'?').toUpperCase()}</div>
-        <div class="person-info">
-          <div class="person-handle">@${f.handle}</div>
-          <div class="person-bio">${f.bio||'No bio yet'}</div>
-        </div>
-        <span class="person-follow-btn friends">💬 DM</span>
-      </div>`
-    ).join('');
-  } catch {}
-}
-
-// ── DMs ────────────────────────────────────────────────────
-function initDMs() {
-  loadDMList();
-  startDMPolling();
-}
-
-async function loadDMList() {
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res  = await fetch(AUTH_URL+'/dm', { headers:{'Authorization':'Bearer '+token} });
-    const data = await res.json();
-    const listEl = document.getElementById('dmList');
-    if (!listEl) return;
-    const convos = data.conversations||[];
-    if (!convos.length) {
-      listEl.innerHTML = '<div class="dm-empty"><div style="font-size:36px;margin-bottom:10px;">💬</div>No messages yet.<br><small style="font-size:12px;">Connect with people to start chatting!</small></div>';
-      return;
-    }
-    // Update unread badge
-    const totalUnread = convos.reduce((sum,c)=>sum+(c.unread||0),0);
-    updateDMBadge(totalUnread);
-    listEl.innerHTML = convos.map(c =>
-      `<div class="dm-convo-card ${c.unread?'unread':''}"
-        onclick="openDMThread('${c.friendId}','${esc(c.handle)}','${c.avatarColor||'#9b3dff'}')">
-        <div class="dm-avatar" style="background:${c.avatarColor||'#9b3dff'};">${(c.handle?.[0]||'?').toUpperCase()}</div>
-        <div class="dm-convo-info">
-          <div class="dm-convo-handle">@${c.handle}</div>
-          <div class="dm-convo-preview">${c.lastMessage||'No messages yet'}</div>
-        </div>
-        ${c.unread?`<div class="dm-unread-badge">${c.unread}</div>`:''}
-      </div>`
-    ).join('');
-  } catch {}
-}
-
-function updateDMBadge(count) {
-  ['dmBadgeDesktop','dmBadgeMobile'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (count > 0) { el.style.display='flex'; el.textContent=count; }
-    else           { el.style.display='none'; }
-  });
-}
-
-function openDMThread(friendId, handle, color) {
-  currentDMFriendId     = friendId;
-  currentDMFriendHandle = handle;
-  const overlay  = document.getElementById('dmThreadOverlay');
-  const nameEl   = document.getElementById('dmThreadName');
-  const avatarEl = document.getElementById('dmThreadAvatar');
-  if (overlay)  overlay.classList.add('open');
-  if (nameEl)   nameEl.textContent  = '@'+handle;
-  if (avatarEl) { avatarEl.style.background=color; avatarEl.textContent=(handle?.[0]||'?').toUpperCase(); }
-  document.body.style.overflow = 'hidden';
-  loadDMThread(friendId);
-}
-
-function closeDMThread() {
-  const overlay = document.getElementById('dmThreadOverlay');
-  if (overlay) overlay.classList.remove('open');
-  document.body.style.overflow = '';
-  currentDMFriendId = null;
-  loadDMList(); // refresh unread counts
-}
-
-async function loadDMThread(friendId) {
-  const msgs = document.getElementById('dmThreadMessages');
-  if (!msgs) return;
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res  = await fetch(AUTH_URL+'/dm/'+friendId, { headers:{'Authorization':'Bearer '+token} });
-    const data = await res.json();
-    renderDMMessages(data.messages||[]);
-  } catch {
-    msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>';
-  }
-}
-
-function renderDMMessages(messages) {
-  const msgs = document.getElementById('dmThreadMessages');
-  if (!msgs) return;
-  if (!messages.length) {
-    msgs.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet. Say hi! 👋</div>';
-    return;
-  }
-  msgs.innerHTML = messages.map(m => {
-    const mine = m.fromId === currentUser?.id;
-    return `<div class="dm-msg ${mine?'mine':'theirs'}">
-      ${escapeHTML(m.text)}
-      <div class="dm-msg-time">${getTimeAgo(m.createdAt)}</div>
-    </div>`;
-  }).join('');
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-async function sendDM() {
-  const input = document.getElementById('dmThreadInput');
-  const text  = (input?.value||'').trim();
-  if (!text || !currentDMFriendId) return;
-  input.value = '';
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res = await fetch(AUTH_URL+'/dm/'+currentDMFriendId, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({ text })
-    });
-    if (res.ok) loadDMThread(currentDMFriendId);
-    else showToast('Could not send message');
-  } catch { showToast('Could not send message'); }
-}
-
-function startDMPolling() {
-  if (dmPollTimer) clearInterval(dmPollTimer);
-  dmPollTimer = setInterval(() => {
-    if (currentPage === 'dms' || currentDMFriendId) loadDMList();
-    if (currentDMFriendId) loadDMThread(currentDMFriendId);
-  }, 30000);
-}
-
-// ── Helpers ────────────────────────────────────────────────
-function getTimeAgo(iso) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff/60000);
-  if (m < 1)  return 'just now';
-  if (m < 60) return m+'m ago';
-  const h = Math.floor(m/60);
-  if (h < 24) return h+'h ago';
-  return Math.floor(h/24)+'d ago';
-}
-function escapeHTML(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ════════════════════════════════════════
-   PROFILE PICTURE UPLOAD
-════════════════════════════════════════ */
-let pendingProfilePicFile = null;
-
-function previewProfilePic(input) {
-  const file = input.files[0];
-  if (!file) return;
-  pendingProfilePicFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const preview = document.getElementById('profileAvatarPreview');
-    if (preview) {
-      preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-      preview.style.background = 'transparent';
-    }
-  };
-  reader.readAsDataURL(file);
-}
 
 async function uploadProfilePic(file) {
   if (!file) return null;
