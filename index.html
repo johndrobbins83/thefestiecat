@@ -7350,279 +7350,93 @@ async function downloadEmailListPDF() {
 /* ════════════════════════════════════════
    INFO + HELP OVERLAY
 ════════════════════════════════════════ */
-const INFO_CONTENT = {
-  event: `
-    <div class="info-highlight">
-      ☠️ <strong>Sunken Suite 2026 — The Mutiny</strong><br>
-      July 17–19, 2026 · Sturbridge, MA
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">About The Event</div>
-      <div class="info-card">
-        <div class="info-card-body">
-          Sunken Suite is a 3-day underground music festival celebrating the best in Drum &amp; Bass,
-          Techno, and Electronic music. The Mutiny is our biggest event yet — three stages,
-          66 artists, and an immersive experience you won't forget.
-        </div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">Festival Days</div>
-      <div class="info-card">
-        <div class="info-card-title">🎵 Friday, July 17</div>
-        <div class="info-card-body">Gates open 4PM · Music from 6PM<br>DNB Stage headlined by Roni Size</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🎵 Saturday, July 18</div>
-        <div class="info-card-body">Gates open 2PM · Music from 4PM<br>Oasis Stage headlined by J. Phlip</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🎵 Sunday, July 19</div>
-        <div class="info-card-body">Gates open 2PM · Music from 4PM<br>DNB Stage headlined by Spor</div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">Stages</div>
-      <div class="info-card">
-        <div class="info-card-title">🔊 DNB Stage</div>
-        <div class="info-card-body">Main indoor stage · Drum &amp; Bass focus · Capacity 800</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🌊 Oasis Stage</div>
-        <div class="info-card-body">Outdoor pool-side stage · House, Techno &amp; Bass · Capacity 500</div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">Contact</div>
-      <div class="info-card">
-        <div class="info-card-body">
-          📧 staff@sunkensuite.com<br>
-          🚨 Emergency: Use the SOS button in More<br>
-          📍 The Sturbridge Host Hotel &amp; Conference Center
-        </div>
-      </div>
-    </div>
-  `,
-
-  venue: `
-    <div class="info-highlight">
-      📍 The Sturbridge Host Hotel &amp; Conference Center<br>
-      366 Main Street, Sturbridge, MA 01566
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">Getting There</div>
-      <div class="info-card">
-        <div class="info-card-title">🚗 By Car</div>
-        <div class="info-card-body">
-          Exit 2 off I-84 W or Exit 9 off I-90 (Mass Pike).<br>
-          Free parking available on site — follow staff directions.
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🚌 Shuttle Service</div>
-        <div class="info-card-body">
-          Shuttle from Worcester Union Station runs Friday–Sunday.<br>
-          Check schedule at the Box Office.
-        </div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">On-Site Locations</div>
-      <div class="info-card">
-        <div class="info-card-title">🏨 Hotel Lobby</div>
-        <div class="info-card-body">Registration, Info Desk, Lost &amp; Found</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🎟 Box Office / Ticketing</div>
-        <div class="info-card-body">Main entrance · Open 1 hour before gates each day</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🏥 Medical Station</div>
-        <div class="info-card-body">Near Main Entrance · Staffed 24/7 during event · Free water available</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🌊 Pool Area</div>
-        <div class="info-card-body">Oasis Stage adjacent · Outdoor chill space · Open during daylight hours</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🅿️ Parking</div>
-        <div class="info-card-body">Main lot off Route 20 · Overflow lot signposted · No overnight camping</div>
-      </div>
-    </div>
-  `,
-
-  guidelines: `
-    <div class="info-highlight">
-      🏴‍☠️ The Mutiny is a safe, inclusive space. Look out for each other.
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">General Rules</div>
-      <div class="info-card">
-        <div class="info-card-body" style="line-height:2;">
-          ✅ Valid ID required for entry<br>
-          ✅ Wristbands must be worn at all times<br>
-          ✅ No re-entry without wristband<br>
-          🚫 No outside alcohol<br>
-          🚫 No professional cameras without press pass<br>
-          🚫 No drones<br>
-          🚫 No crowd surfing or moshing
-        </div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">🛡 Safety Guidelines</div>
-      <div class="info-card">
-        <div class="info-card-title">Stay Hydrated</div>
-        <div class="info-card-body">Free water stations at every stage and the Medical Station. Drink water regularly — especially if dancing.</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">Know Your Limits</div>
-        <div class="info-card-body">If you or someone near you feels unwell, go to the Medical Station immediately. No judgment, ever.</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">Buddy System</div>
-        <div class="info-card-body">Stay with friends. Use the People tab to connect and message your crew.</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">Emergency SOS</div>
-        <div class="info-card-body">If you see or experience an emergency, hit the SOS button in the More menu. It alerts all staff instantly with your location.</div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">🤝 Code of Conduct</div>
-      <div class="info-card">
-        <div class="info-card-body" style="line-height:2;">
-          ✅ Respect all attendees, staff, and artists<br>
-          ✅ Consent is everything — ask before touching<br>
-          ✅ No harassment of any kind<br>
-          ✅ Photography requires consent of those pictured<br>
-          🚫 Zero tolerance for discrimination<br>
-          🚫 Zero tolerance for violence<br>
-          Violations result in immediate removal from the event.
-        </div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">♿ Accessibility</div>
-      <div class="info-card">
-        <div class="info-card-body">
-          Accessible entrances at Main Gate and Hotel Lobby.<br>
-          Accessible viewing areas at both stages.<br>
-          Contact staff at the Info Desk for any accessibility needs.
-        </div>
-      </div>
-    </div>
-  `,
-
-  help: `
-    <div class="info-highlight">
-      👋 New to The Mutiny app? Here's everything you need to know.
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">Getting Started</div>
-      <div class="help-step">
-        <div class="help-step-num">1</div>
-        <div class="help-step-body">
-          <div class="help-step-title">Create Your Account</div>
-          <div class="help-step-text">Tap the person icon → Create one free. Choose your @handle — this is how other festies find you.</div>
-        </div>
-      </div>
-      <div class="help-step">
-        <div class="help-step-num">2</div>
-        <div class="help-step-body">
-          <div class="help-step-title">Set Up Your Profile</div>
-          <div class="help-step-text">After signing in, set your avatar color and upload a photo. Add your bio, music styles, and favorite artists.</div>
-        </div>
-      </div>
-      <div class="help-step">
-        <div class="help-step-num">3</div>
-        <div class="help-step-body">
-          <div class="help-step-title">Connect With Your Crew</div>
-          <div class="help-step-text">Go to People → Connect tab. Search by @handle to find friends. Send a connect request — once accepted you can message each other.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">Key Features</div>
-      <div class="info-card">
-        <div class="info-card-title">🗓 Schedule</div>
-        <div class="info-card-body">Browse all artists by day and stage. Tap an artist to see their set details. Heart to save to My Schedule.</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🎤 Artists</div>
-        <div class="info-card-body">Full artist lineup with photos, genres, and set times. Filter by stage or search by name.</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🗺 Map</div>
-        <div class="info-card-body">Venue map with all stages, facilities, and key locations. Get directions from your current location.</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">☑️ List</div>
-        <div class="info-card-body">Personal checklist — pack list, to-do items. Your data is saved automatically.</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">👥 People</div>
-        <div class="info-card-body">Connect tab: find &amp; add festies. Messages tab: DM your crew. Staff contacts appear automatically for staff.</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🔔 Notifications</div>
-        <div class="info-card-body">Bell icon (top right) shows all notifications.<br>
-          <div class="info-badge-row">
-            <span class="info-badge" style="background:rgba(96,165,250,0.2);color:#60a5fa;">● Blue = Connections &amp; DMs</span>
-            <span class="info-badge" style="background:rgba(245,200,66,0.2);color:var(--gold-bright);">● Yellow = Event Updates</span>
-            <span class="info-badge" style="background:rgba(255,77,141,0.2);color:var(--pink-coral);">● Red = Emergency</span>
-          </div>
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🆘 SOS Button</div>
-        <div class="info-card-body">More → SOS. Sends an emergency alert to all staff instantly with your location. Use for genuine emergencies.</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">🎮 Games</div>
-        <div class="info-card-body">More → Games. Play Rave Worm and festival trivia between sets.</div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <div class="info-section-title">Need Help?</div>
-      <div class="info-card">
-        <div class="info-card-body">
-          Find a staff member (look for the 👷 Staff badge) or visit the Info Desk in the Hotel Lobby.<br><br>
-          📧 staff@sunkensuite.com
-        </div>
-      </div>
-    </div>
-  `
+// Default info content — loaded from worker, falls back to defaults
+const INFO_DEFAULTS = {
+  event: {
+    title: '🏴‍☠️ Event Info',
+    sections: [
+      { title: 'About The Event', body: 'Sunken Suite is a 3-day underground music festival celebrating the best in Drum & Bass, Techno, and Electronic music. The Mutiny is our biggest event yet — three stages, 66 artists, and an immersive experience you won\'t forget.' },
+      { title: '📅 Festival Days', body: 'Friday July 17 — Gates 4PM, Music 6PM. DNB Stage headlined by Roni Size.\nSaturday July 18 — Gates 2PM, Music 4PM. Oasis Stage headlined by J. Phlip.\nSunday July 19 — Gates 2PM, Music 4PM. DNB Stage headlined by Spor.' },
+      { title: '🔊 Stages', body: 'DNB Stage — Main indoor stage · Drum & Bass focus · Capacity 800\nOasis Stage — Outdoor pool-side stage · House, Techno & Bass · Capacity 500' },
+      { title: '📞 Contact', body: '📧 staff@sunkensuite.com\n🚨 Emergency: Use the SOS button in More\n📍 The Sturbridge Host Hotel & Conference Center' }
+    ]
+  },
+  venue: {
+    title: '📍 Venue',
+    sections: [
+      { title: 'Address', body: 'The Sturbridge Host Hotel & Conference Center\n366 Main Street, Sturbridge, MA 01566' },
+      { title: '🚗 Getting There', body: 'By Car: Exit 2 off I-84 W or Exit 9 off I-90 (Mass Pike). Free parking on site.\nShuttle: From Worcester Union Station, Friday–Sunday. Check schedule at Box Office.' },
+      { title: '🗺 On-Site Locations', body: '🏨 Hotel Lobby — Registration, Info Desk, Lost & Found\n🎟 Box Office — Main entrance, open 1hr before gates\n🏥 Medical Station — Near Main Entrance, staffed 24/7, free water\n🌊 Pool Area — Oasis Stage adjacent, outdoor chill space\n🅿️ Parking — Main lot off Route 20, overflow lot signposted' }
+    ]
+  },
+  guidelines: {
+    title: '📋 Guidelines',
+    sections: [
+      { title: '✅ General Rules', body: '✅ Valid ID required for entry\n✅ Wristbands must be worn at all times\n✅ No re-entry without wristband\n🚫 No outside alcohol\n🚫 No professional cameras without press pass\n🚫 No drones\n🚫 No crowd surfing or moshing' },
+      { title: '🛡 Safety', body: 'Stay Hydrated — Free water at every stage and Medical Station.\nKnow Your Limits — Feel unwell? Go to Medical Station. No judgment.\nBuddy System — Stay with friends. Use the People tab to connect.\nSOS — Hit SOS in More menu for emergencies. Alerts all staff instantly.' },
+      { title: '🤝 Code of Conduct', body: '✅ Respect all attendees, staff, and artists\n✅ Consent is everything\n🚫 Zero tolerance for harassment or discrimination\n🚫 Zero tolerance for violence\nViolations = immediate removal.' },
+      { title: '♿ Accessibility', body: 'Accessible entrances at Main Gate and Hotel Lobby. Accessible viewing areas at both stages. Contact staff at Info Desk for any accessibility needs.' }
+    ]
+  },
+  help: {
+    title: '❓ App Help',
+    sections: [
+      { title: 'Getting Started', body: '1. Create Your Account — Tap the person icon → Create one free. Choose your @handle.\n2. Set Up Your Profile — Upload a photo, add bio and music styles.\n3. Connect With Crew — People → Connect tab. Search by @handle.' },
+      { title: '🗓 Schedule & Artists', body: 'Browse artists by day and stage. Tap to see set details. Heart to save to My Schedule.' },
+      { title: '👥 People & Messaging', body: 'Connect tab: find & add festies. Messages tab: DM your crew. Staff contacts appear automatically for staff.' },
+      { title: '🔔 Notifications', body: '🔵 Blue = Connections & DMs\n🟡 Yellow = Event Updates & Shifts\n🔴 Red = Emergency SOS' },
+      { title: '🆘 SOS', body: 'More → SOS. Sends emergency alert to all staff with your location. Use for genuine emergencies only.' }
+    ]
+  }
 };
 
+let INFO_CONTENT = JSON.parse(JSON.stringify(INFO_DEFAULTS));
 let currentInfoTab = 'event';
 
-function showInfo() {
+
+
+
+async function showInfo() {
   const overlay = document.getElementById('infoOverlay');
-  if (overlay) {
-    overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    switchInfoTab('event');
-  }
+  if (!overlay) return;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Load content from worker
+  try {
+    const res = await fetch(AUTH_URL + '/info');
+    if (res.ok) {
+      const d = await res.json();
+      if (d.content) INFO_CONTENT = { ...INFO_DEFAULTS, ...d.content };
+    }
+  } catch(e) {}
+  switchInfoTab('event');
 }
 
 function closeInfo() {
   const overlay = document.getElementById('infoOverlay');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
+}
+
+function renderInfoContent(tab) {
+  const data = INFO_CONTENT[tab];
+  if (!data) return '';
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  let out = '';
+  (data.sections || []).forEach(function(sec, i) {
+    const editBtn = isAdmin
+      ? '<button onclick="openInfoEdit(\''+tab+'\','+i+')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;padding:2px 6px;float:right;" title="Edit section">✏️</button>'
+      : '';
+    out += '<div class="info-section">';
+    out += '<div class="info-section-title">' + escapeHTML(sec.title) + editBtn + '</div>';
+    out += '<div class="info-card"><div class="info-card-body">' + escapeHTML(sec.body).replace(/\n/g,'<br>') + '</div></div>';
+    out += '</div>';
+  });
+  // Add new section button for admin
+  if (isAdmin) {
+    out += '<button onclick="openInfoAddSection(\''+tab+'\')" style="width:100%;padding:10px;background:rgba(245,200,66,0.07);border:1px dashed rgba(245,200,66,0.3);color:var(--gold-bright);cursor:pointer;font-size:12px;font-weight:700;margin-top:8px;">+ Add Section</button>';
+  }
+  return out;
 }
 
 function switchInfoTab(tab) {
@@ -7632,11 +7446,45 @@ function switchInfoTab(tab) {
     if (el) el.classList.toggle('active', t === tab);
   });
   const body = document.getElementById('infoBody');
-  if (body) body.innerHTML = INFO_CONTENT[tab] || '';
-  if (body) body.scrollTop = 0;
+  if (body) { body.innerHTML = renderInfoContent(tab); body.scrollTop = 0; }
 }
 
-// Close on escape
+function openInfoEdit(tab, sectionIndex) {
+  const sec = INFO_CONTENT[tab]?.sections[sectionIndex];
+  if (!sec) return;
+  const title = prompt('Section title:', sec.title);
+  if (title === null) return;
+  const body = prompt('Content (use \\n for new lines):', sec.body);
+  if (body === null) return;
+  INFO_CONTENT[tab].sections[sectionIndex] = { title, body };
+  saveInfoContent();
+  switchInfoTab(tab);
+}
+
+function openInfoAddSection(tab) {
+  const title = prompt('New section title:');
+  if (!title) return;
+  const body = prompt('Content:');
+  if (body === null) return;
+  if (!INFO_CONTENT[tab].sections) INFO_CONTENT[tab].sections = [];
+  INFO_CONTENT[tab].sections.push({ title, body });
+  saveInfoContent();
+  switchInfoTab(tab);
+}
+
+async function saveInfoContent() {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL + '/info', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify(INFO_CONTENT)
+    });
+    if (res.ok) showToast('Info updated ✓');
+    else showToast('Could not save');
+  } catch(e) { showToast('Error saving'); }
+}
+
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeInfo();
 });
