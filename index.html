@@ -1712,6 +1712,27 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .edit-profile-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07);position:sticky;top:0;background:#0a0a0a;z-index:1;}
 .banner-upload-wrap{position:relative;height:100px;background:linear-gradient(135deg,#1a0030,#000820);cursor:pointer;margin-bottom:44px;overflow:visible;}
 .banner-avatar-overlap{position:absolute;bottom:-36px;left:16px;width:72px;height:72px;border-radius:50%;border:3px solid #0a0a0a;overflow:hidden;background:#9b3dff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;cursor:pointer;}
+
+/* ══ SHIFT GANTT TIMELINE ══ */
+.gantt-wrap{overflow-x:auto;margin-top:12px;}
+.gantt-header{display:flex;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:4px;padding-bottom:4px;}
+.gantt-label-col{width:160px;flex-shrink:0;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;}
+.gantt-hours{display:flex;flex:1;}
+.gantt-hour{flex:1;font-size:10px;color:var(--text-muted);text-align:center;min-width:32px;}
+.gantt-row{display:flex;align-items:center;margin-bottom:4px;min-height:32px;}
+.gantt-row-label{width:160px;flex-shrink:0;font-size:12px;font-weight:600;color:var(--text-light);padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gantt-row-track{flex:1;position:relative;height:28px;background:rgba(255,255,255,0.03);border-radius:2px;}
+.gantt-block{position:absolute;top:2px;height:24px;border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;cursor:pointer;transition:filter .15s;}
+.gantt-block:hover{filter:brightness(1.2);}
+.gantt-block.confirmed{opacity:1;}
+.gantt-block.unconfirmed{opacity:0.7;border:1px dashed rgba(255,255,255,0.3);}
+.gantt-day-header{font-size:12px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(245,200,66,0.2);}
+.shift-card{background:#111;border:1px solid rgba(255,255,255,0.08);padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.shift-card.confirmed{border-color:rgba(0,212,200,0.3);}
+.shift-card.unconfirmed{border-color:rgba(245,200,66,0.2);}
+.shift-time-badge{background:rgba(155,61,255,0.2);border:1px solid rgba(155,61,255,0.3);padding:4px 10px;font-size:12px;font-weight:800;color:#c084fc;white-space:nowrap;font-family:'Orbitron',sans-serif;}
+.shift-confirm-btn{margin-left:auto;padding:6px 14px;background:var(--teal-glow);border:none;color:#000;font-weight:800;font-size:11px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;}
+.shift-confirmed-badge{margin-left:auto;font-size:11px;font-weight:700;color:var(--teal-glow);}
 </style>
 </head>
 <body>
@@ -2322,7 +2343,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
     <!-- Shift Schedule Tab -->
     <div id="staffTab-schedule" style="display:none;">
-      <div id="staffShiftView" data-context="staff"></div>
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">&#x1F550; My Shifts</div>
+        </div>
+        <div class="dash-section-body">
+          <div id="myShiftsList"><div style="text-align:center;padding:24px;color:var(--text-muted);">Loading shifts...</div></div>
+        </div>
+      </div>
     </div>
 
     <!-- Announcements Tab -->
@@ -4463,6 +4491,7 @@ const STAFF_TASK_KEY = 'ss_staff_tasks_done';
 let staffDoneTasks = new Set();
 
 function initStaffDashboard() {
+  loadMyShifts();
   const role = currentUser?.staffRole || 'management';
   const roleLabels = { security:'🔴 Security', 'stage-crew':'🟣 Stage Crew', ticketing:'🟦 Ticketing/Front', engineers:'🟡 Engineers', management:'🟠 Management' };
   const el = document.getElementById('staffRoleDisplay');
@@ -4472,6 +4501,7 @@ function initStaffDashboard() {
 }
 
 function switchStaffTab(tab, btn) {
+  if (tab === 'schedule') loadMyShifts();
   ['tasks','schedule','announcements','contacts'].forEach(t => {
     const el = document.getElementById('staffTab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
@@ -4803,6 +4833,7 @@ const ROLE_LABELS = {
 };
 const DAYS = ['Fri','Sat','Sun'];
 const DAY_LABELS = {'Fri':'Friday Jul 17','Sat':'Saturday Jul 18','Sun':'Sunday Jul 19'};
+const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Oasis Stage','Oasis Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Parking Lot','Medical Station','General Grounds'];
 
 let cachedTasks  = [];
 let cachedShifts = [];
@@ -5180,7 +5211,12 @@ async function renderShiftManager(containerId) {
     <!-- Add personal block form -->
     <div id="${containerId}-personalform" style="display:none;">
       ${buildPersonalBlockForm(containerId)}
+    </div>
+    <div class="dash-section" style="margin-top:16px;">
+      <div class="dash-section-header"><div class="dash-section-title">Timeline View</div></div>
+      <div class="dash-section-body"><div id="${containerId}-gantt"></div></div>
     </div>`;
+  renderShiftGantt(shifts, containerId + '-gantt');
 }
 
 function buildShiftDayBlocks(shifts, personalBlocks, containerId, isMgmt, roleFilter) {
@@ -5243,57 +5279,48 @@ function filterShifts(roleFilter, containerId, btn) {
 }
 
 function buildCreateShiftForm(containerId) {
-  return `<div class="dash-section" style="border-color:rgba(245,200,66,0.3);">
-    <div class="dash-section-header">
-      <div class="dash-section-title">🔒 Create Locked Shift</div>
-      <button class="dash-btn" onclick="hideShiftForm('${containerId}')">✕ Cancel</button>
-    </div>
-    <div class="dash-section-body">
-      <div class="create-task-form">
-        <div class="form-row">
-          <div class="form-field">
-            <label class="form-label">Title</label>
-            <input class="form-input" id="${containerId}-shiftTitle" placeholder="e.g. Security Post A">
-          </div>
-          <div class="form-field">
-            <label class="form-label">Role</label>
-            <select class="form-select" id="${containerId}-shiftRole">
-              ${ROLES.map(r=>`<option value="${r}">${ROLE_LABELS[r]}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label class="form-label">Day</label>
-            <select class="form-select" id="${containerId}-shiftDay">
-              ${DAYS.map(d=>`<option value="${d}">${DAY_LABELS[d]}</option>`).join('')}
-            </select>
-          </div>
-          <div class="form-field">
-            <label class="form-label">Location</label>
-            <input class="form-input" id="${containerId}-shiftLocation" placeholder="e.g. Main Entrance">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label class="form-label">Start Time</label>
-            <input class="form-input" id="${containerId}-shiftStart" type="time">
-          </div>
-          <div class="form-field">
-            <label class="form-label">End Time</label>
-            <input class="form-input" id="${containerId}-shiftEnd" type="time">
-          </div>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Notes</label>
-          <input class="form-input" id="${containerId}-shiftNotes" placeholder="Optional notes…">
-        </div>
-        <button class="dash-btn primary" style="width:100%;padding:12px;margin-top:4px;"
-          onclick="submitCreateShift('${containerId}')">🔒 Lock This Shift</button>
-        <div id="${containerId}-shiftCreateStatus" style="font-size:12px;margin-top:8px;color:var(--text-muted);"></div>
-      </div>
-    </div>
-  </div>`;
+  const locOptions = SHIFT_LOCATIONS.map(l => '<option value="'+l+'">'+l+'</option>').join('');
+  const roleOptions = ROLES.map(r => '<option value="'+r+'">'+ROLE_LABELS[r]+'</option>').join('');
+  const dayOptions = DAYS.map(d => '<option value="'+d+'">'+DAY_LABELS[d]+'</option>').join('');
+  return '<div class="dash-section" style="border-color:rgba(245,200,66,0.3);">' +
+    '<div class="dash-section-header"><div class="dash-section-title">+ Create Shift</div>' +
+    '<button class="dash-btn" onclick="hideShiftForm(\''+containerId+'\')">✕ Cancel</button></div>' +
+    '<div class="dash-section-body"><div class="create-task-form">' +
+    // Title + Day row
+    '<div class="form-row">' +
+      '<div class="form-field"><label class="form-label">Shift Title</label>' +
+        '<input class="form-input" id="'+containerId+'-shiftTitle" placeholder="e.g. Gate Security A"></div>' +
+      '<div class="form-field"><label class="form-label">Day</label>' +
+        '<select class="form-select" id="'+containerId+'-shiftDay">'+dayOptions+'</select></div>' +
+    '</div>' +
+    // Start/End time row
+    '<div class="form-row">' +
+      '<div class="form-field"><label class="form-label">Start Time</label>' +
+        '<input class="form-input" id="'+containerId+'-shiftStart" type="time" value="18:00"></div>' +
+      '<div class="form-field"><label class="form-label">End Time</label>' +
+        '<input class="form-input" id="'+containerId+'-shiftEnd" type="time" value="02:00"></div>' +
+    '</div>' +
+    // Location + Role row
+    '<div class="form-row">' +
+      '<div class="form-field"><label class="form-label">Location</label>' +
+        '<select class="form-select" id="'+containerId+'-shiftLocation">'+locOptions+'</select></div>' +
+      '<div class="form-field"><label class="form-label">Role Group</label>' +
+        '<select class="form-select" id="'+containerId+'-shiftRole"><option value="">No role group</option>'+roleOptions+'</select></div>' +
+    '</div>' +
+    // Assign to specific person
+    '<div class="form-field">' +
+      '<label class="form-label">Assign to Specific Person <span style="opacity:0.5;">(optional — overrides role group)</span></label>' +
+      '<input class="form-input" id="'+containerId+'-shiftAssignName" placeholder="Search by name or handle..." oninput="searchUsersForAssign(\''+containerId+'-shift\',this.value)">' +
+      '<div id="'+containerId+'-shift-userSuggestions" style="background:#111;border:1px solid rgba(255,255,255,0.1);display:none;max-height:140px;overflow-y:auto;"></div>' +
+      '<input type="hidden" id="'+containerId+'-shiftAssignId">' +
+      '<input type="hidden" id="'+containerId+'-shiftAssignDisplayName">' +
+    '</div>' +
+    // Notes
+    '<div class="form-field"><label class="form-label">Notes</label>' +
+      '<input class="form-input" id="'+containerId+'-shiftNotes" placeholder="Any notes for this shift..."></div>' +
+    '<button class="dash-btn primary" style="width:100%;padding:12px;margin-top:8px;" onclick="submitCreateShift(\''+containerId+'\')">&#x1F512; Create Shift</button>' +
+    '<div id="'+containerId+'-shiftCreateStatus" style="font-size:12px;margin-top:8px;color:var(--text-muted);"></div>' +
+    '</div></div></div>';
 }
 
 function showCreateShift(containerId) {
@@ -5306,35 +5333,39 @@ function hideShiftForm(containerId) {
 }
 
 async function submitCreateShift(containerId) {
-  const title    = document.getElementById(containerId+'-shiftTitle')?.value.trim();
-  const role     = document.getElementById(containerId+'-shiftRole')?.value;
-  const day      = document.getElementById(containerId+'-shiftDay')?.value;
-  const start    = document.getElementById(containerId+'-shiftStart')?.value;
-  const end      = document.getElementById(containerId+'-shiftEnd')?.value;
-  const location = document.getElementById(containerId+'-shiftLocation')?.value.trim();
-  const notes    = document.getElementById(containerId+'-shiftNotes')?.value.trim();
-  const status   = document.getElementById(containerId+'-shiftCreateStatus');
+  const title     = document.getElementById(containerId+'-shiftTitle')?.value.trim();
+  const day       = document.getElementById(containerId+'-shiftDay')?.value;
+  const startTime = document.getElementById(containerId+'-shiftStart')?.value;
+  const endTime   = document.getElementById(containerId+'-shiftEnd')?.value;
+  const location  = document.getElementById(containerId+'-shiftLocation')?.value || '';
+  const role      = document.getElementById(containerId+'-shiftRole')?.value || '';
+  const notes     = document.getElementById(containerId+'-shiftNotes')?.value.trim() || '';
+  const assignedUserId   = document.getElementById(containerId+'-shiftAssignId')?.value || '';
+  const assignedUserName = document.getElementById(containerId+'-shiftAssignDisplayName')?.value || '';
+  const status = document.getElementById(containerId+'-shiftCreateStatus');
 
-  if (!title||!start||!end) { if(status){status.textContent='⚠ Title, start and end time required';status.style.color='var(--pink-coral)';} return; }
+  if (!title) { if(status){status.textContent='Title required';status.style.color='var(--pink-coral)';} return; }
+  if (!startTime||!endTime) { if(status){status.textContent='Start and end time required';status.style.color='var(--pink-coral)';} return; }
+  if(status){status.textContent='Creating...';status.style.color='var(--text-muted)';}
 
   const token = localStorage.getItem('ss_auth_token');
-  if (status) { status.textContent='Creating…'; status.style.color='var(--text-muted)'; }
-
   try {
-    const res = await fetch(AUTH_URL + '/shifts', {
+    const res = await fetch(AUTH_URL+'/shifts', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({title,role,day,startTime:start,endTime:end,location,notes})
+      body: JSON.stringify({ title, day, startTime, endTime, location, role, notes, assignedUserId, assignedUserName })
     });
     const data = await res.json();
     if (res.ok) {
-      if(status){status.textContent='✓ Shift locked!';status.style.color='#4ade80';}
-      setTimeout(()=>{ hideShiftForm(containerId); renderShiftManager(containerId); },1200);
+      if(status){status.textContent='Shift created!';status.style.color='var(--teal-glow)';}
+      hideShiftForm(containerId);
+      renderShiftManager(containerId.replace('-shift','') || containerId);
+      showToast('Shift created: '+title);
     } else {
-      if(status){status.textContent='⚠ '+(data.error||'Failed');status.style.color='var(--pink-coral)';}
+      if(status){status.textContent=data.error||'Failed';status.style.color='var(--pink-coral)';}
     }
-  } catch {
-    if(status){status.textContent='⚠ Could not connect';status.style.color='var(--pink-coral)';}
+  } catch(e) {
+    if(status){status.textContent='Error: '+e.message;status.style.color='var(--pink-coral)';}
   }
 }
 
@@ -6456,6 +6487,129 @@ async function saveProfileEdits() {
   } finally {
     if (saveBtn) { saveBtn.disabled=false; saveBtn.textContent='Save Changes'; }
   }
+}
+
+/* ════════════════════════════════════════
+   SHIFT GANTT TIMELINE
+════════════════════════════════════════ */
+
+function timeToPercent(timeStr, dayStart=14, dayEnd=26) {
+  // Festival hours roughly 2pm to 2am next day (14-26)
+  if (!timeStr) return 0;
+  const [h,m] = timeStr.split(':').map(Number);
+  let hour = h + m/60;
+  if (hour < 8) hour += 24; // next day hours (e.g. 02:00 = 26:00)
+  const pct = ((hour - dayStart) / (dayEnd - dayStart)) * 100;
+  return Math.max(0, Math.min(100, pct));
+}
+
+function widthPercent(start, end, dayStart=14, dayEnd=26) {
+  const s = timeToPercent(start, dayStart, dayEnd);
+  const e = timeToPercent(end, dayStart, dayEnd);
+  return Math.max(1, e - s);
+}
+
+function renderShiftGantt(shifts, containerId) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+
+  const dayStart = 14, dayEnd = 26;
+  const hours = [];
+  for (let h = dayStart; h <= dayEnd; h++) {
+    hours.push(h > 23 ? (h-24)+':00' : h+':00');
+  }
+
+  const roleColors = {
+    security:'#ff4d8d', 'stage-crew':'#9b3dff', ticketing:'#f5c842',
+    engineers:'#00d4c8', management:'#ff7c2a', all:'#888'
+  };
+
+  let html = '';
+  ['Fri','Sat','Sun'].forEach(function(day) {
+    const dayShifts = shifts.filter(function(s){ return s.day === day; });
+    if (!dayShifts.length) return;
+
+    html += '<div class="gantt-day-header">'+DAY_LABELS[day]+'</div>';
+    html += '<div class="gantt-wrap"><div class="gantt-header">';
+    html += '<div class="gantt-label-col">Person / Role</div><div class="gantt-hours">';
+    hours.forEach(function(h){ html += '<div class="gantt-hour">'+h+'</div>'; });
+    html += '</div></div>';
+
+    // Group by person or role
+    const groups = {};
+    dayShifts.forEach(function(s) {
+      const key = s.assignedUserId ? (s.assignedUserName || s.assignedUserId) : (s.role || 'all');
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(s);
+    });
+
+    Object.keys(groups).forEach(function(label) {
+      html += '<div class="gantt-row"><div class="gantt-row-label" title="'+label+'">'+label+'</div><div class="gantt-row-track">';
+      groups[label].forEach(function(s) {
+        const left = timeToPercent(s.startTime, dayStart, dayEnd);
+        const width = widthPercent(s.startTime, s.endTime, dayStart, dayEnd);
+        const color = roleColors[s.role] || '#9b3dff';
+        const confirmed = s.confirmed ? 'confirmed' : 'unconfirmed';
+        html += '<div class="gantt-block '+confirmed+'" style="left:'+left+'%;width:'+width+'%;background:'+color+';" title="'+s.title+' ('+s.startTime+'-'+s.endTime+')">';
+        html += s.title.length > 12 ? s.title.slice(0,10)+'…' : s.title;
+        html += '</div>';
+      });
+      html += '</div></div>';
+    });
+    html += '</div>';
+  });
+
+  wrap.innerHTML = html || '<div style="text-align:center;padding:24px;color:var(--text-muted);">No shifts scheduled yet</div>';
+}
+
+/* ─── My Shifts (for employee staff dashboard) ─── */
+async function loadMyShifts() {
+  const wrap = document.getElementById('myShiftsList');
+  if (!wrap) return;
+  const token = localStorage.getItem('ss_auth_token');
+  wrap.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);">Loading shifts...</div>';
+  try {
+    const res = await fetch(AUTH_URL+'/shifts', { headers:{'Authorization':'Bearer '+token} });
+    if (!res.ok) { wrap.innerHTML = '<div style="padding:16px;color:var(--text-muted);">No shifts assigned yet.</div>'; return; }
+    const d = await res.json();
+    const shifts = (d.shifts||[]).sort(function(a,b){
+      if (a.day !== b.day) return ['Fri','Sat','Sun'].indexOf(a.day) - ['Fri','Sat','Sun'].indexOf(b.day);
+      return (a.startTime||'').localeCompare(b.startTime||'');
+    });
+    if (!shifts.length) { wrap.innerHTML = '<div style="padding:16px;color:var(--text-muted);">No shifts assigned yet.</div>'; return; }
+
+    wrap.innerHTML = shifts.map(function(s) {
+      const confirmed = s.confirmed;
+      const myShift = s.assignedUserId === currentUser?.id || !s.assignedUserId;
+      return '<div class="shift-card '+(confirmed?'confirmed':'unconfirmed')+'">' +
+        '<div class="shift-time-badge">'+DAY_LABELS[s.day]+'<br>'+s.startTime+' – '+s.endTime+'</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:800;color:var(--text-light);">'+s.title+'</div>' +
+          (s.location?'<div style="font-size:12px;color:var(--text-muted);">'+s.location+'</div>':'') +
+          (s.notes?'<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">'+s.notes+'</div>':'') +
+        '</div>' +
+        (myShift && !confirmed ? '<button class="shift-confirm-btn" onclick="confirmShift(\''+s.id+'\',this)">Confirm</button>' : '') +
+        (confirmed ? '<div class="shift-confirmed-badge">&#x2713; Confirmed</div>' : '') +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    wrap.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">Error loading shifts.</div>';
+  }
+}
+
+async function confirmShift(shiftId, btn) {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/shifts/'+shiftId+'/confirm', {
+      method:'POST', headers:{'Authorization':'Bearer '+token}
+    });
+    if (res.ok) {
+      btn.parentElement.innerHTML = btn.parentElement.innerHTML.replace(btn.outerHTML, '<div class="shift-confirmed-badge">&#x2713; Confirmed</div>');
+      btn.parentElement.classList.remove('unconfirmed');
+      btn.parentElement.classList.add('confirmed');
+      showToast('Shift confirmed!');
+    }
+  } catch {}
 }
 
 /* ════════════════════════════════════════════════════════════
