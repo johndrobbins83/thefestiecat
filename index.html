@@ -4161,7 +4161,7 @@ function switchAdminTab(tab, btn) {
   if (tab === 'artists') renderAdminArtistGrid();
   if (tab === 'schedule') renderAdminSchedule();
   if (tab === 'tasks')   renderTaskManager('sharedTaskManager');
-  if (tab === 'shifts')  renderShiftManager('sharedShiftManager');
+  if (tab === 'shifts')  { if (!window._allUsers || !window._allUsers.length) loadUsersForAssign(); renderShiftManager('sharedShiftManager'); }
   if (tab === 'users')   adminLoadUsers();
 }
 
@@ -5388,10 +5388,10 @@ function buildCreateShiftForm(containerId) {
     // Assign to specific person
     '<div class="form-field">' +
       '<label class="form-label">Assign to Specific Person <span style="opacity:0.5;">(optional — overrides role group)</span></label>' +
-      '<input class="form-input" id="'+containerId+'-shiftAssignName" placeholder="Search by name or handle..." oninput="searchUsersForAssign(\''+containerId+'-shift\',this.value)">' +
-      '<div id="'+containerId+'-shift-userSuggestions" style="background:#111;border:1px solid rgba(255,255,255,0.1);display:none;max-height:140px;overflow-y:auto;"></div>' +
-      '<input type="hidden" id="'+containerId+'-shiftAssignId">' +
-      '<input type="hidden" id="'+containerId+'-shiftAssignDisplayName">' +
+      '<input class="form-input" id="'+containerId+'-shiftAssignName" placeholder="Search by name or handle..." oninput="searchUsersForAssign(\''+containerId+'-shiftAssign\',this.value)">' +
+      '<div id="'+containerId+'-shiftAssign-userSuggestions" style="background:#111;border:1px solid rgba(255,255,255,0.1);display:none;max-height:140px;overflow-y:auto;"></div>' +
+      '<input type="hidden" id="'+containerId+'-shiftAssign-assignUserId">' +
+      '<input type="hidden" id="'+containerId+'-shiftAssign-assignDisplayName">' +
     '</div>' +
     // Notes
     '<div class="form-field"><label class="form-label">Notes</label>' +
@@ -5418,8 +5418,8 @@ async function submitCreateShift(containerId) {
   const location  = document.getElementById(containerId+'-shiftLocation')?.value || '';
   const role      = document.getElementById(containerId+'-shiftRole')?.value || '';
   const notes     = document.getElementById(containerId+'-shiftNotes')?.value.trim() || '';
-  const assignedUserId   = document.getElementById(containerId+'-shiftAssignId')?.value || '';
-  const assignedUserName = document.getElementById(containerId+'-shiftAssignDisplayName')?.value || '';
+  const assignedUserId   = document.getElementById(containerId+'-shiftAssign-assignUserId')?.value || '';
+  const assignedUserName = document.getElementById(containerId+'-shiftAssign-assignDisplayName')?.value || document.getElementById(containerId+'-shiftAssignName')?.value || '';
   const status = document.getElementById(containerId+'-shiftCreateStatus');
 
   if (!title) { if(status){status.textContent='Title required';status.style.color='var(--pink-coral)';} return; }
