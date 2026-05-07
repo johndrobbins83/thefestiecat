@@ -4447,8 +4447,21 @@ async function adminSetStaffRole(userId, staffRole) {
 }
 
 async function adminDeleteUser(userId, userName) {
-  if (!confirm('Remove user ' + userName + '? This cannot be undone.')) return;
-  showToast('User removal coming in Phase 6');
+  if (!confirm('Remove ' + userName + '? This cannot be undone.')) return;
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL + '/auth/users/' + userId, {
+      method: 'DELETE',
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    const d = await res.json();
+    if (res.ok) {
+      showToast(userName + ' removed');
+      adminLoadUsers();
+    } else {
+      alert('Error: ' + (d.error || 'Failed'));
+    }
+  } catch(e) { alert('Could not connect'); }
 }
 
 async function adminSetRole(userId, role) {
