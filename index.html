@@ -4419,7 +4419,10 @@ function buildUserTableHTML(users) {
       '<td style="color:var(--text-muted);font-size:12px;">'+(u.email||'—')+'</td>' +
       '<td>'+roleSelectHTML(u)+'</td>' +
       '<td>'+staffRoleHTML(u)+'</td>' +
-      '<td><button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:4px 10px;font-size:11px;">&#x2715; Remove</button></td>' +
+      '<td style="display:flex;gap:4px;">' +
+      '<button class="dash-btn" onclick="adminResetPassword(\''+u.id+'\',\''+(u.name||u.handle||u.email)+'\')" style="padding:4px 8px;font-size:11px;">&#x1F511; Reset PW</button>' +
+      '<button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:4px 8px;font-size:11px;">&#x2715;</button>' +
+      '</td>' +
       '</tr>';
   }).join('');
 
@@ -6724,6 +6727,36 @@ async function confirmShift(shiftId, btn) {
   } catch {}
 }
 
+/* ════════════════════════════════════════
+   PASSWORD RESET
+════════════════════════════════════════ */
+function showForgotPassword() {
+  const email = document.getElementById('loginEmail')?.value.trim() || '';
+  const entered = prompt('Enter your email address to reset your password:', email);
+  if (!entered) return;
+  // For now just show a message — admin must reset manually
+  alert('Please contact the event admin to reset your password. Email: ' + entered.trim());
+}
+
+async function adminResetPassword(userId, userName) {
+  const newPw = prompt('Set new password for ' + userName + ' (min 6 characters):');
+  if (!newPw || newPw.length < 6) { if(newPw !== null) alert('Password must be at least 6 characters'); return; }
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL + '/auth/resetpassword', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ userId, newPassword: newPw })
+    });
+    const d = await res.json();
+    if (res.ok) {
+      showToast('Password reset for ' + userName);
+    } else {
+      alert('Error: ' + (d.error || 'Failed'));
+    }
+  } catch(e) { alert('Could not connect'); }
+}
+
 /* ════════════════════════════════════════════════════════════
    RAVEWORM GAME
 ════════════════════════════════════════════════════════════ */
@@ -6998,6 +7031,9 @@ function updateDMBadge(count) {
           onkeydown="if(event.key==='Enter')submitLogin()">
       </div>
       <button class="auth-btn" id="loginBtn" onclick="submitLogin()">Sign In</button>
+  <div style="text-align:center;margin-top:10px;">
+    <a onclick="showForgotPassword()" style="font-size:12px;color:rgba(122,184,224,0.5);cursor:pointer;text-decoration:underline;">Forgot your password?</a>
+  </div>
       <div class="auth-divider"></div>
       <div class="auth-switch">No account? <a onclick="showAuth('register')">Create one free</a></div>
     </div>
