@@ -1748,6 +1748,47 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .featured-headliner-badge{position:absolute;top:8px;right:8px;background:rgba(245,200,66,0.9);color:#000;font-size:9px;font-weight:800;padding:2px 6px;text-transform:uppercase;letter-spacing:0.5px;}
 .featured-name{font-size:12px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:0.5px;line-height:1.2;}
 .featured-stage{font-size:10px;color:rgba(255,255,255,0.6);margin-top:1px;}
+
+/* ══ NOTIFICATIONS ══ */
+.notif-drawer{position:fixed;top:56px;right:0;width:320px;max-width:100vw;
+  background:#0a0a0a;border:1px solid rgba(255,255,255,0.1);
+  border-top:none;z-index:15000;display:none;max-height:70vh;overflow-y:auto;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);}
+.notif-drawer.open{display:block;}
+.notif-drawer-header{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);position:sticky;top:0;background:#0a0a0a;}
+.notif-drawer-title{font-size:12px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background .1s;}
+.notif-item:hover{background:rgba(255,255,255,0.03);}
+.notif-item.unread{background:rgba(255,255,255,0.02);}
+.notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.notif-dot.blue{background:#60a5fa;}
+.notif-dot.yellow{background:var(--gold-bright);}
+.notif-dot.red{background:var(--pink-coral);}
+.notif-text{font-size:12px;color:var(--text-light);line-height:1.4;}
+.notif-time{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.notif-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;
+  border-radius:8px;font-size:10px;font-weight:800;display:flex;align-items:center;
+  justify-content:center;padding:0 4px;pointer-events:none;}
+.notif-badge.blue{background:#60a5fa;color:#000;}
+.notif-badge.yellow{background:var(--gold-bright);color:#000;}
+.notif-badge.red{background:var(--pink-coral);color:#fff;}
+
+/* ══ INBOX ══ */
+.inbox-wrap{max-width:600px;margin:0 auto;}
+.inbox-contact{display:flex;align-items:center;gap:12px;padding:12px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background .1s;}
+.inbox-contact:hover{background:rgba(255,255,255,0.03);}
+.inbox-contact-avatar{width:42px;height:42px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;overflow:hidden;}
+.inbox-contact-name{font-size:14px;font-weight:700;color:var(--text-light);}
+.inbox-contact-preview{font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.inbox-unread-badge{margin-left:auto;min-width:20px;height:20px;border-radius:10px;
+  background:var(--gold-bright);color:#000;font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;padding:0 5px;flex-shrink:0;}
+.staff-section-label{font-size:10px;font-weight:800;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:1px;padding:10px 16px 4px;}
 </style>
 </head>
 <body>
@@ -1801,14 +1842,18 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
     </div>
     <div style="position:relative;" id="bellWrap">
-      <div class="nav-bell" id="navBell" onclick="toggleBellDropdown()" style="cursor:pointer;">
+      <div class="nav-bell" id="navBell" onclick="toggleNotifDrawer()" style="cursor:pointer;">
         🔔
-        <div class="notif-dot" id="notifDot"></div>
+        <div class="notif-dot" id="notifDot" style="position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;display:none;"></div>
+        <div class="notif-badge" id="notifCount" style="display:none;position:absolute;top:-4px;right:-4px;"></div>
         <div class="notif-count" id="notifCount">0</div>
       </div>
-      <div class="bell-dropdown" id="bellDropdown">
-        <div class="bell-dropdown-header">🔔 Notifications</div>
-        <div id="bellAlertList"><div class="bell-no-alerts">No active alerts</div></div>
+      <div class="notif-drawer" id="notifDrawer">
+        <div class="notif-drawer-header">
+          <span class="notif-drawer-title">🔔 Notifications</span>
+          <button onclick="markAllNotifsRead()" style="font-size:11px;background:none;border:none;color:var(--text-muted);cursor:pointer;">Mark all read</button>
+        </div>
+        <div id="notifList"><div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications</div></div>
       </div>
     </div>
     <div class="nav-avatar-wrap" id="navAvatarWrap" onclick="toggleUserMenu()" style="display:none;position:relative;">
@@ -2481,7 +2526,18 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <!-- Feed Tab -->
     <!-- Messages Tab -->
     <div id="peopleTab-messages" style="display:none;">
-      <div class="dm-list" id="dmList"></div>
+      <div class="inbox-wrap">
+        <!-- Staff Contacts (employees/admin only) -->
+        <div id="staffContactsSection" style="display:none;">
+          <div class="staff-section-label">👷 Staff</div>
+          <div id="staffContactsList"></div>
+        </div>
+        <!-- DM Conversations -->
+        <div id="inboxConvsSection">
+          <div class="staff-section-label">💬 Messages</div>
+          <div id="dmList"></div>
+        </div>
+      </div>
     </div>
   </div><!-- /page-people -->
 
@@ -3972,6 +4028,8 @@ function setCurrentUser(user, token) {
     checkProfileSetup();
     // 2. Start DM polling
     startDMPolling();
+    startNotifPolling();
+    startNotifPolling();
     // 3. Pre-load friends so Connect tab is ready
     loadFriendRequests();
     loadFriends();
@@ -6771,6 +6829,231 @@ async function adminResetPassword(userId, userName) {
       alert('Error: ' + (d.error || 'Failed'));
     }
   } catch(e) { alert('Could not connect'); }
+}
+
+/* ════════════════════════════════════════
+   NOTIFICATIONS
+════════════════════════════════════════ */
+let notifPollTimer = null;
+let lastNotifCount = 0;
+
+function toggleNotifDrawer() {
+  const drawer = document.getElementById('notifDrawer');
+  if (!drawer) return;
+  const isOpen = drawer.classList.contains('open');
+  // Close other dropdowns
+  document.getElementById('userMenu')?.classList.remove('open');
+  if (isOpen) {
+    drawer.classList.remove('open');
+  } else {
+    drawer.classList.add('open');
+    loadNotifications();
+  }
+}
+
+async function loadNotifications() {
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) return;
+  try {
+    const res = await fetch(AUTH_URL + '/notifications', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (!res.ok) return;
+    const d = await res.json();
+    renderNotifications(d.notifications || []);
+  } catch(e) {}
+}
+
+function renderNotifications(notifs) {
+  const list = document.getElementById('notifList');
+  if (!list) return;
+  if (!notifs.length) {
+    list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications yet</div>';
+    return;
+  }
+  list.innerHTML = notifs.map(function(n) {
+    const timeAgo = formatTimeAgo(n.createdAt);
+    return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" onclick="handleNotifClick(\''+n.id+'\',\''+( n.type||'')+'\')">' +
+      '<div class="notif-dot ' + (n.category||'blue') + '"></div>' +
+      '<div style="flex:1;">' +
+        '<div class="notif-text">' + escapeHTML(n.message||'') + '</div>' +
+        '<div class="notif-time">' + timeAgo + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function handleNotifClick(notifId, type) {
+  var fromId = '';
+  // Mark as read
+  const token = localStorage.getItem('ss_auth_token');
+  fetch(AUTH_URL + '/notifications/' + notifId + '/read', {
+    method: 'PUT', headers: {'Authorization': 'Bearer ' + token}
+  }).catch(() => {});
+  // Navigate based on type
+  if (type === 'dm' && fromId) {
+    toggleNotifDrawer();
+    navigate('people');
+    setTimeout(function() { switchPeopleTab('messages'); openDMThread(fromId); }, 300);
+  } else if (type === 'follow_request') {
+    toggleNotifDrawer();
+    navigate('people');
+  } else if (type === 'shift_assigned' || type === 'task_assigned') {
+    toggleNotifDrawer();
+    navigate('staff');
+  }
+  loadNotifications();
+}
+
+async function markAllNotifsRead() {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    await fetch(AUTH_URL + '/notifications/read', {
+      method: 'PUT', headers: {'Authorization': 'Bearer ' + token}
+    });
+    loadNotifications();
+    updateBellBadge(0, 'blue');
+  } catch(e) {}
+}
+
+async function pollNotifications() {
+  if (!currentUser) return;
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) return;
+  try {
+    const res = await fetch(AUTH_URL + '/notifications', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (!res.ok) return;
+    const d = await res.json();
+    const notifs = d.notifications || [];
+    const unread = notifs.filter(function(n) { return !n.read; });
+    const count = unread.length;
+    // Determine highest priority color
+    const hasRed    = unread.some(function(n) { return n.category === 'red'; });
+    const hasYellow = unread.some(function(n) { return n.category === 'yellow'; });
+    const color = hasRed ? 'red' : hasYellow ? 'yellow' : 'blue';
+    updateBellBadge(count, color);
+    // If drawer is open, refresh it
+    if (document.getElementById('notifDrawer')?.classList.contains('open')) {
+      renderNotifications(notifs);
+    }
+  } catch(e) {}
+}
+
+function updateBellBadge(count, color) {
+  const dot   = document.getElementById('notifDot');
+  const badge = document.getElementById('notifCount');
+  if (dot) { dot.className = 'notif-dot ' + (count > 0 ? color : ''); dot.style.display = count > 0 ? 'block' : 'none'; }
+  if (badge) { badge.textContent = count > 0 ? (count > 99 ? '99+' : count) : ''; badge.style.display = count > 0 ? 'flex' : 'none'; badge.className = 'notif-badge ' + color; }
+}
+
+function startNotifPolling() {
+  if (notifPollTimer) clearInterval(notifPollTimer);
+  pollNotifications();
+  notifPollTimer = setInterval(pollNotifications, 8000);
+}
+
+function formatTimeAgo(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+// Close notif drawer when clicking outside
+document.addEventListener('click', function(e) {
+  const drawer = document.getElementById('notifDrawer');
+  const bell   = document.getElementById('bellWrap');
+  if (drawer && drawer.classList.contains('open') && !bell?.contains(e.target)) {
+    drawer.classList.remove('open');
+  }
+});
+
+/* ════════════════════════════════════════
+   INBOX + STAFF CONTACTS
+════════════════════════════════════════ */
+async function loadInbox() {
+  loadStaffContacts();
+  loadDMList();
+}
+
+async function loadStaffContacts() {
+  const isStaff = currentUser && (currentUser.role === 'admin' || currentUser.role === 'employee');
+  const section = document.getElementById('staffContactsSection');
+  const list    = document.getElementById('staffContactsList');
+  if (!section || !isStaff) { if(section) section.style.display = 'none'; return; }
+
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL + '/staff/contacts', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (!res.ok) { section.style.display = 'none'; return; }
+    const d = await res.json();
+    const contacts = (d.contacts || []).filter(function(c) { return c.id !== currentUser.id; });
+    if (!contacts.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    list.innerHTML = contacts.map(function(c) {
+      var av = c.profilePic
+        ? '<img src="'+c.profilePic+'" style="width:100%;height:100%;object-fit:cover;">'
+        : (c.handle?.[0]||c.name?.[0]||'?').toUpperCase();
+      var roleLabel = c.role === 'admin' ? 'Admin' : (c.staffRole || 'Staff');
+      var roleColor = c.role === 'admin' ? 'var(--gold-bright)' : 'var(--teal-glow)';
+      return '<div class="inbox-contact" data-cid="'+c.id+'" onclick="openDMThread(this.dataset.cid)">' +
+        '<div class="inbox-contact-avatar" style="background:'+(c.avatarColor||'#9b3dff')+';">'+av+'</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="inbox-contact-name">'+(c.name||c.handle||'Staff')+' <span style="font-size:10px;color:'+roleColor+';">['+roleLabel+']</span></div>' +
+          '<div class="inbox-contact-preview">Tap to message</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) { section.style.display = 'none'; }
+}
+
+async function loadDMList() {
+  const token = localStorage.getItem('token') || localStorage.getItem('ss_auth_token');
+  const list  = document.getElementById('dmList');
+  if (!list || !token) return;
+
+  try {
+    // Get conversations
+    const [dmRes, unreadRes] = await Promise.all([
+      fetch(AUTH_URL + '/dm', { headers: {'Authorization': 'Bearer ' + token} }),
+      fetch(AUTH_URL + '/dm/unread', { headers: {'Authorization': 'Bearer ' + token} })
+    ]);
+    const dmData = dmRes.ok ? await dmRes.json() : { conversations: [] };
+    const unreadData = unreadRes.ok ? await unreadRes.json() : { counts: {} };
+    const convs = dmData.conversations || [];
+    const counts = unreadData.counts || {};
+
+    if (!convs.length) {
+      list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">No messages yet</div>';
+      return;
+    }
+
+    list.innerHTML = convs.map(function(c) {
+      var unread = counts[c.userId] || 0;
+      var av = c.profilePic
+        ? '<img src="'+c.profilePic+'" style="width:100%;height:100%;object-fit:cover;">'
+        : (c.handle?.[0]||'?').toUpperCase();
+      var preview = c.lastMessage ? escapeHTML(c.lastMessage.slice(0,40)) + (c.lastMessage.length > 40 ? '…' : '') : 'Tap to message';
+      return '<div class="inbox-contact" data-uid="'+c.userId+'" onclick="openDMThread(this.dataset.uid)">' +
+        '<div class="inbox-contact-avatar" style="background:'+(c.avatarColor||'#9b3dff')+';">'+av+'</div>'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div class="inbox-contact-name">'+(c.handle||c.name||'User')+'</div>'+
+          '<div class="inbox-contact-preview">'+preview+'</div>'+
+        '</div>'+
+        (unread ? '<div class="inbox-unread-badge">'+unread+'</div>' : '')+
+      '</div>';
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="padding:16px;color:var(--text-muted);font-size:13px;">Could not load messages</div>';
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
