@@ -3964,6 +3964,24 @@ document.addEventListener('keydown', e=>{
       '\nMESSAGE\n' + message
     );
 
+    // Push notification to all staff via worker
+    try {
+      const token = localStorage.getItem('ss_auth_token');
+      await fetch(AUTH_URL + '/sos', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'Authorization': 'Bearer ' + (token||'')},
+        body: JSON.stringify({
+          message,
+          location: room || '',
+          stage: stage || '',
+          gps: gpsCoords ? gpsCoords.lat + ',' + gpsCoords.lng : ''
+        })
+      });
+    } catch(e) {
+      console.warn('SOS push failed:', e);
+    }
+
+    // Also try SMS/email as backup
     try {
       if (/iPhone|Android|iPad/i.test(navigator.userAgent)) {
         const a = document.createElement('a');
@@ -7751,21 +7769,24 @@ function updateDMBadge(count) {
 <!-- ══ PROFILE SETUP OVERLAY ══ -->
 <div class="profile-setup-overlay" id="profileSetupOverlay">
   <div class="profile-setup-box">
-    <div class="auth-logo">☠ SUNKEN SUITE<span>Set Up Your Profile</span></div>
-    <div style="margin-top:20px;">
-      <div class="profile-avatar-preview" id="profileAvatarPreview">?</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="auth-logo" style="margin:0;">☠ SUNKEN SUITE<span>Set Up Your Profile</span></div>
+      <button onclick="closeProfileSetup()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">&#x2715;</button>
+    </div>
+    <div style="margin-top:4px;">
       <!-- Profile pic upload -->
-      <div style="text-align:center;margin-bottom:16px;position:relative;display:inline-block;left:50%;transform:translateX(-50%);">
-        <div class="profile-avatar-preview" id="profileAvatarPreview" style="cursor:pointer;position:relative;"
-          onclick="document.getElementById('profilePicInput').click()">
-          ?
-          <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.4);
-            display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;"
+      <div style="text-align:center;margin-bottom:16px;">
+        <div class="profile-avatar-preview" id="profileAvatarPreview" style="cursor:pointer;position:relative;margin:0 auto;"
+          onclick="document.getElementById('profilePicInput').click()"
+          onmouseover="document.getElementById('profilePicOverlay').style.opacity='1'"
+          onmouseout="document.getElementById('profilePicOverlay').style.opacity='0'">
+          <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.45);
+            display:flex;align-items:center;justify-content:center;transition:opacity .15s;opacity:0;"
             id="profilePicOverlay">📷</div>
         </div>
         <input type="file" id="profilePicInput" accept="image/*" style="display:none;"
           onchange="previewProfilePic(this)">
-        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Tap to upload photo</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Tap photo to upload</div>
       </div>
       <div class="auth-field" style="margin-bottom:14px;">
         <label class="auth-label">Choose your handle</label>
