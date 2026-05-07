@@ -6231,32 +6231,32 @@ async function openDMThread(friendId, handle, color) {
   if (overlay)  overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 
-  // Try cache first for instant display
-  var allUsers = (window._allUsers || window._cachedUsers || []);
-  var found = allUsers.find(function(u){ return u.id === friendId; });
-  if (found) {
-    handle = handle || found.handle || found.name || 'User';
-    color  = color  || found.avatarColor || '#9b3dff';
-  }
+  // Show loading state
+  if (nameEl)   nameEl.textContent = '@...';
+  if (avatarEl) { avatarEl.style.background = color || '#9b3dff'; avatarEl.textContent = '?'; }
 
-  // Set UI immediately with whatever we have
-  if (nameEl)   nameEl.textContent = '@' + (handle || '...');
-  if (avatarEl) { avatarEl.style.background = color || '#9b3dff'; avatarEl.textContent = ((handle||'?')[0]).toUpperCase(); }
-
-  // Fetch fresh user info if we don't have handle yet
-  if (!handle || handle === 'User') {
-    try {
-      const token = localStorage.getItem('ss_auth_token');
-      const res = await fetch(AUTH_URL + '/users/' + friendId, { headers:{'Authorization':'Bearer '+token} });
-      if (res.ok) {
-        const u = await res.json();
-        handle = u.handle || u.name || 'User';
-        color  = u.avatarColor || '#9b3dff';
-        if (nameEl)   nameEl.textContent = '@' + handle;
-        if (avatarEl) { avatarEl.style.background = color; avatarEl.textContent = handle[0].toUpperCase(); }
-        if (u.profilePic && avatarEl) avatarEl.innerHTML = '<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+  // Always fetch fresh user info to ensure correct handle
+  try {
+    const token = localStorage.getItem('ss_auth_token');
+    const res = await fetch(AUTH_URL + '/users/' + friendId, {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (res.ok) {
+      const u = await res.json();
+      handle = u.handle || u.name || 'User';
+      color  = u.avatarColor || '#9b3dff';
+      if (nameEl) nameEl.textContent = '@' + handle;
+      if (avatarEl) {
+        avatarEl.style.background = color;
+        if (u.profilePic) {
+          avatarEl.innerHTML = '<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+        } else {
+          avatarEl.textContent = handle[0].toUpperCase();
+        }
       }
-    } catch(e) {}
+    }
+  } catch(e) {
+    if (nameEl) nameEl.textContent = '@User';
   }
 
   currentDMFriendHandle = handle || 'User';
