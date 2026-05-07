@@ -1804,6 +1804,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .nav-inbox-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:8px;
   background:var(--gold-bright);color:#000;font-size:9px;font-weight:800;
   display:none;align-items:center;justify-content:center;padding:0 3px;}
+
+.pw-field-wrap{position:relative;}
+.pw-field-wrap .auth-input{padding-right:42px;}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;
+  padding:4px;line-height:1;}
+.pw-toggle:hover{color:var(--text-light);}
 </style>
 </head>
 <body>
@@ -6911,6 +6918,18 @@ async function confirmShift(shiftId, btn) {
 /* ════════════════════════════════════════
    PASSWORD RESET
 ════════════════════════════════════════ */
+function togglePwVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
 function showForgotPassword() {
   const email = document.getElementById('loginEmail')?.value.trim() || '';
   const entered = prompt('Enter your email address to reset your password:', email);
@@ -7586,8 +7605,11 @@ function updateDMBadge(count) {
       </div>
       <div class="auth-field">
         <label class="auth-label">Password</label>
-        <input class="auth-input" id="registerPassword" type="password" placeholder="Min 8 characters" autocomplete="new-password"
-          onkeydown="if(event.key==='Enter')submitRegister()">
+        <div class="pw-field-wrap">
+          <input class="auth-input" id="registerPassword" type="password" placeholder="Min 8 characters" autocomplete="new-password"
+            onkeydown="if(event.key==='Enter')submitRegister()">
+          <button type="button" class="pw-toggle" onclick="togglePwVisibility('registerPassword',this)" tabindex="-1">👁</button>
+        </div>
       </div>
       <!-- Agreements -->
       <div style="margin:12px 0;display:flex;flex-direction:column;gap:10px;">
