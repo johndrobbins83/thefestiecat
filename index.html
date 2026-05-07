@@ -1736,16 +1736,15 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 /* ══ FEATURED TODAY CARDS ══ */
 #featuredArtists{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;}
-@media(max-width:600px){#featuredArtists{grid-template-columns:1fr;gap:8px;}}
-.featured-card{background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);overflow:hidden;transition:border-color .15s;}
-.featured-card:hover{border-color:rgba(245,200,66,0.3);}
-.featured-photo-wrap{position:relative;height:160px;overflow:hidden;background:#111;}
-.featured-headliner-badge{position:absolute;top:8px;right:8px;background:rgba(245,200,66,0.9);color:#000;font-size:10px;font-weight:800;padding:3px 8px;text-transform:uppercase;letter-spacing:0.5px;}
-.featured-info{padding:10px 12px;}
-.featured-name{font-size:14px;font-weight:900;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;}
-.featured-genre{font-size:11px;color:var(--text-muted);margin-bottom:6px;}
-.featured-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.featured-time{font-size:11px;color:var(--text-muted);font-family:'Orbitron',sans-serif;}
+@media(max-width:600px){#featuredArtists{grid-template-columns:repeat(3,1fr);gap:6px;}}
+.featured-card{position:relative;aspect-ratio:1/1;overflow:hidden;cursor:pointer;}
+.featured-card:hover .featured-name-overlay{background:rgba(0,0,0,0.7);}
+.featured-card img,.featured-card .featured-initials{width:100%;height:100%;object-fit:cover;display:block;}
+.featured-initials{display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#fff;}
+.featured-name-overlay{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);padding:8px 10px;transition:background .15s;}
+.featured-headliner-badge{position:absolute;top:8px;right:8px;background:rgba(245,200,66,0.9);color:#000;font-size:9px;font-weight:800;padding:2px 6px;text-transform:uppercase;letter-spacing:0.5px;}
+.featured-name{font-size:12px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:0.5px;line-height:1.2;}
+.featured-stage{font-size:10px;color:rgba(255,255,255,0.6);margin-top:1px;}
 </style>
 </head>
 <body>
@@ -2971,23 +2970,17 @@ function renderMySchedWidget() {
     const photo = a.photo || '';
 
     var safeKey = key.replace(/'/g, '');
-    return '<div class="featured-card" onclick="openArtist(\'' + safeKey + '\')" style="cursor:pointer;">' +
-      '<div class="featured-photo-wrap">' +
+    return '<div class="featured-card" onclick="openArtist(\'' + safeKey + '\')">' +
         (photo
-          ? '<img src="' + photo + '" style="width:100%;height:100%;object-fit:cover;">'
-          : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:' + a.color + ';font-size:28px;font-weight:900;color:#fff;">' + a.initials + '</div>'
+          ? '<img src="' + photo + '" alt="' + key + '">'
+          : '<div class="featured-initials" style="background:' + a.color + ';">' + a.initials + '</div>'
         ) +
         (isHL ? '<div class="featured-headliner-badge">⭐ Headliner</div>' : '') +
-      '</div>' +
-      '<div class="featured-info">' +
-        '<div class="featured-name">' + key + '</div>' +
-        '<div class="featured-genre">' + (a.genre||'') + '</div>' +
-        '<div class="featured-meta">' +
-          '<span class="featured-badge ' + sc + '">' + stageLabel + '</span>' +
-          (timeLabel ? '<span class="featured-time">' + timeLabel + '</span>' : '') +
+        '<div class="featured-name-overlay">' +
+          '<div class="featured-name">' + key + '</div>' +
+          '<div class="featured-stage">' + stageLabel + (timeLabel ? ' · ' + timeLabel : '') + '</div>' +
         '</div>' +
-      '</div>' +
-    '</div>';
+      '</div>';
   }).join('');
 
   const el = document.getElementById('featuredArtists');
@@ -5309,16 +5302,22 @@ function buildShiftDayBlocks(shifts, personalBlocks, containerId, isMgmt, roleFi
 
     // Locked shifts
     dayShifts.forEach(s => {
+      const assignedTo = s.assignedUserName ? '👤 '+s.assignedUserName : (s.role && s.role !== 'all' ? '👥 '+( ROLE_LABELS[s.role]||s.role) : '');
+      const confirmedBadge = s.confirmed ? '<span style="color:var(--teal-glow);font-size:10px;font-weight:700;margin-left:6px;">✓ Confirmed</span>' : '<span style="color:var(--gold-bright);font-size:10px;margin-left:6px;">Pending</span>';
       html += `<div class="shift-block locked-shift">
         <div class="shift-block-time">${s.startTime} — ${s.endTime}</div>
-        <div class="shift-block-body">
+        <div class="shift-block-body" style="flex:1;">
           <div class="shift-block-title">${s.title}
-            <span class="shift-lock-badge">🔒 LOCKED · ${ROLE_LABELS[s.role]||s.role}</span>
+            <span class="shift-lock-badge">🔒 LOCKED</span>
           </div>
+          ${assignedTo ? `<div class="shift-block-meta" style="color:var(--text-light);font-weight:600;">${assignedTo}${confirmedBadge}</div>` : ''}
           <div class="shift-block-meta">${s.location?'📍 '+s.location:''}${s.notes?' · '+s.notes:''}</div>
-          <div class="shift-block-meta" style="margin-top:2px;">Set by ${s.createdByName||'Admin'}</div>
         </div>
-        ${isMgmt?`<button class="shift-block-del" onclick="deleteShift('${s.id}','${containerId}')" title="Delete locked shift">✕</button>`:''}
+        ${isMgmt?`
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <button class="shift-block-del" style="background:rgba(155,61,255,0.2);color:#c084fc;border:1px solid rgba(155,61,255,0.3);" onclick="editShift('${s.id}','${containerId}')" title="Edit">✏</button>
+            <button class="shift-block-del" onclick="deleteShift('${s.id}','${containerId}')" title="Delete">✕</button>
+          </div>`:''}
       </div>`;
     });
 
@@ -5445,6 +5444,40 @@ async function submitCreateShift(containerId) {
   } catch(e) {
     if(status){status.textContent='Error: '+e.message;status.style.color='var(--pink-coral)';}
   }
+}
+
+async function editShift(shiftId, containerId) {
+  // Find the shift in cachedShifts
+  const shift = (cachedShifts || []).find(s => s.id === shiftId);
+  if (!shift) { showToast('Shift not found'); return; }
+
+  // Build a simple edit modal using prompt-style inputs
+  const title     = prompt('Shift title:', shift.title || '');
+  if (title === null) return; // cancelled
+  const startTime = prompt('Start time (HH:MM):', shift.startTime || '');
+  if (startTime === null) return;
+  const endTime   = prompt('End time (HH:MM):', shift.endTime || '');
+  if (endTime === null) return;
+  const notes     = prompt('Notes:', shift.notes || '');
+  if (notes === null) return;
+
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL + '/shifts/' + shiftId, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ title, startTime, endTime, notes,
+        location: shift.location, role: shift.role, day: shift.day,
+        assignedUserId: shift.assignedUserId, assignedUserName: shift.assignedUserName })
+    });
+    if (res.ok) {
+      showToast('Shift updated!');
+      renderShiftManager(containerId);
+    } else {
+      const d = await res.json();
+      showToast('Error: ' + (d.error || 'Failed'));
+    }
+  } catch(e) { showToast('Could not connect'); }
 }
 
 async function deleteShift(shiftId, containerId) {
@@ -6671,7 +6704,8 @@ async function loadMyShifts() {
       '</div>';
     }).join('');
   } catch(e) {
-    wrap.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">Error loading shifts.</div>';
+    console.error('loadMyShifts error:', e);
+    wrap.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">Error loading shifts: ' + e.message + '</div>';
   }
 }
 
