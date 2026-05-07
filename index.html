@@ -4364,16 +4364,9 @@ function renderChecklist() {
 //   link:  URL to open when ready:true (optional, leave '' to use navigate())
 // ─────────────────────────────────────────────────────
 const GAMES_DATA = [
-  {icon:'🎵', name:'Rave Trivia',        desc:'80 questions across 4 stages. Rave history, DNB culture, Sunken Suite artists.', players:'1–8 players', color:'rgba(155,61,255,0.25)', ready:true, link:''},
-  {icon:'🎵', name:'DJ Bingo',           desc:'Tap when you hear these tracks at Sunken Suite! First to BINGO wins!',   players:'Any number', color:'rgba(245,200,66,0.2)',   ready:true,  link:''},
-  {icon:'🏴‍☠️', name:'Mutiny Bingo',      desc:'Festival bingo — check off what you see and hear at Sunken Suite!', players:'Any number', color:'rgba(155,61,255,0.2)',   ready:false, link:''},
-  {icon:'🎲', name:'Crew Trivia',       desc:'Random trivia battle. Play against your squad.',                       players:'2–6 players',  color:'rgba(0,212,200,0.2)',    ready:false, link:''},
-  {icon:'📸', name:'Photo Scavenger',   desc:'Find and photograph items around the festival for points.',            players:'Any number', color:'rgba(255,77,141,0.2)',   ready:false, link:''},
-  {icon:'🎯', name:'Set Prediction',    desc:'Guess which tracks artists will drop in their sets.',                  players:'1–4 players',  color:'rgba(255,107,26,0.2)',   ready:false, link:''},
-  {icon:'🃏', name:'Crew Cards',        desc:'Icebreaker card game for meeting new people at the fest.',             players:'2–8 players',  color:'rgba(74,222,128,0.15)',  ready:false, link:''},
-  // ── ADD NEW GAMES BELOW THIS LINE ──
-  {icon:'🪱', name:'Rave Worm',       desc:'Neon snake game. Eat the rave snacks, dodge yourself, survive the worm.',  players:'1 player',     color:'rgba(255,0,255,0.25)',   ready:true,  link:''},
-  // Example: {icon:'🎸', name:'Name That Drop', desc:'Identify the song from a 5-second clip.', players:'1–10 players', color:'rgba(255,77,141,0.2)', ready:false, link:''},
+  {icon:'🎵', name:'Rave Trivia', desc:'80 questions across 4 stages. Rave history, DNB culture, Sunken Suite artists.', players:'1–8 players', color:'rgba(155,61,255,0.25)', ready:true, link:''},
+  {icon:'🎵', name:'DJ Bingo',    desc:'Tap when you hear these tracks at Sunken Suite! First to BINGO wins!', players:'Any number', color:'rgba(245,200,66,0.2)', ready:true, link:''},
+  {icon:'🪱', name:'Rave Worm',   desc:'Neon snake game. Eat the rave snacks, dodge yourself, survive the worm.', players:'1 player', color:'rgba(255,0,255,0.25)', ready:true, link:''},
 ];
 let gamesInitted = false;
 function initGames() {
@@ -8942,25 +8935,7 @@ function backToHub() {
   const backdrop = document.getElementById('moreBackdrop');
   if (!overlay) return;
   const triggers = document.querySelectorAll('.more-trigger');
-  function openMore(t) {
-    if (t && window.innerWidth >= 768) {
-      const r = t.getBoundingClientRect();
-      panel.style.top  = (r.bottom + 8) + 'px';
-      panel.style.left = Math.max(8, r.right - 280) + 'px';
-      panel.style.bottom = '';
-    }
-    overlay.classList.add('open');
-    triggers.forEach(t => t.classList.add('more-active'));
-    document.body.style.overflow = 'hidden';
-  }
-  function closeMore() {
-    overlay.classList.remove('open');
-    triggers.forEach(t => t.classList.remove('more-active'));
-    document.body.style.overflow = '';
-  }
-  triggers.forEach(t => t.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); overlay.classList.contains('open') ? closeMore() : openMore(this); }));
-  backdrop.addEventListener('click', closeMore);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMore(); });
+  // More overlay handled by main toggleMore
 })();
 
 
