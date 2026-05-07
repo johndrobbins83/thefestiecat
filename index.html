@@ -1733,6 +1733,19 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .shift-time-badge{background:rgba(155,61,255,0.2);border:1px solid rgba(155,61,255,0.3);padding:4px 10px;font-size:12px;font-weight:800;color:#c084fc;white-space:nowrap;font-family:'Orbitron',sans-serif;}
 .shift-confirm-btn{margin-left:auto;padding:6px 14px;background:var(--teal-glow);border:none;color:#000;font-weight:800;font-size:11px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;}
 .shift-confirmed-badge{margin-left:auto;font-size:11px;font-weight:700;color:var(--teal-glow);}
+
+/* ══ FEATURED TODAY CARDS ══ */
+#featuredArtists{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;}
+@media(max-width:600px){#featuredArtists{grid-template-columns:1fr;gap:8px;}}
+.featured-card{background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);overflow:hidden;transition:border-color .15s;}
+.featured-card:hover{border-color:rgba(245,200,66,0.3);}
+.featured-photo-wrap{position:relative;height:160px;overflow:hidden;background:#111;}
+.featured-headliner-badge{position:absolute;top:8px;right:8px;background:rgba(245,200,66,0.9);color:#000;font-size:10px;font-weight:800;padding:3px 8px;text-transform:uppercase;letter-spacing:0.5px;}
+.featured-info{padding:10px 12px;}
+.featured-name{font-size:14px;font-weight:900;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;}
+.featured-genre{font-size:11px;color:var(--text-muted);margin-bottom:6px;}
+.featured-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.featured-time{font-size:11px;color:var(--text-muted);font-family:'Orbitron',sans-serif;}
 </style>
 </head>
 <body>
@@ -2435,7 +2448,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="page-header" style="margin-bottom:0;"><div class="page-title">👥 People</div></div>
     <div class="dash-tabs" style="margin-bottom:14px;">
       <button class="dash-tab active" onclick="switchPeopleTab('connect',this)">🤝 Connect</button>
-      <button class="dash-tab" onclick="switchPeopleTab('feed',this)">📡 Feed</button>
+      
       <button class="dash-tab" onclick="switchPeopleTab('messages',this)">💬 Messages<span id="dmBadgeTab" style="display:none;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;padding:1px 5px;margin-left:4px;border-radius:4px;">0</span></button>
     </div>
     <div id="peopleTab-connect">
@@ -2464,10 +2477,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div><!-- /peopleTab-connect -->
 
     <!-- Feed Tab -->
-    <div id="peopleTab-feed" style="display:none;">
-      <div id="peopleFeedInner"></div>
-    </div>
-
     <!-- Messages Tab -->
     <div id="peopleTab-messages" style="display:none;">
       <div class="dm-list" id="dmList"></div>
@@ -2920,30 +2929,71 @@ function renderMySchedWidget() {
 
 /* ── Featured artists ── */
 (function() {
-  const HEADLINERS = ['RONI SIZE','SPOR','J. PHLIP'];
-  const ALL_KEYS = Object.keys(artists);
+  // Pick featured artists based on today's date — changes daily
+  // During festival: picks from that day's lineup. Before: random headliners.
   const today = new Date();
-  const seed = today.getFullYear()*10000+(today.getMonth()+1)*100+today.getDate();
-  function sr(s){let x=s^0xdeadbeef;x=((x>>>16)^x)*0x45d9f3b|0;x=((x>>>16)^x)*0x45d9f3b|0;return((x>>>16)^x)>>>0/0xffffffff;}
-  const picked=[]; picked.push(HEADLINERS[Math.floor(sr(seed)*HEADLINERS.length)]);
-  const pool=ALL_KEYS.filter(k=>!picked.includes(k)); let s2=seed*31+7;
-  while(picked.length<3&&pool.length>0){const i=Math.floor(sr(s2)*pool.length);picked.push(pool.splice(i,1)[0]);s2=s2*31+13;}
-  const stageClass={'DNB Stage':'stage-dnb','Oasis Stage':'stage-oasis'};
-  const hlSet=new Set(HEADLINERS);
-  const html=picked.map(key=>{const a=artists[key];if(!a)return'';
-    const sc=stageClass[a.stage]||'stage-dnb';const isHL=hlSet.has(key);
-    const dl={Fri:'Fri 7/17',Sat:'Sat 7/18',Sun:'Sun 7/19',TBA:'TBA'}[a.day]||a.day;
-    const am=a.color.match(/#[0-9a-fA-F]{6}/);const acc=am?am[0]+'12':'rgba(155,61,255,0.07)';
-    return `<div class="featured-card" onclick="openArtist('${esc(key)}')" style="--card-accent:${acc};">`+
-      `<div class="featured-avatar" style="background:${a.color};">${a.initials}</div>`+
-      `<div class="featured-body"><div class="featured-name">${key}</div><div class="featured-genre">${a.genre}</div>`+
-      `<div class="featured-meta"><span class="featured-badge ${sc}">${a.stage}</span>`+
-      `${isHL?'<span class="featured-badge headliner">⭐ Headliner</span>':''}`+
-      `<span class="featured-badge" style="background:rgba(122,184,224,0.1);color:var(--text-muted);">${dl}</span></div></div>`+
-      `<span class="featured-arrow">›</span></div>`;
+  const month = today.getMonth() + 1;
+  const day   = today.getDate();
+  const seed  = today.getFullYear()*10000 + month*100 + day;
+
+  function seededRand(s) {
+    let x = (s ^ 0xdeadbeef) >>> 0;
+    x = (Math.imul(x ^ (x >>> 16), 0x45d9f3b)) >>> 0;
+    x = (Math.imul(x ^ (x >>> 16), 0x45d9f3b)) >>> 0;
+    return (x ^ (x >>> 16)) / 0xffffffff;
+  }
+
+  // Determine which day of the festival we're on
+  const festDay = (month===7 && day===17) ? 'Fri' : (month===7 && day===18) ? 'Sat' : (month===7 && day===19) ? 'Sun' : null;
+
+  // Build pool — prioritize headliners and today's performers
+  const allKeys = Object.keys(artists);
+  const headliners = allKeys.filter(k => artists[k].headliner);
+  const todayArtists = festDay ? allKeys.filter(k => artists[k].day === festDay) : headliners;
+  const pool = todayArtists.length >= 3 ? todayArtists : headliners.concat(allKeys.filter(k => !headliners.includes(k)));
+
+  // Pick 3 unique artists seeded by date
+  const picked = [];
+  let s = seed;
+  while (picked.length < 3 && picked.length < pool.length) {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    const idx = s % pool.length;
+    if (!picked.includes(pool[idx])) picked.push(pool[idx]);
+  }
+
+  const html = picked.map(function(key) {
+    const a = artists[key];
+    if (!a) return '';
+    const sc = a.stage === 'DNB Stage' ? 'dnb' : 'oasis';
+    const stageLabel = a.stage === 'DNB Stage' ? 'DNB' : 'Oasis';
+    const timeLabel = a.time ? a.time + (a.day ? ' · ' + a.day : '') : (a.day || '');
+    const isHL = a.headliner;
+    const photo = a.photo || '';
+
+    var safeKey = key.replace(/'/g, '');
+    return '<div class="featured-card" onclick="openArtist(\'' + safeKey + '\')" style="cursor:pointer;">' +
+      '<div class="featured-photo-wrap">' +
+        (photo
+          ? '<img src="' + photo + '" style="width:100%;height:100%;object-fit:cover;">'
+          : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:' + a.color + ';font-size:28px;font-weight:900;color:#fff;">' + a.initials + '</div>'
+        ) +
+        (isHL ? '<div class="featured-headliner-badge">⭐ Headliner</div>' : '') +
+      '</div>' +
+      '<div class="featured-info">' +
+        '<div class="featured-name">' + key + '</div>' +
+        '<div class="featured-genre">' + (a.genre||'') + '</div>' +
+        '<div class="featured-meta">' +
+          '<span class="featured-badge ' + sc + '">' + stageLabel + '</span>' +
+          (timeLabel ? '<span class="featured-time">' + timeLabel + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>';
   }).join('');
-  const el=document.getElementById('featuredArtists');if(el)el.innerHTML=html;
+
+  const el = document.getElementById('featuredArtists');
+  if (el) el.innerHTML = html;
 })();
+
 
 /* ── Direction URLs ── */
 (function() {
@@ -4112,6 +4162,7 @@ function switchAdminTab(tab, btn) {
   if (tab === 'schedule') renderAdminSchedule();
   if (tab === 'tasks')   renderTaskManager('sharedTaskManager');
   if (tab === 'shifts')  renderShiftManager('sharedShiftManager');
+  if (tab === 'users')   adminLoadUsers();
 }
 
 // ── Artist grid ────────────────────────────────────────────
@@ -5003,23 +5054,45 @@ function setAssignMode(mode, containerId) {
 async function searchUsersForAssign(containerId, query) {
   const sugg = document.getElementById(containerId + '-userSuggestions');
   const idEl = document.getElementById(containerId + '-assignUserId');
+  const nameEl = document.getElementById(containerId + '-assignUserName') || document.getElementById(containerId + '-assignDisplayName') || document.getElementById(containerId.replace('-shift','') + '-shiftAssignName');
   if (!sugg) return;
   if (!query || query.length < 2) { sugg.style.display='none'; return; }
-  // Filter from any cached user data we have
   const q = query.toLowerCase();
-  const matches = (window._cachedUsers||[]).filter(u =>
-    u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
-  );
+  // Search from cached users or _allUsers (admin pre-cache)
+  const pool = (window._allUsers || window._cachedUsers || []);
+  const matches = pool.filter(function(u) {
+    return (u.name||'').toLowerCase().includes(q) ||
+           (u.email||'').toLowerCase().includes(q) ||
+           (u.handle||'').toLowerCase().includes(q);
+  }).slice(0, 8);
   if (!matches.length) { sugg.style.display='none'; return; }
   sugg.style.display = 'block';
-  sugg.innerHTML = matches.map(u => `
-    <div onclick="selectUserForAssign('${containerId}','${u.id}','${esc(u.name)}')"
-      style="padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);"
-      onmouseover="this.style.background='rgba(255,255,255,0.05)'"
-      onmouseout="this.style.background=''">
-      <strong>${u.name}</strong> <span style="color:var(--text-muted);font-size:11px;">${u.email}</span>
-      <span style="float:right;" class="role-pill ${u.role}">${u.role}</span>
-    </div>`).join('');
+  sugg.innerHTML = matches.map(function(u) {
+    var roleLabel = u.role==='admin'?'Admin':u.staffRole||u.role||'Festie';
+    var safeId = u.id;
+    var safeName = esc(u.name||u.handle||u.email||'');
+    var safeCid = containerId;
+    return '<div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);" '+
+      'onmousedown="selectUserForAssign(\''+safeCid+'\',\''+safeId+'\',\''+safeName+'\');" '+
+      'onmouseover="this.style.background=\'rgba(245,200,66,0.1)\'" onmouseout="this.style.background=\'\'">'+
+      '<span style="font-weight:700;color:var(--text-light);">'+(u.name||u.handle||'—')+'</span> '+
+      '<span style="font-size:11px;color:var(--text-muted);">'+u.email+'</span> '+
+      '<span style="font-size:10px;color:var(--teal-glow);margin-left:4px;">['+roleLabel+']</span>'+
+    '</div>';
+  }).join('');
+}
+
+function selectUserForAssign(containerId, userId, userName) {
+  const sugg = document.getElementById(containerId + '-userSuggestions');
+  const idEl = document.getElementById(containerId + '-assignUserId');
+  const nameInput = document.getElementById(containerId + '-assignUserName') || 
+                    document.getElementById(containerId.replace('-shift','') + '-shiftAssignName');
+  const displayEl = document.getElementById(containerId + '-assignDisplayName') ||
+                    document.getElementById(containerId.replace('-shift','') + '-shiftAssignDisplayName');
+  if (idEl) idEl.value = userId;
+  if (displayEl) displayEl.value = userName;
+  if (nameInput) nameInput.value = userName;
+  if (sugg) sugg.style.display = 'none';
 }
 
 function selectUserForAssign(containerId, userId, userName) {
@@ -5194,7 +5267,7 @@ async function renderShiftManager(containerId) {
     <div class="dash-section">
       <div class="dash-section-header">
         <div class="dash-section-title">🕐 Shift Schedule</div>
-        ${isMgmt ? `<button class="dash-btn primary" onclick="showCreateShift('${containerId}')">+ Lock Shift</button>` : ''}
+        ${isMgmt ? `<button class="dash-btn primary" onclick="showCreateShift('${containerId}')">+ Assign Shift</button>` : ''}
       </div>
       <div class="dash-section-body" style="padding:0;">
         ${isMgmt ? `
@@ -5288,7 +5361,7 @@ function buildCreateShiftForm(containerId) {
   const roleOptions = ROLES.map(r => '<option value="'+r+'">'+ROLE_LABELS[r]+'</option>').join('');
   const dayOptions = DAYS.map(d => '<option value="'+d+'">'+DAY_LABELS[d]+'</option>').join('');
   return '<div class="dash-section" style="border-color:rgba(245,200,66,0.3);">' +
-    '<div class="dash-section-header"><div class="dash-section-title">+ Create Shift</div>' +
+    '<div class="dash-section-header"><div class="dash-section-title">Assign Shift to Staff</div>' +
     '<button class="dash-btn" onclick="hideShiftForm(\''+containerId+'\')">✕ Cancel</button></div>' +
     '<div class="dash-section-body"><div class="create-task-form">' +
     // Title + Day row
@@ -6715,7 +6788,7 @@ function closeRaveworm() {
    PEOPLE PAGE SUB-TABS
 ════════════════════════════════════════ */
 function switchPeopleTab(tab, btn) {
-  ['connect','feed','messages'].forEach(t => {
+  ['connect','messages'].forEach(t => {
     const el = document.getElementById('peopleTab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
