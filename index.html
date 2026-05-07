@@ -2238,7 +2238,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="dash-section-body">
           <div id="adminUsersList">
             <div style="text-align:center;padding:32px;color:var(--text-muted);">
-              Loading users...
+              Click Refresh to load users
             </div>
           </div>
         </div>
@@ -2420,11 +2420,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div id="friendsSection" style="margin-bottom:20px;">
       <div class="section-header"><div class="section-title">🤝 My Crew</div></div>
       <div id="friendsList"></div>
-    </div>
-    <!-- My Staff - admin only -->
-    <div id="myStaffSection" class="nav-admin-only" style="display:none;margin-bottom:20px;">
-      <div class="section-header"><div class="section-title" style="color:var(--gold-bright);">⚙ My Staff</div></div>
-      <div id="staffList"><div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px);">Loading...</div></div>
     </div>
     <!-- Search -->
     <div class="section-title" style="margin-bottom:10px;">🔍 Find Festies</div>
@@ -4089,7 +4084,6 @@ function switchAdminTab(tab, btn) {
   if (tab === 'schedule') renderAdminSchedule();
   if (tab === 'tasks')   renderTaskManager('sharedTaskManager');
   if (tab === 'shifts')  renderShiftManager('sharedShiftManager');
-  if (tab === 'users')   adminLoadUsers();
 }
 
 // ── Artist grid ────────────────────────────────────────────
@@ -5821,8 +5815,7 @@ async function loadFriendRequests() {
   try {
     const res  = await fetch(AUTH_URL+'/follow/requests', { headers:{'Authorization':'Bearer '+token} });
     const data = await res.json();
-    const dismissed = JSON.parse(localStorage.getItem('ss_accepted_requests')||'[]');
-    const requests = (data.requests||[]).filter(function(u){ return !dismissed.includes(u.id); });
+    const requests = data.requests||[];
     const section  = document.getElementById('friendRequestsSection');
     const listEl   = document.getElementById('friendRequestsList');
     if (!section||!listEl) return;
@@ -5853,67 +5846,42 @@ async function acceptFollowRequest(userId, btn) {
       method:'POST', headers:{'Authorization':'Bearer '+token}
     });
     if (res.ok) {
-      // Store locally so stale KV doesn't show it again
-      const dismissed = JSON.parse(localStorage.getItem('ss_accepted_requests')||'[]');
-      if (!dismissed.includes(userId)) dismissed.push(userId);
-      localStorage.setItem('ss_accepted_requests', JSON.stringify(dismissed));
       btn.closest('.request-card').remove();
-      showToast('Connected!');
+      showToast('✓ You\'re now connected!');
       loadFriends();
-      loadFriendRequests();
     }
   } catch { showToast('Could not accept'); }
 }
 
 async function loadFriends() {
   const token = localStorage.getItem('ss_auth_token');
-  const listEl = document.getElementById('friendsList');
-  const staffSection = document.getElementById('myStaffSection');
-  const staffListEl  = document.getElementById('myStaffList');
   try {
-    const res = await fetch(AUTH_URL+'/friends', { headers:{'Authorization':'Bearer '+token} });
+    const res  = await fetch(AUTH_URL+'/friends', { headers:{'Authorization':'Bearer '+token} });
     const data = await res.json();
-    const friends = data.friends || [];
+    const listEl = document.getElementById('friendsList');
+    if (!listEl) return;
+    const friends = data.friends||[];
+    if (!friends.length) {
+      listEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">No crew yet — search for Festies above to connect!</div>';
+      return;
+    }
     window._cachedUsers = friends;
-
-    const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'employee');
-    const crewFriends  = friends.filter(function(f){ return f.role === 'festie' || !f.role; });
-    const staffFriends = friends.filter(function(f){ return f.role === 'employee' || f.role === 'admin'; });
-
-    function personCard(f) {
-      var av = f.profilePic ? '<img src="'+f.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">' : (f.handle?f.handle[0].toUpperCase():'?');
-      var rl = f.role==='admin'?'Admin':f.role==='employee'?'Staff':'Festie';
-      var rc = f.role==='admin'?'var(--gold-bright)':f.role==='employee'?'var(--teal-glow)':'#c084fc';
+    listEl.innerHTML = friends.map(function(f) {
+      var avatarHtml = f.profilePic
+        ? '<img src="'+f.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">'
+        : (f.handle?f.handle[0].toUpperCase():'?');
+      var roleLabel = f.role==='admin'?'Admin':f.role==='employee'?'Staff':'Festie';
+      var roleColor = f.role==='admin'?'var(--gold-bright)':f.role==='employee'?'var(--teal-glow)':'#c084fc';
       return '<div class="person-card" onclick="navigateToProfile(\''+f.id+'\')">'+
-        '<div class="person-avatar" style="background:'+(f.avatarColor||'#9b3dff')+';overflow:hidden;">'+av+'</div>'+
-        '<div class="person-info"><div class="person-handle">@'+(f.handle||'unknown')+' <span style="font-size:10px;font-weight:700;color:'+rc+';">['+rl+']</span></div>'+
-        '<div class="person-bio">'+(f.bio||'No bio yet')+'</div></div>'+
-        '<span class="person-follow-btn friends">&#x1F4AC; DM</span></div>';
-    }
-
-    // My Staff section (admin/employee only)
-    if (staffSection) {
-      if (isAdmin && staffFriends.length) {
-        staffSection.style.display = 'block';
-        if (staffListEl) staffListEl.innerHTML = staffFriends.map(personCard).join('');
-      } else {
-        staffSection.style.display = 'none';
-      }
-    }
-
-    // My Crew — admins see only festies, others see everyone
-    if (listEl) {
-      const display = isAdmin ? crewFriends : friends;
-      if (!display.length) {
-        listEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">No crew yet — search for Festies above to connect!</div>';
-      } else {
-        listEl.innerHTML = display.map(personCard).join('');
-      }
-    }
-  } catch(e) {
-    console.warn('loadFriends error:', e);
-    if (listEl) listEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">Could not load crew.</div>';
-  }
+        '<div class="person-avatar" style="background:'+(f.avatarColor||'#9b3dff')+';overflow:hidden;">'+avatarHtml+'</div>'+
+        '<div class="person-info">'+
+          '<div class="person-handle">@'+(f.handle||'unknown')+' <span style="font-size:10px;font-weight:700;color:'+roleColor+';">['+roleLabel+']</span></div>'+
+          '<div class="person-bio">'+(f.bio||'No bio yet')+'</div>'+
+        '</div>'+
+        '<span class="person-follow-btn friends">&#x1F4AC; DM</span>'+
+      '</div>';
+    }).join('');
+  } catch {}
 }
 
 let searchPeopleTimer = null;
