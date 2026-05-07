@@ -4342,41 +4342,46 @@ async function adminLoadUsers() {
 
 function buildUserTableHTML(users) {
   if (!users.length) return '<div style="padding:16px;color:var(--text-muted);">No users found</div>';
-  return `<div style="overflow-x:auto;"><table class="user-table">
-    <thead><tr>
-      <th>Name</th><th>Email</th><th>App Role</th><th>Staff Role</th><th>Actions</th>
-    </tr></thead>
-    <tbody>${users.map(u => `<tr>
-      <td style="font-weight:700;">${u.name || '—'}</td>
-      <td style="color:var(--text-muted);font-size:12px;">${u.email}</td>
-      <td>
-        <select onchange="adminSetRole('${u.id}',this.value)"
-          style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);
-          color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;outline:none;">
-          <option ${u.role==='festie'?'selected':''} value="festie">Festie</option>
-          <option ${u.role==='employee'?'selected':''} value="employee">Employee</option>
-          <option ${u.role==='admin'?'selected':''} value="admin">Admin</option>
-        </select>
-      </td>
-      <td>
-        ${u.role === 'employee' || u.role === 'admin' ? `
-        <select onchange="adminSetStaffRole('${u.id}',this.value)"
-          style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);
-          color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;outline:none;">
-          <option value="">— None —</option>
-          <option ${u.staffRole==='security'?'selected':''} value="security">Security</option>
-          <option ${u.staffRole==='stage-crew'?'selected':''} value="stage-crew">Stage Crew</option>
-          <option ${u.staffRole==='ticketing'?'selected':''} value="ticketing">Ticketing/Front</option>
-          <option ${u.staffRole==='engineers'?'selected':''} value="engineers">Engineers</option>
-          <option ${u.staffRole==='management'?'selected':''} value="management">Management</option>
-        </select>` : '<span style="color:rgba(122,184,224,0.3);font-size:12px;">N/A</span>'}
-      </td>
-      <td>
-        <button class="dash-btn danger" onclick="adminDeleteUser('${u.id}','${esc(u.name||u.email)}')"
-          style="padding:4px 10px;font-size:11px;">✕ Remove</button>
-      </td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
+
+  function roleSelectHTML(u) {
+    // Admins don't get a role dropdown - they are admin
+    if (u.role === 'admin') {
+      return '<span style="color:var(--gold-bright);font-weight:700;font-size:12px;">ADMIN</span>';
+    }
+    return '<select onchange="adminSetRole(\''+u.id+'\',this.value)" style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
+      '<option '+(u.role==='festie'?'selected':'')+' value="festie">Festie</option>' +
+      '<option '+(u.role==='employee'?'selected':'')+' value="employee">Employee</option>' +
+      '</select>';
+  }
+
+  function staffRoleHTML(u) {
+    // Only employees get staff role dropdown
+    if (u.role !== 'employee') return '<span style="color:rgba(122,184,224,0.3);font-size:12px;">N/A</span>';
+    return '<select onchange="adminSetStaffRole(\''+u.id+'\',this.value)" style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
+      '<option value="">— None —</option>' +
+      '<option '+(u.staffRole==='security'?'selected':'')+' value="security">Security</option>' +
+      '<option '+(u.staffRole==='stage-crew'?'selected':'')+' value="stage-crew">Stage Crew</option>' +
+      '<option '+(u.staffRole==='ticketing'?'selected':'')+' value="ticketing">Ticketing / Front of House</option>' +
+      '<option '+(u.staffRole==='engineers'?'selected':'')+' value="engineers">Engineers / Tech</option>' +
+      '<option '+(u.staffRole==='management'?'selected':'')+' value="management">&#x2605; Management</option>' +
+      '</select>' +
+      (u.staffRole === 'management' ? '<div style="font-size:10px;color:var(--gold-bright);margin-top:3px;">Can assign shifts &amp; tasks</div>' : '');
+  }
+
+  var rows = users.map(function(u) {
+    var roleColor = u.role==='admin'?'var(--gold-bright)':u.role==='employee'?'var(--teal-glow)':'#c084fc';
+    return '<tr>' +
+      '<td style="font-weight:700;">'+(u.name||'—')+'</td>' +
+      '<td style="color:var(--text-muted);font-size:12px;">'+(u.email||'—')+'</td>' +
+      '<td>'+roleSelectHTML(u)+'</td>' +
+      '<td>'+staffRoleHTML(u)+'</td>' +
+      '<td><button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:4px 10px;font-size:11px;">&#x2715; Remove</button></td>' +
+      '</tr>';
+  }).join('');
+
+  return '<div style="overflow-x:auto;"><table class="user-table"><thead><tr>' +
+    '<th>Name</th><th>Email</th><th>App Role</th><th>Staff Role</th><th>Actions</th>' +
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
 async function adminSetStaffRole(userId, staffRole) {
