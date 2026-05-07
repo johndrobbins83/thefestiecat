@@ -6223,26 +6223,49 @@ function updateDMBadge(count) {
   });
 }
 
-function openDMThread(friendId, handle, color) {
-  currentDMFriendId     = friendId;
-  // Look up user info if not provided
-  if (!handle) {
-    var allUsers = (window._allUsers || window._cachedUsers || []);
-    var found = allUsers.find(function(u){ return u.id === friendId; });
-    if (found) { handle = found.handle || found.name || 'User'; color = found.avatarColor || '#9b3dff'; }
-  }
-  currentDMFriendHandle = handle || 'User';
+async function openDMThread(friendId, handle, color) {
+  currentDMFriendId = friendId;
   const overlay  = document.getElementById('dmThreadOverlay');
   const nameEl   = document.getElementById('dmThreadName');
   const avatarEl = document.getElementById('dmThreadAvatar');
   if (overlay)  overlay.classList.add('open');
-  if (nameEl)   nameEl.textContent  = '@' + (handle || 'User');
-  if (avatarEl) { avatarEl.style.background = color || '#9b3dff'; avatarEl.textContent = ((handle||'?')[0]).toUpperCase(); }
   document.body.style.overflow = 'hidden';
+
+  // Try cache first for instant display
+  var allUsers = (window._allUsers || window._cachedUsers || []);
+  var found = allUsers.find(function(u){ return u.id === friendId; });
+  if (found) {
+    handle = handle || found.handle || found.name || 'User';
+    color  = color  || found.avatarColor || '#9b3dff';
+  }
+
+  // Set UI immediately with whatever we have
+  if (nameEl)   nameEl.textContent = '@' + (handle || '...');
+  if (avatarEl) { avatarEl.style.background = color || '#9b3dff'; avatarEl.textContent = ((handle||'?')[0]).toUpperCase(); }
+
+  // Fetch fresh user info if we don't have handle yet
+  if (!handle || handle === 'User') {
+    try {
+      const token = localStorage.getItem('ss_auth_token');
+      const res = await fetch(AUTH_URL + '/users/' + friendId, { headers:{'Authorization':'Bearer '+token} });
+      if (res.ok) {
+        const u = await res.json();
+        handle = u.handle || u.name || 'User';
+        color  = u.avatarColor || '#9b3dff';
+        if (nameEl)   nameEl.textContent = '@' + handle;
+        if (avatarEl) { avatarEl.style.background = color; avatarEl.textContent = handle[0].toUpperCase(); }
+        if (u.profilePic && avatarEl) avatarEl.innerHTML = '<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+      }
+    } catch(e) {}
+  }
+
+  currentDMFriendHandle = handle || 'User';
   loadDMThread(friendId);
+  startThreadPolling();
 }
 
 function closeDMThread() {
+  stopThreadPolling();
   const overlay = document.getElementById('dmThreadOverlay');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
@@ -6256,8 +6279,14 @@ async function loadDMThread(friendId) {
   const token = localStorage.getItem('ss_auth_token');
   try {
     const res  = await fetch(AUTH_URL+'/dm/'+friendId, { headers:{'Authorization':'Bearer '+token} });
+    if (!res.ok) { msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>'; return; }
     const data = await res.json();
-    renderDMMessages(data.messages||[]);
+    const messages = data.messages || [];
+    renderDMMessages(messages);
+    // Mark as read
+    fetch(AUTH_URL+'/dm/'+friendId+'/read', { method:'POST', headers:{'Authorization':'Bearer '+token} }).catch(()=>{});
+    // Update unread badge
+    pollDMUnread();
   } catch {
     msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>';
   }
@@ -6297,18 +6326,28 @@ async function sendDM() {
   } catch { showToast('Could not send message'); }
 }
 
+let dmThreadPollTimer = null;
+
 function startDMPolling() {
   if (dmPollTimer) clearInterval(dmPollTimer);
-  pollDMUnread(); // immediate
+  pollDMUnread();
   dmPollTimer = setInterval(function() {
-    // Always refresh open thread
-    if (currentDMFriendId) loadDMThread(currentDMFriendId);
-    // Always check unread count for badge
     pollDMUnread();
-    // Refresh list if messages tab is open
     const msgTab = document.getElementById('peopleTab-messages');
     if (msgTab && msgTab.style.display !== 'none') loadDMList();
-  }, 5000);
+  }, 8000);
+}
+
+function startThreadPolling() {
+  stopThreadPolling();
+  if (!currentDMFriendId) return;
+  dmThreadPollTimer = setInterval(function() {
+    if (currentDMFriendId) loadDMThread(currentDMFriendId);
+  }, 3000);
+}
+
+function stopThreadPolling() {
+  if (dmThreadPollTimer) { clearInterval(dmThreadPollTimer); dmThreadPollTimer = null; }
 }
 
 async function pollDMUnread() {
