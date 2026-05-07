@@ -2370,6 +2370,19 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </div>
       </div>
 
+      <!-- Email List Section -->
+      <div class="dash-section" style="margin-top:16px;">
+        <div class="dash-section-header">
+          <div class="dash-section-title">📧 Email List</div>
+          <button class="dash-btn primary" onclick="downloadEmailListPDF()">⬇ Download PDF</button>
+        </div>
+        <div class="dash-section-body">
+          <div id="emailListPreview" style="color:var(--text-muted);font-size:13px;">
+            <button class="dash-btn" onclick="loadEmailListPreview()">Load Email List</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Send Alert Section -->
       <div class="dash-section" style="border-color:rgba(255,77,141,0.3);">
         <div class="dash-section-header" style="border-color:rgba(255,77,141,0.15);">
@@ -4081,7 +4094,7 @@ function showAuth(mode='login') {
   if (regEl)   regEl.style.display      = mode==='register' ? 'block' : 'none';
   document.body.style.overflow = 'hidden';
   setTimeout(()=>{
-    const el = document.getElementById(mode==='login' ? 'loginEmail' : 'registerName');
+    const el = document.getElementById(mode==='login' ? 'loginEmail' : 'registerHandle');
     if (el) el.focus();
   }, 100);
 }
@@ -4120,14 +4133,17 @@ async function submitLogin() {
 
 // ── Register ───────────────────────────────────────────────
 async function submitRegister() {
-  const name     = document.getElementById('registerName').value.trim();
+  const handle   = (document.getElementById('registerHandle')?.value||'').trim();
   const email    = document.getElementById('registerEmail').value.trim();
   const password = document.getElementById('registerPassword').value;
+  const notifConsent = document.getElementById('registerNotifConsent')?.checked || false;
+  const emailList    = document.getElementById('registerEmailList')?.checked || false;
   const errEl    = document.getElementById('registerError');
   const btn      = document.getElementById('registerBtn');
 
   errEl.classList.remove('show');
-  if (!name || !email || !password) { showAuthError(errEl, 'Please fill in all fields.'); return; }
+  if (!handle || handle.length < 3) { showAuthError(errEl, 'Handle must be at least 3 characters.'); return; }
+  if (!email || !password) { showAuthError(errEl, 'Please fill in all fields.'); return; }
   if (password.length < 8) { showAuthError(errEl, 'Password must be at least 8 characters.'); return; }
 
   btn.disabled = true; btn.textContent = 'Creating account…';
@@ -4135,7 +4151,7 @@ async function submitRegister() {
     const res  = await fetch(`${AUTH_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ name: handle, handle, email, password, notifConsent, emailList })
     });
     const data = await res.json();
     if (!res.ok) { showAuthError(errEl, data.error || 'Registration failed.'); return; }
@@ -7147,6 +7163,128 @@ async function loadDMList() {
   }
 }
 
+/* ════════════════════════════════════════
+   EMAIL LIST
+════════════════════════════════════════ */
+async function loadEmailListPreview() {
+  const el = document.getElementById('emailListPreview');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-muted);">Loading...</div>';
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL + '/admin/emaillist', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    const d = await res.json();
+    const entries = d.entries || [];
+    if (!entries.length) {
+      el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No signups yet.</div>';
+      return;
+    }
+    el.innerHTML =
+      '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">' + entries.length + ' subscriber' + (entries.length !== 1 ? 's' : '') + '</div>' +
+      '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+      '<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1);">' +
+        '<th style="text-align:left;padding:6px 8px;color:var(--text-muted);">Handle</th>' +
+        '<th style="text-align:left;padding:6px 8px;color:var(--text-muted);">Email</th>' +
+        '<th style="text-align:left;padding:6px 8px;color:var(--text-muted);">Joined</th>' +
+      '</tr></thead><tbody>' +
+      entries.map(function(e) {
+        return '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">' +
+          '<td style="padding:6px 8px;color:var(--text-light);">@' + escapeHTML(e.handle||'—') + '</td>' +
+          '<td style="padding:6px 8px;color:var(--text-muted);">' + escapeHTML(e.email) + '</td>' +
+          '<td style="padding:6px 8px;color:var(--text-muted);">' + (e.addedAt ? new Date(e.addedAt).toLocaleDateString() : '—') + '</td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table></div>';
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--pink-coral);">Error loading list</div>';
+  }
+}
+
+async function downloadEmailListPDF() {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL + '/admin/emaillist', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    const d = await res.json();
+    const entries = d.entries || [];
+
+    // Build PDF using jsPDF via CDN
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onload = function() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const today = new Date().toLocaleDateString();
+
+      // Header
+      doc.setFillColor(10, 10, 10);
+      doc.rect(0, 0, 210, 297, 'F');
+      doc.setTextColor(245, 200, 66);
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SUNKEN SUITE 2026', 105, 20, { align: 'center' });
+      doc.setFontSize(12);
+      doc.setTextColor(180, 180, 180);
+      doc.text('THE MUTINY — Email List', 105, 28, { align: 'center' });
+      doc.setFontSize(10);
+      doc.text('Generated: ' + today + '  |  Total subscribers: ' + entries.length, 105, 36, { align: 'center' });
+
+      // Divider
+      doc.setDrawColor(245, 200, 66);
+      doc.setLineWidth(0.5);
+      doc.line(14, 40, 196, 40);
+
+      // Column headers
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(245, 200, 66);
+      doc.text('#', 14, 48);
+      doc.text('Handle', 24, 48);
+      doc.text('Email', 80, 48);
+      doc.text('Date Joined', 155, 48);
+      doc.line(14, 50, 196, 50);
+
+      // Rows
+      doc.setFont('helvetica', 'normal');
+      var y = 57;
+      entries.forEach(function(e, i) {
+        if (y > 275) {
+          doc.addPage();
+          doc.setFillColor(10, 10, 10);
+          doc.rect(0, 0, 210, 297, 'F');
+          y = 20;
+        }
+        // Alternate row background
+        if (i % 2 === 0) {
+          doc.setFillColor(20, 20, 20);
+          doc.rect(14, y - 4, 182, 7, 'F');
+        }
+        doc.setTextColor(200, 200, 200);
+        doc.text(String(i + 1), 14, y);
+        doc.setTextColor(255, 255, 255);
+        doc.text('@' + (e.handle || '—').slice(0, 20), 24, y);
+        doc.setTextColor(200, 200, 200);
+        doc.text((e.email || '').slice(0, 40), 80, y);
+        doc.text(e.addedAt ? new Date(e.addedAt).toLocaleDateString() : '—', 155, y);
+        y += 8;
+      });
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text('Sunken Suite 2026 · The Mutiny · Confidential', 105, 290, { align: 'center' });
+
+      doc.save('mutiny-email-list-' + today.replace(/\//g,'-') + '.pdf');
+    };
+    document.head.appendChild(script);
+  } catch(e) {
+    showToast('Error generating PDF');
+  }
+}
+
 /* ════════════════════════════════════════════════════════════
    RAVEWORM GAME
 ════════════════════════════════════════════════════════════ */
@@ -7434,8 +7572,13 @@ function updateDMBadge(count) {
       <div class="auth-sub">Create your free Festie account</div>
       <div class="auth-error" id="registerError"></div>
       <div class="auth-field">
-        <label class="auth-label">Your Name</label>
-        <input class="auth-input" id="registerName" type="text" placeholder="Pirate name or real name" autocomplete="name">
+        <label class="auth-label">Choose Your Handle <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(your @username — no spaces)</span></label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;">@</span>
+          <input class="auth-input" id="registerHandle" type="text" placeholder="YourHandle" autocomplete="username"
+            style="padding-left:26px;" maxlength="20"
+            oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'')">
+        </div>
       </div>
       <div class="auth-field">
         <label class="auth-label">Email</label>
@@ -7445,6 +7588,17 @@ function updateDMBadge(count) {
         <label class="auth-label">Password</label>
         <input class="auth-input" id="registerPassword" type="password" placeholder="Min 8 characters" autocomplete="new-password"
           onkeydown="if(event.key==='Enter')submitRegister()">
+      </div>
+      <!-- Agreements -->
+      <div style="margin:12px 0;display:flex;flex-direction:column;gap:10px;">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.4;">
+          <input type="checkbox" id="registerNotifConsent" style="margin-top:2px;accent-color:var(--gold-bright);flex-shrink:0;">
+          I agree to receive event notifications and updates from Sunken Suite / The Mutiny
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.4;">
+          <input type="checkbox" id="registerEmailList" style="margin-top:2px;accent-color:var(--gold-bright);flex-shrink:0;">
+          Add me to the Mutiny email list for future events, announcements &amp; exclusive content
+        </label>
       </div>
       <button class="auth-btn" id="registerBtn" onclick="submitRegister()">Create Account</button>
       <div class="auth-divider"></div>
