@@ -1470,12 +1470,15 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 /* Profile setup overlay */
 .profile-setup-overlay{
-  position:fixed;inset:0;z-index:60000;background:#000;
-  display:none;align-items:center;justify-content:center;padding:24px;
+  position:fixed;inset:0;z-index:60000;background:rgba(0,0,0,0.95);
+  display:none;align-items:flex-start;justify-content:center;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px 16px 80px;
 }
 .profile-setup-overlay.open{display:flex;}
-.profile-setup-box{width:100%;max-width:400px;background:#0a0a0a;
-  border:1px solid rgba(245,200,66,0.3);padding:32px 28px;}
+.profile-setup-box{width:100%;max-width:480px;background:#0a0a0a;
+  border:1px solid rgba(245,200,66,0.3);padding:24px 20px;margin:auto;}
+@media(min-width:768px){.profile-setup-box{max-width:560px;padding:32px;}}
 .avatar-color-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
 .avatar-color-swatch{width:32px;height:32px;cursor:pointer;border:2px solid transparent;transition:all .15s;}
 .avatar-color-swatch.selected{border-color:#fff;transform:scale(1.15);}
@@ -2688,6 +2691,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 <div class="toast" id="toast"></div>
 
 <script>
+const AUTH_URL = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
 /* ════════════════════════════════════════════════════════════
    ARTIST DATABASE
 ════════════════════════════════════════════════════════════ */
@@ -3887,7 +3891,6 @@ document.addEventListener('keydown', e=>{
 /* ════════════════════════════════════════════════════════════
    AUTH SYSTEM
 ════════════════════════════════════════════════════════════ */
-const AUTH_URL = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
 const TOKEN_KEY = 'ss_auth_token';
 const USER_KEY  = 'ss_auth_user';
 
