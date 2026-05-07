@@ -2049,9 +2049,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </div>
         <div class="filter-row">
           <span class="filter-label">Stage:</span>
-          <button class="stage-pill all on" data-stage="all"   onclick="filterStage('all',this)">All</button>
-          <button class="stage-pill dnb"    data-stage="dnb"   onclick="filterStage('dnb',this)">DNB</button>
-          <button class="stage-pill oasis"  data-stage="oasis" onclick="filterStage('oasis',this)">Oasis</button>
+          <button class="stage-pill all on" data-stage="all"     onclick="filterStage('all',this)">All</button>
+          <button class="stage-pill dnb"    data-stage="dnb"     onclick="filterStage('dnb',this)">DNB</button>
+          <button class="stage-pill atrium" data-stage="atrium"  onclick="filterStage('atrium',this)">Atrium</button>
+          <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
+          <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locals</button>
           <div class="view-toggle">
             <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
             <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
@@ -3212,21 +3214,20 @@ function renderSchedule() {
   }
   function shouldShowStage(stage) {
     if (schedStageFilter === 'all') return true;
-    if (schedStageFilter === 'dnb' && stage === 'dnb') return true;
-    if (schedStageFilter === 'oasis' && stage === 'oasis') return true;
-    return false;
+    return schedStageFilter === stage;
   }
 
   if (schedView === 'list') {
     listWrap.style.display = 'block';
     let html = '';
-    ['dnb','oasis'].forEach(stage => {
+    ['dnb','atrium','beach','locals'].forEach(stage => {
       if (!shouldShowStage(stage)) return;
       const items = (data[stage]||[]).filter(item => matchArtist(item.artist));
       if (!items.length) return;
-      const stageName = stage === 'dnb' ? 'DNB Stage — Hosted by BP²' : 'Oasis Stage';
+      const stageNames = {dnb:'DNB Stage (Presented by BP²)',atrium:'Atrium (House)',beach:'Beach Stage',locals:'Locals Stage'};
+      const stageName = stageNames[stage] || stage;
       html += `<div class="stage-section"><div class="stage-section-header ${stage}">`+
-        `<div class="stage-dot" style="background:${stage==='dnb'?'#9b3dff':'#00d4c8'};"></div>${stageName}</div>`+
+        `<div class="stage-dot" style="background:${{dnb:'#9b3dff',atrium:'#f59e0b',beach:'#06b6d4',locals:'#84cc16'}[stage]||'#888'};"></div>${stageName}</div>`+
         `<div class="sched-list">`;
       items.forEach(item => {
         const a = artists[item.artist]||{};
@@ -3246,8 +3247,10 @@ function renderSchedule() {
   } else {
     gridWrap.style.display = 'block';
     const stages = [];
-    if (shouldShowStage('dnb')) stages.push({key:'dnb',name:'DNB Stage',color:'#9b3dff'});
-    if (shouldShowStage('oasis')) stages.push({key:'oasis',name:'Oasis Stage',color:'#00d4c8'});
+    if (shouldShowStage('dnb'))    stages.push({key:'dnb',    name:'DNB Stage (Presented by BP²)', color:'#9b3dff'});
+    if (shouldShowStage('atrium')) stages.push({key:'atrium', name:'Atrium (House)',                  color:'#f59e0b'});
+    if (shouldShowStage('beach'))  stages.push({key:'beach',  name:'Beach Stage',                     color:'#06b6d4'});
+    if (shouldShowStage('locals')) stages.push({key:'locals', name:'Locals Stage',                    color:'#84cc16'});
     let html = `<div class="tg-grid" style="grid-template-columns:repeat(${stages.length},1fr);">`;
     stages.forEach(st => {
       html += `<div><div class="tg-col-header" style="color:${st.color};">${st.name}</div>`;
@@ -5050,7 +5053,7 @@ const ROLE_LABELS = {
 };
 const DAYS = ['Fri','Sat','Sun'];
 const DAY_LABELS = {'Fri':'Friday Jul 17','Sat':'Saturday Jul 18','Sun':'Sunday Jul 19'};
-const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Oasis Stage','Oasis Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Parking Lot','Medical Station','General Grounds'];
+const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Atrium Stage','Atrium Backstage','Beach Stage','Beach Backstage','Locals Stage','Locals Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Parking Lot','Medical Station','General Grounds'];
 
 let cachedTasks  = [];
 let cachedShifts = [];
@@ -7916,8 +7919,10 @@ function updateDMBadge(count) {
         <div class="edit-field">
           <label class="edit-label">Stage</label>
           <select class="edit-select" id="editArtistStage">
-            <option value="DNB Stage">DNB Stage</option>
-            <option value="Oasis Stage">Oasis Stage</option>
+            <option value="DNB Stage">DNB Stage (Presented by BP²)</option>
+            <option value="Atrium">Atrium (House)</option>
+            <option value="Beach Stage">Beach Stage</option>
+            <option value="Locals Stage">Locals Stage</option>
             <option value="TBA">TBA</option>
           </select>
         </div>
