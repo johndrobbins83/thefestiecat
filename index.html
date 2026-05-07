@@ -933,6 +933,7 @@ body{
 }
 .raveworm-overlay.open{display:flex;}
 .raveworm-header{
+  position:relative;z-index:10;
   display:flex;align-items:center;justify-content:space-between;
   padding:10px 16px;background:#000;
   border-bottom:2px solid #ff00ff;flex-shrink:0;
@@ -3521,6 +3522,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 <!-- ══ RAVE TRIVIA OVERLAY ══ -->
 <div id="raveTriviaOverlay" style="position:fixed;inset:0;z-index:20000;background:#020b1a;display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(245,200,66,0.2);background:#020b1a;position:sticky;top:0;z-index:1;flex-shrink:0;">
+    <span style="font-size:13px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;">🎵 Rave Trivia</span>
+    <button onclick="closeTriviaGame()" style="width:32px;height:32px;background:rgba(255,255,255,0.07);border:none;color:var(--text-light);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">&#x2715;</button>
+  </div>
   <div id="triviaGame" style="flex:1;padding:16px;max-width:600px;margin:0 auto;width:100%;"></div>
 </div>
 
@@ -3610,22 +3615,36 @@ const artists = {
 };
 
 // ── Artist overrides: persist edits to localStorage ──────
-const ARTIST_OVERRIDES_KEY = 'ss_artist_overrides_v1';
-(function loadArtistOverrides() {
+// Artist overrides — loaded from worker so all users see same data
+async function loadArtistOverrides() {
   try {
-    const saved = JSON.parse(localStorage.getItem(ARTIST_OVERRIDES_KEY) || '{}');
-    Object.entries(saved).forEach(([key, overrides]) => {
-      if (artists[key]) Object.assign(artists[key], overrides);
-      else artists[key] = overrides;
+    const res = await fetch(AUTH_URL + '/artists');
+    if (!res.ok) return;
+    const d = await res.json();
+    const overrides = d.artists || {};
+    Object.entries(overrides).forEach(([key, data]) => {
+      if (artists[key]) Object.assign(artists[key], data);
+      else artists[key] = data;
     });
-  } catch(e) { console.warn('Could not load artist overrides', e); }
-})();
+    // Re-render if on artists/schedule page
+    if (typeof renderArtistGrid === 'function') renderArtistGrid();
+    if (typeof renderSchedule === 'function') renderSchedule();
+  } catch(e) { /* Artist overrides unavailable - using defaults */ }
+}
+loadArtistOverrides();
 
-function saveArtistOverride(key, data) {
+async function saveArtistOverride(key, data) {
+  // Merge into full overrides object and push to worker
   try {
-    const saved = JSON.parse(localStorage.getItem(ARTIST_OVERRIDES_KEY) || '{}');
-    saved[key] = { ...saved[key], ...data };
-    localStorage.setItem(ARTIST_OVERRIDES_KEY, JSON.stringify(saved));
+    const getRes = await fetch(AUTH_URL + '/artists');
+    const existing = getRes.ok ? ((await getRes.json()).artists || {}) : {};
+    existing[key] = { ...(existing[key]||{}), ...data };
+    const token = localStorage.getItem('ss_auth_token');
+    await fetch(AUTH_URL + '/artists', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify(existing)
+    });
   } catch(e) { console.warn('Could not save artist override', e); }
 }
 
