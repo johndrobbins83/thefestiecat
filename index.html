@@ -1609,9 +1609,16 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   justify-content:center;flex-shrink:0;padding:0 4px;}
 
 /* DM thread */
-.dm-thread-overlay{position:fixed;inset:0;z-index:15000;background:#000;
+.dm-thread-overlay{position:fixed;inset:0;z-index:15000;background:#0a0a0a;
   display:none;flex-direction:column;}
 .dm-thread-overlay.open{display:flex;}
+@media(min-width:768px){
+  .dm-thread-overlay.open{
+    inset:auto;bottom:0;right:24px;width:360px;height:520px;
+    border:1px solid rgba(245,200,66,0.2);border-bottom:none;
+    border-radius:12px 12px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,0.6);
+  }
+}
 .dm-thread-header{display:flex;align-items:center;gap:12px;padding:12px 16px;
   background:#0a0a0a;border-bottom:1px solid rgba(255,255,255,0.07);
   padding-top:max(12px, env(safe-area-inset-top));flex-shrink:0;}
