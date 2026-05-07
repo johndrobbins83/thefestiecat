@@ -3965,11 +3965,12 @@ document.addEventListener('keydown', e=>{
     );
 
     // Push notification to all staff via worker
+    let sosPushed = false;
     try {
-      const token = localStorage.getItem('ss_auth_token');
-      await fetch(AUTH_URL + '/sos', {
+      const token = localStorage.getItem('ss_auth_token') || localStorage.getItem('TOKEN_KEY') || '';
+      const sosRes = await fetch(AUTH_URL + '/sos', {
         method: 'POST',
-        headers: {'Content-Type':'application/json', 'Authorization': 'Bearer ' + (token||'')},
+        headers: {'Content-Type':'application/json', 'Authorization': 'Bearer ' + token},
         body: JSON.stringify({
           message,
           location: room || '',
@@ -3977,27 +3978,20 @@ document.addEventListener('keydown', e=>{
           gps: gpsCoords ? gpsCoords.lat + ',' + gpsCoords.lng : ''
         })
       });
+      if (sosRes.ok) sosPushed = true;
+      else console.warn('SOS push response:', sosRes.status, await sosRes.text());
     } catch(e) {
       console.warn('SOS push failed:', e);
-    }
-
-    // Also try SMS/email as backup
-    try {
-      if (/iPhone|Android|iPad/i.test(navigator.userAgent)) {
-        const a = document.createElement('a');
-        a.href = 'sms:+15083470000?body=' + smsBody;
-        a.click();
-      } else {
-        window.location.href = 'mailto:staff@sunkensuite.com?subject=' + mailSubject + '&body=' + mailBody;
-      }
-    } catch(e) {
-      window.location.href = 'mailto:staff@sunkensuite.com?subject=' + mailSubject + '&body=' + mailBody;
     }
 
     setTimeout(function() {
       form.style.display = 'none';
       sentScr.style.display = 'block';
       document.getElementById('sosSentRef').textContent = 'Reference: ' + ref;
+      const staffMsg = document.getElementById('sosSentRef');
+      if (staffMsg) {
+        staffMsg.textContent = 'Reference: ' + ref + (sosPushed ? ' · Staff notified ✓' : ' · Alert stored');
+      }
     }, 600);
   });
 })();
