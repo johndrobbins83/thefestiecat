@@ -1796,6 +1796,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   display:flex;align-items:center;justify-content:center;padding:0 5px;flex-shrink:0;}
 .staff-section-label{font-size:10px;font-weight:800;color:var(--text-muted);
   text-transform:uppercase;letter-spacing:1px;padding:10px 16px 4px;}
+
+/* ══ INBOX NAV ICON ══ */
+.nav-inbox-btn{position:relative;width:36px;height:36px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:18px;color:var(--text-muted);transition:color .15s;}
+.nav-inbox-btn:hover{color:var(--text-light);}
+.nav-inbox-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:8px;
+  background:var(--gold-bright);color:#000;font-size:9px;font-weight:800;
+  display:none;align-items:center;justify-content:center;padding:0 3px;}
 </style>
 </head>
 <body>
@@ -1846,6 +1854,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </div>
         <div class="weather-fest-note" id="wpFestNote"></div>
         <div class="weather-panel-footer" id="wpUpdated">Fetching weather…</div>
+      </div>
+    </div>
+    <div style="position:relative;" id="inboxNavWrap">
+      <div class="nav-inbox-btn" id="navInboxBtn" onclick="navigate('people');setTimeout(function(){switchPeopleTab('messages');},200);" title="Messages">
+        💬
+        <div class="nav-inbox-badge" id="inboxNavBadge"></div>
       </div>
     </div>
     <div style="position:relative;" id="bellWrap">
@@ -4036,7 +4050,6 @@ function setCurrentUser(user, token) {
     // 2. Start DM polling
     startDMPolling();
     startNotifPolling();
-    startNotifPolling();
     // 3. Pre-load friends so Connect tab is ready
     loadFriendRequests();
     loadFriends();
@@ -6212,13 +6225,19 @@ function updateDMBadge(count) {
 
 function openDMThread(friendId, handle, color) {
   currentDMFriendId     = friendId;
-  currentDMFriendHandle = handle;
+  // Look up user info if not provided
+  if (!handle) {
+    var allUsers = (window._allUsers || window._cachedUsers || []);
+    var found = allUsers.find(function(u){ return u.id === friendId; });
+    if (found) { handle = found.handle || found.name || 'User'; color = found.avatarColor || '#9b3dff'; }
+  }
+  currentDMFriendHandle = handle || 'User';
   const overlay  = document.getElementById('dmThreadOverlay');
   const nameEl   = document.getElementById('dmThreadName');
   const avatarEl = document.getElementById('dmThreadAvatar');
   if (overlay)  overlay.classList.add('open');
-  if (nameEl)   nameEl.textContent  = '@'+handle;
-  if (avatarEl) { avatarEl.style.background=color; avatarEl.textContent=(handle?.[0]||'?').toUpperCase(); }
+  if (nameEl)   nameEl.textContent  = '@' + (handle || 'User');
+  if (avatarEl) { avatarEl.style.background = color || '#9b3dff'; avatarEl.textContent = ((handle||'?')[0]).toUpperCase(); }
   document.body.style.overflow = 'hidden';
   loadDMThread(friendId);
 }
@@ -6280,10 +6299,36 @@ async function sendDM() {
 
 function startDMPolling() {
   if (dmPollTimer) clearInterval(dmPollTimer);
-  dmPollTimer = setInterval(() => {
-    if (currentPage === 'dms' || currentDMFriendId) loadDMList();
+  pollDMUnread(); // immediate
+  dmPollTimer = setInterval(function() {
+    // Always refresh open thread
     if (currentDMFriendId) loadDMThread(currentDMFriendId);
-  }, 30000);
+    // Always check unread count for badge
+    pollDMUnread();
+    // Refresh list if messages tab is open
+    const msgTab = document.getElementById('peopleTab-messages');
+    if (msgTab && msgTab.style.display !== 'none') loadDMList();
+  }, 5000);
+}
+
+async function pollDMUnread() {
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token || !currentUser) return;
+  try {
+    const res = await fetch(AUTH_URL + '/dm/unread', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (!res.ok) return;
+    const d = await res.json();
+    const total = d.total || 0;
+    const badge = document.getElementById('inboxNavBadge');
+    if (badge) {
+      badge.textContent = total > 99 ? '99+' : total;
+      badge.style.display = total > 0 ? 'flex' : 'none';
+    }
+    // Also update DM badge in bell area (existing updateDMBadge)
+    if (typeof updateDMBadge === 'function') updateDMBadge(total);
+  } catch(e) {}
 }
 
 // ── Helpers ────────────────────────────────────────────────
