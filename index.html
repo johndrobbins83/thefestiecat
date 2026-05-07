@@ -2236,11 +2236,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <button class="dash-btn" onclick="adminLoadUsers()">↻ Refresh</button>
         </div>
         <div class="dash-section-body">
-          <div id="adminUsersList">
-            <div style="text-align:center;padding:32px;color:var(--text-muted);">
-              Click Refresh to load users
-            </div>
-          </div>
+          <div id="adminUsersList"><div style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</div></div>
         </div>
       </div>
     </div>
@@ -4077,7 +4073,8 @@ function switchAdminTab(tab, btn) {
   if (tab === 'schedule') renderAdminSchedule();
   if (tab === 'tasks')   renderTaskManager('sharedTaskManager');
   if (tab === 'shifts')  renderShiftManager('sharedShiftManager');
-  if (tab === 'users')   loadAdminUsers();
+  if (tab === 'users')   adminLoadUsers();
+  if (tab === 'users')   adminLoadUsers();
 }
 
 // ── Artist grid ────────────────────────────────────────────
