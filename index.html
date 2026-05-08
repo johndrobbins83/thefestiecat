@@ -5323,19 +5323,17 @@ function buildUserTableHTML(users) {
   if (!users.length) return '<div style="padding:16px;color:var(--text-muted);">No users found</div>';
 
   function roleSelectHTML(u) {
-    // Admins don't get a role dropdown - they are admin
-    if (u.role === 'admin') {
-      return '<span style="color:var(--gold-bright);font-weight:700;font-size:12px;">ADMIN</span>';
-    }
+    // All users get role dropdown (admins can be demoted, festies can be promoted)
     return '<select onchange="adminSetRole(\''+u.id+'\',this.value)" style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
       '<option '+(u.role==='festie'?'selected':'')+' value="festie">Festie</option>' +
       '<option '+(u.role==='employee'?'selected':'')+' value="employee">Employee</option>' +
+      '<option '+(u.role==='admin'?'selected':'')+' value="admin">Admin</option>' +
       '</select>';
   }
 
   function staffRoleHTML(u) {
     // Only employees get staff role dropdown
-    if (u.role !== 'employee') return '<span style="color:rgba(122,184,224,0.3);font-size:12px;">N/A</span>';
+    if (u.role === 'admin' || u.role === 'festie') return '<span style="color:rgba(122,184,224,0.3);font-size:12px;">N/A</span>';
     return '<select onchange="adminSetStaffRole(\''+u.id+'\',this.value)" style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
       '<option value="">— None —</option>' +
       '<option '+(u.staffRole==='security'?'selected':'')+' value="security">Security</option>' +
