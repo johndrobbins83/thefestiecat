@@ -1,30 +1,40 @@
 {
   "name": "Sunken Suite · The Mutiny",
   "short_name": "Sunken Suite",
-  "description": "Official app for Sunken Suite 2026 — Schedule, Artists, Map & More",
+  "description": "Official app for Sunken Suite 2026: The Mutiny — Schedule, Artists, Map, Crew & More",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#020b1a",
   "theme_color": "#020b1a",
+  "lang": "en",
+  "scope": "/",
   "icons": [
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "categories": ["entertainment", "music", "lifestyle"],
   "shortcuts": [
-    { "name": "Schedule", "url": "/?page=schedule", "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}] },
-    { "name": "Artists",  "url": "/?page=artists",  "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}] },
-    { "name": "Map",      "url": "/?page=map",      "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}] }
-  ]
+    { "name": "Schedule", "short_name": "Schedule", "url": "/#schedule", "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}] },
+    { "name": "Artists",  "short_name": "Artists",  "url": "/#artists",  "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}] },
+    { "name": "Map",      "short_name": "Map",      "url": "/#map",      "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}] }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
 }
