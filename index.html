@@ -647,13 +647,13 @@ body{
 .tab-count{font-size:11px;font-weight:800;opacity:0.75;}
 .add-form{background:rgba(10,10,10,0.9);border:1px solid rgba(0,212,200,0.15);
   border-radius:0;padding:14px;margin-bottom:14px;}
-.add-row{display:flex;gap:8px;margin-bottom:8px;}
-.add-input{flex:1;padding:10px 14px;background:rgba(20,20,20,0.9);border:1px solid rgba(0,212,200,0.25);
+.add-row{display:flex;gap:6px;margin-bottom:8px;width:100%;box-sizing:border-box;overflow:hidden;}
+.add-input{flex:1;min-width:0;padding:10px 12px;background:rgba(20,20,20,0.9);border:1px solid rgba(0,212,200,0.25);
   border-radius:0;color:var(--text-light);font-family:'Poppins',sans-serif;
   font-size:14px;font-weight:500;outline:none;transition:border-color .15s;}
 .add-input:focus{border-color:var(--teal-glow);}
 .add-input::placeholder{color:var(--text-muted);}
-.add-btn-main{padding:10px 16px;border-radius:0;border:none;cursor:pointer;
+.add-btn-main{padding:10px 14px;flex-shrink:0;white-space:nowrap;border-radius:0;border:none;cursor:pointer;
   background:linear-gradient(135deg,var(--teal-glow),#00a89e);color:var(--ocean-deep);
   font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;transition:all .15s;white-space:nowrap;}
 .add-btn-main:hover{filter:brightness(1.1);}
@@ -2197,12 +2197,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <div class="user-menu-email" id="menuEmail">—</div>
           <div class="user-menu-role festie" id="menuRole">Festie</div>
         </div>
-        <button class="user-menu-item" onclick="navigate('schedule');closeUserMenu()">📅 My Schedule</button>
-        <button class="user-menu-item" onclick="navigate('people');closeUserMenu()">👥 People &amp; Feed</button>
+        <button class="user-menu-item" onclick="closeUserMenu();navigate('schedule');">📅 My Schedule</button>
+        <button class="user-menu-item" onclick="closeUserMenu();navigate('people');">👥 People &amp; Feed</button>
         <button class="user-menu-item" onclick="closeUserMenu();navigateToProfile(null);">👤 My Profile</button>
-        <button class="user-menu-item nav-admin-only" style="color:#f5c842;display:none;" onclick="navigate('admin');closeUserMenu()">⚙ Admin Dashboard</button>
-        <button class="user-menu-item nav-staff-only" style="color:#c084fc;display:none;" onclick="navigate('staff');closeUserMenu()">📋 Staff Dashboard</button>
-        <button class="user-menu-item logout" onclick="authLogout()">Sign out</button>
+        <button class="user-menu-item nav-admin-only" style="color:#f5c842;display:none;" onclick="closeUserMenu();navigate('admin');">⚙ Admin Dashboard</button>
+        <button class="user-menu-item nav-staff-only" style="color:#c084fc;display:none;" onclick="closeUserMenu();navigate('staff');">📋 Staff Dashboard</button>
+        <button class="user-menu-item logout" onclick="closeUserMenu();authLogout();">Sign out</button>
       </div>
     </div>
     <button class="auth-btn" id="navSignInBtn" onclick="showAuth('login')" style="width:auto;padding:8px 16px;font-size:12px;margin-top:0;">Sign In</button>
@@ -4962,7 +4962,10 @@ function closeUserMenu() {
   document.getElementById('userMenu').classList.remove('open');
 }
 document.addEventListener('click', e => {
-  if (!e.target.closest('#navAvatarWrap')) closeUserMenu();
+  const menu = document.getElementById('userMenu');
+  if (menu && menu.classList.contains('open') && !e.target.closest('#navAvatarWrap')) {
+    closeUserMenu();
+  }
 });
 
 function showAuthError(el, msg) {
