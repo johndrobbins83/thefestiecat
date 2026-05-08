@@ -81,10 +81,10 @@ body{
   font-weight:700;font-size:14px;cursor:pointer;border:2px solid var(--gold-bright);}
 
 /* Weather widget */
-.weather-widget{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:0;
-  cursor:pointer;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+.weather-widget{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:0;
+  cursor:pointer;background:transparent;border:none;
   transition:all .15s;position:relative;flex-shrink:0;}
-.weather-widget:hover{background:rgba(255,255,255,0.11);border-color:rgba(0,212,200,0.4);}
+.weather-widget:hover{background:transparent;}
 .weather-icon{font-size:16px;line-height:1;}
 .weather-temp{font-size:13px;font-weight:700;color:var(--text-light);line-height:1;white-space:nowrap;}
 .weather-label{font-size:10px;font-weight:600;color:var(--text-muted);line-height:1;white-space:nowrap;}
@@ -359,14 +359,10 @@ body{
   border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);
   color:var(--text-muted);transition:all .15s;white-space:nowrap;}
 .venue-dir-btn:hover{transform:translateY(-2px);}
-.venue-dir-btn.google{border-color:rgba(66,133,244,0.35);color:#5b9bf8;}
-.venue-dir-btn.google:hover{background:rgba(66,133,244,0.12);}
-.venue-dir-btn.apple{border-color:rgba(255,255,255,0.2);color:var(--text-light);}
-.venue-dir-btn.apple:hover{background:rgba(255,255,255,0.08);}
-.venue-dir-btn.waze{border-color:rgba(28,203,255,0.3);color:#1ccbff;}
-.venue-dir-btn.waze:hover{background:rgba(28,203,255,0.1);}
-.venue-dir-btn.uber{border-color:rgba(255,255,255,0.15);color:var(--text-light);}
-.venue-dir-btn.uber:hover{background:rgba(255,255,255,0.07);}
+.venue-dir-btn.google,.venue-dir-btn.apple,.venue-dir-btn.waze,.venue-dir-btn.uber{
+  border-color:rgba(245,200,66,0.35);color:var(--gold-bright);}
+.venue-dir-btn.google:hover,.venue-dir-btn.apple:hover,.venue-dir-btn.waze:hover,.venue-dir-btn.uber:hover{
+  background:rgba(245,200,66,0.1);}
 
 /* ══════════════════════════════════════════════════
    SCHEDULE PAGE
@@ -2297,10 +2293,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
               </div>
             </div>
             <div class="venue-dir-row">
-              <a class="venue-dir-btn google" id="homeDirGoogle" href="#" target="_blank" rel="noopener">🗺️ Google</a>
-              <a class="venue-dir-btn apple"  id="homeDirApple"  href="#" target="_blank" rel="noopener">🍎 Apple</a>
-              <a class="venue-dir-btn waze"   href="https://waze.com/ul?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA&navigate=yes" target="_blank" rel="noopener">🚗 Waze</a>
-              <a class="venue-dir-btn uber"   href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=366+Main+St+Sturbridge+MA+01566&dropoff[latitude]=42.1167&dropoff[longitude]=-72.0898" target="_blank" rel="noopener">🚕 Uber</a>
+              <a class="venue-dir-btn google" id="homeDirGoogle" href="#" target="_blank" rel="noopener">Google Maps</a>
+              <a class="venue-dir-btn apple"  id="homeDirApple"  href="#" target="_blank" rel="noopener">Apple Maps</a>
+              <a class="venue-dir-btn waze"   href="https://waze.com/ul?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA&navigate=yes" target="_blank" rel="noopener">Waze</a>
+              <a class="venue-dir-btn uber"   href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=366+Main+St+Sturbridge+MA+01566&dropoff[latitude]=42.1167&dropoff[longitude]=-72.0898" target="_blank" rel="noopener">Uber</a>
             </div>
           </div>
         </div>
@@ -2351,10 +2347,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <!-- Calendar export -->
     <div class="cal-export-section" id="calExportSection">
-      <div class="cal-export-title">📅 Export to Calendar</div>
+      <div class="cal-export-title">Export to Calendar</div>
       <div class="cal-btn-row">
         <button class="cal-btn gcal"  onclick="exportGCal()"><span style="background:#4285f4;color:#fff;border-radius:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;">G</span>Google Cal</button>
-        <button class="cal-btn apple" onclick="exportICS()">🍎 Apple / .ics</button>
+        <button class="cal-btn apple" onclick="exportICS()">Apple / .ics</button>
       </div>
     </div>
   </div><!-- /page-schedule -->
@@ -2420,14 +2416,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <div class="map-section-title">🏨 Amenities</div>
     <div class="hotel-chips">
-      <div class="info-chip"><span>🏊</span> Indoor Pool</div>
-      <div class="info-chip"><span>🛁</span> Hot Tub</div>
-      <div class="info-chip"><span>🏖️</span> Beach &amp; Dock</div>
-      <div class="info-chip"><span>🍽️</span> Greenhouse Rest.</div>
-      <div class="info-chip"><span>🍺</span> Oxhead Tavern</div>
-      <div class="info-chip"><span>💪</span> Fitness Room</div>
-      <div class="info-chip"><span>🅿️</span> Free Parking</div>
-      <div class="info-chip"><span>📶</span> Free WiFi</div>
+      <div class="info-chip">Indoor Pool</div>
+      <div class="info-chip">Hot Tub</div>
+      <div class="info-chip">Beach &amp; Dock</div>
+      <div class="info-chip">Greenhouse Rest.</div>
+      <div class="info-chip">Oxhead Tavern</div>
+      <div class="info-chip">Fitness Room</div>
+      <div class="info-chip">Free Parking</div>
+      <div class="info-chip">Free WiFi</div>
     </div>
     <div class="hotel-map-wrap">
       <div class="hotel-map-header">
@@ -2545,20 +2541,31 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <option value="plans">📋 Plans</option>
             <option value="todo">✅ To-Do</option>
           </select>
-          <input class="add-date-input" id="clAddDate" type="date" title="Date (optional)">
-          <input class="add-date-input" id="clAddTime" type="time" title="Time (optional)" style="max-width:120px;">
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);cursor:pointer;white-space:nowrap;">
+            <input type="checkbox" id="clIsErrand" onchange="toggleErrandFields(this.checked)" style="accent-color:var(--gold-bright);">
+            Scheduled Errand
+          </label>
+        </div>
+        <!-- Errand fields — hidden by default -->
+        <div id="clErrandFields" style="display:none;margin-top:6px;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <input class="add-date-input" id="clAddDate" type="date" title="Date" style="flex:1;min-width:120px;">
+            <input class="add-date-input" id="clAddTimeStart" type="time" title="Start time" style="flex:1;min-width:90px;">
+            <input class="add-date-input" id="clAddTimeEnd" type="time" title="End time" style="flex:1;min-width:90px;">
+          </div>
+          <div style="font-size:10px;color:var(--teal-glow);margin-top:4px;">📅 Will be added to your personal schedule</div>
         </div>
       </div>
     </div>
     <div class="preset-section" id="presetSection">
       <div class="preset-title">✨ Quick-add preset packs</div>
       <div class="preset-grid">
-        <button class="preset-pack" onclick="addPreset('festival-basics')">🎪 Festival Basics</button>
-        <button class="preset-pack" onclick="addPreset('outfit-essentials')">👗 Outfit Checklist</button>
-        <button class="preset-pack" onclick="addPreset('rave-kit')">🔦 Rave Kit</button>
-        <button class="preset-pack" onclick="addPreset('self-care')">💊 Self Care</button>
-        <button class="preset-pack" onclick="addPreset('food-drink')">🍔 Food &amp; Drink</button>
-        <button class="preset-pack" onclick="addPreset('tech')">🔌 Tech &amp; Charging</button>
+        <button class="preset-pack" onclick="addPreset('festival-basics')">Festival Basics</button>
+        <button class="preset-pack" onclick="addPreset('outfit-essentials')">Outfit Checklist</button>
+        <button class="preset-pack" onclick="addPreset('rave-kit')">Rave Kit</button>
+        <button class="preset-pack" onclick="addPreset('self-care')">Self Care</button>
+        <button class="preset-pack" onclick="addPreset('food-drink')">Food &amp; Drink</button>
+        <button class="preset-pack" onclick="addPreset('tech')">Tech &amp; Charging</button>
       </div>
     </div>
     <div id="clListArea"></div>
@@ -4314,19 +4321,69 @@ function addPreset(pack) {
   saveChecklist(list); renderChecklist();
   showToast(`✨ Added ${added} items`);
 }
+function toggleErrandFields(checked) {
+  const fields = document.getElementById('clErrandFields');
+  if (fields) fields.style.display = checked ? 'block' : 'none';
+}
+
 function addChecklistItem() {
   const input = document.getElementById('clAddInput');
-  const text = (input.value||'').trim(); if (!text) { input.focus(); return; }
-  const cat = document.getElementById('clAddCat').value;
-  const date = document.getElementById('clAddDate').value;
-  const time = document.getElementById('clAddTime').value;
+  const text = (input.value||'').trim();
+  if (!text) { input.focus(); return; }
+  const cat       = document.getElementById('clAddCat').value;
+  const isErrand  = document.getElementById('clIsErrand')?.checked || false;
+  const date      = isErrand ? (document.getElementById('clAddDate')?.value || '') : '';
+  const timeStart = isErrand ? (document.getElementById('clAddTimeStart')?.value || '') : '';
+  const timeEnd   = isErrand ? (document.getElementById('clAddTimeEnd')?.value || '') : '';
+  const itemId = Date.now() + Math.random();
   const list = getChecklist();
-  list.push({id:Date.now()+Math.random(),text,cat,done:false,date,time});
+  list.push({ id:itemId, text, cat, done:false, isErrand,
+    date, timeStart, timeEnd });
   saveChecklist(list);
+
+  // Add to personal schedule if it's a scheduled errand
+  if (isErrand && date) {
+    addErrandToSchedule({ id:itemId, text, date, timeStart, timeEnd });
+  }
+
+  // Reset form
   input.value = '';
-  document.getElementById('clAddDate').value = '';
-  document.getElementById('clAddTime').value = '';
+  if (document.getElementById('clIsErrand')) document.getElementById('clIsErrand').checked = false;
+  toggleErrandFields(false);
+  if (document.getElementById('clAddDate')) document.getElementById('clAddDate').value = '';
+  if (document.getElementById('clAddTimeStart')) document.getElementById('clAddTimeStart').value = '';
+  if (document.getElementById('clAddTimeEnd')) document.getElementById('clAddTimeEnd').value = '';
   renderChecklist();
+}
+
+function addErrandToSchedule(errand) {
+  // Map date to festival day
+  const d = new Date(errand.date);
+  const month = d.getMonth() + 1;
+  const day   = d.getDate();
+  const dayMap = { '7/17': 'Fri', '7/18': 'Sat', '7/19': 'Sun' };
+  const festDay = dayMap[month + '/' + day] || null;
+
+  // Store as personal schedule block
+  const blocks = JSON.parse(localStorage.getItem('ss_personal_blocks') || '[]');
+  blocks.push({
+    id: 'errand_' + errand.id,
+    title: errand.text,
+    startTime: errand.timeStart || '12:00',
+    endTime:   errand.timeEnd   || (errand.timeStart ? addHour(errand.timeStart) : '13:00'),
+    day: festDay || 'Fri',
+    date: errand.date,
+    color: '#f59e0b',
+    type: 'errand'
+  });
+  localStorage.setItem('ss_personal_blocks', JSON.stringify(blocks));
+  showToast('Added to your schedule!');
+}
+
+function addHour(timeStr) {
+  if (!timeStr) return '13:00';
+  const [h, m] = timeStr.split(':').map(Number);
+  return String((h + 1) % 24).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
 function toggleChecklistItem(id) {
   const list = getChecklist();
@@ -4364,7 +4421,7 @@ function renderChecklist() {
       html+=`<div class="cl-item${item.done?' done':''}">`+
         `<div class="cl-check${item.done?' checked':''}" onclick="toggleChecklistItem(${item.id})">${item.done?'✓':''}</div>`+
         `<div style="flex:1;min-width:0;"><div class="cl-text">${item.text}</div>`+
-        `${(item.date||item.time)?`<div class="cl-meta">${item.date||''} ${item.time||''}</div>`:''}` +
+        `${item.isErrand && item.date ? `<div class="cl-meta" style="color:#f59e0b;">&#128197; ${item.date}${item.timeStart?' · '+item.timeStart:''}${item.timeEnd?' – '+item.timeEnd:''}</div>` : ''}` +
         `</div><div class="cl-actions">`+
         `<button class="cl-action-btn delete" onclick="deleteChecklistItem(${item.id})">🗑️</button></div></div>`;
     });
@@ -6123,7 +6180,15 @@ async function deleteTask(taskId, containerId) {
 // SHIFT / SCHEDULE MANAGER
 // ══════════════════════════════════════════════════════════
 function getPersonalBlocks() {
-  try { return JSON.parse(localStorage.getItem(PERSONAL_BLOCKS_KEY) || '[]'); } catch { return []; }
+  try {
+    const blocks = JSON.parse(localStorage.getItem(PERSONAL_BLOCKS_KEY) || '[]');
+    // Also include errand blocks from checklist
+    const errands = JSON.parse(localStorage.getItem('ss_personal_blocks') || '[]');
+    // Merge, avoiding duplicates
+    const ids = new Set(blocks.map(b => b.id));
+    errands.forEach(function(e) { if (!ids.has(e.id)) blocks.push(e); });
+    return blocks;
+  } catch { return []; }
 }
 function savePersonalBlocks(blocks) {
   localStorage.setItem(PERSONAL_BLOCKS_KEY, JSON.stringify(blocks));
