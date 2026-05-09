@@ -12,9 +12,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sunken Suite">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon.png">
+
 <meta name="apple-mobile-web-app-title" content="Sunken Suite">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
@@ -2217,9 +2217,9 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── HOME PAGE ── -->
   <div class="page active" id="page-home">
-    <div class="announce-banner">
+    <div class="announce-banner" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
       <div class="announce-icon">📢</div>
-      <div class="announce-text">
+      <div class="announce-text" style="flex:1;">
         <strong id="countdown-label">GATES OPEN IN</strong>
         <div class="countdown-clock" id="countdown-clock">
           <div class="cd-unit"><span class="cd-num" id="cd-days">--</span><span class="cd-lbl">Days</span></div>
@@ -2232,6 +2232,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </div>
         <p>Sturbridge Host Hotel · Jul 17–19, 2026</p>
       </div>
+      <a href="https://theticketing.co/e/sunkensuite2026?promoLink=GR0J6UYW" target="_blank" rel="noopener"
+         style="flex-shrink:0;padding:10px 22px;background:var(--gold-bright);color:#000;
+                font-weight:900;font-size:12px;text-decoration:none;text-transform:uppercase;
+                letter-spacing:0.5px;line-height:1.2;text-align:center;border-radius:2px;
+                transition:filter .15s;"
+         onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
+        🎟 Get<br>Tickets
+      </a>
     </div>
 
     <div class="desktop-grid">
@@ -3645,9 +3653,10 @@ async function loadArtistOverrides() {
       if (artists[key]) Object.assign(artists[key], data);
       else artists[key] = data;
     });
-    // Re-render if on artists/schedule page
+    // Re-render pages that use artist data
     if (typeof renderArtistGrid === 'function') renderArtistGrid();
     if (typeof renderSchedule === 'function') renderSchedule();
+    if (typeof renderFeaturedArtists === 'function') renderFeaturedArtists();
   } catch(e) { /* Artist overrides unavailable - using defaults */ }
 }
 loadArtistOverrides();
@@ -3804,13 +3813,13 @@ function renderMySchedWidget() {
 }
 
 /* ── Featured artists ── */
-(function() {
+function renderFeaturedArtists() {
   // Pick featured artists based on today's date — changes daily
   // During festival: picks from that day's lineup. Before: random headliners.
   const today = new Date();
   const month = today.getMonth() + 1;
   const day   = today.getDate();
-  const seed  = today.getFullYear()*10000 + month*100 + day;
+  const seed  = Date.now(); // changes every reload
 
   function seededRand(s) {
     let x = (s ^ 0xdeadbeef) >>> 0;
@@ -3862,7 +3871,8 @@ function renderMySchedWidget() {
 
   const el = document.getElementById('featuredArtists');
   if (el) el.innerHTML = html;
-})();
+}
+renderFeaturedArtists();
 
 
 /* ── Direction URLs ── */
