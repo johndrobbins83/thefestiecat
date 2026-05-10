@@ -2241,8 +2241,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <p>Sturbridge Host Hotel · Jul 17–19, 2026</p>
       </div>
       <a href="https://theticketing.co/e/sunkensuite2026?promoLink=GR0J6UYW" target="_blank" rel="noopener"
-         style="flex-shrink:0;padding:10px 22px;background:var(--gold-bright);color:#000;
-                font-weight:900;font-size:12px;text-decoration:none;text-transform:uppercase;
+         style="flex-shrink:0;padding:8px 12px;background:var(--gold-bright);color:#000;
+                font-weight:900;font-size:11px;text-decoration:none;text-transform:uppercase;
                 letter-spacing:0.5px;line-height:1.2;text-align:center;border-radius:2px;
                 transition:filter .15s;"
          onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
@@ -2268,7 +2268,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="stats-row">
           <div class="stat-card"><div class="stat-num">47+</div><div class="stat-label">Artists</div></div>
           <div class="stat-card"><div class="stat-num">3</div><div class="stat-label">Days</div></div>
-          <div class="stat-card"><div class="stat-num">2</div><div class="stat-label">Stages</div></div>
+          <div class="stat-card"><div class="stat-num">4</div><div class="stat-label">Stages</div></div>
         </div>
         <div class="section-header">
           <div class="section-title">⭐ My Schedule</div>
@@ -3675,6 +3675,10 @@ async function saveArtistOverride(key, data) {
     const getRes = await fetch(AUTH_URL + '/artists');
     const existing = getRes.ok ? ((await getRes.json()).artists || {}) : {};
     existing[key] = { ...(existing[key]||{}), ...data };
+      // Force cache bust by appending timestamp to photo URLs
+      if (existing[key].photo && !existing[key].photo.includes('?v=')) {
+        existing[key].photoTs = Date.now();
+      }
     const token = localStorage.getItem('ss_auth_token');
     await fetch(AUTH_URL + '/artists', {
       method: 'PUT',
@@ -4302,8 +4306,14 @@ function renderArtists() {
 ════════════════════════════════════════════════════════════ */
 function openArtist(key) {
   const a = artists[key]; if (!a) return;
-  document.getElementById('modalAvatar').style.background = a.color;
-  document.getElementById('modalAvatar').textContent = a.initials;
+  const avatarEl = document.getElementById('modalAvatar');
+  avatarEl.style.background = a.color;
+  if (a.photo) {
+    avatarEl.innerHTML = '<img src="'+a.photo+'?v='+Date.now()+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" onerror="this.parentElement.innerHTML=\''+( a.initials||key[0])+'\';">';
+  } else {
+    avatarEl.innerHTML = '';
+    avatarEl.textContent = a.initials||key[0];
+  }
   document.getElementById('modalName').textContent = key;
   const badge = document.getElementById('modalStageBadge');
   badge.textContent = a.stage;
@@ -8180,7 +8190,7 @@ const INFO_DEFAULTS = {
     sections: [
       { title: 'About The Event', body: 'Sunken Suite is a 3-day underground music festival celebrating the best in Drum & Bass, Techno, and Electronic music. The Mutiny is our biggest event yet — three stages, 66 artists, and an immersive experience you won\'t forget.' },
       { title: ' Festival Days', body: 'Friday July 17 — Gates 4PM, Music 6PM. DNB Stage headlined by Roni Size.\nSaturday July 18 — Gates 2PM, Music 4PM. Oasis Stage headlined by J. Phlip.\nSunday July 19 — Gates 2PM, Music 4PM. DNB Stage headlined by Spor.' },
-      { title: ' Stages', body: 'DNB Stage — Main indoor stage · Drum & Bass focus · Capacity 800\nOasis Stage — Outdoor pool-side stage · House, Techno & Bass · Capacity 500' },
+      { title: ' Stages', body: 'DNB Stage (Presented by BP²) · Drum & Bass · Main Indoor\nAtrium (House) · Tech House / House Music\nBeach Stage · Outdoor Pool-Side\nLocals Stage · Local & Regional Artists' },
       { title: ' Contact', body: ' staff@sunkensuite.com\n Emergency: Use the SOS button in More\n The Sturbridge Host Hotel & Conference Center' }
     ]
   },
