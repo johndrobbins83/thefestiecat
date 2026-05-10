@@ -5086,8 +5086,9 @@ async function submitLogin() {
     if (!res.ok) { showAuthError(errEl, data.error || 'Login failed.'); return; }
     setCurrentUser(data.user, data.token);
     showToast(`Welcome back, ${data.user.name}! ☠`);
-  } catch {
-    showAuthError(errEl, 'Could not connect. Check your connection.');
+  } catch(e) {
+    console.error('Login error:', e);
+    showAuthError(errEl, 'Could not connect: ' + (e.message || e));
   } finally {
     btn.disabled = false; btn.textContent = 'Sign In';
   }
