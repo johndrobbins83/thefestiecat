@@ -3745,6 +3745,8 @@ function toggleSaved(key) {
 ════════════════════════════════════════════════════════════ */
 function closeAllPopouts() {
   // Close every overlay/popout when nav is tapped
+  // NOTE: do NOT close authOverlay or reset body.overflow here
+  const authOpen = document.getElementById('authOverlay')?.classList.contains('open');
   if (typeof closeModal === 'function') closeModal();
   if (typeof closeMore === 'function') closeMore();
   if (typeof closeSOS === 'function') closeSOS();
@@ -3761,7 +3763,8 @@ function closeAllPopouts() {
   if (raveTriviaOverlay) raveTriviaOverlay.style.display = 'none';
   const djBingoOverlay = document.getElementById('djBingoOverlay');
   if (djBingoOverlay) djBingoOverlay.style.display = 'none';
-  document.body.style.overflow = '';
+  // Only reset overflow if auth overlay is not open
+  if (!authOpen) document.body.style.overflow = '';
 }
 
 function navigate(page) {
