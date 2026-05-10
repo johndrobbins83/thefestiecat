@@ -868,12 +868,11 @@ body{
 .modal-top-setinfo{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
 .modal-top-setinfo .set-info-card{flex:1;min-width:60px;padding:6px 8px;
   background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);}
-.modal-avatar{width:170px;height:170px;flex-shrink:0;display:flex;align-items:center;
-  justify-content:center;overflow:hidden;
+.modal-avatar{width:170px;height:170px;flex-shrink:0;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
   font-size:48px;font-weight:900;color:rgba(255,255,255,0.2);flex-shrink:0;}
 .modal-name{font-size:22px;font-weight:900;color:var(--text-light);line-height:1.1;margin-bottom:4px;}
-.modal-stage-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;
-  text-transform:uppercase;padding:3px 10px;border-radius:0;margin-bottom:4px;}
+.modal-stage-badge{display:none;}
 .modal-stage-badge.dnb{background:rgba(155,61,255,0.2);color:#c084fc;}
 .modal-stage-badge.oasis{background:rgba(0,212,200,0.15);color:var(--teal-glow);}
 .modal-genre{font-size:13px;color:var(--text-muted);font-weight:500;}
@@ -4332,7 +4331,7 @@ function openArtist(key) {
   if (a.photo) {
     const initials2 = (a.initials||key[0]);
     avatarEl.innerHTML = '<img src="'+a.photo+'?v='+(a.photoTs||Date.now())+'" '+
-      'style="width:100%;height:100%;object-fit:cover;object-position:center top;" '+
+      'style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block;" '+
       'onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<span style=\"font-size:72px;font-weight:900;color:rgba(255,255,255,0.2);\">'+initials2+'</span>\'">';
   } else {
     avatarEl.innerHTML = '<span style="font-size:72px;font-weight:900;color:rgba(255,255,255,0.2);">'+(a.initials||key[0])+'</span>';
@@ -4342,7 +4341,17 @@ function openArtist(key) {
   badge.textContent = a.stage;
   badge.className = 'modal-stage-badge ' + (a.stage==='DNB Stage'?'dnb':'oasis');
   document.getElementById('modalGenre').textContent = a.genre;
-  document.getElementById('modalStage').textContent = a.stage;
+  const stageEl = document.getElementById('modalStage');
+  stageEl.textContent = a.stage;
+  const stageColorMap = {'DNB Stage':'#9b3dff','Atrium':'#f59e0b','Atrium (House)':'#f59e0b','Beach Stage':'#06b6d4','Locals Stage':'#84cc16','Oasis Stage':'#00d4c8'};
+  const stageColor = stageColorMap[a.stage] || '#888';
+  const stageCard = stageEl.closest('.set-info-card');
+  if (stageCard) {
+    stageCard.style.borderColor = stageColor + '60';
+    stageCard.style.background = stageColor + '18';
+    stageEl.style.color = stageColor;
+    stageEl.style.fontWeight = '800';
+  }
   document.getElementById('modalTime').textContent = a.time||'TBA';
   document.getElementById('modalDay').textContent = {Fri:'Friday 7/17',Sat:'Saturday 7/18',Sun:'Sunday 7/19',TBA:'TBA'}[a.day]||a.day;
   document.getElementById('modalBio').textContent = a.bio||'Bio coming soon.';
