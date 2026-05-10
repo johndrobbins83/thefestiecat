@@ -2125,6 +2125,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 }
 
 
+@keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:0.8;}}
 </style>
 </head>
 <body>
@@ -3731,6 +3732,10 @@ function toggleSaved(key) {
    ROUTER
 ════════════════════════════════════════════════════════════ */
 function navigate(page) {
+  // Always re-render featured artists when going home so they refresh
+  if (page === 'home' && typeof renderFeaturedArtists === 'function') {
+    setTimeout(renderFeaturedArtists, 50);
+  }
   if (currentPage === page) return;
   const prev = document.getElementById('page-' + currentPage);
   const next = document.getElementById('page-' + page);
@@ -3884,7 +3889,14 @@ function renderFeaturedArtists() {
   const el = document.getElementById('featuredArtists');
   if (el) el.innerHTML = html;
 }
-renderFeaturedArtists();
+// Don't call renderFeaturedArtists() here — wait for loadArtistOverrides()
+// so photos are always included. Show a loading state instead.
+(function() {
+  const el = document.getElementById('featuredArtists');
+  if (el) el.innerHTML = '<div style="display:flex;gap:12px;padding:4px 0;">' +
+    [1,2,3].map(() => '<div style="flex:1;height:160px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);animation:pulse 1.5s ease-in-out infinite;"></div>').join('') +
+    '</div>';
+})();
 
 
 /* ── Direction URLs ── */
