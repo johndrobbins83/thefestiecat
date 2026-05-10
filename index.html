@@ -12,11 +12,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sunken Suite">
-<link rel="apple-touch-icon" href="https://sunkensuite-auth.johndrobbins83.workers.dev/icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="https://sunkensuite-auth.johndrobbins83.workers.dev/icon-192.png">
+
 
 <meta name="apple-mobile-web-app-title" content="Sunken Suite">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon.png">
 
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Poppins:wght@400;500;600;700;800;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
@@ -47,7 +47,9 @@ body{
    TOP NAV
 ══════════════════════════════════════════════════ */
 .top-nav{
-  position:fixed;top:0;left:0;right:0;height:var(--nav-height);
+  position:fixed;top:0;left:0;right:0;
+  height:calc(var(--nav-height) + env(safe-area-inset-top, 0px));
+  padding-top:env(safe-area-inset-top, 0px);
   background:#000000;backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(245,200,66,0.25);
   z-index:200;display:flex;align-items:center;justify-content:space-between;
@@ -150,7 +152,9 @@ body{
 ══════════════════════════════════════════════════ */
 .bottom-nav{
   position:fixed!important;bottom:0!important;left:0!important;right:0!important;
-  height:72px!important;visibility:visible!important;opacity:1!important;
+  height:calc(72px + env(safe-area-inset-bottom, 0px))!important;
+  padding-bottom:env(safe-area-inset-bottom, 0px)!important;
+  visibility:visible!important;opacity:1!important;
   background:#000000;border-top:1px solid rgba(245,200,66,0.35);
   display:flex!important;align-items:center;justify-content:space-around;
   z-index:99999!important;padding:0 4px;padding-bottom:env(safe-area-inset-bottom,0);
@@ -180,7 +184,9 @@ body{
 }
 @media(max-width:767px){
   nav.bottom-nav{display:flex!important;position:fixed!important;bottom:0!important;
-    left:0!important;right:0!important;z-index:99999!important;height:72px!important;
+    left:0!important;right:0!important;z-index:99999!important;
+    height:calc(72px + env(safe-area-inset-bottom, 0px))!important;
+    padding-bottom:env(safe-area-inset-bottom, 0px)!important;
     visibility:visible!important;opacity:1!important;pointer-events:all!important;transform:none!important;}
 }
 
@@ -188,7 +194,9 @@ body{
    PAGE SHELL / ROUTER
 ══════════════════════════════════════════════════ */
 #app{
-  position:fixed;inset:0;top:var(--nav-height);bottom:72px;
+  position:fixed;inset:0;
+  top:calc(var(--nav-height) + env(safe-area-inset-top, 0px));
+  bottom:calc(72px + env(safe-area-inset-bottom, 0px));
   overflow:hidden;z-index:10;
 }
 @media(min-width:768px){#app{bottom:0;}}
@@ -199,7 +207,7 @@ body{
   transition:opacity .2s ease,transform .2s ease;transform:translateX(24px);
 }
 @media(min-width:768px){.page{padding:24px 32px 40px;}}
-@media(max-width:767px){.page{padding-bottom:88px!important;}}
+@media(max-width:767px){.page{padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px))!important;}}
 #page-artists{padding-top:0;}
 .page.active{opacity:1;pointer-events:all;transform:translateX(0);}
 /* Max-width content container — centered on wide screens */
@@ -9285,6 +9293,13 @@ function showInstallIOSModal() {
 }
 
 // Install button always visible in More menu
+// On iOS Safari, make sure it's visible since beforeinstallprompt never fires
+if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('installAppBtn');
+    if (btn) btn.style.display = '';
+  });
+}
 
 /* ════════════════════════════════════════════════════════════
    RAVEWORM GAME
