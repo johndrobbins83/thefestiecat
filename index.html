@@ -3579,6 +3579,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 <script>
 
+window.addEventListener('error', function(e) {
+  console.error('GLOBAL ERROR:', e.message, e.filename, 'line', e.lineno, e.error);
+});
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('UNHANDLED PROMISE:', e.reason);
+});
 const AUTH_URL = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
 /* ════════════════════════════════════════════════════════════
    ARTIST DATABASE
@@ -4946,7 +4952,7 @@ document.addEventListener('keydown', e=>{
 const TOKEN_KEY = 'ss_auth_token';
 const USER_KEY  = 'ss_auth_user';
 
-let currentUser = null;
+var currentUser = null;
 
 // ── Boot: restore session ──────────────────────────────────
 async function authInit() {
