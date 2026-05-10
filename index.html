@@ -854,16 +854,7 @@ body{
 }
 .modal-drag{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:0;margin:14px auto 0;}
 @media(min-width:768px){.modal-drag{display:none;}}
-.modal-hero-overlay{position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(0deg,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.5) 60%,transparent 100%);
-  padding:16px 20px 14px;}
-.modal-hero-sub{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;}
-.modal-close-hero{position:absolute;top:12px;right:12px;width:32px;height:32px;
-  background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);
-  color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  border-radius:50%;z-index:10;backdrop-filter:blur(4px);}
-.modal-name{font-size:22px;font-weight:900;color:#fff;line-height:1.1;
-  text-shadow:0 2px 8px rgba(0,0,0,0.8);}
+.modal-name{font-size:18px;font-weight:900;color:var(--text-light);line-height:1.1;margin-bottom:2px;}
 .modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;
   border-bottom:1px solid rgba(255,255,255,0.07);}
 .modal-header-label{font-size:11px;font-weight:800;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;}
@@ -871,11 +862,15 @@ body{
   border:none;cursor:pointer;color:var(--text-light);font-size:16px;
   display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .modal-close:hover{background:rgba(255,255,255,0.15);}
-/* ── Artist modal hero ── */
-.modal-hero-img{position:relative;width:100%;height:260px;overflow:hidden;background:#0d0520;flex-shrink:0;}
-.modal-hero-img .modal-avatar{width:100%;height:100%;border-radius:0;border:none;
-  display:flex;align-items:center;justify-content:center;
-  font-size:72px;font-weight:900;color:rgba(255,255,255,0.15);flex-shrink:0;}
+/* ── Artist modal top row ── */
+.modal-top-row{display:flex;gap:0;align-items:stretch;min-height:170px;}
+.modal-top-info{flex:1;padding:12px 12px;display:flex;flex-direction:column;gap:4px;justify-content:flex-start;min-width:0;}
+.modal-top-setinfo{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.modal-top-setinfo .set-info-card{flex:1;min-width:60px;padding:6px 8px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);}
+.modal-avatar{width:170px;height:170px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;overflow:hidden;
+  font-size:48px;font-weight:900;color:rgba(255,255,255,0.2);flex-shrink:0;}
 .modal-name{font-size:22px;font-weight:900;color:var(--text-light);line-height:1.1;margin-bottom:4px;}
 .modal-stage-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;
   text-transform:uppercase;padding:3px 10px;border-radius:0;margin-bottom:4px;}
@@ -3070,25 +3065,23 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 <div class="modal-backdrop" id="artistModal" onclick="handleModalBackdropClick(event)">
   <div class="artist-modal" onclick="event.stopPropagation()">
     <div class="modal-drag"></div>
-    <!-- Full-width hero image -->
-    <div class="modal-hero-img" id="modalHeroImg">
-      <div class="modal-avatar" id="modalAvatar"></div>
-      <div class="modal-hero-overlay">
-        <div class="modal-name" id="modalName"></div>
-        <div class="modal-hero-sub">
-          <div class="modal-stage-badge" id="modalStageBadge"></div>
-          <div class="modal-genre" id="modalGenre"></div>
-        </div>
-      </div>
-      <button class="modal-close modal-close-hero" id="modalClose" onclick="closeModal()">✕</button>
+    <!-- Header bar with close -->
+    <div class="modal-header">
+      <div class="modal-header-label">Artist Profile</div>
+      <button class="modal-close" id="modalClose" onclick="closeModal()">✕</button>
     </div>
-    <div class="modal-divider"></div>
-    <div class="modal-section">
-      <div class="modal-section-title">⏰ Set Info</div>
-      <div class="set-info-row">
-        <div class="set-info-card"><div class="set-info-label">Stage</div><div class="set-info-val" id="modalStage"></div></div>
-        <div class="set-info-card"><div class="set-info-label">Set Time</div><div class="set-info-val" id="modalTime"></div></div>
-        <div class="set-info-card"><div class="set-info-label">Day</div><div class="set-info-val" id="modalDay"></div></div>
+    <!-- Square image left + set info right -->
+    <div class="modal-top-row">
+      <div class="modal-avatar" id="modalAvatar"></div>
+      <div class="modal-top-info">
+        <div class="modal-name" id="modalName"></div>
+        <div class="modal-stage-badge" id="modalStageBadge"></div>
+        <div class="modal-genre" id="modalGenre"></div>
+        <div class="modal-top-setinfo">
+          <div class="set-info-card"><div class="set-info-label">Stage</div><div class="set-info-val" id="modalStage"></div></div>
+          <div class="set-info-card"><div class="set-info-label">Time</div><div class="set-info-val" id="modalTime"></div></div>
+          <div class="set-info-card"><div class="set-info-label">Day</div><div class="set-info-val" id="modalDay"></div></div>
+        </div>
       </div>
     </div>
     <div class="modal-divider"></div>
@@ -4335,9 +4328,7 @@ function renderArtists() {
 function openArtist(key) {
   const a = artists[key]; if (!a) return;
   const avatarEl  = document.getElementById('modalAvatar');
-  const heroImgEl = document.getElementById('modalHeroImg');
   avatarEl.style.background = a.color || '#1a0a35';
-  if (heroImgEl) heroImgEl.style.background = a.color || '#1a0a35';
   if (a.photo) {
     const initials2 = (a.initials||key[0]);
     avatarEl.innerHTML = '<img src="'+a.photo+'?v='+(a.photoTs||Date.now())+'" '+
