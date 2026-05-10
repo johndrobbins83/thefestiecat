@@ -854,6 +854,16 @@ body{
 }
 .modal-drag{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:0;margin:14px auto 0;}
 @media(min-width:768px){.modal-drag{display:none;}}
+.modal-hero-overlay{position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(0deg,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.5) 60%,transparent 100%);
+  padding:16px 20px 14px;}
+.modal-hero-sub{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;}
+.modal-close-hero{position:absolute;top:12px;right:12px;width:32px;height:32px;
+  background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);
+  color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;z-index:10;backdrop-filter:blur(4px);}
+.modal-name{font-size:22px;font-weight:900;color:#fff;line-height:1.1;
+  text-shadow:0 2px 8px rgba(0,0,0,0.8);}
 .modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;
   border-bottom:1px solid rgba(255,255,255,0.07);}
 .modal-header-label{font-size:11px;font-weight:800;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;}
@@ -861,10 +871,11 @@ body{
   border:none;cursor:pointer;color:var(--text-light);font-size:16px;
   display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .modal-close:hover{background:rgba(255,255,255,0.15);}
-.modal-hero{display:flex;align-items:center;gap:16px;padding:16px 20px;}
-.modal-avatar{width:72px;height:72px;border-radius:0;display:flex;align-items:center;
-  justify-content:center;font-size:16px;font-weight:800;color:#fff;
-  border:2px solid rgba(255,255,255,0.15);flex-shrink:0;}
+/* ── Artist modal hero ── */
+.modal-hero-img{position:relative;width:100%;height:260px;overflow:hidden;background:#0d0520;flex-shrink:0;}
+.modal-hero-img .modal-avatar{width:100%;height:100%;border-radius:0;border:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:72px;font-weight:900;color:rgba(255,255,255,0.15);flex-shrink:0;}
 .modal-name{font-size:22px;font-weight:900;color:var(--text-light);line-height:1.1;margin-bottom:4px;}
 .modal-stage-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;
   text-transform:uppercase;padding:3px 10px;border-radius:0;margin-bottom:4px;}
@@ -3059,17 +3070,17 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 <div class="modal-backdrop" id="artistModal" onclick="handleModalBackdropClick(event)">
   <div class="artist-modal" onclick="event.stopPropagation()">
     <div class="modal-drag"></div>
-    <div class="modal-header">
-      <div class="modal-header-label">Artist Profile</div>
-      <button class="modal-close" id="modalClose" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-hero">
+    <!-- Full-width hero image -->
+    <div class="modal-hero-img" id="modalHeroImg">
       <div class="modal-avatar" id="modalAvatar"></div>
-      <div>
+      <div class="modal-hero-overlay">
         <div class="modal-name" id="modalName"></div>
-        <div class="modal-stage-badge" id="modalStageBadge"></div>
-        <div class="modal-genre" id="modalGenre"></div>
+        <div class="modal-hero-sub">
+          <div class="modal-stage-badge" id="modalStageBadge"></div>
+          <div class="modal-genre" id="modalGenre"></div>
+        </div>
       </div>
+      <button class="modal-close modal-close-hero" id="modalClose" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-divider"></div>
     <div class="modal-section">
@@ -3090,6 +3101,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <div class="modal-section-title">🎵 Listen on Spotify</div>
       <div class="spotify-embed">
         <div class="spotify-placeholder" id="modalSpotifyText">Curated playlist from this artist</div>
+        <div id="spotifyEmbedWrap" style="margin-bottom:8px;"></div>
         <button class="spotify-play-btn" id="modalSpotifyBtn">▶ Open on Spotify</button>
       </div>
     </div>
@@ -3334,8 +3346,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <textarea class="edit-textarea" id="editArtistBio" rows="4" placeholder="Artist bio…"></textarea>
       </div>
       <div class="edit-field">
-        <label class="edit-label">Spotify URL</label>
-        <input class="edit-input" id="editArtistSpotify" placeholder="https://open.spotify.com/artist/…">
+        <label class="edit-label">Spotify URL <span style="color:var(--teal-glow);font-size:10px;font-weight:400;">playlist / artist / album</span></label>
+        <input class="edit-input" id="editArtistSpotify" placeholder="https://open.spotify.com/playlist/…">
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">
+          Tip: Paste a "This Is [Artist]" playlist URL for the best experience.<br>
+          Search Spotify for <strong style="color:var(--text-light);">This Is [Artist Name]</strong> → Copy link → Paste here.
+        </div>
       </div>
       <div class="edit-field">
         <label class="edit-label">Artist Photo</label>
@@ -4318,13 +4334,17 @@ function renderArtists() {
 ════════════════════════════════════════════════════════════ */
 function openArtist(key) {
   const a = artists[key]; if (!a) return;
-  const avatarEl = document.getElementById('modalAvatar');
-  avatarEl.style.background = a.color;
+  const avatarEl  = document.getElementById('modalAvatar');
+  const heroImgEl = document.getElementById('modalHeroImg');
+  avatarEl.style.background = a.color || '#1a0a35';
+  if (heroImgEl) heroImgEl.style.background = a.color || '#1a0a35';
   if (a.photo) {
-    avatarEl.innerHTML = '<img src="'+a.photo+'?v='+Date.now()+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" onerror="this.parentElement.innerHTML=\''+( a.initials||key[0])+'\';">';
+    const initials2 = (a.initials||key[0]);
+    avatarEl.innerHTML = '<img src="'+a.photo+'?v='+(a.photoTs||Date.now())+'" '+
+      'style="width:100%;height:100%;object-fit:cover;object-position:center top;" '+
+      'onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<span style=\"font-size:72px;font-weight:900;color:rgba(255,255,255,0.2);\">'+initials2+'</span>\'">';
   } else {
-    avatarEl.innerHTML = '';
-    avatarEl.textContent = a.initials||key[0];
+    avatarEl.innerHTML = '<span style="font-size:72px;font-weight:900;color:rgba(255,255,255,0.2);">'+(a.initials||key[0])+'</span>';
   }
   document.getElementById('modalName').textContent = key;
   const badge = document.getElementById('modalStageBadge');
@@ -4336,7 +4356,35 @@ function openArtist(key) {
   document.getElementById('modalDay').textContent = {Fri:'Friday 7/17',Sat:'Saturday 7/18',Sun:'Sunday 7/19',TBA:'TBA'}[a.day]||a.day;
   document.getElementById('modalBio').textContent = a.bio||'Bio coming soon.';
   const spotifyBtn = document.getElementById('modalSpotifyBtn');
-  spotifyBtn.onclick = () => window.open('https://open.spotify.com/search/'+encodeURIComponent(key),'_blank');
+  const spotifyUrl = a.spotify || ('https://open.spotify.com/search/'+encodeURIComponent(key));
+  spotifyBtn.onclick = () => window.open(spotifyUrl, '_blank');
+
+  // Build Spotify embed if URL is a playlist or artist link
+  const spotifyEmbed = document.getElementById('spotifyEmbedWrap');
+  const spotifyText  = document.getElementById('modalSpotifyText');
+  if (spotifyEmbed) {
+    // Convert spotify URL to embed URL
+    // e.g. https://open.spotify.com/playlist/XXXX → https://open.spotify.com/embed/playlist/XXXX
+    // e.g. https://open.spotify.com/artist/XXXX  → https://open.spotify.com/embed/artist/XXXX
+    let embedUrl = null;
+    if (a.spotify) {
+      embedUrl = a.spotify
+        .replace('https://open.spotify.com/', 'https://open.spotify.com/embed/')
+        .replace('https://spotify.com/', 'https://open.spotify.com/embed/')
+        .split('?')[0]; // remove query params
+    }
+    if (embedUrl) {
+      spotifyEmbed.innerHTML = '<iframe style="border-radius:4px;width:100%;height:152px;border:none;" '+
+        'src="'+embedUrl+'?utm_source=generator&theme=0" '+
+        'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" '+
+        'loading="lazy"></iframe>';
+      if (spotifyText) spotifyText.style.display = 'none';
+    } else {
+      spotifyEmbed.innerHTML = '';
+      if (spotifyText) spotifyText.style.display = '';
+    }
+  }
+
   document.getElementById('modalSocials').innerHTML =
     `<a class="social-link" href="https://soundcloud.com/search?q=${encodeURIComponent(key)}" target="_blank" rel="noopener">🎵 SoundCloud</a>`+
     `<a class="social-link" href="https://instagram.com/${encodeURIComponent(key.toLowerCase().replace(/\s/g,''))}" target="_blank" rel="noopener">📸 Instagram</a>`;
