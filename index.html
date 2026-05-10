@@ -848,7 +848,11 @@ body{
 @media(min-width:768px){.modal-backdrop.open{align-items:center;}}
 .artist-modal{background:#0a0a0a;
   border:1px solid rgba(255,255,255,0.12);border-radius:0 24px 0 0;
-  width:100%;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,20px);}
+  width:100%;
+  max-height:calc(90vh - env(safe-area-inset-bottom, 0px));
+  height:calc(85vh - env(safe-area-inset-bottom, 0px));
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-bottom:calc(80px + env(safe-area-inset-bottom, 0px));}
 @media(min-width:768px){
   .artist-modal{border-radius:0;max-width:520px;max-height:80vh;}
 }
@@ -3739,7 +3743,30 @@ function toggleSaved(key) {
 /* ════════════════════════════════════════════════════════════
    ROUTER
 ════════════════════════════════════════════════════════════ */
+function closeAllPopouts() {
+  // Close every overlay/popout when nav is tapped
+  if (typeof closeModal === 'function') closeModal();
+  if (typeof closeMore === 'function') closeMore();
+  if (typeof closeSOS === 'function') closeSOS();
+  if (typeof closeUserMenu === 'function') closeUserMenu();
+  if (typeof closeInfo === 'function') closeInfo();
+  if (typeof closeFindMe === 'function') closeFindMe();
+  if (typeof closeDJBingo === 'function') closeDJBingo();
+  if (typeof closeTriviaGame === 'function') closeTriviaGame();
+  if (typeof closeRaveworm === 'function') closeRaveworm();
+  if (typeof closeDrawer === 'function') closeDrawer();
+  if (typeof closeDMThread === 'function') closeDMThread();
+  if (typeof closeEditProfileModal === 'function') closeEditProfileModal();
+  const raveTriviaOverlay = document.getElementById('raveTriviaOverlay');
+  if (raveTriviaOverlay) raveTriviaOverlay.style.display = 'none';
+  const djBingoOverlay = document.getElementById('djBingoOverlay');
+  if (djBingoOverlay) djBingoOverlay.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
 function navigate(page) {
+  // Close all popouts when nav is tapped
+  closeAllPopouts();
   // Always re-render featured artists when going home so they refresh
   if (page === 'home' && typeof renderFeaturedArtists === 'function') {
     setTimeout(renderFeaturedArtists, 50);
