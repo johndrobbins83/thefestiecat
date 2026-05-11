@@ -3614,6 +3614,7 @@ window.addEventListener('unhandledrejection', function(e) {
   console.error('UNHANDLED PROMISE:', e.reason);
 });
 const AUTH_URL = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
+var currentUser = null; // declared here so ALL functions can access it safely
 /* ════════════════════════════════════════════════════════════
    ARTIST DATABASE
 ════════════════════════════════════════════════════════════ */
@@ -4980,8 +4981,6 @@ document.addEventListener('keydown', e=>{
 ════════════════════════════════════════════════════════════ */
 const TOKEN_KEY = 'ss_auth_token';
 const USER_KEY  = 'ss_auth_user';
-
-var currentUser = null;
 
 // ── Boot: restore session ──────────────────────────────────
 async function authInit() {
