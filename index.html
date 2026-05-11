@@ -4786,7 +4786,7 @@ function installPWA() {
     document.getElementById('pwaInstallBanner').classList.remove('show');
   });
 }
-function dismissInstall() {
+async function dismissInstall() {
   localStorage.setItem(PWA_DISMISSED_KEY,'1');
   document.getElementById('pwaInstallBanner').classList.remove('show');
 }
@@ -4847,7 +4847,7 @@ document.addEventListener('keydown', e=>{
 
   let gpsCoords = null;
 
-  function openSOSPanel() {
+  async function openSOSPanel() {
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
     form.style.display = 'flex';
@@ -4855,7 +4855,7 @@ document.addEventListener('keydown', e=>{
     sendBtn.disabled = false;
     sendBtn.innerHTML = '🆘 Send Emergency Alert';
   }
-  function closeSOSPanel() {
+  async function closeSOSPanel() {
     overlay.classList.remove('open');
     document.body.style.overflow = '';
   }
@@ -7147,7 +7147,7 @@ async function loadFriends() {
 }
 
 let searchPeopleTimer = null;
-function searchPeople(q) {
+async function searchPeople(q) {
   clearTimeout(searchPeopleTimer);
   const resultsEl = document.getElementById('peopleResults');
   if (!q || q.trim().length < 2) {
@@ -7464,7 +7464,7 @@ window.submitProfileSetup = async function() {
 };
 
 // Change photo from dropdown
-function openProfilePicChange() {
+async function openProfilePicChange() {
   // Create a hidden file input and trigger it
   let input = document.getElementById('profilePicChangeInput');
   if (!input) {
