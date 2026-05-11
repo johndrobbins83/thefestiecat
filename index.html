@@ -8477,10 +8477,12 @@ function closeFindMe() {
   const overlay = document.getElementById('findMeOverlay');
   if (overlay) overlay.style.display = 'none';
   document.body.style.overflow = '';
-  // Exit fullscreen
+  // Exit fullscreen only if actually in fullscreen
   try {
-    if (document.exitFullscreen) document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
   } catch(e) {}
 }
 
