@@ -848,7 +848,11 @@ body{
 @media(min-width:768px){.modal-backdrop.open{align-items:center;}}
 .artist-modal{background:#0a0a0a;
   border:1px solid rgba(255,255,255,0.12);border-radius:0 24px 0 0;
-  width:100%;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,20px);}
+  width:100%;
+  max-height:calc(90vh - env(safe-area-inset-bottom, 0px));
+  height:calc(85vh - env(safe-area-inset-bottom, 0px));
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-bottom:calc(80px + env(safe-area-inset-bottom, 0px));}
 @media(min-width:768px){
   .artist-modal{border-radius:0;max-width:520px;max-height:80vh;}
 }
@@ -885,8 +889,9 @@ body{
 .set-info-label{font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
 .set-info-val{font-size:14px;font-weight:800;color:var(--text-light);}
 .modal-bio{font-size:14px;color:var(--text-muted);line-height:1.7;}
-.spotify-embed{background:rgba(29,185,84,0.08);border:1px solid rgba(29,185,84,0.2);
-  border-radius:0;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.spotify-embed{background:rgba(29,185,84,0.05);border:1px solid rgba(29,185,84,0.15);
+  border-radius:0;padding:0;overflow:hidden;}
+.spotify-embed-footer{display:flex;align-items:center;gap:12px;padding:10px 14px;}
 .spotify-placeholder{flex:1;font-size:13px;color:var(--text-muted);}
 .spotify-play-btn{flex-shrink:0;padding:8px 16px;border-radius:0;border:none;cursor:pointer;
   background:#1db954;color:#fff;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;
@@ -2131,6 +2136,30 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 
 @keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:0.8;}}
+
+/* ── Leaderboard ── */
+.leaderboard-overlay{position:fixed;inset:0;z-index:20000;background:#020b1a;display:none;flex-direction:column;}
+.leaderboard-overlay.open{display:flex;}
+.lb-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
+  border-bottom:1px solid rgba(245,200,66,0.2);background:#020b1a;flex-shrink:0;}
+.lb-title{font-size:14px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;}
+.lb-body{flex:1;overflow-y:auto;padding:16px;}
+.lb-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
+.lb-tab{flex:1;padding:10px;text-align:center;font-size:12px;font-weight:700;
+  color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;text-transform:uppercase;}
+.lb-tab.active{color:var(--gold-bright);border-bottom-color:var(--gold-bright);}
+.lb-row{display:flex;align-items:center;gap:12px;padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);}
+.lb-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;flex-shrink:0;}
+.lb-rank.gold{background:rgba(245,200,66,0.2);color:var(--gold-bright);}
+.lb-rank.silver{background:rgba(180,180,180,0.15);color:#c0c0c0;}
+.lb-rank.bronze{background:rgba(176,112,40,0.2);color:#cd7f32;}
+.lb-rank.other{background:rgba(255,255,255,0.06);color:var(--text-muted);}
+.lb-handle{flex:1;font-size:13px;font-weight:700;color:var(--text-light);}
+.lb-score{font-size:14px;font-weight:900;color:var(--gold-bright);}
+.lb-meta{font-size:10px;color:var(--text-muted);}
+.lb-you{background:rgba(245,200,66,0.05);border-left:2px solid var(--gold-bright);padding-left:10px;}
 </style>
 </head>
 <body>
@@ -2289,7 +2318,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           </div>
         </div>
         <div class="section-header" style="margin-top:20px;">
-          <div class="section-title">🎤 Featured Today</div>
+          <div class="section-title">🎤 Artist Spotlight</div>
           <span class="section-see-all" onclick="navigate('artists')">All artists →</span>
         </div>
         <div id="featuredArtists"></div>
@@ -2602,6 +2631,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <!-- ── GAMES PAGE ── -->
   <div class="page" id="page-games">
     <div class="page-header"><div class="page-title">🎮 Games</div><div class="page-sub">Festival fun — play solo or with your crew</div></div>
+    <button onclick="openLeaderboard()" style="margin:0 16px 12px;width:calc(100% - 32px);padding:10px;background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.25);color:var(--gold-bright);font-size:12px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:1px;">🏆 Leaderboard — All Scores</button>
     <div class="games-grid" id="gamesGrid"></div>
   </div><!-- /page-games -->
 
@@ -3092,9 +3122,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="modal-section">
       <div class="modal-section-title">🎵 Listen on Spotify</div>
       <div class="spotify-embed">
-        <div class="spotify-placeholder" id="modalSpotifyText">Curated playlist from this artist</div>
-        <div id="spotifyEmbedWrap" style="margin-bottom:8px;"></div>
-        <button class="spotify-play-btn" id="modalSpotifyBtn">▶ Open on Spotify</button>
+        <div id="spotifyEmbedWrap"></div>
+        <div class="spotify-embed-footer">
+          <div class="spotify-placeholder" id="modalSpotifyText">Curated playlist from this artist</div>
+          <button class="spotify-play-btn" id="modalSpotifyBtn">▶ Open on Spotify</button>
+        </div>
       </div>
     </div>
     <div class="modal-divider"></div>
@@ -3575,6 +3607,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 <script>
 
+window.addEventListener('error', function(e) {
+  console.error('GLOBAL ERROR:', e.message, e.filename, 'line', e.lineno, e.error);
+});
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('UNHANDLED PROMISE:', e.reason);
+});
 const AUTH_URL = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
 /* ════════════════════════════════════════════════════════════
    ARTIST DATABASE
@@ -3739,7 +3777,33 @@ function toggleSaved(key) {
 /* ════════════════════════════════════════════════════════════
    ROUTER
 ════════════════════════════════════════════════════════════ */
+function closeAllPopouts() {
+  // Close every overlay/popout when nav is tapped
+  // NOTE: do NOT close authOverlay or reset body.overflow here
+  const authOpen = document.getElementById('authOverlay')?.classList.contains('open');
+  if (typeof closeModal === 'function') closeModal();
+  if (typeof closeMore === 'function') closeMore();
+  if (typeof closeSOS === 'function') closeSOS();
+  if (typeof closeUserMenu === 'function') closeUserMenu();
+  if (typeof closeInfo === 'function') closeInfo();
+  if (typeof closeFindMe === 'function') closeFindMe();
+  if (typeof closeDJBingo === 'function') closeDJBingo();
+  if (typeof closeTriviaGame === 'function') closeTriviaGame();
+  if (typeof closeRaveworm === 'function') closeRaveworm();
+  if (typeof closeDrawer === 'function') closeDrawer();
+  if (typeof closeDMThread === 'function') closeDMThread();
+  if (typeof closeEditProfileModal === 'function') closeEditProfileModal();
+  const raveTriviaOverlay = document.getElementById('raveTriviaOverlay');
+  if (raveTriviaOverlay) raveTriviaOverlay.style.display = 'none';
+  const djBingoOverlay = document.getElementById('djBingoOverlay');
+  if (djBingoOverlay) djBingoOverlay.style.display = 'none';
+  // Only reset overflow if auth overlay is not open
+  if (!authOpen) document.body.style.overflow = '';
+}
+
 function navigate(page) {
+  // Close all popouts when nav is tapped
+  closeAllPopouts();
   // Always re-render featured artists when going home so they refresh
   if (page === 'home' && typeof renderFeaturedArtists === 'function') {
     setTimeout(renderFeaturedArtists, 50);
@@ -3841,10 +3905,11 @@ function renderMySchedWidget() {
 function renderFeaturedArtists() {
   // Pick featured artists based on today's date — changes daily
   // During festival: picks from that day's lineup. Before: random headliners.
+  // Use Math.random so artists change on every render/navigate
   const today = new Date();
   const month = today.getMonth() + 1;
   const day   = today.getDate();
-  const seed  = Date.now(); // changes every reload
+  const seed  = Math.floor(Math.random() * 999999999) + Date.now(); // changes every reload
 
   function seededRand(s) {
     let x = (s ^ 0xdeadbeef) >>> 0;
@@ -4374,7 +4439,7 @@ function openArtist(key) {
         .split('?')[0]; // remove query params
     }
     if (embedUrl) {
-      spotifyEmbed.innerHTML = '<iframe style="border-radius:4px;width:100%;height:152px;border:none;" '+
+      spotifyEmbed.innerHTML = '<iframe style="width:100%;height:160px;border:none;display:block;" '+
         'src="'+embedUrl+'?utm_source=generator&theme=0" '+
         'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" '+
         'loading="lazy"></iframe>';
@@ -4916,7 +4981,7 @@ document.addEventListener('keydown', e=>{
 const TOKEN_KEY = 'ss_auth_token';
 const USER_KEY  = 'ss_auth_user';
 
-let currentUser = null;
+var currentUser = null;
 
 // ── Boot: restore session ──────────────────────────────────
 async function authInit() {
@@ -5056,8 +5121,9 @@ async function submitLogin() {
     if (!res.ok) { showAuthError(errEl, data.error || 'Login failed.'); return; }
     setCurrentUser(data.user, data.token);
     showToast(`Welcome back, ${data.user.name}! ☠`);
-  } catch {
-    showAuthError(errEl, 'Could not connect. Check your connection.');
+  } catch(e) {
+    console.error('Login error:', e);
+    showAuthError(errEl, 'Could not connect: ' + (e.message || e));
   } finally {
     btn.disabled = false; btn.textContent = 'Sign In';
   }
@@ -8436,10 +8502,12 @@ function closeFindMe() {
   const overlay = document.getElementById('findMeOverlay');
   if (overlay) overlay.style.display = 'none';
   document.body.style.overflow = '';
-  // Exit fullscreen
+  // Exit fullscreen only if actually in fullscreen
   try {
-    if (document.exitFullscreen) document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
   } catch(e) {}
 }
 
@@ -8576,6 +8644,7 @@ function renderBingoGame() {
         </div>
         <div style="display:flex;gap:8px;">
           <button onclick="newBingoCard()" style="padding:6px 12px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);color:var(--gold-bright);font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;">New Card</button>
+          <button onclick="closeDJBingo();openLeaderboard();" style="padding:6px 12px;background:rgba(155,61,255,0.1);border:1px solid rgba(155,61,255,0.3);color:#c084fc;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;">🏆 Scores</button>
           <button onclick="closeDJBingo()" style="padding:6px 12px;background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:14px;cursor:pointer;">✕</button>
         </div>
       </div>
@@ -8720,6 +8789,16 @@ function checkBingo() {
 
 function celebrateBingo(line) {
   bingoWon = true;
+  // Submit score and notify all users
+  submitScore('bingo', (bingoMarked.size - 1), 'BINGO! ' + line); // -1 for FREE square
+  // Shout bingo to all users via worker
+  const token = localStorage.getItem('ss_auth_token');
+  if (token) {
+    fetch(AUTH_URL + '/bingo/shout', {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + token}
+    }).catch(() => {});
+  }
   const overlay = document.getElementById('djBingoContent');
   const win = document.createElement('div');
   win.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.92);';
@@ -9070,6 +9149,9 @@ function nextQuestion() {
 }
 
 function showResults() {
+  // Submit trivia score
+  const myTriviaScore = state.score || (state.stageCorrect ? state.stageCorrect.reduce((a,b)=>a+b,0) : 0);
+  submitScore('trivia', myTriviaScore, myTriviaScore + ' correct');
   const pct = Math.round((state.stageCorrect.reduce((a,b)=>a+b,0) / 80) * 100);
   const grade = pct >= 90 ? '☠️ Legend' : pct >= 75 ? '🔊 Master' : pct >= 60 ? '🎛️ Veteran' : pct >= 40 ? '🎧 Raver' : '👶 Fresher';
   const gradeColor = pct >= 90 ? '#ff4d8d' : pct >= 75 ? '#f5c842' : pct >= 60 ? '#9b3dff' : pct >= 40 ? '#00d4c8' : '#7ab8e0';
@@ -9371,6 +9453,77 @@ if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
   });
 }
 
+/* ════════════════════════════════════════
+   LEADERBOARD
+════════════════════════════════════════ */
+let currentLbTab = 'bingo';
+
+function openLeaderboard() {
+  const overlay = document.getElementById('leaderboardOverlay');
+  if (overlay) { overlay.classList.add('open'); loadLbScores('bingo'); }
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLeaderboard() {
+  const overlay = document.getElementById('leaderboardOverlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function switchLbTab(tab) {
+  currentLbTab = tab;
+  ['bingo','trivia','worm'].forEach(t => {
+    const el = document.getElementById('lbTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.classList.toggle('active', t === tab);
+  });
+  loadLbScores(tab);
+}
+
+async function loadLbScores(game) {
+  const body = document.getElementById('lbBody');
+  if (!body) return;
+  body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</div>';
+  try {
+    const res = await fetch(AUTH_URL + '/scores/' + game);
+    const d = await res.json();
+    const scores = d.scores || [];
+    const myId = currentUser ? currentUser.id : null;
+    if (!scores.length) {
+      body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No scores yet — be the first!</div>';
+      return;
+    }
+    const gameLabel = {bingo:'DJ Bingo', trivia:'Rave Trivia', worm:'Rave Worm'};
+    const scoreLabel = {bingo:'BINGOs', trivia:'pts', worm:'pts'};
+    body.innerHTML = '<div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">' + gameLabel[game] + ' · Top Scores</div>' +
+      scores.map((s, i) => {
+        const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'other';
+        const isMe = s.userId === myId;
+        return '<div class="lb-row' + (isMe ? ' lb-you' : '') + '">' +
+          '<div class="lb-rank ' + rankClass + '">' + (i+1) + '</div>' +
+          '<div>' +
+            '<div class="lb-handle">' + escapeHTML(s.handle) + (isMe ? ' <span style="color:var(--gold-bright);font-size:10px;">YOU</span>' : '') + '</div>' +
+            (s.meta ? '<div class="lb-meta">' + escapeHTML(s.meta) + '</div>' : '') +
+          '</div>' +
+          '<div class="lb-score">' + s.score + ' <span style="font-size:10px;font-weight:400;color:var(--text-muted);">' + (scoreLabel[game]||'') + '</span></div>' +
+        '</div>';
+      }).join('');
+  } catch(e) {
+    body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Could not load scores</div>';
+  }
+}
+
+async function submitScore(game, score, meta) {
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token || !currentUser) return;
+  try {
+    await fetch(AUTH_URL + '/scores/' + game, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({score, meta})
+    });
+  } catch(e) { console.warn('Score submit failed', e); }
+}
+
 /* ════════════════════════════════════════════════════════════
    RAVEWORM GAME
 ════════════════════════════════════════════════════════════ */
@@ -9567,6 +9720,22 @@ function updateDMBadge(count) {
 
 
 </script>
+
+<!-- ── LEADERBOARD OVERLAY ── -->
+<div class="leaderboard-overlay" id="leaderboardOverlay">
+  <div class="lb-header">
+    <span class="lb-title">🏆 Leaderboard</span>
+    <button onclick="closeLeaderboard()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;">✕</button>
+  </div>
+  <div class="lb-tabs">
+    <div class="lb-tab active" id="lbTabBingo" onclick="switchLbTab('bingo')">DJ Bingo</div>
+    <div class="lb-tab" id="lbTabTrivia" onclick="switchLbTab('trivia')">Rave Trivia</div>
+    <div class="lb-tab" id="lbTabWorm" onclick="switchLbTab('worm')">Rave Worm</div>
+  </div>
+  <div class="lb-body" id="lbBody">
+    <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading scores…</div>
+  </div>
+</div>
+
 </body>
 </html>
-</script>
