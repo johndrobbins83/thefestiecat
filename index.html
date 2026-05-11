@@ -889,8 +889,9 @@ body{
 .set-info-label{font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
 .set-info-val{font-size:14px;font-weight:800;color:var(--text-light);}
 .modal-bio{font-size:14px;color:var(--text-muted);line-height:1.7;}
-.spotify-embed{background:rgba(29,185,84,0.08);border:1px solid rgba(29,185,84,0.2);
-  border-radius:0;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.spotify-embed{background:rgba(29,185,84,0.05);border:1px solid rgba(29,185,84,0.15);
+  border-radius:0;padding:0;overflow:hidden;}
+.spotify-embed-footer{display:flex;align-items:center;gap:12px;padding:10px 14px;}
 .spotify-placeholder{flex:1;font-size:13px;color:var(--text-muted);}
 .spotify-play-btn{flex-shrink:0;padding:8px 16px;border-radius:0;border:none;cursor:pointer;
   background:#1db954;color:#fff;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;
@@ -2293,7 +2294,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           </div>
         </div>
         <div class="section-header" style="margin-top:20px;">
-          <div class="section-title">🎤 Featured Today</div>
+          <div class="section-title">🎤 Artist Spotlight</div>
           <span class="section-see-all" onclick="navigate('artists')">All artists →</span>
         </div>
         <div id="featuredArtists"></div>
@@ -3096,9 +3097,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="modal-section">
       <div class="modal-section-title">🎵 Listen on Spotify</div>
       <div class="spotify-embed">
-        <div class="spotify-placeholder" id="modalSpotifyText">Curated playlist from this artist</div>
-        <div id="spotifyEmbedWrap" style="margin-bottom:8px;"></div>
-        <button class="spotify-play-btn" id="modalSpotifyBtn">▶ Open on Spotify</button>
+        <div id="spotifyEmbedWrap"></div>
+        <div class="spotify-embed-footer">
+          <div class="spotify-placeholder" id="modalSpotifyText">Curated playlist from this artist</div>
+          <button class="spotify-play-btn" id="modalSpotifyBtn">▶ Open on Spotify</button>
+        </div>
       </div>
     </div>
     <div class="modal-divider"></div>
@@ -3877,10 +3880,11 @@ function renderMySchedWidget() {
 function renderFeaturedArtists() {
   // Pick featured artists based on today's date — changes daily
   // During festival: picks from that day's lineup. Before: random headliners.
+  // Use Math.random so artists change on every render/navigate
   const today = new Date();
   const month = today.getMonth() + 1;
   const day   = today.getDate();
-  const seed  = Date.now(); // changes every reload
+  const seed  = Math.floor(Math.random() * 999999999) + Date.now(); // changes every reload
 
   function seededRand(s) {
     let x = (s ^ 0xdeadbeef) >>> 0;
@@ -4410,7 +4414,7 @@ function openArtist(key) {
         .split('?')[0]; // remove query params
     }
     if (embedUrl) {
-      spotifyEmbed.innerHTML = '<iframe style="border-radius:4px;width:100%;height:152px;border:none;" '+
+      spotifyEmbed.innerHTML = '<iframe style="width:100%;height:160px;border:none;display:block;" '+
         'src="'+embedUrl+'?utm_source=generator&theme=0" '+
         'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" '+
         'loading="lazy"></iframe>';
