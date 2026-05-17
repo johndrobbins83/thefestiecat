@@ -3791,6 +3791,19 @@ let checklistCat = 'all';
 let gpsCoords = null;
 let deferredInstallPrompt = null;
 
+// Game state — declared early to avoid TDZ errors in closeAllPopouts
+let state = { currentStage:0, currentQ:0, score:0, stageScores:[0,0,0,0], stageCorrect:[0,0,0,0], answered:false, timer:null, timeLeft:0, stageQuestions:[] };
+// bingoBoardCells, bingoMarked, bingoWon, bingoCardSeed declared at top
+let viewingUserId = null;
+// searchPeopleTimer declared at top
+// dmThreadPollTimer declared at top
+// notifPollTimer, lastNotifCount declared at top
+// pendingBannerFile, pendingEditAvatarFile declared at top
+// pendingProfilePicFile declared at top
+// lastAlertId, alertPollInterval declared at top
+let cachedTasks = [];
+let cachedShifts = [];
+
 function getMySchedule() {
   try { return JSON.parse(localStorage.getItem(MY_SCHED_KEY)) || []; } catch(e) { return []; }
 }
@@ -6081,8 +6094,7 @@ const DAYS = ['Fri','Sat','Sun'];
 const DAY_LABELS = {'Fri':'Friday Jul 17','Sat':'Saturday Jul 18','Sun':'Sunday Jul 19'};
 const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Atrium Stage','Atrium Backstage','Beach Stage','Beach Backstage','Locals Stage','Locals Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Parking Lot','Medical Station','General Grounds'];
 
-let cachedTasks  = [];
-let cachedShifts = [];
+// cachedTasks, cachedShifts declared at top
 let taskAssignMode = 'role'; // 'role' or 'user'
 
 function isAdminOrMgmt() {
@@ -7613,7 +7625,7 @@ function updateNavAvatar() {
 /* ════════════════════════════════════════
    PROFILE PAGE
 ════════════════════════════════════════ */
-let viewingUserId = null;   // null = own profile
+// viewingUserId declared at top
 
 async function navigateToProfile(userId) {
   viewingUserId = userId || null;
@@ -9047,17 +9059,7 @@ const ALL_QUESTIONS = [
 ];
 
 // ── GAME STATE ────────────────────────────────────────────────
-let state = {
-  currentStage: 0,
-  currentQ: 0,
-  score: 0,
-  stageScores: [0, 0, 0, 0],
-  stageCorrect: [0, 0, 0, 0],
-  answered: false,
-  timer: null,
-  timeLeft: 0,
-  stageQuestions: [],
-};
+// state declared at top
 
 function getStageQuestions(stageNum) {
   const qs = ALL_QUESTIONS.filter(q => q.stage === stageNum);
