@@ -3231,6 +3231,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   </div>
       <div class="auth-divider"></div>
       <div class="auth-switch">No account? <a onclick="showAuth('register')">Create one free</a></div>
+      <div style="text-align:center;margin-top:16px;">
+        <a onclick="closeAuth()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">
+          Continue without signing in →
+        </a>
+      </div>
     </div>
 
     <!-- REGISTER FORM -->
@@ -3836,6 +3841,11 @@ function closeAllPopouts() {
 }
 
 function navigate(page) {
+  // If auth overlay is open (guest browsing), close it first
+  const authOverlay = document.getElementById('authOverlay');
+  if (authOverlay && authOverlay.classList.contains('open')) {
+    closeAuth();
+  }
   // Close all popouts when nav is tapped
   closeAllPopouts();
   // Always re-render featured artists when going home so they refresh
