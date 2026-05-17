@@ -5025,20 +5025,7 @@ async function authInit() {
     });
     if (!res.ok) throw new Error('Session expired');
     const data = await res.json();
-    let user = data.user;
-    // Also fetch full profile (hometown, musicStyles, favoriteArtists, firstRave, bannerPic)
-    if (user.handle) {
-      try {
-        const profRes = await fetch(AUTH_URL + '/profile/' + encodeURIComponent(user.handle), {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (profRes.ok) {
-          const pd = await profRes.json();
-          if (pd.user) user = { ...user, ...pd.user };
-        }
-      } catch(e) { console.warn('Profile fetch on init failed:', e.message); }
-    }
-    setCurrentUser(user, token);
+    setCurrentUser(data.user, token);
   } catch {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -5166,20 +5153,7 @@ async function submitLogin() {
     });
     const data = await res.json();
     if (!res.ok) { showAuthError(errEl, data.error || 'Login failed.'); return; }
-    let loginUser = data.user;
-    // Fetch full profile data after login
-    if (loginUser.handle) {
-      try {
-        const profRes = await fetch(AUTH_URL + '/profile/' + encodeURIComponent(loginUser.handle), {
-          headers: { 'Authorization': 'Bearer ' + data.token }
-        });
-        if (profRes.ok) {
-          const pd = await profRes.json();
-          if (pd.user) loginUser = { ...loginUser, ...pd.user };
-        }
-      } catch(e) { console.warn('Profile fetch on login failed:', e.message); }
-    }
-    setCurrentUser(loginUser, data.token);
+    setCurrentUser(data.user, data.token);
     showToast(`Welcome back, ${data.user.name}! ☠`);
   } catch(e) {
     console.error('Login error:', e);
