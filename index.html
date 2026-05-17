@@ -5017,19 +5017,35 @@ var currentUser = null;
 
 // ── Boot: restore session ──────────────────────────────────
 async function authInit() {
-  const token = localStorage.getItem(TOKEN_KEY);
+  const token      = localStorage.getItem(TOKEN_KEY);
+  const cachedUser = localStorage.getItem(USER_KEY);
   if (!token) { showAuth('login'); return; }
+
+  // Restore from cache immediately so the UI is never blank
+  if (cachedUser) {
+    try { setCurrentUser(JSON.parse(cachedUser), token); } catch(e) {}
+  }
+
+  // Verify with server in the background
   try {
-    const res  = await fetch(`${AUTH_URL}/auth/me`, {
+    const res = await fetch(`${AUTH_URL}/auth/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error('Session expired');
-    const data = await res.json();
-    setCurrentUser(data.user, token);
-  } catch {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    showAuth('login');
+    if (res.status === 401) {
+      // Genuine auth failure — token is invalid/expired, force logout
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      showAuth('login');
+      return;
+    }
+    if (res.ok) {
+      const data = await res.json();
+      setCurrentUser(data.user, token); // update with fresh server data
+    }
+    // Any other error (5xx, network) — stay logged in with cached data
+  } catch(e) {
+    // Network failure — keep user logged in with cached data
+    console.warn('authInit: network error, staying logged in with cached data', e.message);
   }
 }
 
