@@ -3231,11 +3231,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   </div>
       <div class="auth-divider"></div>
       <div class="auth-switch">No account? <a onclick="showAuth('register')">Create one free</a></div>
-      <div style="text-align:center;margin-top:16px;">
-        <a onclick="closeAuth()" style="font-size:12px;color:rgba(122,184,224,0.4);cursor:pointer;">
-          Continue without signing in →
-        </a>
-      </div>
     </div>
 
     <!-- REGISTER FORM -->
@@ -3809,6 +3804,16 @@ let lastAlertId = null;
 let alertPollInterval = null;
 let cachedTasks = [];
 let cachedShifts = [];
+let currentDMFriendId = null;
+let currentDMFriendHandle = null;
+let feedPage = 1;
+let feedFilter = 'all';
+let dmPollTimer = null;
+let feedPhotoFile = null;
+let INFO_CONTENT = {};
+let DJ_BINGO_TRACKS = [];
+let STAGES = [];
+let PRESETS = {};
 
 function getMySchedule() {
   try { return JSON.parse(localStorage.getItem(MY_SCHED_KEY)) || []; } catch(e) { return []; }
@@ -4530,7 +4535,7 @@ function handleModalBackdropClick(e) {
 /* ════════════════════════════════════════════════════════════
    CHECKLIST
 ════════════════════════════════════════════════════════════ */
-const PRESETS = {
+PRESETS = {
   'festival-basics': [{cat:'packing',text:'ID / Tickets'},{cat:'packing',text:'Cash & cards'},{cat:'packing',text:'Phone charger'},{cat:'packing',text:'Ear plugs'},{cat:'packing',text:'Water bottle'},{cat:'packing',text:'Sunscreen'},{cat:'packing',text:'Rain poncho'}],
   'outfit-essentials': [{cat:'outfits',text:'Friday night outfit'},{cat:'outfits',text:'Saturday night outfit'},{cat:'outfits',text:'Sunday outfit'},{cat:'outfits',text:'Comfortable shoes'},{cat:'outfits',text:'Layers for late night'},{cat:'outfits',text:'Hat or sunglasses'}],
   'rave-kit': [{cat:'supplies',text:'Kandi / bracelets'},{cat:'supplies',text:'LED accessories'},{cat:'supplies',text:'Fanny pack'},{cat:'supplies',text:'Face mask or bandana'},{cat:'supplies',text:'Glow sticks'}],
@@ -6795,12 +6800,7 @@ const AVATAR_COLORS = [
   '#4ade80','#60a5fa','#e879f9','#fb923c','#a3e635'
 ];
 let selectedAvatarColor = '#9b3dff';
-let currentDMFriendId   = null;
-let currentDMFriendHandle = null;
-let feedPage = 0;
-let feedFilter = 'all';
-let dmPollTimer = null;
-let feedPhotoFile = null;
+// currentDMFriendId, currentDMFriendHandle, feedPage, feedFilter, dmPollTimer, feedPhotoFile declared at top
 
 // ── Profile setup ──────────────────────────────────────────
 function checkProfileSetup() {
@@ -8459,7 +8459,7 @@ const INFO_DEFAULTS = {
   }
 };
 
-let INFO_CONTENT = JSON.parse(JSON.stringify(INFO_DEFAULTS));
+INFO_CONTENT = JSON.parse(JSON.stringify(INFO_DEFAULTS));
 let currentInfoTab = 'event';
 
 
@@ -8633,7 +8633,7 @@ window.addEventListener('resize', function() {
 /* ════════════════════════════════════════
    DJ BINGO
 ════════════════════════════════════════ */
-const DJ_BINGO_TRACKS = [
+DJ_BINGO_TRACKS = [
   // ── RONI SIZE / REPRAZENT ──
   { track:'Brown Paper Bag',        artist:'Roni Size / Reprazent',  cat:'dnb' },
   { track:'Heroes',                 artist:'Roni Size',               cat:'dnb' },
@@ -8961,7 +8961,7 @@ function closeTriviaGame() {
   if (state && state.timerInterval) clearInterval(state.timerInterval);
 }
 
-const STAGES = [
+STAGES = [
   { id:1, name:"Warm Up",       emoji:"🎧", color:"#00d4c8", bg:"rgba(0,212,200,0.15)",  badge:"Stage 1", desc:"Basic rave knowledge. Get your bearings on the dance floor.",   timePerQ:20 },
   { id:2, name:"In The Mix",    emoji:"🎛️", color:"#9b3dff", bg:"rgba(155,61,255,0.15)", badge:"Stage 2", desc:"Things are heating up. DNB, house, and festival culture.",       timePerQ:18 },
   { id:3, name:"Deep Cut",      emoji:"🔊", color:"#e8941a", bg:"rgba(232,148,26,0.15)",  badge:"Stage 3", desc:"Only the real ones make it here. Artist history and subgenres.", timePerQ:15 },
