@@ -5082,7 +5082,9 @@ function setCurrentUser(user, token) {
   // Close auth overlay first
   closeAuth();
 
-  // Navigate to home
+  // Reset currentPage so navigate('home') always fully executes
+  // (avoids the early-return when currentPage === 'home' already)
+  currentPage = '';
   navigate('home');
 
   // Fresh data load sequence
