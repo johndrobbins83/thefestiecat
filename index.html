@@ -3793,14 +3793,20 @@ let deferredInstallPrompt = null;
 
 // Game state — declared early to avoid TDZ errors in closeAllPopouts
 let state = { currentStage:0, currentQ:0, score:0, stageScores:[0,0,0,0], stageCorrect:[0,0,0,0], answered:false, timer:null, timeLeft:0, stageQuestions:[] };
-// bingoBoardCells, bingoMarked, bingoWon, bingoCardSeed declared at top
+let bingoBoardCells = [];
+let bingoMarked = new Set();
+let bingoWon = false;
+let bingoCardSeed = 0;
 let viewingUserId = null;
-// searchPeopleTimer declared at top
-// dmThreadPollTimer declared at top
-// notifPollTimer, lastNotifCount declared at top
-// pendingBannerFile, pendingEditAvatarFile declared at top
-// pendingProfilePicFile declared at top
-// lastAlertId, alertPollInterval declared at top
+let searchPeopleTimer = null;
+let dmThreadPollTimer = null;
+let notifPollTimer = null;
+let lastNotifCount = 0;
+let pendingBannerFile = null;
+let pendingEditAvatarFile = null;
+let pendingProfilePicFile = null;
+let lastAlertId = null;
+let alertPollInterval = null;
 let cachedTasks = [];
 let cachedShifts = [];
 
@@ -5910,8 +5916,7 @@ async function uploadArtistPhoto(artistKey) {
    SITE-WIDE ALERT SYSTEM
 ════════════════════════════════════════════════════════════ */
 const ALERT_DISMISSED_KEY = 'ss_dismissed_alerts';
-let lastAlertId = null;
-let alertPollInterval = null;
+// (declared at top of script)
 
 const ALERT_ICONS = { warning:'⚠️', emergency:'🚨', info:'ℹ️' };
 
@@ -7243,7 +7248,7 @@ async function loadFriends() {
   } catch {}
 }
 
-let searchPeopleTimer = null;
+// (declared at top of script)
 function searchPeople(q) {
   clearTimeout(searchPeopleTimer);
   const resultsEl = document.getElementById('peopleResults');
@@ -7446,7 +7451,7 @@ async function sendDM() {
   } catch { showToast('Could not send message'); }
 }
 
-let dmThreadPollTimer = null;
+// (declared at top of script)
 
 function startDMPolling() {
   if (dmPollTimer) clearInterval(dmPollTimer);
@@ -7507,7 +7512,7 @@ function escapeHTML(str) {
 /* ════════════════════════════════════════
    PROFILE PICTURE UPLOAD
 ════════════════════════════════════════ */
-let pendingProfilePicFile = null;
+// (declared at top of script)
 
 function previewProfilePic(input) {
   const file = input.files[0];
@@ -7730,8 +7735,7 @@ function hideEditProfileForm() {
   if (f) f.style.display='none';
 }
 
-let pendingBannerFile = null;
-let pendingEditAvatarFile = null;
+// (declared at top of script)
 
 
 async function uploadFileToR2(file, prefix) {
@@ -8069,8 +8073,7 @@ async function adminResetPassword(userId, userName) {
 /* ════════════════════════════════════════
    NOTIFICATIONS
 ════════════════════════════════════════ */
-let notifPollTimer = null;
-let lastNotifCount = 0;
+// (declared at top of script)
 
 function toggleNotifDrawer() {
   const drawer = document.getElementById('notifDrawer');
@@ -8699,10 +8702,7 @@ const DJ_BINGO_TRACKS = [
   { track:'Push the Feeling On',    artist:'Nightcrawlers (dnb edit)',cat:'dnb' },
 ];
 
-let bingoBoardCells = [];
-let bingoMarked = new Set();
-let bingoWon = false;
-let bingoCardSeed = 0;
+// (declared at top of script)
 
 function openDJBingo() {
   const overlay = document.getElementById('djBingoOverlay');
