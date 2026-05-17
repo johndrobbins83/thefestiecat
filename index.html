@@ -8571,11 +8571,11 @@ function closeFindMe() {
   const overlay = document.getElementById('findMeOverlay');
   if (overlay) overlay.style.display = 'none';
   document.body.style.overflow = '';
-  // Exit fullscreen
-  try {
-    if (document.exitFullscreen) document.exitFullscreen();
+  // Exit fullscreen only if we're actually in fullscreen
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-  } catch(e) {}
+  }
 }
 
 // Show Find Me button only on mobile
