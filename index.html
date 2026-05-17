@@ -76,7 +76,15 @@ body{
 .desktop-nav-link.sos:hover{background:rgba(255,77,141,0.15);}
 .desktop-nav-link.more-active{color:var(--gold-bright);border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.1);}
 
-.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-right{display:flex;align-items:center;gap:6px;}
+@media(min-width:768px){.nav-right{gap:10px;}}
+/* Hide inbox/bell on mobile until signed in */
+@media(max-width:767px){
+  .nav-signed-in-only{display:none;}
+  body.role-festie .nav-signed-in-only,
+  body.role-employee .nav-signed-in-only,
+  body.role-admin .nav-signed-in-only{display:block;}
+}
 .nav-bell{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);
   border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;
   cursor:pointer;position:relative;font-size:15px;}
@@ -88,9 +96,10 @@ body{
   font-weight:700;font-size:14px;cursor:pointer;border:2px solid var(--gold-bright);}
 
 /* Weather widget */
-.weather-widget{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:0;
+.weather-widget{display:none;align-items:center;gap:6px;padding:5px 8px;border-radius:0;
   cursor:pointer;background:transparent;border:none;
   transition:all .15s;position:relative;flex-shrink:0;}
+@media(min-width:768px){.weather-widget{display:flex;}}
 .weather-widget:hover{background:transparent;}
 .weather-icon{font-size:16px;line-height:1;}
 .weather-temp{font-size:13px;font-weight:700;color:var(--text-light);line-height:1;white-space:nowrap;}
@@ -2181,13 +2190,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="weather-panel-footer" id="wpUpdated">Fetching weather…</div>
       </div>
     </div>
-    <div style="position:relative;" id="inboxNavWrap">
+    <div style="position:relative;" id="inboxNavWrap" class="nav-signed-in-only">
       <div class="nav-inbox-btn" id="navInboxBtn" onclick="navigate('people');setTimeout(function(){switchPeopleTab('messages');},200);" title="Messages">
         💬
         <div class="nav-inbox-badge" id="inboxNavBadge"></div>
       </div>
     </div>
-    <div style="position:relative;" id="bellWrap">
+    <div style="position:relative;" id="bellWrap" class="nav-signed-in-only">
       <div class="nav-bell" id="navBell" onclick="toggleNotifDrawer()" style="cursor:pointer;">
         🔔
         <div class="notif-dot" id="notifDot" style="position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;display:none;"></div>
@@ -2219,7 +2228,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <button class="user-menu-item logout" onclick="event.stopPropagation();closeUserMenu();authLogout();">Sign out</button>
       </div>
     </div>
-    <button class="auth-btn" id="navSignInBtn" onclick="showAuth('login')" style="width:auto;padding:8px 16px;font-size:12px;margin-top:0;">Sign In</button>
+    <button class="auth-btn" id="navSignInBtn" onclick="showAuth('login')" style="width:auto;padding:7px 12px;font-size:11px;margin-top:0;white-space:nowrap;">Sign In</button>
 
   </div>
 </nav>
@@ -3338,6 +3347,22 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <div class="edit-field">
         <label class="edit-label">Apple Music URL <span style="color:var(--teal-glow);font-size:10px;font-weight:400;">artist / playlist</span></label>
         <input class="edit-input" id="editArtistApple" placeholder="https://music.apple.com/artist/…">
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">SoundCloud URL <span style="color:var(--teal-glow);font-size:10px;font-weight:400;">artist page</span></label>
+        <input class="edit-input" id="editArtistSoundcloud" placeholder="https://soundcloud.com/artistname">
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Instagram URL</label>
+        <input class="edit-input" id="editArtistInstagram" placeholder="https://instagram.com/artistname">
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Facebook URL</label>
+        <input class="edit-input" id="editArtistFacebook" placeholder="https://facebook.com/artistname">
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">TikTok URL</label>
+        <input class="edit-input" id="editArtistTiktok" placeholder="https://tiktok.com/@artistname">
       </div>
       <div class="edit-field">
         <label class="edit-label">Artist Photo</label>
@@ -4473,25 +4498,41 @@ function openArtist(key) {
   const streamingEl = document.getElementById('modalStreamingLinks');
   const streamingSection = document.getElementById('modalStreamingSection');
   if (streamingEl) {
-    const spotifyUrl = a.spotify && a.spotify.trim()
-      ? a.spotify.trim()
-      : 'https://open.spotify.com/search/' + encodeURIComponent(key);
-    const appleUrl = a.apple && a.apple.trim()
-      ? a.apple.trim()
-      : 'https://music.apple.com/us/search?term=' + encodeURIComponent(key);
 
-    streamingEl.innerHTML =
-      '<a class="social-link" href="' + spotifyUrl + '" target="_blank" rel="noopener" '+
+    const scUrl = a.soundcloud && a.soundcloud.trim()
+      ? a.soundcloud.trim()
+      : null;
+
+    const buttons = [];
+    if (a.spotify && a.spotify.trim())
+      buttons.push('<a class="social-link" href="' + a.spotify.trim() + '" target="_blank" rel="noopener" '+
         'style="background:rgba(29,185,84,0.12);border-color:rgba(29,185,84,0.35);color:#1db954;font-weight:700;">'+
-        '&#9654; Spotify</a>' +
-      '<a class="social-link" href="' + appleUrl + '" target="_blank" rel="noopener" '+
+        '&#9654; Spotify</a>');
+    if (a.apple && a.apple.trim())
+      buttons.push('<a class="social-link" href="' + a.apple.trim() + '" target="_blank" rel="noopener" '+
         'style="background:rgba(252,90,90,0.1);border-color:rgba(252,90,90,0.35);color:#fc5a5a;font-weight:700;">'+
-        '&#9654; Apple Music</a>';
+        '&#9654; Apple Music</a>');
+    if (scUrl)
+      buttons.push('<a class="social-link" href="' + scUrl + '" target="_blank" rel="noopener" '+
+        'style="background:rgba(255,85,0,0.1);border-color:rgba(255,85,0,0.35);color:#ff5500;font-weight:700;">'+
+        '&#9654; SoundCloud</a>');
+
+    streamingEl.innerHTML = buttons.join('');
+    if (streamingSection) streamingSection.style.display = buttons.length ? '' : 'none';
   }
 
-  document.getElementById('modalSocials').innerHTML =
-    `<a class="social-link" href="https://soundcloud.com/search?q=${encodeURIComponent(key)}" target="_blank" rel="noopener">🎵 SoundCloud</a>`+
-    `<a class="social-link" href="https://instagram.com/${encodeURIComponent(key.toLowerCase().replace(/\s/g,''))}" target="_blank" rel="noopener">📸 Instagram</a>`;
+  const socialLinks = [];
+  if (a.instagram && a.instagram.trim())
+    socialLinks.push(`<a class="social-link" href="${a.instagram.trim()}" target="_blank" rel="noopener">📸 Instagram</a>`);
+  if (a.facebook && a.facebook.trim())
+    socialLinks.push(`<a class="social-link" href="${a.facebook.trim()}" target="_blank" rel="noopener">📘 Facebook</a>`);
+  if (a.tiktok && a.tiktok.trim())
+    socialLinks.push(`<a class="social-link" href="${a.tiktok.trim()}" target="_blank" rel="noopener">🎵 TikTok</a>`);
+
+  const socialsEl = document.getElementById('modalSocials');
+  const socialsSection = socialsEl && socialsEl.closest('.modal-section');
+  if (socialsEl) socialsEl.innerHTML = socialLinks.join('');
+  if (socialsSection) socialsSection.style.display = socialLinks.length ? '' : 'none';
   const modal = document.getElementById('artistModal');
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -5363,6 +5404,14 @@ function adminEditArtist(key) {
   document.getElementById('editArtistSpotify').value    = a.spotify || '';
   const appleEl = document.getElementById('editArtistApple');
   if (appleEl) appleEl.value = a.apple || '';
+  const scEl = document.getElementById('editArtistSoundcloud');
+  if (scEl) scEl.value = a.soundcloud || '';
+  const igEl = document.getElementById('editArtistInstagram');
+  if (igEl) igEl.value = a.instagram || '';
+  const fbEl = document.getElementById('editArtistFacebook');
+  if (fbEl) fbEl.value = a.facebook || '';
+  const ttEl = document.getElementById('editArtistTiktok');
+  if (ttEl) ttEl.value = a.tiktok || '';
   document.getElementById('editArtistPhoto').value      = a.photo || '';
   // Reset file input and status
   const fi = document.getElementById('editPhotoFile');
@@ -5397,6 +5446,14 @@ function adminNewArtist() {
   document.getElementById('editArtistSpotify').value    = '';
   const appleNewEl = document.getElementById('editArtistApple');
   if (appleNewEl) appleNewEl.value = '';
+  const scNewEl = document.getElementById('editArtistSoundcloud');
+  if (scNewEl) scNewEl.value = '';
+  const igNewEl = document.getElementById('editArtistInstagram');
+  if (igNewEl) igNewEl.value = '';
+  const fbNewEl = document.getElementById('editArtistFacebook');
+  if (fbNewEl) fbNewEl.value = '';
+  const ttNewEl = document.getElementById('editArtistTiktok');
+  if (ttNewEl) ttNewEl.value = '';
   document.body.style.overflow = 'hidden';
 }
 
@@ -5431,6 +5488,10 @@ async function saveArtistEdit() {
     bio:       document.getElementById('editArtistBio').value,
     spotify:   document.getElementById('editArtistSpotify').value,
     apple:     document.getElementById('editArtistApple')?.value || '',
+    soundcloud: document.getElementById('editArtistSoundcloud')?.value || '',
+    instagram:  document.getElementById('editArtistInstagram')?.value || '',
+    facebook:   document.getElementById('editArtistFacebook')?.value || '',
+    tiktok:     document.getElementById('editArtistTiktok')?.value || '',
     photo:     photoUrl,
     initials:  artists[oldKey]?.initials || name.slice(0,2),
     color:     artists[oldKey]?.color    || 'linear-gradient(135deg,#9b3dff,#00d4c8)',
