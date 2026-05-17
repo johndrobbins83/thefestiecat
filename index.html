@@ -3585,7 +3585,9 @@ window.addEventListener('error', function(e) {
 window.addEventListener('unhandledrejection', function(e) {
   console.error('UNHANDLED PROMISE:', e.reason);
 });
-const AUTH_URL = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
+const AUTH_URL  = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
+const TOKEN_KEY = 'ss_auth_token';
+const USER_KEY  = 'ss_auth_user';
 /* ════════════════════════════════════════════════════════════
    ARTIST DATABASE
 ════════════════════════════════════════════════════════════ */
@@ -5009,8 +5011,7 @@ document.addEventListener('keydown', e=>{
 /* ════════════════════════════════════════════════════════════
    AUTH SYSTEM
 ════════════════════════════════════════════════════════════ */
-const TOKEN_KEY = 'ss_auth_token';
-const USER_KEY  = 'ss_auth_user';
+// TOKEN_KEY and USER_KEY are declared at the top of the script
 
 var currentUser = null;
 
