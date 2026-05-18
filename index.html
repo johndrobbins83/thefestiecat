@@ -3914,37 +3914,38 @@ let cachedTasks = [];
 let cachedShifts = [];
 const STAFF_ROLES = ['security','stage-crew','ticketing','engineers','management'];
 const STAFF_ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management' };
-// STAFF_TASK_KEY, staffDoneTasks declared at top
+const STAFF_TASK_KEY = 'ss_staff_tasks_done';
+let staffDoneTasks = new Set();
 let staffEditSubTab = 'announcements';
 let staffEditorData = { announcements: [], contacts: [], tasks: {}, shifts: {} };
 let STAFF_TASKS = {};
 let STAFF_SHIFTS = {};
-// scheduleInitted declared at top
-// artistsInitted declared at top
-// artistLetterFilter declared at top
+let scheduleInitted = false;
+let artistsInitted = false;
+let artistLetterFilter = '';
 let GAMES_DATA = [];
-// gamesInitted declared at top
+let gamesInitted = false;
 let masterDayFilter = 'all';
-// masterTypeFilter declared at top
-// ALERT_DISMISSED_KEY declared at top
-// ALERT_ICONS declared at top
-// PERSONAL_BLOCKS_KEY declared at top
-// ROLES declared at top
-ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management' };
-// DAYS declared at top
-// DAY_LABELS declared at top
-// SHIFT_LOCATIONS declared at top
+let masterTypeFilter = 'all';
+const ALERT_DISMISSED_KEY = 'ss_dismissed_alerts';
+const ALERT_ICONS = { warning:'⚠️', emergency:'🚨', info:'ℹ️' };
+const PERSONAL_BLOCKS_KEY = 'ss_personal_blocks_v1';
+const ROLES = ['security','stage-crew','ticketing','engineers','management'];
+const ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management' };
+const DAYS = ['Fri','Sat','Sun'];
+const DAY_LABELS = {'Fri':'Friday Jul 17','Sat':'Saturday Jul 18','Sun':'Sunday Jul 19'};
+const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Atrium Stage','Atrium Backstage','Beach Stage','Beach Backstage','Locals Stage','Locals Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Parking Lot','Medical Station','General Grounds'];
 let taskAssignMode = 'role';
 let AVATAR_COLORS = [];
-// selectedAvatarColor declared at top
+let selectedAvatarColor = '#9b3dff';
 let _origSwitchPeopleTab = null;
 let _origSubmitProfile = null;
 let INFO_DEFAULTS = {};
-// currentInfoTab declared at top
+let currentInfoTab = 'event';
 let TERMS_HTML = '';
-// _findMeStrobeInterval declared at top
+let _findMeStrobeInterval = null;
 let ALL_QUESTIONS = [];
-// _installPrompt declared at top
+let _installPrompt = null;
 let currentDMFriendId = null;
 let currentDMFriendHandle = null;
 let feedPage = 1;
@@ -6421,7 +6422,7 @@ STAFF_SHIFTS = {
   management:  [ {day:'Fri', start:'12:00 PM', end:'4:00 AM', location:'Full Venue'}, {day:'Sat', start:'12:00 PM', end:'4:00 AM', location:'Full Venue'}, {day:'Sun', start:'12:00 PM', end:'2:00 AM', location:'Full Venue'} ],
 };
 
-// STAFF_TASK_KEY, staffDoneTasks declared at top
+// (declared at top)
 
 function initStaffDashboard() {
   loadMyShifts();
