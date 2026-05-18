@@ -5420,8 +5420,21 @@ async function submitLogin() {
     });
     const data = await res.json();
     if (!res.ok) { showAuthError(errEl, data.error || 'Login failed.'); return; }
-    setCurrentUser(data.user, data.token);
-    showToast(`Welcome back, ${data.user.name}! ☠`);
+
+    // Fetch full profile immediately so avatar/photo/banner are correct from the start
+    let fullUser = data.user;
+    try {
+      const meRes = await fetch(`${AUTH_URL}/auth/me`, {
+        headers: { 'Authorization': `Bearer ${data.token}` }
+      });
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        fullUser = { ...fullUser, ...meData.user };
+      }
+    } catch(e) {}
+
+    setCurrentUser(fullUser, data.token);
+    showToast(`Welcome back, ${fullUser.name}! ☠`);
   } catch(e) {
     console.error('Login error:', e);
     showAuthError(errEl, 'Could not connect: ' + (e.message || e));
