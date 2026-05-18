@@ -9234,7 +9234,9 @@ function renderNotifications(notifs) {
     list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications yet</div>';
     return;
   }
-  list.innerHTML = notifs.map(function(n) {
+  // Sort newest first
+  const sorted = notifs.slice().sort((a, b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
+  list.innerHTML = sorted.map(function(n) {
     const timeAgo = formatTimeAgo(n.createdAt);
     return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" onclick="handleNotifClick(\''+n.id+'\',\''+( n.type||'')+'\')">' +
       '<div class="notif-dot ' + (n.category||'blue') + '"></div>' +
@@ -9264,6 +9266,10 @@ async function handleNotifClick(notifId, type) {
   } else if (type === 'shift_assigned' || type === 'task_assigned') {
     toggleNotifDrawer();
     navigate('staff');
+  } else if (type === 'password_reset') {
+    toggleNotifDrawer();
+    navigate('admin');
+    setTimeout(function() { switchAdminTab('users', null); adminLoadUsers(); }, 300);
   }
   loadNotifications();
 }
