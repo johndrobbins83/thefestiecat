@@ -3261,8 +3261,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
       <div class="auth-field">
         <label class="auth-label">Password</label>
-        <input class="auth-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter')submitLogin()">
+        <div class="pw-field-wrap">
+          <input class="auth-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')submitLogin()">
+          <button type="button" class="pw-toggle" onclick="togglePwVisibility('loginPassword',this)" tabindex="-1">👁</button>
+        </div>
       </div>
       <button class="auth-btn" id="loginBtn" onclick="submitLogin()">Sign In</button>
   <div style="text-align:center;margin-top:10px;">
@@ -3300,14 +3303,18 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
       <!-- Agreements -->
       <div style="margin:12px 0;display:flex;flex-direction:column;gap:10px;">
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.4;">
-          <input type="checkbox" id="registerNotifConsent" style="margin-top:2px;accent-color:var(--gold-bright);flex-shrink:0;">
-          I agree to receive event notifications and updates from Sunken Suite / The Mutiny
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.5;">
+          <input type="checkbox" id="registerNotifConsent" checked style="margin-top:3px;accent-color:var(--gold-bright);flex-shrink:0;">
+          I agree to receive in-app notifications and transactional updates related to my account and The Mutiny 2026 festival from Sunken Suite.
         </label>
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.4;">
-          <input type="checkbox" id="registerEmailList" style="margin-top:2px;accent-color:var(--gold-bright);flex-shrink:0;">
-          Add me to the Mutiny email list for future events, announcements &amp; exclusive content
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.5;">
+          <input type="checkbox" id="registerEmailList" checked style="margin-top:3px;accent-color:var(--gold-bright);flex-shrink:0;">
+          I consent to Sunken Suite storing my email address and sending me marketing emails about future events, announcements, and exclusive content. I understand I may unsubscribe at any time.
         </label>
+        <p style="font-size:11px;color:rgba(122,184,224,0.45);line-height:1.5;margin:0;">
+          By creating an account you agree to our
+          <a onclick="openTermsModal()" style="color:var(--teal-glow);cursor:pointer;text-decoration:underline;">Terms of Service &amp; Privacy Policy</a>.
+        </p>
       </div>
       <button class="auth-btn" id="registerBtn" onclick="submitRegister()">Create Account</button>
       <div class="auth-divider"></div>
@@ -3578,9 +3585,34 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="info-tab" id="infoTabVenue" onclick="switchInfoTab('venue')">Venue</div>
     <div class="info-tab" id="infoTabGuidelines" onclick="switchInfoTab('guidelines')">Guidelines</div>
     <div class="info-tab" id="infoTabHelp" onclick="switchInfoTab('help')">Help</div>
+    <div class="info-tab" id="infoTabTerms" onclick="switchInfoTab('terms')">Terms</div>
   </div>
   <div class="info-body" id="infoBody">
     <!-- Content rendered by JS -->
+  </div>
+</div>
+
+<!-- ══ TERMS OF SERVICE MODAL ══ -->
+<div id="termsModal" style="position:fixed;inset:0;z-index:60000;display:none;align-items:center;
+  justify-content:center;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);padding:20px;">
+  <div style="background:#0a0a0a;border:1px solid rgba(245,200,66,0.3);width:100%;max-width:600px;
+    max-height:90vh;display:flex;flex-direction:column;border-radius:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+      border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;
+        color:var(--gold-bright);letter-spacing:2px;text-transform:uppercase;">Terms of Service</span>
+      <button onclick="closeTermsModal()" style="background:rgba(255,255,255,0.07);border:none;
+        color:var(--text-light);font-size:16px;cursor:pointer;width:32px;height:32px;">&#x2715;</button>
+    </div>
+    <div id="termsModalBody" style="overflow-y:auto;padding:20px;flex:1;font-size:13px;
+      color:var(--text-muted);line-height:1.8;scrollbar-width:none;">
+    </div>
+    <div style="padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;
+      display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeTermsModal()" style="padding:9px 20px;background:rgba(245,200,66,0.12);
+        border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;
+        font-size:13px;font-weight:700;cursor:pointer;">Close</button>
+    </div>
   </div>
 </div>
 
@@ -4947,7 +4979,7 @@ renderChecklist();
 // Keyboard: Escape closes modals
 document.addEventListener('keydown', e=>{
   if (e.key==='Escape') {
-    closeModal(); closeSOS(); closeMore(); closeDrawer();
+    closeModal(); closeSOS(); closeMore(); closeDrawer(); closeTermsModal();
   }
 });
 /* ── SOS SYSTEM (original) ── */
@@ -8809,7 +8841,63 @@ function closeInfo() {
   document.body.style.overflow = '';
 }
 
+const TERMS_HTML = `
+<div style="font-size:13px;color:var(--text-muted);line-height:1.9;">
+  <div style="font-size:10px;color:rgba(122,184,224,0.4);margin-bottom:20px;">Last updated: June 2026 · Effective upon account creation</div>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">1. Acceptance of Terms</div>
+  <p style="margin-bottom:16px;">By creating an account or using the Sunken Suite application ("the App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, do not use the App. These Terms apply to all users of the App, including attendees, staff, and administrators of The Mutiny 2026 festival.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">2. Who We Are</div>
+  <p style="margin-bottom:16px;">Sunken Suite is a digital companion application created for The Mutiny 2026 festival. The App is operated by the organizers of The Mutiny 2026. References to "we," "us," or "our" refer to The Mutiny 2026 event organizers.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">3. Your Account</div>
+  <p style="margin-bottom:16px;">You must provide a valid email address and choose a unique handle to create an account. You are responsible for maintaining the confidentiality of your password and for all activity under your account. You must be at least 18 years of age to create an account. We reserve the right to suspend or terminate accounts that violate these Terms.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">4. Data Collection &amp; Privacy</div>
+  <p style="margin-bottom:4px;">We collect the following information when you register:</p>
+  <ul style="margin:0 0 16px 20px;padding:0;">
+    <li>Your email address, display name, and handle</li>
+    <li>Profile information you choose to provide (bio, hometown, music preferences)</li>
+    <li>Optional: profile photo and banner image</li>
+    <li>App activity such as saved artists, posts, and messages</li>
+  </ul>
+  <p style="margin-bottom:16px;">Your data is stored securely via Cloudflare Workers KV and is not sold to third parties. We do not share your personal information with advertisers. Your email address is used only for account-related communications and, if you opt in, for event marketing as described in Section 5.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">5. Email Marketing &amp; Communications</div>
+  <p style="margin-bottom:16px;">During registration, you may choose to opt in to marketing emails from The Mutiny 2026. If you check the box labeled "I consent to Sunken Suite storing my email address and sending me marketing emails," you agree that we may contact you with information about future events, lineup announcements, ticket sales, and exclusive content related to The Mutiny and Sunken Suite events.</p>
+  <p style="margin-bottom:16px;"><strong style="color:var(--text-light);">You may unsubscribe at any time</strong> by contacting us directly or using the unsubscribe link included in every marketing email. Opting out of marketing emails does not affect transactional communications related to your account (such as password resets).</p>
+  <p style="margin-bottom:16px;">We comply with the CAN-SPAM Act, CASL, and applicable email marketing regulations. We will not send marketing emails to users who have not explicitly opted in.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">6. User Content</div>
+  <p style="margin-bottom:16px;">You retain ownership of content you post (photos, messages, feed posts). By posting, you grant us a non-exclusive, royalty-free license to display that content within the App. You are responsible for ensuring your content does not violate any laws or the rights of others. We reserve the right to remove content that violates these Terms without notice.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">7. Prohibited Conduct</div>
+  <p style="margin-bottom:4px;">You agree not to:</p>
+  <ul style="margin:0 0 16px 20px;padding:0;">
+    <li>Harass, threaten, or abuse other users</li>
+    <li>Post illegal, obscene, or harmful content</li>
+    <li>Impersonate any person or entity</li>
+    <li>Attempt to gain unauthorized access to the App or other users' accounts</li>
+    <li>Use the App for any commercial purpose without our consent</li>
+  </ul>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">8. Intellectual Property</div>
+  <p style="margin-bottom:16px;">All App content, design, code, and branding are the property of The Mutiny 2026 organizers. You may not reproduce, distribute, or create derivative works without written permission.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">9. Disclaimers &amp; Limitation of Liability</div>
+  <p style="margin-bottom:16px;">The App is provided "as is" without warranties of any kind. We are not liable for any indirect, incidental, or consequential damages arising from your use of the App. Our total liability to you for any claim shall not exceed the amount you paid to access the App (if any).</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">10. Changes to These Terms</div>
+  <p style="margin-bottom:16px;">We may update these Terms from time to time. Continued use of the App after changes constitutes acceptance of the revised Terms. We will indicate the effective date at the top of this document.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">11. Contact</div>
+  <p style="margin-bottom:4px;">For questions about these Terms or your data, contact us at:</p>
+  <p style="color:var(--teal-glow);margin-bottom:0;">info@thefestiecat.com</p>
+</div>`;
+
 function renderInfoContent(tab) {
+  if (tab === 'terms') return TERMS_HTML;
   const data = INFO_CONTENT[tab];
   if (!data) return '';
   const isAdmin = currentUser && currentUser.role === 'admin';
@@ -8823,16 +8911,32 @@ function renderInfoContent(tab) {
     out += '<div class="info-card"><div class="info-card-body">' + escapeHTML(sec.body).replace(/\n/g,'<br>') + '</div></div>';
     out += '</div>';
   });
-  // Add new section button for admin
   if (isAdmin) {
     out += '<button onclick="openInfoAddSection(\''+tab+'\')" style="width:100%;padding:10px;background:rgba(245,200,66,0.07);border:1px dashed rgba(245,200,66,0.3);color:var(--gold-bright);cursor:pointer;font-size:12px;font-weight:700;margin-top:8px;">+ Add Section</button>';
   }
   return out;
 }
 
+function openTermsModal() {
+  const modal = document.getElementById('termsModal');
+  const body  = document.getElementById('termsModalBody');
+  if (!modal || !body) return;
+  body.innerHTML = TERMS_HTML;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTermsModal() {
+  const modal = document.getElementById('termsModal');
+  if (modal) modal.style.display = 'none';
+  // Only restore overflow if auth overlay is also closed
+  const authOpen = document.getElementById('authOverlay')?.classList.contains('open');
+  if (!authOpen) document.body.style.overflow = '';
+}
+
 function switchInfoTab(tab) {
   currentInfoTab = tab;
-  ['event','venue','guidelines','help'].forEach(function(t) {
+  ['event','venue','guidelines','help','terms'].forEach(function(t) {
     const el = document.getElementById('infoTab' + t.charAt(0).toUpperCase() + t.slice(1));
     if (el) el.classList.toggle('active', t === tab);
   });
