@@ -3321,11 +3321,84 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   </div>
 </div>
 
-<!-- iOS install tip (shows on iOS Safari) -->
-<div class="pwa-install-banner ios-install-tip" id="iosInstallTip">
-  <div class="ios-tip-inner">
-    <div class="ios-tip-text">To install: tap <strong>Share ↑</strong> then <strong>"Add to Home Screen"</strong></div>
-    <button class="ios-tip-close" onclick="document.getElementById('iosInstallTip').style.display='none'">Got it</button>
+<!-- iOS install guide modal (shows on iOS Safari) -->
+<div id="iosInstallTip" style="display:none;position:fixed;inset:0;z-index:70000;
+  background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);
+  align-items:flex-end;justify-content:center;padding-bottom:0;">
+  <div style="background:#0a0a0a;border:1px solid rgba(0,212,200,0.3);
+    border-bottom:none;width:100%;max-width:480px;border-radius:16px 16px 0 0;
+    padding:20px 20px 32px;font-family:'Poppins',sans-serif;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#9b3dff,#00d4c8);
+          border-radius:10px;display:flex;align-items:center;justify-content:center;
+          font-size:22px;">☠️</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--text-light);">Install Sunken Suite</div>
+          <div style="font-size:11px;color:var(--text-muted);">Add to your Home Screen</div>
+        </div>
+      </div>
+      <button onclick="dismissIOSInstall()"
+        style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);
+        font-size:16px;cursor:pointer;width:32px;height:32px;border-radius:50%;
+        display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">
+      Get the full app experience — works offline at the festival, loads instantly, and sits on your home screen just like a native app.
+    </div>
+
+    <!-- Steps -->
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+        background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+        <div style="width:32px;height:32px;background:rgba(0,212,200,0.15);border:1px solid rgba(0,212,200,0.3);
+          border-radius:50%;display:flex;align-items:center;justify-content:center;
+          font-size:16px;flex-shrink:0;">1</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-light);">Tap the Share button</div>
+          <div style="font-size:11px;color:var(--text-muted);">The <strong style="color:var(--teal-glow);">□↑</strong> icon at the bottom of Safari</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+        background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+        <div style="width:32px;height:32px;background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.3);
+          border-radius:50%;display:flex;align-items:center;justify-content:center;
+          font-size:16px;flex-shrink:0;">2</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-light);">Scroll down &amp; tap "Add to Home Screen"</div>
+          <div style="font-size:11px;color:var(--text-muted);">Look for the <strong style="color:#c084fc;">⊕</strong> icon in the Share sheet</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+        background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+        <div style="width:32px;height:32px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);
+          border-radius:50%;display:flex;align-items:center;justify-content:center;
+          font-size:16px;flex-shrink:0;">3</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-light);">Tap "Add" in the top right</div>
+          <div style="font-size:11px;color:var(--text-muted);">The Sunken Suite icon will appear on your home screen</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow pointing down to share button -->
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;
+        background:rgba(0,212,200,0.08);border:1px solid rgba(0,212,200,0.25);">
+        <span style="font-size:20px;">👇</span>
+        <span style="font-size:12px;color:var(--teal-glow);font-weight:700;">Tap Share at the bottom of your screen</span>
+      </div>
+    </div>
+
+    <button onclick="dismissIOSInstall()"
+      style="width:100%;padding:12px;background:rgba(0,212,200,0.12);
+      border:1px solid rgba(0,212,200,0.35);color:var(--teal-glow);
+      font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+      Got it — I'll add it now
+    </button>
   </div>
 </div>
 
@@ -5163,16 +5236,21 @@ function dismissInstall() {
   localStorage.setItem(PWA_DISMISSED_KEY,'1');
   document.getElementById('pwaInstallBanner').classList.remove('show');
 }
+function dismissIOSInstall() {
+  localStorage.setItem(PWA_DISMISSED_KEY+'_ios', '1');
+  const tip = document.getElementById('iosInstallTip');
+  if (tip) tip.style.display = 'none';
+}
 // iOS Safari — no beforeinstallprompt, show manual instructions
 (function() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isStandalone = window.navigator.standalone;
   const dismissed = localStorage.getItem(PWA_DISMISSED_KEY+'_ios');
   if (isIOS && !isStandalone && !dismissed) {
-    setTimeout(()=>{
+    setTimeout(function() {
       const tip = document.getElementById('iosInstallTip');
-      tip.classList.add('show'); tip.style.display='block';
-    }, 4000);
+      if (tip) tip.style.display = 'flex';
+    }, 5000); // show after 5 seconds
   }
 })();
 
@@ -10909,33 +10987,11 @@ function installApp() {
 }
 
 function showInstallIOSModal() {
-  const existing = document.getElementById('installModal');
-  if (existing) { existing.style.display = 'flex'; return; }
-
-  const modal = document.createElement('div');
-  modal.id = 'installModal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.9);display:flex;align-items:flex-end;justify-content:center;';
-  modal.innerHTML =
-    '<div style="background:#0a0a0a;border:1px solid rgba(245,200,66,0.3);border-bottom:none;padding:24px 20px 40px;max-width:420px;width:100%;text-align:center;">' +
-      '<div style="font-size:32px;margin-bottom:12px;">📱</div>' +
-      '<div style="font-size:16px;font-weight:800;color:var(--gold-bright);margin-bottom:8px;">Install Sunken Suite</div>' +
-      '<div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:20px;">' +
-        '<strong style="color:var(--text-light);">On iPhone/iPad:</strong><br>' +
-        'Tap the <strong style="color:var(--teal-glow);">Share</strong> button ' +
-        '<span style="font-size:16px;">&#x2B06;</span> at the bottom of Safari,<br>' +
-        'then tap <strong style="color:var(--teal-glow);">Add to Home Screen</strong>' +
-        '<br><br>' +
-        '<strong style="color:var(--text-light);">On Android:</strong><br>' +
-        'Tap the <strong style="color:var(--teal-glow);">3-dot menu</strong> in Chrome,<br>' +
-        'then tap <strong style="color:var(--teal-glow);">Add to Home Screen</strong>' +
-      '</div>' +
-      '<button onclick="var m=document.getElementById(\'installModal\');if(m)m.style.display=\'none\';" ' +
-        'style="padding:12px 32px;background:var(--gold-bright);border:none;color:#000;font-weight:800;font-size:14px;cursor:pointer;width:100%;">Got It</button>' +
-    '</div>';
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) modal.style.display = 'none';
-  });
-  document.body.appendChild(modal);
+  const tip = document.getElementById('iosInstallTip');
+  if (tip) {
+    tip.style.display = 'flex';
+    return;
+  }
 }
 
 // Install button always visible in More menu
