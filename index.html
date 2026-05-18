@@ -5354,6 +5354,11 @@ document.addEventListener('keydown', e=>{
 var currentUser = null;
 
 // ── Boot: restore session ──────────────────────────────────
+// Safety: ensure only home page is active on initial load
+document.querySelectorAll('.page').forEach(function(p) {
+  if (p.id !== 'page-home') p.classList.remove('active');
+});
+
 async function authInit() {
   const token      = localStorage.getItem(TOKEN_KEY);
   const cachedUser = localStorage.getItem(USER_KEY);
@@ -5436,10 +5441,12 @@ function setCurrentUser(user, token) {
   // Close auth overlay first
   closeAuth();
 
-  // Reset currentPage so navigate('home') always fully executes
-  // (avoids the early-return when currentPage === 'home' already)
+  // Restore previous page from URL hash, or default to home
+  const _hash = window.location.hash.replace('#','').toLowerCase();
+  const _validPages = ['home','schedule','artists','map','list','people','profile','checklist','games','admin','staff','doc'];
+  const _targetPage = (_hash && _validPages.includes(_hash)) ? _hash : 'home';
   currentPage = '';
-  navigate('home');
+  navigate(_targetPage);
 
   // Fresh data load sequence
   setTimeout(function() {
