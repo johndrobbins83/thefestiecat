@@ -2645,6 +2645,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <button class="dash-tab active" onclick="switchAdminTab('artists',this)"><span style="color:var(--gold-bright);margin-right:4px;">♪</span>Artists</button>
       <button class="dash-tab" onclick="switchAdminTab('schedule',this)"><span style="color:var(--gold-bright);margin-right:4px;">◈</span>Schedule</button>
       <button class="dash-tab" onclick="switchAdminTab('master',this)">📋 Master</button>
+      <button class="dash-tab" onclick="switchAdminTab('staffedit',this)">👷 Staff</button>
       <button class="dash-tab" onclick="switchAdminTab('tasks',this)">✅ Tasks</button>
       <button class="dash-tab" onclick="switchAdminTab('shifts',this)">🕐 Shifts</button>
       <button class="dash-tab" onclick="switchAdminTab('users',this)">👥 Users</button>
@@ -2711,6 +2712,26 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <button class="dash-btn"        id="masterTypeTask"  onclick="setMasterType('task',this)"  style="border-color:rgba(245,200,66,0.4);color:var(--gold-bright);">✅ Tasks</button>
           </div>
           <div id="masterBlockList" style="padding:0 0 16px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Staff Editor Tab -->
+    <div id="adminTab-staffedit" style="display:none;">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title">👷 Staff Dashboard Editor</div>
+          <button class="dash-btn primary" onclick="saveStaffContent()">💾 Save All</button>
+        </div>
+        <div class="dash-section-body" style="padding:0;">
+          <!-- Sub-tabs -->
+          <div style="display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.07);flex-wrap:wrap;">
+            <button class="dash-btn active" id="staffEditTabAnn"   onclick="switchStaffEditTab('announcements',this)">📢 Announcements</button>
+            <button class="dash-btn"        id="staffEditTabCon"   onclick="switchStaffEditTab('contacts',this)">📞 Contacts</button>
+            <button class="dash-btn"        id="staffEditTabTasks" onclick="switchStaffEditTab('tasks',this)">✅ Role Tasks</button>
+            <button class="dash-btn"        id="staffEditTabShifts" onclick="switchStaffEditTab('shifts',this)">🕐 Role Shifts</button>
+          </div>
+          <div id="staffEditBody" style="padding:14px;"></div>
         </div>
       </div>
     </div>
@@ -3261,8 +3282,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
       <div class="auth-field">
         <label class="auth-label">Password</label>
-        <input class="auth-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter')submitLogin()">
+        <div class="pw-field-wrap">
+          <input class="auth-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')submitLogin()">
+          <button type="button" class="pw-toggle" onclick="togglePwVisibility('loginPassword',this)" tabindex="-1">👁</button>
+        </div>
       </div>
       <button class="auth-btn" id="loginBtn" onclick="submitLogin()">Sign In</button>
   <div style="text-align:center;margin-top:10px;">
@@ -3300,14 +3324,18 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
       <!-- Agreements -->
       <div style="margin:12px 0;display:flex;flex-direction:column;gap:10px;">
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.4;">
-          <input type="checkbox" id="registerNotifConsent" style="margin-top:2px;accent-color:var(--gold-bright);flex-shrink:0;">
-          I agree to receive event notifications and updates from Sunken Suite / The Mutiny
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.5;">
+          <input type="checkbox" id="registerNotifConsent" checked style="margin-top:3px;accent-color:var(--gold-bright);flex-shrink:0;">
+          I agree to receive in-app notifications and transactional updates related to my account and The Mutiny 2026 festival from Sunken Suite.
         </label>
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.4;">
-          <input type="checkbox" id="registerEmailList" style="margin-top:2px;accent-color:var(--gold-bright);flex-shrink:0;">
-          Add me to the Mutiny email list for future events, announcements &amp; exclusive content
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-muted);line-height:1.5;">
+          <input type="checkbox" id="registerEmailList" checked style="margin-top:3px;accent-color:var(--gold-bright);flex-shrink:0;">
+          I consent to Sunken Suite storing my email address and sending me marketing emails about future events, announcements, and exclusive content. I understand I may unsubscribe at any time.
         </label>
+        <p style="font-size:11px;color:rgba(122,184,224,0.45);line-height:1.5;margin:0;">
+          By creating an account you agree to our
+          <a onclick="openTermsModal()" style="color:var(--teal-glow);cursor:pointer;text-decoration:underline;">Terms of Service &amp; Privacy Policy</a>.
+        </p>
       </div>
       <button class="auth-btn" id="registerBtn" onclick="submitRegister()">Create Account</button>
       <div class="auth-divider"></div>
@@ -3578,9 +3606,34 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="info-tab" id="infoTabVenue" onclick="switchInfoTab('venue')">Venue</div>
     <div class="info-tab" id="infoTabGuidelines" onclick="switchInfoTab('guidelines')">Guidelines</div>
     <div class="info-tab" id="infoTabHelp" onclick="switchInfoTab('help')">Help</div>
+    <div class="info-tab" id="infoTabTerms" onclick="switchInfoTab('terms')">Terms</div>
   </div>
   <div class="info-body" id="infoBody">
     <!-- Content rendered by JS -->
+  </div>
+</div>
+
+<!-- ══ TERMS OF SERVICE MODAL ══ -->
+<div id="termsModal" style="position:fixed;inset:0;z-index:60000;display:none;align-items:center;
+  justify-content:center;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);padding:20px;">
+  <div style="background:#0a0a0a;border:1px solid rgba(245,200,66,0.3);width:100%;max-width:600px;
+    max-height:90vh;display:flex;flex-direction:column;border-radius:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+      border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;
+        color:var(--gold-bright);letter-spacing:2px;text-transform:uppercase;">Terms of Service</span>
+      <button onclick="closeTermsModal()" style="background:rgba(255,255,255,0.07);border:none;
+        color:var(--text-light);font-size:16px;cursor:pointer;width:32px;height:32px;">&#x2715;</button>
+    </div>
+    <div id="termsModalBody" style="overflow-y:auto;padding:20px;flex:1;font-size:13px;
+      color:var(--text-muted);line-height:1.8;scrollbar-width:none;">
+    </div>
+    <div style="padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;
+      display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeTermsModal()" style="padding:9px 20px;background:rgba(245,200,66,0.12);
+        border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;
+        font-size:13px;font-weight:700;cursor:pointer;">Close</button>
+    </div>
   </div>
 </div>
 
@@ -3859,6 +3912,13 @@ let lastAlertId = null;
 let alertPollInterval = null;
 let cachedTasks = [];
 let cachedShifts = [];
+const STAFF_ROLES = ['security','stage-crew','ticketing','engineers','management'];
+const STAFF_ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management' };
+// STAFF_TASK_KEY, staffDoneTasks declared at top
+let staffEditSubTab = 'announcements';
+let staffEditorData = { announcements: [], contacts: [], tasks: {}, shifts: {} };
+let STAFF_TASKS = {};
+let STAFF_SHIFTS = {};
 let currentDMFriendId = null;
 let currentDMFriendHandle = null;
 let feedPage = 1;
@@ -4947,7 +5007,7 @@ renderChecklist();
 // Keyboard: Escape closes modals
 document.addEventListener('keydown', e=>{
   if (e.key==='Escape') {
-    closeModal(); closeSOS(); closeMore(); closeDrawer();
+    closeModal(); closeSOS(); closeMore(); closeDrawer(); closeTermsModal();
   }
 });
 /* ── SOS SYSTEM (original) ── */
@@ -5381,7 +5441,7 @@ async function loadUsersForAssign() {
 
 // ── Tab switching ──────────────────────────────────────────
 function switchAdminTab(tab, btn) {
-  ['artists','schedule','master','tasks','shifts','users','settings'].forEach(t => {
+  ['artists','schedule','master','staffedit','tasks','shifts','users','settings'].forEach(t => {
     const el = document.getElementById('adminTab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
@@ -5389,8 +5449,9 @@ function switchAdminTab(tab, btn) {
   if (btn) btn.classList.add('active');
   if (tab === 'artists')  renderAdminArtistGrid();
   if (tab === 'schedule') renderAdminSchedule();
-  if (tab === 'master')   renderMasterSchedule();
-  if (tab === 'tasks')    renderTaskManager('sharedTaskManager');
+  if (tab === 'master')    renderMasterSchedule();
+  if (tab === 'staffedit') initStaffEditor();
+  if (tab === 'tasks')     renderTaskManager('sharedTaskManager');
   if (tab === 'shifts')   { if (!window._allUsers || !window._allUsers.length) loadUsersForAssign(); renderShiftManager('sharedShiftManager'); }
   if (tab === 'users')    adminLoadUsers();
 }
@@ -5417,25 +5478,39 @@ async function renderMasterSchedule() {
   if (!list) return;
   list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);">Loading…</div>';
 
-  // ── 1. Gather stage blocks from SCHEDULE_DATA ──
+  // Stage color map — matches schedule page exactly
+  const STAGE_COLORS = {
+    dnb:    { bg:'rgba(155,61,255,0.15)',  border:'rgba(155,61,255,0.25)',  accent:'#c084fc',  label:'DNB Stage' },
+    oasis:  { bg:'rgba(0,212,200,0.12)',   border:'rgba(0,212,200,0.22)',   accent:'#00d4c8',  label:'Oasis Stage' },
+    atrium: { bg:'rgba(245,158,11,0.12)',  border:'rgba(245,158,11,0.25)',  accent:'#f59e0b',  label:'Atrium (House)' },
+    beach:  { bg:'rgba(6,182,212,0.12)',   border:'rgba(6,182,212,0.25)',   accent:'#06b6d4',  label:'Beach Stage' },
+    locals: { bg:'rgba(132,204,22,0.12)',  border:'rgba(132,204,22,0.25)',  accent:'#84cc16',  label:'Locals Stage' },
+  };
+  const SHIFT_STYLE  = { bg:'rgba(0,212,200,0.08)',   border:'rgba(0,212,200,0.2)',   accent:'#00d4c8' };
+  const TASK_COLORS  = { done:'#4ade80', inprogress:'#f5c842', pending:'#ff4d8d' };
+
+  // ── 1. Stage blocks ──
   const stageBlocks = [];
   const dayKeyMap = { fri:'Fri', sat:'Sat', sun:'Sun' };
   Object.entries(SCHEDULE_DATA).forEach(([dayKey, stages]) => {
     const day = dayKeyMap[dayKey] || dayKey;
     Object.entries(stages).forEach(([stageKey, items]) => {
-      const stageName = stageKey === 'dnb' ? 'DNB Stage' : stageKey === 'oasis' ? 'Oasis Stage' : stageKey;
+      const sc = STAGE_COLORS[stageKey] || STAGE_COLORS.dnb;
       (items || []).forEach(item => {
         stageBlocks.push({
-          type: 'stage', day, label: item.artist,
-          sublabel: stageName + (item.headliner ? ' · ⭐ Headliner' : ''),
-          time: item.time || 'TBA', sort: timeToSort(item.time),
-          color: '#9b3dff', badge: stageKey === 'oasis' ? '#00d4c8' : '#9b3dff',
+          type:'stage', day, stageKey,
+          label: item.artist,
+          sublabel: sc.label + (item.headliner ? ' · ⭐ Headliner' : ''),
+          time: item.time || 'TBA',
+          sort: timeToSort(item.time),
+          headliner: !!item.headliner,
+          sc,
         });
       });
     });
   });
 
-  // ── 2. Fetch shifts ──
+  // ── 2. Shifts ──
   let shiftBlocks = [];
   try {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -5444,18 +5519,17 @@ async function renderMasterSchedule() {
       const d = await res.json();
       (d.shifts || []).forEach(s => {
         shiftBlocks.push({
-          type: 'shift', day: s.day || 'TBA',
-          label: (s.assignedUserName || s.role || 'Staff') + ' — ' + (s.location || ''),
+          type:'shift', day: s.day || 'TBA',
+          label: (s.assignedUserName || s.role || 'Staff') + (s.location ? ' — ' + s.location : ''),
           sublabel: (s.role || '') + (s.notes ? ' · ' + s.notes : ''),
           time: (s.startTime || '') + (s.endTime ? '–' + s.endTime : ''),
           sort: timeToSort(s.startTime),
-          color: '#00d4c8',
         });
       });
     }
   } catch(e) {}
 
-  // ── 3. Fetch tasks ──
+  // ── 3. Tasks ──
   let taskBlocks = [];
   try {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -5463,15 +5537,13 @@ async function renderMasterSchedule() {
     if (res.ok) {
       const d = await res.json();
       (d.tasks || []).forEach(t => {
-        const statusColor = t.status === 'done' ? '#4ade80' : t.status === 'inprogress' ? '#f5c842' : '#ff4d8d';
         taskBlocks.push({
-          type: 'task', day: t.day || 'All',
+          type:'task', day: t.day || 'All',
           label: t.title || t.name || 'Task',
           sublabel: (t.assignedToName || t.role || '') + (t.status ? ' · ' + t.status : ''),
           time: t.time || t.dueTime || '',
           sort: timeToSort(t.time || t.dueTime),
-          color: statusColor,
-          status: t.status,
+          status: t.status || 'pending',
         });
       });
     }
@@ -5487,7 +5559,7 @@ async function renderMasterSchedule() {
     return;
   }
 
-  // ── 5. Group by day ──
+  // ── 5. Render grouped by day ──
   const days = masterDayFilter === 'all' ? ['Fri','Sat','Sun','All','TBA'] : [masterDayFilter];
   const DAY_LABELS_M = { Fri:'Friday · Jul 17', Sat:'Saturday · Jul 18', Sun:'Sunday · Jul 19', All:'All Days', TBA:'Day TBA' };
 
@@ -5495,23 +5567,41 @@ async function renderMasterSchedule() {
   days.forEach(day => {
     const group = all.filter(b => b.day === day).sort((a, b) => a.sort - b.sort);
     if (!group.length) return;
+
     html += `<div style="padding:12px 14px 4px;">
       <div style="font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:2px;
         text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.07);
         margin-bottom:8px;">${DAY_LABELS_M[day] || day}</div>`;
+
     group.forEach(b => {
-      const typeLabel = b.type === 'stage' ? '🎵' : b.type === 'shift' ? '🕐' : '✅';
-      const typeBg    = b.type === 'stage' ? 'rgba(155,61,255,0.12)' : b.type === 'shift' ? 'rgba(0,212,200,0.1)' : 'rgba(245,200,66,0.08)';
-      const typeBdr   = b.type === 'stage' ? 'rgba(155,61,255,0.3)'  : b.type === 'shift' ? 'rgba(0,212,200,0.3)'  : 'rgba(245,200,66,0.25)';
+      let bg, border, accent, icon;
+
+      if (b.type === 'stage') {
+        bg = b.sc.bg; border = b.sc.border; accent = b.sc.accent; icon = '🎵';
+        if (b.headliner) border = accent; // thicker feel for headliners
+      } else if (b.type === 'shift') {
+        bg = SHIFT_STYLE.bg; border = SHIFT_STYLE.border; accent = SHIFT_STYLE.accent; icon = '🕐';
+      } else {
+        const tc = TASK_COLORS[b.status] || TASK_COLORS.pending;
+        bg = 'rgba(255,255,255,0.04)'; border = tc + '55'; accent = tc; icon = '✅';
+      }
+
+      const borderLeft = b.headliner ? `3px solid ${accent}` : `2px solid ${accent}`;
+
       html += `<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;
-        margin-bottom:4px;background:${typeBg};border:1px solid ${typeBdr};border-left:3px solid ${b.color};">
-        <div style="font-size:16px;flex-shrink:0;">${typeLabel}</div>
+        margin-bottom:4px;background:${bg};
+        border:1px solid ${border};border-left:${borderLeft};
+        cursor:default;transition:background .15s;"
+        onmouseover="this.style.filter='brightness(1.15)'"
+        onmouseout="this.style.filter=''">
+        <div style="font-size:15px;flex-shrink:0;line-height:1;">${icon}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:700;color:var(--text-light);
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.label}</div>
-          ${b.sublabel ? `<div style="font-size:11px;color:var(--text-muted);margin-top:1px;">${b.sublabel}</div>` : ''}
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.label}${b.headliner ? ' <span style="font-size:10px;color:'+accent+';">⭐</span>' : ''}</div>
+          ${b.sublabel ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${b.sublabel}</div>` : ''}
         </div>
-        ${b.time ? `<div style="font-size:12px;font-weight:700;color:${b.color};flex-shrink:0;white-space:nowrap;">${b.time}</div>` : ''}
+        ${b.time ? `<div style="font-size:11px;font-weight:700;color:${accent};flex-shrink:0;
+          white-space:nowrap;font-family:'Orbitron',sans-serif;">${b.time}</div>` : ''}
       </div>`;
     });
     html += '</div>';
@@ -5530,6 +5620,261 @@ function timeToSort(t) {
   if (!pm && h === 12) h = 0;
   if (h < 8) h += 24; // treat early AM as next day
   return h * 60 + mn;
+}
+
+// ── Staff Dashboard Editor ─────────────────────────────────
+// STAFF_ROLES, STAFF_ROLE_LABELS, staffEditSubTab, staffEditorData declared at top
+
+async function initStaffEditor() {
+  // Load from worker
+  try {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const res = await fetch(AUTH_URL + '/staff-content', { headers: {'Authorization':'Bearer '+token} });
+    if (res.ok) {
+      const d = await res.json();
+      if (d.content) {
+        if (d.content.announcements) staffEditorData.announcements = d.content.announcements;
+        if (d.content.contacts)      staffEditorData.contacts      = d.content.contacts;
+        if (d.content.tasks)         staffEditorData.tasks         = d.content.tasks;
+        if (d.content.shifts)        staffEditorData.shifts        = d.content.shifts;
+      }
+    }
+  } catch(e) {}
+  // Seed announcements from static HTML if empty
+  if (!staffEditorData.announcements.length) {
+    staffEditorData.announcements = [
+      { title:'Welcome to Sunken Suite 2026!', body:'Thank you for being part of the crew. Please check your tasks and make sure you know your shift times. More details coming soon.', time:'Posted by Admin' }
+    ];
+  }
+  // Seed contacts if empty
+  if (!staffEditorData.contacts.length) {
+    staffEditorData.contacts = [
+      { title:'Event Management', meta:'For general event questions and escalations', phone:'+15083470000', style:'success' },
+      { title:'Security Lead',    meta:'For security incidents and crowd control',    phone:'+15083470000', style:'danger'  },
+      { title:'Stage Manager',    meta:'For stage and technical issues',              phone:'+15083470000', style:''        },
+      { title:'Hotel Front Desk', meta:'Sturbridge Host Hotel · 24hrs',              phone:'+15083477393', style:''        },
+      { title:'Emergency',        meta:'Life threatening emergencies only',           phone:'911',          style:'danger'  },
+    ];
+  }
+  // Seed tasks and shifts from defaults if not loaded from worker
+  if (!Object.keys(staffEditorData.tasks).length) {
+    staffEditorData.tasks = JSON.parse(JSON.stringify(STAFF_TASKS));
+  }
+  if (!Object.keys(staffEditorData.shifts).length) {
+    staffEditorData.shifts = JSON.parse(JSON.stringify(STAFF_SHIFTS));
+  }
+  switchStaffEditTab(staffEditSubTab);
+}
+
+function switchStaffEditTab(tab, btn) {
+  staffEditSubTab = tab;
+  ['Ann','Con','Tasks','Shifts'].forEach(s => {
+    const el = document.getElementById('staffEditTab'+s);
+    if (el) el.classList.remove('active');
+  });
+  if (btn) btn.classList.add('active');
+  else {
+    const map = { announcements:'Ann', contacts:'Con', tasks:'Tasks', shifts:'Shifts' };
+    const el = document.getElementById('staffEditTab'+(map[tab]||'Ann'));
+    if (el) el.classList.add('active');
+  }
+  renderStaffEditBody();
+}
+
+function renderStaffEditBody() {
+  const el = document.getElementById('staffEditBody');
+  if (!el) return;
+  if (staffEditSubTab === 'announcements') el.innerHTML = renderStaffEditAnnouncements();
+  if (staffEditSubTab === 'contacts')      el.innerHTML = renderStaffEditContacts();
+  if (staffEditSubTab === 'tasks')         el.innerHTML = renderStaffEditTasks();
+  if (staffEditSubTab === 'shifts')        el.innerHTML = renderStaffEditShifts();
+}
+
+// ── Announcements editor ──
+function renderStaffEditAnnouncements() {
+  const items = staffEditorData.announcements;
+  let h = '';
+  items.forEach((a, i) => {
+    h += `<div style="border:1px solid rgba(255,255,255,0.08);padding:12px;margin-bottom:10px;position:relative;">
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input class="edit-input" placeholder="Title" value="${escapeHTML(a.title||'')}"
+          oninput="staffEditorData.announcements[${i}].title=this.value" style="flex:1;">
+        <button onclick="staffEditorData.announcements.splice(${i},1);renderStaffEditBody()"
+          style="flex-shrink:0;width:32px;height:32px;background:rgba(255,77,141,0.1);
+          border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;font-size:14px;">✕</button>
+      </div>
+      <textarea class="edit-input" rows="3" placeholder="Body text…"
+        oninput="staffEditorData.announcements[${i}].body=this.value"
+        style="width:100%;resize:vertical;">${escapeHTML(a.body||'')}</textarea>
+      <input class="edit-input" placeholder="Posted by / timestamp" value="${escapeHTML(a.time||'')}"
+        oninput="staffEditorData.announcements[${i}].time=this.value" style="margin-top:6px;font-size:11px;">
+    </div>`;
+  });
+  h += `<button class="dash-btn" style="width:100%;margin-top:4px;"
+    onclick="staffEditorData.announcements.push({title:'',body:'',time:'Posted by Admin'});renderStaffEditBody()">+ Add Announcement</button>`;
+  return h;
+}
+
+// ── Contacts editor ──
+function renderStaffEditContacts() {
+  const items = staffEditorData.contacts;
+  let h = '';
+  items.forEach((c, i) => {
+    h += `<div style="border:1px solid rgba(255,255,255,0.08);padding:12px;margin-bottom:10px;">
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input class="edit-input" placeholder="Name / Role" value="${escapeHTML(c.title||'')}"
+          oninput="staffEditorData.contacts[${i}].title=this.value" style="flex:1;">
+        <button onclick="staffEditorData.contacts.splice(${i},1);renderStaffEditBody()"
+          style="flex-shrink:0;width:32px;height:32px;background:rgba(255,77,141,0.1);
+          border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;font-size:14px;">✕</button>
+      </div>
+      <input class="edit-input" placeholder="Description / note" value="${escapeHTML(c.meta||'')}"
+        oninput="staffEditorData.contacts[${i}].meta=this.value" style="margin-bottom:6px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="edit-input" placeholder="Phone / number" value="${escapeHTML(c.phone||'')}"
+          oninput="staffEditorData.contacts[${i}].phone=this.value" style="flex:1;">
+        <select oninput="staffEditorData.contacts[${i}].style=this.value"
+          style="padding:8px;background:#111;border:1px solid rgba(255,255,255,0.12);
+          color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;outline:none;flex-shrink:0;">
+          <option value="" ${c.style===''?'selected':''}>Normal</option>
+          <option value="success" ${c.style==='success'?'selected':''}>Green</option>
+          <option value="danger" ${c.style==='danger'?'selected':''}>Red</option>
+        </select>
+      </div>
+    </div>`;
+  });
+  h += `<button class="dash-btn" style="width:100%;margin-top:4px;"
+    onclick="staffEditorData.contacts.push({title:'',meta:'',phone:'',style:''});renderStaffEditBody()">+ Add Contact</button>`;
+  return h;
+}
+
+// ── Role Tasks editor ──
+function renderStaffEditTasks() {
+  let h = '';
+  STAFF_ROLES.forEach(role => {
+    const tasks = staffEditorData.tasks[role] || [];
+    h += `<div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:2px;
+        text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.07);
+        margin-bottom:8px;">${STAFF_ROLE_LABELS[role]}</div>`;
+    tasks.forEach((t, i) => {
+      h += `<div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;">
+          <input class="edit-input" placeholder="Task title" value="${escapeHTML(t.title||'')}"
+            oninput="staffEditorData.tasks['${role}'][${i}].title=this.value" style="font-size:12px;">
+          <input class="edit-input" placeholder="Details / time" value="${escapeHTML(t.meta||'')}"
+            oninput="staffEditorData.tasks['${role}'][${i}].meta=this.value" style="font-size:11px;">
+        </div>
+        <select oninput="staffEditorData.tasks['${role}'][${i}].priority=this.value"
+          style="padding:5px 6px;background:#111;border:1px solid rgba(255,255,255,0.12);
+          color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:11px;outline:none;flex-shrink:0;">
+          <option value="high"   ${t.priority==='high'?'selected':''}>High</option>
+          <option value="medium" ${t.priority==='medium'?'selected':''}>Medium</option>
+          <option value="low"    ${t.priority==='low'?'selected':''}>Low</option>
+        </select>
+        <button onclick="staffEditorData.tasks['${role}'].splice(${i},1);renderStaffEditBody()"
+          style="flex-shrink:0;width:28px;height:28px;background:rgba(255,77,141,0.1);
+          border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;font-size:12px;">✕</button>
+      </div>`;
+    });
+    h += `<button class="dash-btn" style="width:100%;margin-top:4px;font-size:11px;"
+      onclick="if(!staffEditorData.tasks['${role}'])staffEditorData.tasks['${role}']=[];
+      staffEditorData.tasks['${role}'].push({id:Date.now(),title:'',meta:'',priority:'medium'});
+      renderStaffEditBody()">+ Add Task</button>
+    </div>`;
+  });
+  return h;
+}
+
+// ── Role Shifts editor ──
+function renderStaffEditShifts() {
+  const days = ['Fri','Sat','Sun'];
+  let h = '';
+  STAFF_ROLES.forEach(role => {
+    const shifts = staffEditorData.shifts[role] || [];
+    h += `<div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:2px;
+        text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.07);
+        margin-bottom:8px;">${STAFF_ROLE_LABELS[role]}</div>`;
+    shifts.forEach((s, i) => {
+      h += `<div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
+        <select oninput="staffEditorData.shifts['${role}'][${i}].day=this.value"
+          style="padding:5px 7px;background:#111;border:1px solid rgba(255,255,255,0.12);
+          color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;outline:none;width:70px;">
+          ${days.map(d=>`<option value="${d}" ${s.day===d?'selected':''}>${d}</option>`).join('')}
+        </select>
+        <input class="edit-input" placeholder="Start" value="${escapeHTML(s.start||'')}"
+          oninput="staffEditorData.shifts['${role}'][${i}].start=this.value" style="width:90px;font-size:12px;">
+        <input class="edit-input" placeholder="End" value="${escapeHTML(s.end||'')}"
+          oninput="staffEditorData.shifts['${role}'][${i}].end=this.value" style="width:90px;font-size:12px;">
+        <input class="edit-input" placeholder="Location" value="${escapeHTML(s.location||'')}"
+          oninput="staffEditorData.shifts['${role}'][${i}].location=this.value" style="flex:1;min-width:120px;font-size:12px;">
+        <button onclick="staffEditorData.shifts['${role}'].splice(${i},1);renderStaffEditBody()"
+          style="flex-shrink:0;width:28px;height:28px;background:rgba(255,77,141,0.1);
+          border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;font-size:12px;">✕</button>
+      </div>`;
+    });
+    h += `<button class="dash-btn" style="width:100%;margin-top:4px;font-size:11px;"
+      onclick="if(!staffEditorData.shifts['${role}'])staffEditorData.shifts['${role}']=[];
+      staffEditorData.shifts['${role}'].push({day:'Fri',start:'',end:'',location:''});
+      renderStaffEditBody()">+ Add Shift</button>
+    </div>`;
+  });
+  return h;
+}
+
+async function saveStaffContent() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/staff-content', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify(staffEditorData)
+    });
+    if (res.ok) {
+      // Push changes live to the staff dashboard
+      applyStaffContentLive();
+      showToast('✓ Staff dashboard updated');
+    } else {
+      showToast('⚠ Could not save — check connection');
+    }
+  } catch(e) {
+    // No worker endpoint yet — apply live only
+    applyStaffContentLive();
+    showToast('✓ Applied (deploy worker to persist)');
+  }
+}
+
+function applyStaffContentLive() {
+  // Update in-memory STAFF_TASKS and STAFF_SHIFTS so staff see changes immediately
+  Object.assign(STAFF_TASKS, staffEditorData.tasks);
+  Object.assign(STAFF_SHIFTS, staffEditorData.shifts);
+
+  // Re-render announcements
+  const annEl = document.getElementById('staffAnnouncements');
+  if (annEl) {
+    annEl.innerHTML = staffEditorData.announcements.map(a =>
+      `<div class="announce-card">
+        <div class="announce-card-title">${escapeHTML(a.title||'')}</div>
+        <div class="announce-card-body">${escapeHTML(a.body||'').replace(/\n/g,'<br>')}</div>
+        <div class="announce-card-time">${escapeHTML(a.time||'')}</div>
+      </div>`
+    ).join('') || '<div style="color:var(--text-muted);padding:16px;">No announcements yet.</div>';
+  }
+
+  // Re-render contacts
+  const conSection = document.querySelector('#staffTab-contacts .dash-section-body');
+  if (conSection) {
+    conSection.innerHTML = staffEditorData.contacts.map(c =>
+      `<div class="task-item">
+        <div class="task-body">
+          <div class="task-title">${escapeHTML(c.title||'')}</div>
+          <div class="task-meta">${escapeHTML(c.meta||'')}</div>
+        </div>
+        <a href="tel:${escapeHTML(c.phone||'')}" class="dash-btn ${c.style||''}">${c.phone==='911'?'911':'Call'}</a>
+      </div>`
+    ).join('') || '<div style="color:var(--text-muted);padding:16px;">No contacts yet.</div>';
+  }
 }
 
 // ── Artist grid ────────────────────────────────────────────
@@ -5719,10 +6064,15 @@ function renderAdminSchedule() {
   const allArtistKeys = Object.keys(artists).sort();
   const artistOptions = allArtistKeys.map(k => `<option value="${esc(k)}">${k}</option>`).join('');
 
+  const ADMIN_STAGES = [
+    { key:'dnb',    name:'DNB Stage',        color:'#c084fc' },
+    { key:'atrium', name:'Atrium (House)',    color:'#f59e0b' },
+    { key:'beach',  name:'Beach Stage',       color:'#06b6d4' },
+    { key:'locals', name:'Locals Stage',      color:'#84cc16' },
+  ];
+
   let html = '';
-  ['dnb','oasis'].forEach(stage => {
-    const stageName  = stage === 'dnb' ? 'DNB Stage' : 'Oasis Stage';
-    const stageColor = stage === 'dnb' ? '#c084fc' : 'var(--teal-glow)';
+  ADMIN_STAGES.forEach(({ key: stage, name: stageName, color: stageColor }) => {
     if (!dayData[stage]) dayData[stage] = [];
     const items = dayData[stage];
 
@@ -5802,7 +6152,8 @@ function addArtistToSchedule(day, stage) {
   SCHEDULE_DATA[day][stage].push(entry);
 
   // Update artist's stage and day to match where they were added
-  const stageDisplayName = stage === 'dnb' ? 'DNB Stage' : 'Oasis Stage';
+  const stageDisplayNames = { dnb:'DNB Stage', atrium:'Atrium', beach:'Beach Stage', locals:'Locals Stage' };
+  const stageDisplayName = stageDisplayNames[stage] || stage;
   const dayDisplayName   = { fri:'Fri', sat:'Sat', sun:'Sun' }[day] || day;
   if (artists[artistName]) {
     artists[artistName].stage = stageDisplayName;
@@ -5993,7 +6344,7 @@ function saveSettings() {
 /* ════════════════════════════════════════════════════════════
    EMPLOYEE DASHBOARD
 ════════════════════════════════════════════════════════════ */
-const STAFF_TASKS = {
+STAFF_TASKS = {
   security: [
     { id:1, title:'Attend pre-event security briefing', meta:'Fri 5:00 PM · Main Lobby', priority:'high' },
     { id:2, title:'Set up perimeter at DNB Stage entrance', meta:'Fri 7:00 PM', priority:'high' },
@@ -6036,7 +6387,7 @@ const STAFF_TASKS = {
   ],
 };
 
-const STAFF_SHIFTS = {
+STAFF_SHIFTS = {
   security:    [ {day:'Fri', start:'6:00 PM', end:'4:00 AM', location:'All Entry Points'}, {day:'Sat', start:'6:00 PM', end:'4:00 AM', location:'All Entry Points'}, {day:'Sun', start:'6:00 PM', end:'2:00 AM', location:'All Entry Points'} ],
   'stage-crew':[ {day:'Fri', start:'2:00 PM', end:'4:00 AM', location:'Event Hall'}, {day:'Sat', start:'4:00 PM', end:'4:00 AM', location:'Event Hall'}, {day:'Sun', start:'4:00 PM', end:'2:00 AM', location:'Event Hall'} ],
   ticketing:   [ {day:'Fri', start:'6:30 PM', end:'12:00 AM', location:'Main Entrance'}, {day:'Sat', start:'6:30 PM', end:'12:00 AM', location:'Main Entrance'}, {day:'Sun', start:'6:30 PM', end:'11:00 PM', location:'Main Entrance'} ],
@@ -6044,8 +6395,7 @@ const STAFF_SHIFTS = {
   management:  [ {day:'Fri', start:'12:00 PM', end:'4:00 AM', location:'Full Venue'}, {day:'Sat', start:'12:00 PM', end:'4:00 AM', location:'Full Venue'}, {day:'Sun', start:'12:00 PM', end:'2:00 AM', location:'Full Venue'} ],
 };
 
-const STAFF_TASK_KEY = 'ss_staff_tasks_done';
-let staffDoneTasks = new Set();
+// STAFF_TASK_KEY, staffDoneTasks declared at top
 
 function initStaffDashboard() {
   loadMyShifts();
@@ -8774,7 +9124,63 @@ function closeInfo() {
   document.body.style.overflow = '';
 }
 
+const TERMS_HTML = `
+<div style="font-size:13px;color:var(--text-muted);line-height:1.9;">
+  <div style="font-size:10px;color:rgba(122,184,224,0.4);margin-bottom:20px;">Last updated: June 2026 · Effective upon account creation</div>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">1. Acceptance of Terms</div>
+  <p style="margin-bottom:16px;">By creating an account or using the Sunken Suite application ("the App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, do not use the App. These Terms apply to all users of the App, including attendees, staff, and administrators of The Mutiny 2026 festival.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">2. Who We Are</div>
+  <p style="margin-bottom:16px;">Sunken Suite is a digital companion application created for The Mutiny 2026 festival. The App is operated by the organizers of The Mutiny 2026. References to "we," "us," or "our" refer to The Mutiny 2026 event organizers.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">3. Your Account</div>
+  <p style="margin-bottom:16px;">You must provide a valid email address and choose a unique handle to create an account. You are responsible for maintaining the confidentiality of your password and for all activity under your account. You must be at least 18 years of age to create an account. We reserve the right to suspend or terminate accounts that violate these Terms.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">4. Data Collection &amp; Privacy</div>
+  <p style="margin-bottom:4px;">We collect the following information when you register:</p>
+  <ul style="margin:0 0 16px 20px;padding:0;">
+    <li>Your email address, display name, and handle</li>
+    <li>Profile information you choose to provide (bio, hometown, music preferences)</li>
+    <li>Optional: profile photo and banner image</li>
+    <li>App activity such as saved artists, posts, and messages</li>
+  </ul>
+  <p style="margin-bottom:16px;">Your data is stored securely via Cloudflare Workers KV and is not sold to third parties. We do not share your personal information with advertisers. Your email address is used only for account-related communications and, if you opt in, for event marketing as described in Section 5.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">5. Email Marketing &amp; Communications</div>
+  <p style="margin-bottom:16px;">During registration, you may choose to opt in to marketing emails from The Mutiny 2026. If you check the box labeled "I consent to Sunken Suite storing my email address and sending me marketing emails," you agree that we may contact you with information about future events, lineup announcements, ticket sales, and exclusive content related to The Mutiny and Sunken Suite events.</p>
+  <p style="margin-bottom:16px;"><strong style="color:var(--text-light);">You may unsubscribe at any time</strong> by contacting us directly or using the unsubscribe link included in every marketing email. Opting out of marketing emails does not affect transactional communications related to your account (such as password resets).</p>
+  <p style="margin-bottom:16px;">We comply with the CAN-SPAM Act, CASL, and applicable email marketing regulations. We will not send marketing emails to users who have not explicitly opted in.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">6. User Content</div>
+  <p style="margin-bottom:16px;">You retain ownership of content you post (photos, messages, feed posts). By posting, you grant us a non-exclusive, royalty-free license to display that content within the App. You are responsible for ensuring your content does not violate any laws or the rights of others. We reserve the right to remove content that violates these Terms without notice.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">7. Prohibited Conduct</div>
+  <p style="margin-bottom:4px;">You agree not to:</p>
+  <ul style="margin:0 0 16px 20px;padding:0;">
+    <li>Harass, threaten, or abuse other users</li>
+    <li>Post illegal, obscene, or harmful content</li>
+    <li>Impersonate any person or entity</li>
+    <li>Attempt to gain unauthorized access to the App or other users' accounts</li>
+    <li>Use the App for any commercial purpose without our consent</li>
+  </ul>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">8. Intellectual Property</div>
+  <p style="margin-bottom:16px;">All App content, design, code, and branding are the property of The Mutiny 2026 organizers. You may not reproduce, distribute, or create derivative works without written permission.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">9. Disclaimers &amp; Limitation of Liability</div>
+  <p style="margin-bottom:16px;">The App is provided "as is" without warranties of any kind. We are not liable for any indirect, incidental, or consequential damages arising from your use of the App. Our total liability to you for any claim shall not exceed the amount you paid to access the App (if any).</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">10. Changes to These Terms</div>
+  <p style="margin-bottom:16px;">We may update these Terms from time to time. Continued use of the App after changes constitutes acceptance of the revised Terms. We will indicate the effective date at the top of this document.</p>
+
+  <div style="font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">11. Contact</div>
+  <p style="margin-bottom:4px;">For questions about these Terms or your data, contact us at:</p>
+  <p style="color:var(--teal-glow);margin-bottom:0;">info@thefestiecat.com</p>
+</div>`;
+
 function renderInfoContent(tab) {
+  if (tab === 'terms') return TERMS_HTML;
   const data = INFO_CONTENT[tab];
   if (!data) return '';
   const isAdmin = currentUser && currentUser.role === 'admin';
@@ -8788,16 +9194,32 @@ function renderInfoContent(tab) {
     out += '<div class="info-card"><div class="info-card-body">' + escapeHTML(sec.body).replace(/\n/g,'<br>') + '</div></div>';
     out += '</div>';
   });
-  // Add new section button for admin
   if (isAdmin) {
     out += '<button onclick="openInfoAddSection(\''+tab+'\')" style="width:100%;padding:10px;background:rgba(245,200,66,0.07);border:1px dashed rgba(245,200,66,0.3);color:var(--gold-bright);cursor:pointer;font-size:12px;font-weight:700;margin-top:8px;">+ Add Section</button>';
   }
   return out;
 }
 
+function openTermsModal() {
+  const modal = document.getElementById('termsModal');
+  const body  = document.getElementById('termsModalBody');
+  if (!modal || !body) return;
+  body.innerHTML = TERMS_HTML;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTermsModal() {
+  const modal = document.getElementById('termsModal');
+  if (modal) modal.style.display = 'none';
+  // Only restore overflow if auth overlay is also closed
+  const authOpen = document.getElementById('authOverlay')?.classList.contains('open');
+  if (!authOpen) document.body.style.overflow = '';
+}
+
 function switchInfoTab(tab) {
   currentInfoTab = tab;
-  ['event','venue','guidelines','help'].forEach(function(t) {
+  ['event','venue','guidelines','help','terms'].forEach(function(t) {
     const el = document.getElementById('infoTab' + t.charAt(0).toUpperCase() + t.slice(1));
     if (el) el.classList.toggle('active', t === tab);
   });
@@ -8863,27 +9285,52 @@ function getLuminance(hex) {
   return 0.2126*toLinear(r) + 0.7152*toLinear(g) + 0.0722*toLinear(b);
 }
 
+let _findMeStrobeInterval = null;
+
 function openFindMe() {
-  const overlay = document.getElementById('findMeOverlay');
-  const textEl  = document.getElementById('findMeText');
+  const overlay  = document.getElementById('findMeOverlay');
+  const textEl   = document.getElementById('findMeText');
   const handleEl = document.getElementById('findMeHandle');
   if (!overlay) return;
 
-  // Get user's avatar color
-  const color = currentUser?.avatarColor || '#9b3dff';
   const handle = currentUser?.handle ? '@' + currentUser.handle : '';
+  if (handleEl) handleEl.textContent = handle;
 
-  // Determine text color based on luminance
-  const lum = getLuminance(color);
-  const textColor = lum > 0.4 ? '#111111' : '#ffffff';
+  // Fluorescent strobe colors
+  const strobeColors = [
+    '#ff00ff', // magenta
+    '#00ffff', // cyan
+    '#ff ff00', // yellow
+    '#00ff00', // lime
+    '#ff6600', // orange
+    '#ff0066', // hot pink
+    '#00ff99', // spring green
+    '#ff00cc', // fuchsia
+    '#ccff00', // chartreuse
+    '#00ccff', // sky blue
+  ].map(c => c.replace(/\s/g,'')); // remove any accidental spaces
 
-  overlay.style.background = color;
   overlay.style.display = 'flex';
-  if (textEl) { textEl.style.color = textColor; }
-  if (handleEl) { handleEl.textContent = handle; handleEl.style.color = textColor; }
   document.body.style.overflow = 'hidden';
 
-  // Request fullscreen + keep screen awake
+  // Always white text — fluorescents are bright enough
+  if (textEl)   textEl.style.color   = '#ffffff';
+  if (handleEl) handleEl.style.color = '#ffffff';
+
+  // Add text-shadow to make text pop against any strobe color
+  const popShadow = '0 0 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)';
+  if (textEl)   textEl.style.textShadow   = popShadow;
+  if (handleEl) handleEl.style.textShadow = popShadow;
+
+  let colorIdx = 0;
+  overlay.style.background = strobeColors[0];
+
+  _findMeStrobeInterval = setInterval(() => {
+    colorIdx = (colorIdx + 1) % strobeColors.length;
+    overlay.style.background = strobeColors[colorIdx];
+  }, 300);
+
+  // Request fullscreen
   try {
     if (overlay.requestFullscreen) overlay.requestFullscreen();
     else if (overlay.webkitRequestFullscreen) overlay.webkitRequestFullscreen();
@@ -8896,6 +9343,11 @@ function openFindMe() {
 }
 
 function closeFindMe() {
+  // Stop strobe
+  if (_findMeStrobeInterval) {
+    clearInterval(_findMeStrobeInterval);
+    _findMeStrobeInterval = null;
+  }
   const overlay = document.getElementById('findMeOverlay');
   if (overlay) overlay.style.display = 'none';
   document.body.style.overflow = '';
