@@ -2795,7 +2795,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <div class="dash-section">
         <div class="dash-section-header">
           <div class="dash-section-title">👥 User Management</div>
-          <button class="dash-btn" onclick="adminLoadUsers()">↻ Refresh</button>
+          <div style="display:flex;gap:6px;">
+            <button class="dash-btn" onclick="downloadUsersPDF()" style="color:var(--teal-glow);border-color:rgba(0,212,200,0.3);">⬇ PDF</button>
+            <button class="dash-btn" onclick="adminLoadUsers()">↻ Refresh</button>
+          </div>
         </div>
         <!-- Sort + Filter bar -->
         <div style="display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);flex-wrap:wrap;align-items:center;">
@@ -6340,10 +6343,9 @@ function applyUserSort() {
   const sort   = document.getElementById('userSortSelect')?.value || 'name-az';
   const filter = document.getElementById('userFilterSelect')?.value || 'all';
 
-  const ROLE_ORDER = { admin:0, employee:1, festie:2 };
+  const ROLE_ORDER  = { admin:0, employee:1, festie:2 };
   const STAFF_ORDER = { management:0, engineers:1, 'stage-crew':2, security:3, ticketing:4, '':5 };
 
-  // Filter
   let users = window._cachedUsers.filter(u => {
     if (filter === 'admin')      return u.role === 'admin';
     if (filter === 'employee')   return u.role === 'employee';
@@ -6352,7 +6354,6 @@ function applyUserSort() {
     return true;
   });
 
-  // Sort
   users = users.slice().sort((a, b) => {
     if (sort === 'name-az')    return (a.name||a.handle||'').localeCompare(b.name||b.handle||'');
     if (sort === 'name-za')    return (b.name||b.handle||'').localeCompare(a.name||a.handle||'');
@@ -6364,6 +6365,121 @@ function applyUserSort() {
 
   if (badge) badge.textContent = users.length + ' of ' + window._cachedUsers.length + ' users';
   list.innerHTML = buildUserTableHTML(users);
+}
+
+function downloadUsersPDF() {
+  const allUsers = window._cachedUsers || [];
+  if (!allUsers.length) { showToast('Load users first'); return; }
+
+  const now = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+  // Group by role
+  const groups = [
+    { label:'⭐ Admins',       color:'#f5c842', users: allUsers.filter(u => u.role === 'admin') },
+    { label:'👷 Staff',        color:'#c084fc', users: allUsers.filter(u => u.role === 'employee') },
+    { label:'🎟 Festie Attendees', color:'#00d4c8', users: allUsers.filter(u => u.role === 'festie') },
+  ];
+
+  const emailOptIns  = allUsers.filter(u => u.emailList);
+  const totalUsers   = allUsers.length;
+
+  function row(u, idx) {
+    const email   = u.emailList ? '✓' : '—';
+    const notifs  = u.notifConsent ? '✓' : '—';
+    const staff   = u.staffRole ? u.staffRole.replace('-',' ').replace(/\b\w/g,c=>c.toUpperCase()) : '—';
+    const bg      = idx % 2 === 0 ? '#f9f9f9' : '#ffffff';
+    return `<tr style="background:${bg};">
+      <td style="padding:7px 10px;border-bottom:1px solid #eee;font-size:12px;">${u.name||'—'}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #eee;font-size:11px;color:#555;">${u.email||'—'}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #eee;font-size:11px;color:#555;">@${u.handle||'—'}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #eee;font-size:11px;color:#555;">${staff}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #eee;font-size:12px;text-align:center;color:${u.emailList?'#16a34a':'#aaa'};">${email}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #eee;font-size:12px;text-align:center;color:${u.notifConsent?'#0891b2':'#aaa'};">${notifs}</td>
+    </tr>`;
+  }
+
+  let groupsHTML = '';
+  groups.forEach(g => {
+    if (!g.users.length) return;
+    const sorted = g.users.slice().sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    groupsHTML += `
+      <div style="margin-bottom:28px;">
+        <div style="background:#111;color:${g.color};padding:8px 12px;font-size:13px;font-weight:700;
+          letter-spacing:1px;text-transform:uppercase;margin-bottom:0;">
+          ${g.label} &nbsp;·&nbsp; ${g.users.length} user${g.users.length!==1?'s':''}
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#222;color:#fff;">
+              <th style="padding:7px 10px;font-size:11px;text-align:left;font-weight:700;">Name</th>
+              <th style="padding:7px 10px;font-size:11px;text-align:left;font-weight:700;">Email</th>
+              <th style="padding:7px 10px;font-size:11px;text-align:left;font-weight:700;">Handle</th>
+              <th style="padding:7px 10px;font-size:11px;text-align:left;font-weight:700;">Staff Role</th>
+              <th style="padding:7px 10px;font-size:11px;text-align:center;font-weight:700;">Email List</th>
+              <th style="padding:7px 10px;font-size:11px;text-align:center;font-weight:700;">Notifs</th>
+            </tr>
+          </thead>
+          <tbody>${sorted.map((u,i) => row(u,i)).join('')}</tbody>
+        </table>
+      </div>`;
+  });
+
+  // Email list section
+  const emailSorted = emailOptIns.slice().sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  const emailSection = `
+    <div style="margin-bottom:28px;">
+      <div style="background:#14532d;color:#4ade80;padding:8px 12px;font-size:13px;font-weight:700;
+        letter-spacing:1px;text-transform:uppercase;margin-bottom:0;">
+        📧 Email Marketing List &nbsp;·&nbsp; ${emailOptIns.length} opt-in${emailOptIns.length!==1?'s':''}
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#166534;color:#fff;">
+            <th style="padding:7px 10px;font-size:11px;text-align:left;font-weight:700;">Name</th>
+            <th style="padding:7px 10px;font-size:11px;text-align:left;font-weight:700;">Email Address</th>
+            <th style="padding:7px 10px;font-size:11px;text-align:left;font-weight:700;">Role</th>
+          </tr>
+        </thead>
+        <tbody>${emailSorted.map((u,i) => `
+          <tr style="background:${i%2===0?'#f0fdf4':'#fff'};">
+            <td style="padding:7px 10px;border-bottom:1px solid #dcfce7;font-size:12px;">${u.name||'—'}</td>
+            <td style="padding:7px 10px;border-bottom:1px solid #dcfce7;font-size:12px;color:#166534;font-weight:600;">${u.email||'—'}</td>
+            <td style="padding:7px 10px;border-bottom:1px solid #dcfce7;font-size:11px;color:#555;text-transform:capitalize;">${u.role}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>Sunken Suite · User List</title>
+    <style>
+      body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#111;}
+      @media print{body{padding:0;} .no-print{display:none;}}
+    </style>
+  </head><body>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:12px;border-bottom:3px solid #111;">
+      <div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:1px;">☠ SUNKEN SUITE</div>
+        <div style="font-size:13px;color:#555;margin-top:2px;">The Mutiny 2026 · User Management Report</div>
+      </div>
+      <div style="text-align:right;font-size:11px;color:#888;">
+        <div>Generated: ${now}</div>
+        <div>Total users: ${totalUsers}</div>
+        <div>Email opt-ins: ${emailOptIns.length}</div>
+      </div>
+    </div>
+    ${groupsHTML}
+    ${emailSection}
+    <div style="margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#aaa;text-align:center;">
+      Sunken Suite · The Mutiny 2026 · Confidential — For internal use only
+    </div>
+    <script>window.onload = function(){ window.print(); }<\/script>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) { showToast('Allow popups to download PDF'); return; }
+  win.document.write(html);
+  win.document.close();
 }
 
 function buildUserTableHTML(users) {
