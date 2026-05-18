@@ -6843,13 +6843,13 @@ async function renderTaskManager(containerId) {
 
   el.innerHTML = `
     <div class="dash-section">
-      <div class="dash-section-header">
-        <div class="dash-section-title">✅ Tasks
-          <span style="font-size:11px;color:var(--text-muted);font-weight:400;">
+      <div class="dash-section-header" style="flex-wrap:wrap;gap:8px;">
+        <div class="dash-section-title" style="flex:1;min-width:0;">✅ Tasks
+          <span style="display:block;font-size:11px;color:var(--text-muted);font-weight:400;margin-top:2px;">
             ${pending} pending · ${inprogress} in progress · ${done} done
           </span>
         </div>
-        ${isMgmt ? `<button class="dash-btn primary" onclick="showCreateTask('${containerId}')">+ New Task</button>` : ''}
+        ${isMgmt ? `<button class="dash-btn primary" style="flex-shrink:0;white-space:nowrap;padding:7px 12px;font-size:12px;" onclick="showCreateTask('${containerId}')">+ New Task</button>` : ''}
       </div>
       <div class="dash-section-body" style="padding:0;">
         <!-- Filter row -->
