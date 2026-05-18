@@ -2797,7 +2797,25 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <div class="dash-section-title">👥 User Management</div>
           <button class="dash-btn" onclick="adminLoadUsers()">↻ Refresh</button>
         </div>
-        <div class="dash-section-body">
+        <!-- Sort + Filter bar -->
+        <div style="display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);flex-wrap:wrap;align-items:center;">
+          <select id="userSortSelect" onchange="applyUserSort()" style="flex:1;min-width:130px;padding:7px 10px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;outline:none;">
+            <option value="name-az">A → Z (Name)</option>
+            <option value="name-za">Z → A (Name)</option>
+            <option value="role">By Role</option>
+            <option value="email-list">Email List First</option>
+            <option value="staff-role">By Staff Role</option>
+          </select>
+          <select id="userFilterSelect" onchange="applyUserSort()" style="flex:1;min-width:120px;padding:7px 10px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;outline:none;">
+            <option value="all">All Users</option>
+            <option value="admin">Admin Only</option>
+            <option value="employee">Staff Only</option>
+            <option value="festie">Festies Only</option>
+            <option value="email-list">Email List</option>
+          </select>
+          <div id="userCountBadge" style="font-size:11px;color:var(--text-muted);white-space:nowrap;"></div>
+        </div>
+        <div class="dash-section-body" style="padding:0;">
           <div id="adminUsersList">
             <div style="text-align:center;padding:32px;color:var(--text-muted);">
               Click Refresh to load users
@@ -6306,13 +6324,46 @@ async function adminLoadUsers() {
     const data = await res.json();
     if (res.ok) {
       window._cachedUsers = data.users || [];
-      list.innerHTML = buildUserTableHTML(data.users || []);
+      applyUserSort();
     } else {
       list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">' + (data.error||'Failed to load') + '</div>';
     }
   } catch {
     list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">Could not connect to server</div>';
   }
+}
+
+function applyUserSort() {
+  const list  = document.getElementById('adminUsersList');
+  const badge = document.getElementById('userCountBadge');
+  if (!list || !window._cachedUsers) return;
+  const sort   = document.getElementById('userSortSelect')?.value || 'name-az';
+  const filter = document.getElementById('userFilterSelect')?.value || 'all';
+
+  const ROLE_ORDER = { admin:0, employee:1, festie:2 };
+  const STAFF_ORDER = { management:0, engineers:1, 'stage-crew':2, security:3, ticketing:4, '':5 };
+
+  // Filter
+  let users = window._cachedUsers.filter(u => {
+    if (filter === 'admin')      return u.role === 'admin';
+    if (filter === 'employee')   return u.role === 'employee';
+    if (filter === 'festie')     return u.role === 'festie';
+    if (filter === 'email-list') return u.emailList;
+    return true;
+  });
+
+  // Sort
+  users = users.slice().sort((a, b) => {
+    if (sort === 'name-az')    return (a.name||a.handle||'').localeCompare(b.name||b.handle||'');
+    if (sort === 'name-za')    return (b.name||b.handle||'').localeCompare(a.name||a.handle||'');
+    if (sort === 'role')       return (ROLE_ORDER[a.role]??2) - (ROLE_ORDER[b.role]??2) || (a.name||'').localeCompare(b.name||'');
+    if (sort === 'email-list') return (b.emailList?1:0) - (a.emailList?1:0) || (a.name||'').localeCompare(b.name||'');
+    if (sort === 'staff-role') return (STAFF_ORDER[a.staffRole||'']??5) - (STAFF_ORDER[b.staffRole||'']??5) || (a.name||'').localeCompare(b.name||'');
+    return 0;
+  });
+
+  if (badge) badge.textContent = users.length + ' of ' + window._cachedUsers.length + ' users';
+  list.innerHTML = buildUserTableHTML(users);
 }
 
 function buildUserTableHTML(users) {
