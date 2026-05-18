@@ -2956,7 +2956,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="dash-section-header">
           <div class="dash-section-title">📞 Key Contacts</div>
         </div>
-        <div class="dash-section-body" style="display:flex;flex-direction:column;gap:8px;">
+        <div class="dash-section-body" id="staffContactsBody" style="display:flex;flex-direction:column;gap:8px;">
           <div class="task-item"><div class="task-body"><div class="task-title">Event Management</div><div class="task-meta">For general event questions and escalations</div></div><a href="tel:+15083470000" class="dash-btn success">Call</a></div>
           <div class="task-item"><div class="task-body"><div class="task-title">Security Lead</div><div class="task-meta">For security incidents and crowd control</div></div><a href="tel:+15083470000" class="dash-btn danger">Call</a></div>
           <div class="task-item"><div class="task-body"><div class="task-title">Stage Manager</div><div class="task-meta">For stage and technical issues</div></div><a href="tel:+15083470000" class="dash-btn">Call</a></div>
@@ -5770,6 +5770,8 @@ async function initStaffEditor() {
   if (!Object.keys(staffEditorData.shifts).length) {
     staffEditorData.shifts = JSON.parse(JSON.stringify(STAFF_SHIFTS));
   }
+  // Apply saved content to staff dashboard immediately
+  applyStaffContentLive();
   switchStaffEditTab(staffEditSubTab);
 }
 
@@ -5957,30 +5959,32 @@ function applyStaffContentLive() {
   Object.assign(STAFF_TASKS, staffEditorData.tasks);
   Object.assign(STAFF_SHIFTS, staffEditorData.shifts);
 
-  // Re-render announcements
+  // Re-render announcements on staff dashboard
   const annEl = document.getElementById('staffAnnouncements');
-  if (annEl) {
+  if (annEl && staffEditorData.announcements.length) {
     annEl.innerHTML = staffEditorData.announcements.map(a =>
       `<div class="announce-card">
         <div class="announce-card-title">${escapeHTML(a.title||'')}</div>
         <div class="announce-card-body">${escapeHTML(a.body||'').replace(/\n/g,'<br>')}</div>
         <div class="announce-card-time">${escapeHTML(a.time||'')}</div>
       </div>`
-    ).join('') || '<div style="color:var(--text-muted);padding:16px;">No announcements yet.</div>';
+    ).join('');
   }
 
-  // Re-render contacts
-  const conSection = document.querySelector('#staffTab-contacts .dash-section-body');
-  if (conSection) {
-    conSection.innerHTML = staffEditorData.contacts.map(c =>
-      `<div class="task-item">
+  // Re-render key contacts on staff dashboard
+  const contactsBody = document.getElementById('staffContactsBody');
+  if (contactsBody && staffEditorData.contacts.length) {
+    contactsBody.innerHTML = staffEditorData.contacts.map(c => {
+      const btnLabel = c.phone === '911' ? '911' : 'Call';
+      const btnClass = `dash-btn${c.style ? ' ' + c.style : ''}`;
+      return `<div class="task-item">
         <div class="task-body">
           <div class="task-title">${escapeHTML(c.title||'')}</div>
           <div class="task-meta">${escapeHTML(c.meta||'')}</div>
         </div>
-        <a href="tel:${escapeHTML(c.phone||'')}" class="dash-btn ${c.style||''}">${c.phone==='911'?'911':'Call'}</a>
-      </div>`
-    ).join('') || '<div style="color:var(--text-muted);padding:16px;">No contacts yet.</div>';
+        <a href="tel:${escapeHTML(c.phone||'')}" class="${btnClass}">${btnLabel}</a>
+      </div>`;
+    }).join('');
   }
 }
 
@@ -6681,6 +6685,25 @@ function initStaffDashboard() {
   if (el) el.textContent = roleLabels[role] || 'Staff · Sunken Suite 2026';
   // Render shared task manager (default tab)
   renderTaskManager('staffTaskManager');
+  // Load announcements and contacts from worker
+  loadStaffContent();
+}
+
+async function loadStaffContent() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return;
+  try {
+    const res = await fetch(AUTH_URL + '/staff-content', { headers: {'Authorization':'Bearer '+token} });
+    if (!res.ok) return;
+    const d = await res.json();
+    if (d.content) {
+      if (d.content.announcements) staffEditorData.announcements = d.content.announcements;
+      if (d.content.contacts)      staffEditorData.contacts      = d.content.contacts;
+      if (d.content.tasks)         staffEditorData.tasks         = d.content.tasks;
+      if (d.content.shifts)        staffEditorData.shifts        = d.content.shifts;
+      applyStaffContentLive();
+    }
+  } catch(e) {}
 }
 
 function switchStaffTab(tab, btn) {
