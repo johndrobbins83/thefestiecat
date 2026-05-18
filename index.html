@@ -5748,10 +5748,15 @@ function renderAdminSchedule() {
   const allArtistKeys = Object.keys(artists).sort();
   const artistOptions = allArtistKeys.map(k => `<option value="${esc(k)}">${k}</option>`).join('');
 
+  const ADMIN_STAGES = [
+    { key:'dnb',    name:'DNB Stage',        color:'#c084fc' },
+    { key:'atrium', name:'Atrium (House)',    color:'#f59e0b' },
+    { key:'beach',  name:'Beach Stage',       color:'#06b6d4' },
+    { key:'locals', name:'Locals Stage',      color:'#84cc16' },
+  ];
+
   let html = '';
-  ['dnb','oasis'].forEach(stage => {
-    const stageName  = stage === 'dnb' ? 'DNB Stage' : 'Oasis Stage';
-    const stageColor = stage === 'dnb' ? '#c084fc' : 'var(--teal-glow)';
+  ADMIN_STAGES.forEach(({ key: stage, name: stageName, color: stageColor }) => {
     if (!dayData[stage]) dayData[stage] = [];
     const items = dayData[stage];
 
@@ -5831,7 +5836,8 @@ function addArtistToSchedule(day, stage) {
   SCHEDULE_DATA[day][stage].push(entry);
 
   // Update artist's stage and day to match where they were added
-  const stageDisplayName = stage === 'dnb' ? 'DNB Stage' : 'Oasis Stage';
+  const stageDisplayNames = { dnb:'DNB Stage', atrium:'Atrium', beach:'Beach Stage', locals:'Locals Stage' };
+  const stageDisplayName = stageDisplayNames[stage] || stage;
   const dayDisplayName   = { fri:'Fri', sat:'Sat', sun:'Sun' }[day] || day;
   if (artists[artistName]) {
     artists[artistName].stage = stageDisplayName;
