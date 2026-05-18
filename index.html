@@ -8898,27 +8898,52 @@ function getLuminance(hex) {
   return 0.2126*toLinear(r) + 0.7152*toLinear(g) + 0.0722*toLinear(b);
 }
 
+let _findMeStrobeInterval = null;
+
 function openFindMe() {
-  const overlay = document.getElementById('findMeOverlay');
-  const textEl  = document.getElementById('findMeText');
+  const overlay  = document.getElementById('findMeOverlay');
+  const textEl   = document.getElementById('findMeText');
   const handleEl = document.getElementById('findMeHandle');
   if (!overlay) return;
 
-  // Get user's avatar color
-  const color = currentUser?.avatarColor || '#9b3dff';
   const handle = currentUser?.handle ? '@' + currentUser.handle : '';
+  if (handleEl) handleEl.textContent = handle;
 
-  // Determine text color based on luminance
-  const lum = getLuminance(color);
-  const textColor = lum > 0.4 ? '#111111' : '#ffffff';
+  // Fluorescent strobe colors
+  const strobeColors = [
+    '#ff00ff', // magenta
+    '#00ffff', // cyan
+    '#ff ff00', // yellow
+    '#00ff00', // lime
+    '#ff6600', // orange
+    '#ff0066', // hot pink
+    '#00ff99', // spring green
+    '#ff00cc', // fuchsia
+    '#ccff00', // chartreuse
+    '#00ccff', // sky blue
+  ].map(c => c.replace(/\s/g,'')); // remove any accidental spaces
 
-  overlay.style.background = color;
   overlay.style.display = 'flex';
-  if (textEl) { textEl.style.color = textColor; }
-  if (handleEl) { handleEl.textContent = handle; handleEl.style.color = textColor; }
   document.body.style.overflow = 'hidden';
 
-  // Request fullscreen + keep screen awake
+  // Always white text — fluorescents are bright enough
+  if (textEl)   textEl.style.color   = '#ffffff';
+  if (handleEl) handleEl.style.color = '#ffffff';
+
+  // Add text-shadow to make text pop against any strobe color
+  const popShadow = '0 0 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)';
+  if (textEl)   textEl.style.textShadow   = popShadow;
+  if (handleEl) handleEl.style.textShadow = popShadow;
+
+  let colorIdx = 0;
+  overlay.style.background = strobeColors[0];
+
+  _findMeStrobeInterval = setInterval(() => {
+    colorIdx = (colorIdx + 1) % strobeColors.length;
+    overlay.style.background = strobeColors[colorIdx];
+  }, 300);
+
+  // Request fullscreen
   try {
     if (overlay.requestFullscreen) overlay.requestFullscreen();
     else if (overlay.webkitRequestFullscreen) overlay.webkitRequestFullscreen();
@@ -8931,6 +8956,11 @@ function openFindMe() {
 }
 
 function closeFindMe() {
+  // Stop strobe
+  if (_findMeStrobeInterval) {
+    clearInterval(_findMeStrobeInterval);
+    _findMeStrobeInterval = null;
+  }
   const overlay = document.getElementById('findMeOverlay');
   if (overlay) overlay.style.display = 'none';
   document.body.style.overflow = '';
