@@ -3260,7 +3260,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <!-- Header bar with close -->
     <div class="modal-header">
       <div class="modal-header-label">Artist Profile</div>
-      <button class="modal-close" id="modalClose" onclick="closeModal()">✕</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="modalSchedBtn" class="sched-add-btn" onclick="modalToggleSaved()" title="Add to My Schedule" style="position:static;transform:none;width:32px;height:32px;font-size:16px;">+</button>
+        <button class="modal-close" id="modalClose" onclick="closeModal()">✕</button>
+      </div>
     </div>
     <!-- Square image left + set info right -->
     <div class="modal-top-row">
@@ -4785,9 +4788,31 @@ function openArtist(key) {
   const socialsSection = socialsEl && socialsEl.closest('.modal-section');
   if (socialsEl) socialsEl.innerHTML = socialLinks.join('');
   if (socialsSection) socialsSection.style.display = socialLinks.length ? '' : 'none';
+
+  // Update the + schedule button state
+  window._currentModalArtistKey = key;
+  updateModalSchedBtn(key);
+
   const modal = document.getElementById('artistModal');
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+
+function updateModalSchedBtn(key) {
+  const btn = document.getElementById('modalSchedBtn');
+  if (!btn) return;
+  const mine = getMySchedule();
+  const saved = mine.includes(key);
+  btn.textContent = saved ? '✓' : '+';
+  btn.classList.toggle('added', saved);
+  btn.title = saved ? 'Remove from My Schedule' : 'Add to My Schedule';
+}
+
+function modalToggleSaved() {
+  const key = window._currentModalArtistKey;
+  if (!key) return;
+  toggleSaved(key);
+  updateModalSchedBtn(key);
 }
 function closeModal() {
   document.getElementById('artistModal').classList.remove('open');
