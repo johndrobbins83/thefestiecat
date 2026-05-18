@@ -3919,6 +3919,32 @@ let staffEditSubTab = 'announcements';
 let staffEditorData = { announcements: [], contacts: [], tasks: {}, shifts: {} };
 let STAFF_TASKS = {};
 let STAFF_SHIFTS = {};
+// scheduleInitted declared at top
+// artistsInitted declared at top
+// artistLetterFilter declared at top
+let GAMES_DATA = [];
+// gamesInitted declared at top
+let masterDayFilter = 'all';
+// masterTypeFilter declared at top
+// ALERT_DISMISSED_KEY declared at top
+// ALERT_ICONS declared at top
+// PERSONAL_BLOCKS_KEY declared at top
+// ROLES declared at top
+ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management' };
+// DAYS declared at top
+// DAY_LABELS declared at top
+// SHIFT_LOCATIONS declared at top
+let taskAssignMode = 'role';
+let AVATAR_COLORS = [];
+// selectedAvatarColor declared at top
+let _origSwitchPeopleTab = null;
+let _origSubmitProfile = null;
+let INFO_DEFAULTS = {};
+// currentInfoTab declared at top
+let TERMS_HTML = '';
+// _findMeStrobeInterval declared at top
+let ALL_QUESTIONS = [];
+// _installPrompt declared at top
 let currentDMFriendId = null;
 let currentDMFriendHandle = null;
 let feedPage = 1;
@@ -4158,14 +4184,14 @@ function renderFeaturedArtists() {
 /* ════════════════════════════════════════════════════════════
    SCHEDULE PAGE
 ════════════════════════════════════════════════════════════ */
-let scheduleInitted = false;
+// (declared at top of script)
 function initSchedule() {
   if (scheduleInitted) { renderSchedule(); return; }
   scheduleInitted = true;
   renderSchedule();
 }
 
-const SCHEDULE_DATA = {
+SCHEDULE_DATA = {
   fri: {
     dnb: [
       {artist:'JFB',time:'9:30 PM',headliner:true},
@@ -4453,8 +4479,8 @@ function exportICS() {
 /* ════════════════════════════════════════════════════════════
    ARTISTS PAGE — PHOTO GRID
 ════════════════════════════════════════════════════════════ */
-let artistsInitted = false;
-let artistLetterFilter = '';
+// (declared at top of script)
+// (declared at top of script)
 
 function initArtists() {
   if (!artistsInitted) {
@@ -4784,12 +4810,12 @@ function renderChecklist() {
 //   ready: false = shows "coming soon" toast
 //   link:  URL to open when ready:true (optional, leave '' to use navigate())
 // ─────────────────────────────────────────────────────
-const GAMES_DATA = [
+GAMES_DATA = [
   {icon:'🎵', name:'Rave Trivia', desc:'80 questions across 4 stages. Rave history, DNB culture, Sunken Suite artists.', players:'1–8 players', color:'rgba(155,61,255,0.25)', ready:true, link:''},
   {icon:'🎵', name:'DJ Bingo',    desc:'Tap when you hear these tracks at Sunken Suite! First to BINGO wins!', players:'Any number', color:'rgba(245,200,66,0.2)', ready:true, link:''},
   {icon:'🪱', name:'Rave Worm',   desc:'Neon snake game. Eat the rave snacks, dodge yourself, survive the worm.', players:'1 player', color:'rgba(255,0,255,0.25)', ready:true, link:''},
 ];
-let gamesInitted = false;
+// (declared at top of script)
 function initGames() {
   if (gamesInitted) return;
   gamesInitted = true;
@@ -5457,8 +5483,8 @@ function switchAdminTab(tab, btn) {
 }
 
 // ── Master Block Schedule ──────────────────────────────────
-let masterDayFilter  = 'all';
-let masterTypeFilter = 'all';
+// masterDayFilter declared at top
+// (declared at top of script)
 
 function setMasterDay(day, btn) {
   masterDayFilter = day;
@@ -6557,10 +6583,10 @@ async function uploadArtistPhoto(artistKey) {
 /* ════════════════════════════════════════════════════════════
    SITE-WIDE ALERT SYSTEM
 ════════════════════════════════════════════════════════════ */
-const ALERT_DISMISSED_KEY = 'ss_dismissed_alerts';
+// (declared at top of script)
 // (declared at top of script)
 
-const ALERT_ICONS = { warning:'⚠️', emergency:'🚨', info:'ℹ️' };
+// (declared at top of script)
 
 // ── Show alert banner ──────────────────────────────────────
 function showSiteAlert(alert) {
@@ -6731,18 +6757,15 @@ async function clearSiteAlert() {
 /* ════════════════════════════════════════════════════════════
    SHARED TASK & SCHEDULE SYSTEM
 ════════════════════════════════════════════════════════════ */
-const PERSONAL_BLOCKS_KEY = 'ss_personal_blocks_v1';
-const ROLES = ['security','stage-crew','ticketing','engineers','management'];
-const ROLE_LABELS = {
-  security:'Security', 'stage-crew':'Stage Crew',
-  ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management'
-};
-const DAYS = ['Fri','Sat','Sun'];
-const DAY_LABELS = {'Fri':'Friday Jul 17','Sat':'Saturday Jul 18','Sun':'Sunday Jul 19'};
-const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Atrium Stage','Atrium Backstage','Beach Stage','Beach Backstage','Locals Stage','Locals Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Parking Lot','Medical Station','General Grounds'];
+// (declared at top of script)
+// (declared at top of script)
+// ROLE_LABELS declared at top
+// (declared at top of script)
+// (declared at top of script)
+// (declared at top of script)
 
 // cachedTasks, cachedShifts declared at top
-let taskAssignMode = 'role'; // 'role' or 'user'
+// taskAssignMode declared at top
 
 function isAdminOrMgmt() {
   if (!currentUser) return false;
@@ -7432,11 +7455,11 @@ function deletePersonalBlock(blockId, containerId) {
 /* ════════════════════════════════════════════════════════════
    SOCIAL SYSTEM — PROFILE, FEED, PEOPLE, DMs
 ════════════════════════════════════════════════════════════ */
-const AVATAR_COLORS = [
+AVATAR_COLORS = [
   '#9b3dff','#00d4c8','#ff4d8d','#f5c842','#ff6b1a',
   '#4ade80','#60a5fa','#e879f9','#fb923c','#a3e635'
 ];
-let selectedAvatarColor = '#9b3dff';
+// (declared at top of script)
 // currentDMFriendId, currentDMFriendHandle, feedPage, feedFilter, dmPollTimer, feedPhotoFile declared at top
 
 // ── Profile setup ──────────────────────────────────────────
@@ -7761,7 +7784,7 @@ function initPeople() {
 }
 
 // Also reload friends whenever connect tab is switched to
-const _origSwitchPeopleTab = switchPeopleTab;
+_origSwitchPeopleTab = switchPeopleTab;
 switchPeopleTab = function(tab, btn) {
   _origSwitchPeopleTab(tab, btn);
   if (tab === 'connect') {
@@ -8185,7 +8208,7 @@ async function uploadProfilePic(file) {
 }
 
 // Hook into submitProfileSetup to upload pic first
-const _origSubmitProfile = submitProfileSetup;
+_origSubmitProfile = submitProfileSetup;
 window.submitProfileSetup = async function() {
   // If there's a pending pic, upload it first then proceed
   if (pendingProfilePicFile) {
@@ -9057,7 +9080,7 @@ async function downloadEmailListPDF() {
    INFO + HELP OVERLAY
 ════════════════════════════════════════ */
 // Default info content — loaded from worker, falls back to defaults
-const INFO_DEFAULTS = {
+INFO_DEFAULTS = {
   event: {
     title: '‍️ Event Info',
     sections: [
@@ -9097,7 +9120,7 @@ const INFO_DEFAULTS = {
 };
 
 INFO_CONTENT = JSON.parse(JSON.stringify(INFO_DEFAULTS));
-let currentInfoTab = 'event';
+// (declared at top of script)
 
 
 
@@ -9124,7 +9147,7 @@ function closeInfo() {
   document.body.style.overflow = '';
 }
 
-const TERMS_HTML = `
+TERMS_HTML = `
 <div style="font-size:13px;color:var(--text-muted);line-height:1.9;">
   <div style="font-size:10px;color:rgba(122,184,224,0.4);margin-bottom:20px;">Last updated: June 2026 · Effective upon account creation</div>
 
@@ -9285,7 +9308,7 @@ function getLuminance(hex) {
   return 0.2126*toLinear(r) + 0.7152*toLinear(g) + 0.0722*toLinear(b);
 }
 
-let _findMeStrobeInterval = null;
+// (declared at top of script)
 
 function openFindMe() {
   const overlay  = document.getElementById('findMeOverlay');
@@ -9707,7 +9730,7 @@ STAGES = [
   { id:4, name:"Legend Status", emoji:"💀", color:"#ff4d8d", bg:"rgba(255,77,141,0.15)",  badge:"Stage 4", desc:"Expert territory. Sunken Suite deep cuts and scene knowledge.",   timePerQ:12 },
 ];
 
-const ALL_QUESTIONS = [
+ALL_QUESTIONS = [
 // ── STAGE 1: WARM UP (Q1-20) ─────────────────────────────────
 { stage:1, cat:"Rave History",   q:"What decade did rave culture first emerge in the UK?",              opts:["1970s","1980s","1990s","2000s"],                       ans:1, fact:"UK rave culture exploded in the late 1980s, driven by Acid House arriving from Chicago." },
 { stage:1, cat:"Rave Culture",   q:"What does 'PLUR' stand for in rave culture?",                      opts:["Party, Love, Unity, Respect","Peace, Love, Unity, Respect","Peace, Love, Understanding, Rave","Party, Love, Unity, Rave"], ans:1, fact:"PLUR is the foundational philosophy of rave culture, originating in the early 1990s New York scene." },
@@ -10195,7 +10218,7 @@ function backToHub() {
 /* ════════════════════════════════════════
    PWA INSTALL
 ════════════════════════════════════════ */
-let _installPrompt = null;
+// (declared at top of script)
 
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
