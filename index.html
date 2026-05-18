@@ -1200,12 +1200,28 @@ body{
 
 /* Tabs */
 .dash-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);
-  margin-bottom:16px;overflow-x:auto;}
+  margin-bottom:16px;overflow-x:auto;scrollbar-width:none;}
+.dash-tabs::-webkit-scrollbar{display:none;}
 .dash-tab{padding:10px 18px;font-size:13px;font-weight:700;color:var(--text-muted);
-  cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;
-  transition:all .15s;background:transparent;border-top:none;border-left:none;border-right:none;}
+  cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;
+  transition:all .15s;background:transparent;border-top:none;border-left:none;border-right:none;
+  font-family:'Poppins',sans-serif;}
 .dash-tab:hover{color:var(--text-light);}
 .dash-tab.active{color:var(--gold-bright);border-bottom-color:var(--gold-bright);}
+/* Mobile dropdown */
+.dash-tab-select{display:none;}
+@media(max-width:600px){
+  .dash-tabs{display:none!important;}
+  .dash-tab-select{
+    display:block;width:100%;padding:11px 36px 11px 14px;margin-bottom:14px;
+    background:#111;border:1px solid rgba(245,200,66,0.35);
+    color:var(--gold-bright);font-family:'Poppins',sans-serif;
+    font-size:14px;font-weight:700;outline:none;cursor:pointer;
+    appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f5c842' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;
+  }
+}
 
 /* Action buttons */
 .dash-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;
@@ -2641,6 +2657,16 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
 
     <!-- Tabs -->
+    <select class="dash-tab-select" onchange="switchAdminTab(this.value, null); this.blur();">
+      <option value="artists">♪ Artists</option>
+      <option value="schedule">◈ Schedule</option>
+      <option value="master">📋 Master</option>
+      <option value="staffedit">👷 Staff</option>
+      <option value="tasks">✅ Tasks</option>
+      <option value="shifts">🕐 Shifts</option>
+      <option value="users">👥 Users</option>
+      <option value="settings">⚙ Settings</option>
+    </select>
     <div class="dash-tabs">
       <button class="dash-tab active" onclick="switchAdminTab('artists',this)"><span style="color:var(--gold-bright);margin-right:4px;">♪</span>Artists</button>
       <button class="dash-tab" onclick="switchAdminTab('schedule',this)"><span style="color:var(--gold-bright);margin-right:4px;">◈</span>Schedule</button>
@@ -2839,6 +2865,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
 
     <!-- Tabs -->
+    <select class="dash-tab-select" onchange="switchStaffTab(this.value, null); this.blur();">
+      <option value="tasks">✅ My Tasks</option>
+      <option value="schedule">🕐 Shift Schedule</option>
+      <option value="announcements">📢 Announcements</option>
+      <option value="contacts">📞 Contacts</option>
+    </select>
     <div class="dash-tabs">
       <button class="dash-tab active" onclick="switchStaffTab('tasks',this)">✅ My Tasks</button>
       <button class="dash-tab" onclick="switchStaffTab('schedule',this)">🕐 Shift Schedule</button>
@@ -5474,6 +5506,9 @@ function switchAdminTab(tab, btn) {
   });
   document.querySelectorAll('#page-admin .dash-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  // Sync mobile select
+  const sel = document.querySelector('#page-admin .dash-tab-select');
+  if (sel) sel.value = tab;
   if (tab === 'artists')  renderAdminArtistGrid();
   if (tab === 'schedule') renderAdminSchedule();
   if (tab === 'master')    renderMasterSchedule();
@@ -6442,6 +6477,9 @@ function switchStaffTab(tab, btn) {
   });
   document.querySelectorAll('#page-staff .dash-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  // Sync mobile select
+  const sel = document.querySelector('#page-staff .dash-tab-select');
+  if (sel) sel.value = tab;
   if (tab === 'tasks')    renderTaskManager('staffTaskManager');
   if (tab === 'schedule') renderShiftManager('staffShiftView');
 }
