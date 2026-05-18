@@ -5417,39 +5417,25 @@ async function renderMasterSchedule() {
   if (!list) return;
   list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);">Loading…</div>';
 
-  // Stage color map — matches schedule page exactly
-  const STAGE_COLORS = {
-    dnb:    { bg:'rgba(155,61,255,0.15)',  border:'rgba(155,61,255,0.25)',  accent:'#c084fc',  label:'DNB Stage' },
-    oasis:  { bg:'rgba(0,212,200,0.12)',   border:'rgba(0,212,200,0.22)',   accent:'#00d4c8',  label:'Oasis Stage' },
-    atrium: { bg:'rgba(245,158,11,0.12)',  border:'rgba(245,158,11,0.25)',  accent:'#f59e0b',  label:'Atrium (House)' },
-    beach:  { bg:'rgba(6,182,212,0.12)',   border:'rgba(6,182,212,0.25)',   accent:'#06b6d4',  label:'Beach Stage' },
-    locals: { bg:'rgba(132,204,22,0.12)',  border:'rgba(132,204,22,0.25)',  accent:'#84cc16',  label:'Locals Stage' },
-  };
-  const SHIFT_STYLE  = { bg:'rgba(0,212,200,0.08)',   border:'rgba(0,212,200,0.2)',   accent:'#00d4c8' };
-  const TASK_COLORS  = { done:'#4ade80', inprogress:'#f5c842', pending:'#ff4d8d' };
-
-  // ── 1. Stage blocks ──
+  // ── 1. Gather stage blocks from SCHEDULE_DATA ──
   const stageBlocks = [];
   const dayKeyMap = { fri:'Fri', sat:'Sat', sun:'Sun' };
   Object.entries(SCHEDULE_DATA).forEach(([dayKey, stages]) => {
     const day = dayKeyMap[dayKey] || dayKey;
     Object.entries(stages).forEach(([stageKey, items]) => {
-      const sc = STAGE_COLORS[stageKey] || STAGE_COLORS.dnb;
+      const stageName = stageKey === 'dnb' ? 'DNB Stage' : stageKey === 'oasis' ? 'Oasis Stage' : stageKey;
       (items || []).forEach(item => {
         stageBlocks.push({
-          type:'stage', day, stageKey,
-          label: item.artist,
-          sublabel: sc.label + (item.headliner ? ' · ⭐ Headliner' : ''),
-          time: item.time || 'TBA',
-          sort: timeToSort(item.time),
-          headliner: !!item.headliner,
-          sc,
+          type: 'stage', day, label: item.artist,
+          sublabel: stageName + (item.headliner ? ' · ⭐ Headliner' : ''),
+          time: item.time || 'TBA', sort: timeToSort(item.time),
+          color: '#9b3dff', badge: stageKey === 'oasis' ? '#00d4c8' : '#9b3dff',
         });
       });
     });
   });
 
-  // ── 2. Shifts ──
+  // ── 2. Fetch shifts ──
   let shiftBlocks = [];
   try {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -5458,17 +5444,18 @@ async function renderMasterSchedule() {
       const d = await res.json();
       (d.shifts || []).forEach(s => {
         shiftBlocks.push({
-          type:'shift', day: s.day || 'TBA',
-          label: (s.assignedUserName || s.role || 'Staff') + (s.location ? ' — ' + s.location : ''),
+          type: 'shift', day: s.day || 'TBA',
+          label: (s.assignedUserName || s.role || 'Staff') + ' — ' + (s.location || ''),
           sublabel: (s.role || '') + (s.notes ? ' · ' + s.notes : ''),
           time: (s.startTime || '') + (s.endTime ? '–' + s.endTime : ''),
           sort: timeToSort(s.startTime),
+          color: '#00d4c8',
         });
       });
     }
   } catch(e) {}
 
-  // ── 3. Tasks ──
+  // ── 3. Fetch tasks ──
   let taskBlocks = [];
   try {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -5476,13 +5463,15 @@ async function renderMasterSchedule() {
     if (res.ok) {
       const d = await res.json();
       (d.tasks || []).forEach(t => {
+        const statusColor = t.status === 'done' ? '#4ade80' : t.status === 'inprogress' ? '#f5c842' : '#ff4d8d';
         taskBlocks.push({
-          type:'task', day: t.day || 'All',
+          type: 'task', day: t.day || 'All',
           label: t.title || t.name || 'Task',
           sublabel: (t.assignedToName || t.role || '') + (t.status ? ' · ' + t.status : ''),
           time: t.time || t.dueTime || '',
           sort: timeToSort(t.time || t.dueTime),
-          status: t.status || 'pending',
+          color: statusColor,
+          status: t.status,
         });
       });
     }
@@ -5498,7 +5487,7 @@ async function renderMasterSchedule() {
     return;
   }
 
-  // ── 5. Render grouped by day ──
+  // ── 5. Group by day ──
   const days = masterDayFilter === 'all' ? ['Fri','Sat','Sun','All','TBA'] : [masterDayFilter];
   const DAY_LABELS_M = { Fri:'Friday · Jul 17', Sat:'Saturday · Jul 18', Sun:'Sunday · Jul 19', All:'All Days', TBA:'Day TBA' };
 
@@ -5506,41 +5495,23 @@ async function renderMasterSchedule() {
   days.forEach(day => {
     const group = all.filter(b => b.day === day).sort((a, b) => a.sort - b.sort);
     if (!group.length) return;
-
     html += `<div style="padding:12px 14px 4px;">
       <div style="font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:2px;
         text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.07);
         margin-bottom:8px;">${DAY_LABELS_M[day] || day}</div>`;
-
     group.forEach(b => {
-      let bg, border, accent, icon;
-
-      if (b.type === 'stage') {
-        bg = b.sc.bg; border = b.sc.border; accent = b.sc.accent; icon = '🎵';
-        if (b.headliner) border = accent; // thicker feel for headliners
-      } else if (b.type === 'shift') {
-        bg = SHIFT_STYLE.bg; border = SHIFT_STYLE.border; accent = SHIFT_STYLE.accent; icon = '🕐';
-      } else {
-        const tc = TASK_COLORS[b.status] || TASK_COLORS.pending;
-        bg = 'rgba(255,255,255,0.04)'; border = tc + '55'; accent = tc; icon = '✅';
-      }
-
-      const borderLeft = b.headliner ? `3px solid ${accent}` : `2px solid ${accent}`;
-
+      const typeLabel = b.type === 'stage' ? '🎵' : b.type === 'shift' ? '🕐' : '✅';
+      const typeBg    = b.type === 'stage' ? 'rgba(155,61,255,0.12)' : b.type === 'shift' ? 'rgba(0,212,200,0.1)' : 'rgba(245,200,66,0.08)';
+      const typeBdr   = b.type === 'stage' ? 'rgba(155,61,255,0.3)'  : b.type === 'shift' ? 'rgba(0,212,200,0.3)'  : 'rgba(245,200,66,0.25)';
       html += `<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;
-        margin-bottom:4px;background:${bg};
-        border:1px solid ${border};border-left:${borderLeft};
-        cursor:default;transition:background .15s;"
-        onmouseover="this.style.filter='brightness(1.15)'"
-        onmouseout="this.style.filter=''">
-        <div style="font-size:15px;flex-shrink:0;line-height:1;">${icon}</div>
+        margin-bottom:4px;background:${typeBg};border:1px solid ${typeBdr};border-left:3px solid ${b.color};">
+        <div style="font-size:16px;flex-shrink:0;">${typeLabel}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:700;color:var(--text-light);
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.label}${b.headliner ? ' <span style="font-size:10px;color:'+accent+';">⭐</span>' : ''}</div>
-          ${b.sublabel ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${b.sublabel}</div>` : ''}
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.label}</div>
+          ${b.sublabel ? `<div style="font-size:11px;color:var(--text-muted);margin-top:1px;">${b.sublabel}</div>` : ''}
         </div>
-        ${b.time ? `<div style="font-size:11px;font-weight:700;color:${accent};flex-shrink:0;
-          white-space:nowrap;font-family:'Orbitron',sans-serif;">${b.time}</div>` : ''}
+        ${b.time ? `<div style="font-size:12px;font-weight:700;color:${b.color};flex-shrink:0;white-space:nowrap;">${b.time}</div>` : ''}
       </div>`;
     });
     html += '</div>';
@@ -5748,15 +5719,10 @@ function renderAdminSchedule() {
   const allArtistKeys = Object.keys(artists).sort();
   const artistOptions = allArtistKeys.map(k => `<option value="${esc(k)}">${k}</option>`).join('');
 
-  const ADMIN_STAGES = [
-    { key:'dnb',    name:'DNB Stage',        color:'#c084fc' },
-    { key:'atrium', name:'Atrium (House)',    color:'#f59e0b' },
-    { key:'beach',  name:'Beach Stage',       color:'#06b6d4' },
-    { key:'locals', name:'Locals Stage',      color:'#84cc16' },
-  ];
-
   let html = '';
-  ADMIN_STAGES.forEach(({ key: stage, name: stageName, color: stageColor }) => {
+  ['dnb','oasis'].forEach(stage => {
+    const stageName  = stage === 'dnb' ? 'DNB Stage' : 'Oasis Stage';
+    const stageColor = stage === 'dnb' ? '#c084fc' : 'var(--teal-glow)';
     if (!dayData[stage]) dayData[stage] = [];
     const items = dayData[stage];
 
@@ -5836,8 +5802,7 @@ function addArtistToSchedule(day, stage) {
   SCHEDULE_DATA[day][stage].push(entry);
 
   // Update artist's stage and day to match where they were added
-  const stageDisplayNames = { dnb:'DNB Stage', atrium:'Atrium', beach:'Beach Stage', locals:'Locals Stage' };
-  const stageDisplayName = stageDisplayNames[stage] || stage;
+  const stageDisplayName = stage === 'dnb' ? 'DNB Stage' : 'Oasis Stage';
   const dayDisplayName   = { fri:'Fri', sat:'Sat', sun:'Sun' }[day] || day;
   if (artists[artistName]) {
     artists[artistName].stage = stageDisplayName;
@@ -8898,52 +8863,27 @@ function getLuminance(hex) {
   return 0.2126*toLinear(r) + 0.7152*toLinear(g) + 0.0722*toLinear(b);
 }
 
-let _findMeStrobeInterval = null;
-
 function openFindMe() {
-  const overlay  = document.getElementById('findMeOverlay');
-  const textEl   = document.getElementById('findMeText');
+  const overlay = document.getElementById('findMeOverlay');
+  const textEl  = document.getElementById('findMeText');
   const handleEl = document.getElementById('findMeHandle');
   if (!overlay) return;
 
+  // Get user's avatar color
+  const color = currentUser?.avatarColor || '#9b3dff';
   const handle = currentUser?.handle ? '@' + currentUser.handle : '';
-  if (handleEl) handleEl.textContent = handle;
 
-  // Fluorescent strobe colors
-  const strobeColors = [
-    '#ff00ff', // magenta
-    '#00ffff', // cyan
-    '#ff ff00', // yellow
-    '#00ff00', // lime
-    '#ff6600', // orange
-    '#ff0066', // hot pink
-    '#00ff99', // spring green
-    '#ff00cc', // fuchsia
-    '#ccff00', // chartreuse
-    '#00ccff', // sky blue
-  ].map(c => c.replace(/\s/g,'')); // remove any accidental spaces
+  // Determine text color based on luminance
+  const lum = getLuminance(color);
+  const textColor = lum > 0.4 ? '#111111' : '#ffffff';
 
+  overlay.style.background = color;
   overlay.style.display = 'flex';
+  if (textEl) { textEl.style.color = textColor; }
+  if (handleEl) { handleEl.textContent = handle; handleEl.style.color = textColor; }
   document.body.style.overflow = 'hidden';
 
-  // Always white text — fluorescents are bright enough
-  if (textEl)   textEl.style.color   = '#ffffff';
-  if (handleEl) handleEl.style.color = '#ffffff';
-
-  // Add text-shadow to make text pop against any strobe color
-  const popShadow = '0 0 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)';
-  if (textEl)   textEl.style.textShadow   = popShadow;
-  if (handleEl) handleEl.style.textShadow = popShadow;
-
-  let colorIdx = 0;
-  overlay.style.background = strobeColors[0];
-
-  _findMeStrobeInterval = setInterval(() => {
-    colorIdx = (colorIdx + 1) % strobeColors.length;
-    overlay.style.background = strobeColors[colorIdx];
-  }, 300);
-
-  // Request fullscreen
+  // Request fullscreen + keep screen awake
   try {
     if (overlay.requestFullscreen) overlay.requestFullscreen();
     else if (overlay.webkitRequestFullscreen) overlay.webkitRequestFullscreen();
@@ -8956,11 +8896,6 @@ function openFindMe() {
 }
 
 function closeFindMe() {
-  // Stop strobe
-  if (_findMeStrobeInterval) {
-    clearInterval(_findMeStrobeInterval);
-    _findMeStrobeInterval = null;
-  }
   const overlay = document.getElementById('findMeOverlay');
   if (overlay) overlay.style.display = 'none';
   document.body.style.overflow = '';
