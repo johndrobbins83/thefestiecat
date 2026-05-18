@@ -2187,6 +2187,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 @keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:0.8;}}
 </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
 </head>
 <body>
 
@@ -3467,6 +3468,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <a onclick="openTermsModal()" style="color:var(--teal-glow);cursor:pointer;text-decoration:underline;">Terms of Service &amp; Privacy Policy</a>.
         </p>
       </div>
+      <!-- Cloudflare Turnstile anti-bot -->
+      <div id="turnstileWidget" style="margin:12px 0;display:flex;justify-content:center;min-height:65px;"></div>
       <button class="auth-btn" id="registerBtn" onclick="submitRegister()">Create Account</button>
       <div class="auth-divider"></div>
       <div class="auth-switch">Already have an account? <a onclick="showAuth('login')">Sign in</a></div>
@@ -5485,6 +5488,7 @@ function showAuth(mode='login') {
   if (loginEl) loginEl.style.display    = mode==='login'    ? 'block' : 'none';
   if (regEl)   regEl.style.display      = mode==='register' ? 'block' : 'none';
   document.body.style.overflow = 'hidden';
+  if (mode === 'register') setTimeout(renderTurnstile, 200);
   setTimeout(()=>{
     const el = document.getElementById(mode==='login' ? 'loginEmail' : 'registerHandle');
     if (el) el.focus();
@@ -5537,6 +5541,37 @@ async function submitLogin() {
   }
 }
 
+// ── Cloudflare Turnstile ───────────────────────────────────
+const TURNSTILE_SITE_KEY = '0x4AAAAAADR2iZypBCpY_Ig_';
+let _turnstileWidgetId = null;
+
+function onTurnstileLoad() {
+  // Render when register form opens
+}
+
+function renderTurnstile() {
+  const container = document.getElementById('turnstileWidget');
+  if (!container) return;
+  if (_turnstileWidgetId !== null) return; // already rendered
+  if (typeof turnstile === 'undefined') return; // script not loaded yet
+  _turnstileWidgetId = turnstile.render(container, {
+    sitekey: TURNSTILE_SITE_KEY,
+    theme: 'dark',
+    callback: function() {}, // token ready
+  });
+}
+
+function resetTurnstile() {
+  if (typeof turnstile !== 'undefined' && _turnstileWidgetId !== null) {
+    turnstile.reset(_turnstileWidgetId);
+  }
+}
+
+function getTurnstileToken() {
+  if (typeof turnstile === 'undefined' || _turnstileWidgetId === null) return null;
+  return turnstile.getResponse(_turnstileWidgetId) || null;
+}
+
 // ── Register ───────────────────────────────────────────────
 async function submitRegister() {
   const handle   = (document.getElementById('registerHandle')?.value||'').trim();
@@ -5552,19 +5587,31 @@ async function submitRegister() {
   if (!email || !password) { showAuthError(errEl, 'Please fill in all fields.'); return; }
   if (password.length < 8) { showAuthError(errEl, 'Password must be at least 8 characters.'); return; }
 
+  // Turnstile verification
+  const turnstileToken = getTurnstileToken();
+  if (!turnstileToken) {
+    showAuthError(errEl, 'Please complete the security check.');
+    return;
+  }
+
   btn.disabled = true; btn.textContent = 'Creating account…';
   try {
     const res  = await fetch(`${AUTH_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: handle, handle, email, password, notifConsent, emailList })
+      body: JSON.stringify({ name: handle, handle, email, password, notifConsent, emailList, turnstileToken })
     });
     const data = await res.json();
-    if (!res.ok) { showAuthError(errEl, data.error || 'Registration failed.'); return; }
+    if (!res.ok) {
+      showAuthError(errEl, data.error || 'Registration failed.');
+      resetTurnstile();
+      return;
+    }
     setCurrentUser(data.user, data.token);
     showToast(`Welcome aboard, ${data.user.name}! ☠`);
   } catch {
     showAuthError(errEl, 'Could not connect. Check your connection.');
+    resetTurnstile();
   } finally {
     btn.disabled = false; btn.textContent = 'Create Account';
   }
