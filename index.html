@@ -6900,6 +6900,9 @@ function renderStaffShifts() {
 function previewArtistPhoto(input) {
   const file = input.files[0];
   if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Image too large — max 5MB'); input.value = ''; return;
+  }
   const status  = document.getElementById('editPhotoStatus');
   const preview = document.getElementById('editPhotoPreview');
   status.textContent = file.name + ' · ' + (file.size / 1024).toFixed(0) + ' KB';
@@ -8582,6 +8585,9 @@ function escapeHTML(str) {
 function previewProfilePic(input) {
   const file = input.files[0];
   if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Image too large — max 5MB'); input.value = ''; return;
+  }
   pendingProfilePicFile = file;
   const reader = new FileReader();
   reader.onload = e => {
@@ -8868,6 +8874,11 @@ function closeEditProfileModal() {
 
 function previewEditBanner(input) {
   const file = input.files[0]; if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Image too large — max 5MB');
+    input.value = '';
+    return;
+  }
   pendingBannerFile = file;
   const reader = new FileReader();
   reader.onload = function(e) {
@@ -8879,6 +8890,9 @@ function previewEditBanner(input) {
 
 function previewEditAvatar(input) {
   const file = input.files[0]; if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Image too large — max 5MB'); input.value = ''; return;
+  }
   pendingEditAvatarFile = file;
   const reader = new FileReader();
   reader.onload = function(e) {
