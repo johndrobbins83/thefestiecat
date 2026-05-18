@@ -6318,46 +6318,69 @@ async function adminLoadUsers() {
 function buildUserTableHTML(users) {
   if (!users.length) return '<div style="padding:16px;color:var(--text-muted);">No users found</div>';
 
-  function roleSelectHTML(u) {
-    // All users get role dropdown (admins can be demoted, festies can be promoted)
-    return '<select onchange="adminSetRole(\''+u.id+'\',this.value)" style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
-      '<option '+(u.role==='festie'?'selected':'')+' value="festie">Festie</option>' +
-      '<option '+(u.role==='employee'?'selected':'')+' value="employee">Employee</option>' +
-      '<option '+(u.role==='admin'?'selected':'')+' value="admin">Admin</option>' +
+  var html = '';
+  users.forEach(function(u) {
+    var roleColor = u.role==='admin' ? 'var(--gold-bright)' : u.role==='employee' ? '#c084fc' : 'var(--teal-glow)';
+    var roleLabel = u.role==='admin' ? 'Admin' : u.role==='employee' ? 'Staff' : 'Festie';
+    var initials  = (u.name||u.handle||'?').charAt(0).toUpperCase();
+    var avatarBg  = u.avatarColor || '#9b3dff';
+
+    var roleSelect = '<select onchange="adminSetRole(\''+u.id+'\',this.value)" style="flex:1;padding:7px 8px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
+      '<option '+(u.role==='festie'   ?'selected':'')+' value="festie">🎟 Festie</option>' +
+      '<option '+(u.role==='employee' ?'selected':'')+' value="employee">👷 Staff</option>' +
+      '<option '+(u.role==='admin'    ?'selected':'')+' value="admin">⭐ Admin</option>' +
       '</select>';
-  }
 
-  function staffRoleHTML(u) {
-    // Only employees get staff role dropdown
-    if (u.role === 'admin' || u.role === 'festie') return '<span style="color:rgba(122,184,224,0.3);font-size:12px;">N/A</span>';
-    return '<select onchange="adminSetStaffRole(\''+u.id+'\',this.value)" style="padding:4px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
-      '<option value="">— None —</option>' +
-      '<option '+(u.staffRole==='security'?'selected':'')+' value="security">Security</option>' +
-      '<option '+(u.staffRole==='stage-crew'?'selected':'')+' value="stage-crew">Stage Crew</option>' +
-      '<option '+(u.staffRole==='ticketing'?'selected':'')+' value="ticketing">Ticketing / Front of House</option>' +
-      '<option '+(u.staffRole==='engineers'?'selected':'')+' value="engineers">Engineers / Tech</option>' +
-      '<option '+(u.staffRole==='management'?'selected':'')+' value="management">&#x2605; Management</option>' +
-      '</select>' +
-      (u.staffRole === 'management' ? '<div style="font-size:10px;color:var(--gold-bright);margin-top:3px;">Can assign shifts &amp; tasks</div>' : '');
-  }
+    var staffRoleSelect = (u.role === 'admin' || u.role === 'festie')
+      ? '<div style="padding:7px 8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:rgba(122,184,224,0.3);font-size:12px;flex:1;">N/A</div>'
+      : '<select onchange="adminSetStaffRole(\''+u.id+'\',this.value)" style="flex:1;padding:7px 8px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
+        '<option value="">— No role —</option>' +
+        '<option '+(u.staffRole==='security'   ?'selected':'')+' value="security">Security</option>' +
+        '<option '+(u.staffRole==='stage-crew' ?'selected':'')+' value="stage-crew">Stage Crew</option>' +
+        '<option '+(u.staffRole==='ticketing'  ?'selected':'')+' value="ticketing">Ticketing</option>' +
+        '<option '+(u.staffRole==='engineers'  ?'selected':'')+' value="engineers">Engineers</option>' +
+        '<option '+(u.staffRole==='management' ?'selected':'')+' value="management">★ Management</option>' +
+        '</select>';
 
-  var rows = users.map(function(u) {
-    var roleColor = u.role==='admin'?'var(--gold-bright)':u.role==='employee'?'var(--teal-glow)':'#c084fc';
-    return '<tr>' +
-      '<td style="font-weight:700;">'+(u.name||'—')+'</td>' +
-      '<td style="color:var(--text-muted);font-size:12px;">'+(u.email||'—')+'</td>' +
-      '<td>'+roleSelectHTML(u)+'</td>' +
-      '<td>'+staffRoleHTML(u)+'</td>' +
-      '<td style="display:flex;gap:4px;">' +
-      '<button class="dash-btn" onclick="adminResetPassword(\''+u.id+'\',\''+(u.name||u.handle||u.email)+'\')" style="padding:4px 8px;font-size:11px;">&#x1F511; Reset PW</button>' +
-      '<button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:4px 8px;font-size:11px;">&#x2715;</button>' +
-      '</td>' +
-      '</tr>';
-  }).join('');
+    html += '<div style="padding:14px;border-bottom:1px solid rgba(255,255,255,0.06);">' +
 
-  return '<div style="overflow-x:auto;"><table class="user-table"><thead><tr>' +
-    '<th>Name</th><th>Email</th><th>App Role</th><th>Staff Role</th><th>Actions</th>' +
-    '</tr></thead><tbody>'+rows+'</tbody></table></div>';
+      // Row 1: avatar + name/email + role pill
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
+        '<div style="width:40px;height:40px;border-radius:50%;background:'+avatarBg+';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;">'+initials+'</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13px;font-weight:700;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(u.name||u.handle||'—')+'</div>' +
+          '<div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(u.email||'—')+'</div>' +
+          (u.handle ? '<div style="font-size:10px;color:rgba(122,184,224,0.4);">@'+u.handle+'</div>' : '') +
+          '<div style="display:flex;gap:6px;margin-top:4px;">' +
+            (u.emailList ? '<span title="Opted in to marketing emails" style="font-size:9px;font-weight:800;padding:2px 6px;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);color:#4ade80;letter-spacing:0.5px;text-transform:uppercase;">📧 Email List</span>' : '<span title="Not on email list" style="font-size:9px;font-weight:700;padding:2px 6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(122,184,224,0.3);letter-spacing:0.5px;text-transform:uppercase;">No Email</span>') +
+            (u.notifConsent ? '<span title="Opted in to notifications" style="font-size:9px;font-weight:800;padding:2px 6px;background:rgba(0,212,200,0.1);border:1px solid rgba(0,212,200,0.25);color:var(--teal-glow);letter-spacing:0.5px;text-transform:uppercase;">🔔 Notifs</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<span style="flex-shrink:0;padding:3px 8px;font-size:10px;font-weight:800;color:'+roleColor+';border:1px solid '+roleColor+';letter-spacing:1px;text-transform:uppercase;">'+roleLabel+'</span>' +
+      '</div>' +
+
+      // Row 2: role selects
+      '<div style="display:flex;gap:6px;margin-bottom:8px;">' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">App Role</div>' +
+          roleSelect +
+        '</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Staff Role</div>' +
+          staffRoleSelect +
+        '</div>' +
+      '</div>' +
+
+      // Row 3: action buttons
+      '<div style="display:flex;gap:6px;">' +
+        '<button class="dash-btn" onclick="adminResetPassword(\''+u.id+'\',\''+(u.name||u.handle||u.email)+'\')" style="flex:1;padding:7px;font-size:11px;font-weight:700;">🔑 Reset PW</button>' +
+        '<button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:7px 14px;font-size:11px;font-weight:700;">✕ Remove</button>' +
+      '</div>' +
+
+    '</div>';
+  });
+
+  return '<div>' + html + '</div>';
 }
 
 async function adminSetStaffRole(userId, staffRole) {
