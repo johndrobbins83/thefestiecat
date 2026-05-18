@@ -2268,7 +2268,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <div class="user-menu-email" id="menuEmail">—</div>
           <div class="user-menu-role festie" id="menuRole">Festie</div>
         </div>
-        <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigate('schedule');">📅 My Schedule</button>
+        <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigate('schedule');setTimeout(()=>{const btn=document.getElementById('mySchedTab');if(btn)switchDay('mine',btn);},150);">📅 My Schedule</button>
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigate('people');">👥 People &amp; Feed</button>
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigateToProfile(null);">👤 My Profile</button>
         <button class="user-menu-item nav-admin-only" style="color:#f5c842;display:none;" onclick="event.stopPropagation();closeUserMenu();navigate('admin');">⚙ Admin Dashboard</button>
@@ -4478,42 +4478,55 @@ function renderMySchedPage() {
     return h*60+mn;
   }
 
+  var STAGES = [
+    {key:'DNB Stage',     color:'#c084fc', cls:'dnb',    hl:'headliner'},
+    {key:'Atrium',        color:'#f59e0b', cls:'atrium', hl:'atrium-headliner'},
+    {key:'Atrium (House)',color:'#f59e0b', cls:'atrium', hl:'atrium-headliner'},
+    {key:'Beach Stage',   color:'#06b6d4', cls:'beach',  hl:'beach-headliner'},
+    {key:'Locals Stage',  color:'#84cc16', cls:'locals', hl:'locals-headliner'},
+    {key:'Oasis Stage',   color:'#00d4c8', cls:'oasis',  hl:'oasis-headliner'},
+  ];
+
   var days = {Fri:[],Sat:[],Sun:[],TBA:[]};
   mine.forEach(function(k){ var a=artists[k]; if(a)(days[a.day]||days.TBA).push(k); });
   var dayLabels = {Fri:'Friday - Jul 17',Sat:'Saturday - Jul 18',Sun:'Sunday - Jul 19',TBA:'Day TBA'};
   var isGrid = (schedView === 'grid');
   var out = '';
 
+  function byTime(a,b){ return timeToMins(artists[a]&&artists[a].time) - timeToMins(artists[b]&&artists[b].time); }
+
   ['Fri','Sat','Sun','TBA'].forEach(function(day) {
     var keys = days[day]; if (!keys.length) return;
-    var dnb   = keys.filter(function(k){ return artists[k] && artists[k].stage==='DNB Stage'; });
-    var oasis = keys.filter(function(k){ return artists[k] && artists[k].stage==='Oasis Stage'; });
-    function byTime(a,b){ return timeToMins(artists[a]&&artists[a].time) - timeToMins(artists[b]&&artists[b].time); }
-    dnb.sort(byTime); oasis.sort(byTime);
+
+    // Group by stage
+    var stageMap = {};
+    keys.forEach(function(k) {
+      var s = (artists[k] && artists[k].stage) || 'TBA';
+      if (!stageMap[s]) stageMap[s] = [];
+      stageMap[s].push(k);
+    });
+    Object.keys(stageMap).forEach(function(s){ stageMap[s].sort(byTime); });
 
     out += '<div style="margin-bottom:20px;">';
-    out += '<div class="stage-section-header" style="background:rgba(255,255,255,0.04);color:var(--gold-bright);border:1px solid rgba(245,200,66,0.15);margin-bottom:8px;">** ' + dayLabels[day] + '</div>';
+    out += '<div class="stage-section-header" style="background:rgba(255,255,255,0.04);color:var(--gold-bright);border:1px solid rgba(245,200,66,0.15);margin-bottom:8px;">⭐ ' + dayLabels[day] + '</div>';
 
     if (isGrid) {
-      var cols = [];
-      if (dnb.length)   cols.push({name:'DNB Stage',  color:'#9b3dff', cls:'dnb-block',   keys:dnb});
-      if (oasis.length) cols.push({name:'Oasis Stage', color:'#00d4c8', cls:'oasis-block', keys:oasis});
-      if (!cols.length) { out += '</div>'; return; }
-      out += '<div class="tg-grid" style="grid-template-columns:repeat(' + cols.length + ',1fr);">';
-      cols.forEach(function(col) {
-        out += '<div>';
-        out += '<div class="tg-col-header" style="color:' + col.color + ';">' + col.name + '</div>';
-        var timed = col.keys.filter(function(k){ return artists[k] && artists[k].time && artists[k].time!=='TBA'; });
-        var tbas  = col.keys.filter(function(k){ return !artists[k] || !artists[k].time || artists[k].time==='TBA'; });
+      var activeCols = STAGES.filter(function(s){ return stageMap[s.key] && stageMap[s.key].length; });
+      if (!activeCols.length) { out += '</div>'; return; }
+      out += '<div class="tg-grid" style="grid-template-columns:repeat(' + Math.min(activeCols.length,3) + ',1fr);">';
+      activeCols.forEach(function(col) {
+        var colKeys = stageMap[col.key] || [];
+        var timed = colKeys.filter(function(k){ return artists[k] && artists[k].time && artists[k].time!=='TBA'; });
+        var tbas  = colKeys.filter(function(k){ return !artists[k] || !artists[k].time || artists[k].time==='TBA'; });
+        out += '<div><div class="tg-col-header" style="color:' + col.color + ';">' + col.key + '</div>';
         timed.forEach(function(key) {
           var a = artists[key]; if (!a) return;
           var sk = esc(key);
-          out += '<div class="tg-block ' + col.cls + (a.headliner?' headliner-block':'') + '" onclick="openArtist(\'' + sk + '\')">';
+          out += '<div class="tg-block ' + col.cls + '-block' + (a.headliner?' headliner-block':'') + '" onclick="openArtist(\'' + sk + '\')">';
           out += '<div class="tg-block-time">' + a.time + '</div>';
           out += '<div class="tg-block-name">' + key + '</div>';
           out += '<div class="tg-block-genre">' + (a.genre||'').split('-')[0].trim() + '</div>';
-          out += '<button class="tg-block-add added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button>';
-          out += '</div>';
+          out += '<button class="tg-block-add added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button></div>';
         });
         if (tbas.length) {
           out += '<div class="tg-tba-section"><div class="tg-tba-heading">TBA</div>';
@@ -4521,8 +4534,7 @@ function renderMySchedPage() {
             var sk = esc(key);
             out += '<div class="tg-tba-block" onclick="openArtist(\'' + sk + '\')">';
             out += '<div class="tg-tba-name">' + key + '</div>';
-            out += '<button class="tg-block-add added" style="position:static;width:18px;height:18px;font-size:12px;" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button>';
-            out += '</div>';
+            out += '<button class="tg-block-add added" style="position:static;width:18px;height:18px;font-size:12px;" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button></div>';
           });
           out += '</div>';
         }
@@ -4530,32 +4542,21 @@ function renderMySchedPage() {
       });
       out += '</div>';
     } else {
-      if (dnb.length) {
-        out += '<div class="stage-section"><div class="stage-section-header dnb"><div class="stage-dot" style="background:#9b3dff;"></div>DNB Stage</div><div class="sched-list">';
-        dnb.forEach(function(key) {
+      STAGES.forEach(function(stg) {
+        var stgKeys = stageMap[stg.key]; if (!stgKeys || !stgKeys.length) return;
+        out += '<div class="stage-section"><div class="stage-section-header ' + stg.cls + '"><div class="stage-dot" style="background:' + stg.color + ';"></div>' + stg.key + '</div><div class="sched-list">';
+        stgKeys.forEach(function(key) {
           var a = artists[key]; if (!a) return;
           var sk = esc(key);
-          out += '<div class="sched-item' + (a.headliner?' headliner':'') + '" onclick="openArtist(\'' + sk + '\')">';
+          var hlCls = a.headliner ? ' ' + stg.hl : '';
+          out += '<div class="sched-item' + hlCls + '" onclick="openArtist(\'' + sk + '\')">';
           out += '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>';
           out += '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>';
           out += '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>';
           out += '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button></div>';
         });
         out += '</div></div>';
-      }
-      if (oasis.length) {
-        out += '<div class="stage-section"><div class="stage-section-header oasis"><div class="stage-dot" style="background:#00d4c8;"></div>Oasis Stage</div><div class="sched-list">';
-        oasis.forEach(function(key) {
-          var a = artists[key]; if (!a) return;
-          var sk = esc(key);
-          out += '<div class="sched-item' + (a.headliner?' oasis-headliner':'') + '" onclick="openArtist(\'' + sk + '\')">';
-          out += '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>';
-          out += '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>';
-          out += '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>';
-          out += '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button></div>';
-        });
-        out += '</div></div>';
-      }
+      });
     }
     out += '</div>';
   });
