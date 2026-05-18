@@ -1127,14 +1127,25 @@ body{
 }
 /* Role badge in nav avatar */
 .nav-avatar-wrap{position:relative;cursor:pointer;}
-.nav-role-badge{
-  position:absolute;bottom:-3px;right:-3px;
-  font-size:8px;font-weight:800;letter-spacing:0.5px;
-  padding:1px 4px;text-transform:uppercase;
+/* Role dot — small colored circle on profile pics */
+.role-dot{
+  position:absolute;bottom:0;right:0;
+  width:10px;height:10px;border-radius:50%;
+  border:2px solid #0a0a0a;
 }
-.nav-role-badge.festie  {background:var(--teal-glow);color:#000;}
-.nav-role-badge.employee{background:var(--purple-mutiny);color:#fff;}
-.nav-role-badge.admin   {background:var(--gold-bright);color:#000;}
+.role-dot.employee{background:#c084fc;}  /* purple for staff */
+.role-dot.admin   {background:var(--gold-bright);} /* gold for admin */
+.role-dot.festie  {display:none;}  /* no dot for regular festies */
+/* Keep the nav badge but make it a dot too */
+.nav-role-badge{
+  position:absolute;bottom:0;right:0;
+  width:10px;height:10px;border-radius:50%;
+  border:2px solid #0a0a0a;
+  font-size:0;padding:0;letter-spacing:0;
+}
+.nav-role-badge.festie  {display:none;}
+.nav-role-badge.employee{background:#c084fc;}
+.nav-role-badge.admin   {background:var(--gold-bright);}
 /* User menu dropdown */
 .user-menu{
   position:absolute;top:calc(100% + 10px);right:0;
@@ -1628,7 +1639,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .person-card{display:flex;align-items:center;gap:12px;padding:12px 14px;
   background:#0a0a0a;border:1px solid rgba(255,255,255,0.07);transition:all .15s;cursor:pointer;}
 .person-card:hover{border-color:rgba(255,255,255,0.15);}
-.person-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;
+.person-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;position:relative;
   display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;}
 .person-info{flex:1;min-width:0;}
 .person-handle{font-size:15px;font-weight:800;color:var(--text-light);}
@@ -1657,7 +1668,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   background:#0a0a0a;border:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:all .15s;}
 .dm-convo-card:hover{border-color:rgba(255,255,255,0.15);}
 .dm-convo-card.unread{border-color:rgba(155,61,255,0.3);}
-.dm-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;
+.dm-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;position:relative;
   display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;}
 .dm-convo-info{flex:1;min-width:0;}
 .dm-convo-handle{font-size:15px;font-weight:800;color:var(--text-light);}
@@ -4996,6 +5007,12 @@ function copyAddress() {
 }
 function esc(str) { return String(str).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 
+// Returns a role dot span for a user's role (staff=purple, admin=gold, festie=hidden)
+function roleDot(role) {
+  if (!role || role === 'festie') return '';
+  return `<span class="role-dot ${role}" title="${role === 'admin' ? 'Admin' : 'Staff'}"></span>`;
+}
+
 function refreshAllAddBtns() {
   const mine = getMySchedule();
   document.querySelectorAll('[data-key]').forEach(btn=>{
@@ -7855,7 +7872,10 @@ async function doSearchPeople(query) {
   }
   results.innerHTML = data.users.map(u =>
     `<div class="person-card">
-      <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
+      <div style="position:relative;flex-shrink:0;">
+        <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
+        ${roleDot(u.role)}
+      </div>
       <div class="person-info">
         <div class="person-handle">@${u.handle}</div>
         <div class="person-bio">${u.bio||'No bio yet'}</div>
@@ -7997,7 +8017,10 @@ function searchPeople(q) {
         else if (isPending) { btn = '<span class="person-follow-btn" style="opacity:0.5;">Requested</span>'; }
         else { btn = '<button class="person-follow-btn" onclick="event.stopPropagation();sendFollowRequest(\'' + u.id + '\',this)">+ Connect</button>'; }
         return '<div class="person-card">'+
-          '<div class="person-avatar" style="background:'+(u.avatarColor||'#9b3dff')+';overflow:hidden;">'+avatarHtml+'</div>'+
+          '<div style="position:relative;flex-shrink:0;">'+
+            '<div class="person-avatar" style="background:'+(u.avatarColor||'#9b3dff')+';overflow:hidden;">'+avatarHtml+'</div>'+
+            roleDot(u.role)+
+          '</div>'+
           '<div class="person-info">'+
             '<div class="person-handle">@'+(u.handle||'unknown')+' <span style="font-size:10px;font-weight:700;color:'+roleColor+';">['+roleLabel+']</span></div>'+
             '<div class="person-bio">'+(u.bio||u.name||'')+'</div>'+
@@ -8034,7 +8057,10 @@ async function loadDMList() {
     listEl.innerHTML = convos.map(c =>
       `<div class="dm-convo-card ${c.unread?'unread':''}"
         onclick="openDMThread('${c.friendId}','${esc(c.handle)}','${c.avatarColor||'#9b3dff'}')">
-        <div class="dm-avatar" style="background:${c.avatarColor||'#9b3dff'};">${(c.handle?.[0]||'?').toUpperCase()}</div>
+        <div style="position:relative;flex-shrink:0;">
+          <div class="dm-avatar" style="background:${c.avatarColor||'#9b3dff'};">${(c.handle?.[0]||'?').toUpperCase()}</div>
+          ${roleDot(c.role)}
+        </div>
         <div class="dm-convo-info">
           <div class="dm-convo-handle">@${c.handle}</div>
           <div class="dm-convo-preview">${c.lastMessage||'No messages yet'}</div>
