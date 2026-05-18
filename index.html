@@ -8769,7 +8769,7 @@ async function initProfile() {
     '<div style="display:flex;gap:8px;margin-top:4px;"><button class="profile-action-btn connect" style="flex:1;padding:12px;" onclick="saveProfileEdits()">Save</button><button class="profile-action-btn edit" onclick="hideEditProfileForm()">Cancel</button></div>' +
     '<div id="editProfileStatus" style="font-size:12px;margin-top:8px;color:var(--text-muted);"></div></div></div>' : '';
   wrap.innerHTML =
-    '<div class="profile-hero"><div class="profile-hero-banner" style="background:'+bannerBg+';"><div class="profile-hero-banner-pattern"></div></div>' +
+    '<div class="profile-hero"><div class="profile-hero-banner">'+(user.bannerPic?'<img src="'+user.bannerPic+'?v='+Date.now()+'" onerror="this.style.display=\'none\'">':'')+'<div class="profile-hero-banner-pattern"></div></div>' +
     '<div class="profile-avatar-large" style="background:'+(user.avatarColor||'#9b3dff')+';"'+(isOwnProfile?' onclick="openProfilePicChange()" title="Change photo"':'')+'>'+avatarHTML+(isOwnProfile?'<div class="profile-avatar-edit-hint">&#x270F;</div>':'')+' </div></div>' +
     '<div class="profile-info"><div class="profile-handle">@'+(user.handle||'unknown')+'</div>' +
     (user.hometown?'<div class="profile-hometown">&#x1F4CD; '+escapeHTML(user.hometown)+'</div>':'')+
@@ -8806,9 +8806,20 @@ async function uploadFileToR2(file, prefix) {
       headers: {'Content-Type': file.type, 'Authorization': 'Bearer ' + token},
       body: file
     });
-    if (res.ok) { const d = await res.json(); return d.url || null; }
-  } catch(e) { console.error('Upload failed:', e); }
-  return null;
+    if (res.ok) {
+      const d = await res.json();
+      return d.url || null;
+    } else {
+      const err = await res.json().catch(() => ({}));
+      console.error('Upload failed:', res.status, err);
+      showToast('Upload failed: ' + (err.error || res.status));
+      return null;
+    }
+  } catch(e) {
+    console.error('Upload error:', e);
+    showToast('Upload error — check connection');
+    return null;
+  }
 }
 
 function openEditProfileModal() {
@@ -8936,7 +8947,7 @@ async function saveProfileEdits() {
           const musicTags = (savedUser.musicStyles||'').split(',').filter(Boolean).map(function(s){return '<span class="profile-tag teal">'+s.trim()+'</span>';}).join('');
           const artistTags = (savedUser.favoriteArtists||'').split(',').filter(Boolean).map(function(a){return '<span class="profile-tag gold">'+a.trim()+'</span>';}).join('');
           wrap.innerHTML =
-            '<div class="profile-hero"><div class="profile-hero-banner" style="background:'+bannerBg+';">'+(savedUser.bannerPic?'<img src="'+savedUser.bannerPic+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">':'')+'<div class="profile-hero-banner-pattern"></div></div>'+
+            '<div class="profile-hero"><div class="profile-hero-banner">'+(savedUser.bannerPic?'<img src="'+savedUser.bannerPic+'?v='+Date.now()+'" onerror="this.style.display=\'none\'">':'')+'<div class="profile-hero-banner-pattern"></div></div>'+
             '<div class="profile-avatar-large" style="background:'+(savedUser.avatarColor||'#9b3dff')+'" onclick="openProfilePicChange()">'+avatarHtml+'<div class="profile-avatar-edit-hint">&#x270F;</div></div></div>'+
             '<div class="profile-info"><div class="profile-handle">@'+(savedUser.handle||'unknown')+'</div>'+
             (savedUser.hometown?'<div class="profile-hometown">&#x1F4CD; '+escapeHTML(savedUser.hometown)+'</div>':'')+
