@@ -2757,8 +2757,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
             <button class="dash-btn active" onclick="setAdminArtistFilter('all',this)" style="border-color:rgba(245,200,66,0.4);color:var(--gold-bright);" id="adminArtistFilterAll">All</button>
             <button class="dash-btn" onclick="setAdminArtistFilter('tba',this)">⚠ TBA</button>
-            <button class="dash-btn" onclick="setAdminArtistFilter('dnb',this)">DNB Stage</button>
-            <button class="dash-btn" onclick="setAdminArtistFilter('oasis',this)">Oasis Stage</button>
+            <button class="dash-btn" onclick="setAdminArtistFilter('dnb',this)" style="color:#c084fc;border-color:rgba(155,61,255,0.35);">DNB Stage</button>
+            <button class="dash-btn" onclick="setAdminArtistFilter('atrium',this)" style="color:#f59e0b;border-color:rgba(245,158,11,0.35);">Atrium</button>
+            <button class="dash-btn" onclick="setAdminArtistFilter('beach',this)" style="color:#06b6d4;border-color:rgba(6,182,212,0.35);">Beach</button>
+            <button class="dash-btn" onclick="setAdminArtistFilter('locals',this)" style="color:#84cc16;border-color:rgba(132,204,22,0.35);">Locals</button>
           </div>
           <div class="admin-artist-grid" id="adminArtistGrid"></div>
         </div>
@@ -4104,7 +4106,12 @@ function toggleSaved(key) {
   else { mine.splice(idx, 1); showToast('Removed ' + key + ' from your schedule'); }
   saveMySchedule(mine);
   refreshAllAddBtns();
-  if (currentPage === 'home') renderMySchedWidget();
+  renderMySchedWidget();
+  // If on schedule page showing My Schedule tab, re-render it
+  if (currentPage === 'schedule') {
+    const mineTab = document.getElementById('mySchedTab');
+    if (mineTab && mineTab.classList.contains('active')) renderMySchedPage();
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -6094,9 +6101,11 @@ function renderAdminArtistGrid() {
   const grid = document.getElementById('adminArtistGrid');
   if (!grid) return;
   let keys = Object.keys(artists);
-  if (adminArtistFilter === 'tba')   keys = keys.filter(k => artists[k].time === 'TBA' || artists[k].stage === 'TBA');
-  if (adminArtistFilter === 'dnb')   keys = keys.filter(k => artists[k].stage === 'DNB Stage');
-  if (adminArtistFilter === 'oasis') keys = keys.filter(k => artists[k].stage === 'Oasis Stage');
+  if (adminArtistFilter === 'tba')    keys = keys.filter(k => artists[k].time === 'TBA' || artists[k].stage === 'TBA');
+  if (adminArtistFilter === 'dnb')    keys = keys.filter(k => artists[k].stage === 'DNB Stage');
+  if (adminArtistFilter === 'atrium') keys = keys.filter(k => artists[k].stage === 'Atrium' || artists[k].stage === 'Atrium (House)');
+  if (adminArtistFilter === 'beach')  keys = keys.filter(k => artists[k].stage === 'Beach Stage' || artists[k].stage === 'Oasis Stage');
+  if (adminArtistFilter === 'locals') keys = keys.filter(k => artists[k].stage === 'Locals Stage');
   keys.sort((a,b) => a.localeCompare(b));
 
   grid.innerHTML = keys.map(key => {
