@@ -6077,8 +6077,12 @@ function renderAdminArtistGrid() {
   grid.innerHTML = keys.map(key => {
     const a = artists[key];
     const isTBA = a.time === 'TBA' || a.stage === 'TBA';
+    const avatarHTML = a.photo
+      ? `<img src="${a.photo}" alt="${key}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+         <div class="admin-artist-placeholder" style="background:${a.color};display:none;">${a.initials}</div>`
+      : `<div class="admin-artist-placeholder" style="background:${a.color}">${a.initials}</div>`;
     return `<div class="admin-artist-card" onclick="adminEditArtist('${esc(key)}')" title="Edit ${key}">
-      <div class="admin-artist-placeholder" style="background:${a.color}">${a.initials}</div>
+      ${avatarHTML}
       <div class="admin-artist-overlay">
         <div class="admin-artist-name">${key}</div>
         <div class="admin-artist-stage">${a.stage === 'TBA' ? '⚠ Stage TBA' : a.stage} · ${a.time || 'TBA'}</div>
@@ -6584,7 +6588,13 @@ function buildUserTableHTML(users) {
 
       // Row 1: avatar + name/email + role pill
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
-        '<div style="width:40px;height:40px;border-radius:50%;background:'+avatarBg+';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;">'+initials+'</div>' +
+        '<div style="position:relative;flex-shrink:0;">' +
+          '<div style="width:40px;height:40px;border-radius:50%;background:'+avatarBg+';overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;">' +
+            (u.profilePic ? '<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">' : '') +
+            (!u.profilePic ? initials : '<span style="position:absolute;font-size:15px;font-weight:800;color:#fff;opacity:0;">'+initials+'</span>') +
+          '</div>' +
+          roleDot(u.role) +
+        '</div>' +
         '<div style="flex:1;min-width:0;">' +
           '<div style="font-size:13px;font-weight:700;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(u.name||u.handle||'—')+'</div>' +
           '<div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(u.email||'—')+'</div>' +
