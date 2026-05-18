@@ -9106,17 +9106,27 @@ async function submitForgotPassword() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
     });
-    if (status) {
-      status.style.display = 'block';
-      if (res.ok) {
-        status.style.color = '#4ade80';
-        status.textContent = '✓ Request sent! An admin will contact you shortly.';
-        if (btn) { btn.disabled = true; btn.textContent = 'Sent ✓'; }
-      } else {
-        status.style.color = 'var(--pink-coral)';
-        status.textContent = 'Could not find that email address.';
-        if (btn) { btn.disabled = false; btn.textContent = 'Send Request'; }
+    if (res.ok) {
+      // Replace modal content with thank you screen
+      const modal = document.getElementById('forgotPwModal');
+      if (modal) {
+        modal.querySelector('div').innerHTML = `
+          <div style="text-align:center;padding:8px 0;">
+            <div style="font-size:36px;margin-bottom:12px;">✅</div>
+            <div style="font-size:15px;font-weight:800;color:#4ade80;margin-bottom:8px;">Request Sent!</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:20px;">
+              We've notified the admin. They'll reset your password and send it to <strong style="color:var(--text-light);">${email}</strong> shortly.
+            </div>
+            <button onclick="document.getElementById('forgotPwModal').remove()"
+              style="width:100%;padding:12px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.35);
+              color:#4ade80;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+              Close
+            </button>
+          </div>`;
       }
+    } else {
+      if (status) { status.style.display='block'; status.style.color='var(--pink-coral)'; status.textContent='Could not find that email address.'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Send Request'; }
     }
   } catch(e) {
     if (status) { status.style.display='block'; status.style.color='var(--pink-coral)'; status.textContent='Could not connect. Try again.'; }
@@ -9179,15 +9189,52 @@ async function confirmAdminResetPassword(userId, userName, userEmail) {
       // Open email client with pre-filled message
       if (userEmail) {
         const subject = encodeURIComponent('Your Sunken Suite Password Has Been Reset');
-        const body = encodeURIComponent(
+        const bodyText =
           'Hi ' + userName + ',\n\n' +
           'Your password for Sunken Suite · The Mutiny 2026 has been reset.\n\n' +
           'Your new password is: ' + newPw + '\n\n' +
           'Please log in at https://thefestiecat.johndrobbins83.workers.dev and change your password once you\'re in.\n\n' +
           'See you at The Mutiny! ☠\n' +
-          'Sunken Suite Team'
-        );
-        window.open('mailto:' + userEmail + '?subject=' + subject + '&body=' + body, '_blank');
+          'Sunken Suite Team';
+        const a = document.createElement('a');
+        a.href = 'mailto:' + userEmail + '?subject=' + subject + '&body=' + encodeURIComponent(bodyText);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Show fallback message in case email client doesn't open (desktop)
+        setTimeout(() => {
+          const existing = document.getElementById('pwResetModal');
+          if (existing) return; // already closed
+          // Show a small toast with copy option
+        }, 500);
+
+        // Show pre-filled message in a copyable modal for desktop fallback
+        const fallback = document.createElement('div');
+        fallback.id = 'pwEmailFallback';
+        fallback.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px;';
+        fallback.innerHTML = `
+          <div style="background:#0a0a0a;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:420px;padding:24px;font-family:'Poppins',sans-serif;">
+            <div style="font-size:13px;font-weight:800;color:var(--gold-bright);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">✉️ Email Ready</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Your email app should have opened. If not, copy the message below and send it to <strong style="color:var(--teal-glow);">${userEmail}</strong></div>
+            <textarea readonly onclick="this.select()"
+              style="width:100%;height:160px;padding:10px;background:#111;border:1px solid rgba(255,255,255,0.12);
+              color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;line-height:1.6;
+              outline:none;resize:none;box-sizing:border-box;margin-bottom:10px;">${bodyText}</textarea>
+            <div style="display:flex;gap:8px;">
+              <button onclick="navigator.clipboard?.writeText(document.querySelector('#pwEmailFallback textarea').value).then(()=>showToast('Copied!'))"
+                style="flex:1;padding:10px;background:rgba(0,212,200,0.1);border:1px solid rgba(0,212,200,0.3);
+                color:var(--teal-glow);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+                📋 Copy
+              </button>
+              <button onclick="document.getElementById('pwEmailFallback').remove()"
+                style="flex:1;padding:10px;background:rgba(245,200,66,0.12);border:1px solid rgba(245,200,66,0.35);
+                color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+                Done
+              </button>
+            </div>
+          </div>`;
+        document.body.appendChild(fallback);
       }
     } else {
       showToast('Error: ' + (d.error || 'Failed'));
