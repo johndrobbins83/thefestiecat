@@ -2923,6 +2923,33 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </div>
       </div>
 
+      <!-- Push Broadcast -->
+      <div class="dash-section" style="margin-top:16px;">
+        <div class="dash-section-header">
+          <div class="dash-section-title">📣 Push Broadcast</div>
+        </div>
+        <div class="dash-section-body" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="edit-field">
+            <label class="edit-label">Title</label>
+            <input class="edit-input" id="pushBroadcastTitle" placeholder="e.g. ☠ Sunken Suite Update">
+          </div>
+          <div class="edit-field">
+            <label class="edit-label">Message</label>
+            <input class="edit-input" id="pushBroadcastMsg" placeholder="e.g. Gates open in 1 hour!">
+          </div>
+          <div class="edit-field">
+            <label class="edit-label">Send to</label>
+            <select class="edit-select" id="pushBroadcastTarget">
+              <option value="all">Everyone</option>
+              <option value="staff">Staff &amp; Admin only</option>
+              <option value="festie">Festies only</option>
+            </select>
+          </div>
+          <button class="dash-btn primary" onclick="sendPushBroadcast()">📣 Send Push Notification</button>
+          <div id="pushBroadcastStatus" style="font-size:12px;color:var(--text-muted);"></div>
+        </div>
+      </div>
+
       <!-- Email List Section -->
       <div class="dash-section" style="margin-top:16px;">
         <div class="dash-section-header">
@@ -5268,8 +5295,41 @@ function dismissIOSInstall() {
 /* ════════════════════════════════════════════════════════════
    SERVICE WORKER
 ════════════════════════════════════════════════════════════ */
+const VAPID_PUBLIC_KEY = 'BNqV_NHQhOwPBz25Vnq3QlSoYqmFBmZoN2TpQ8eo1QDQ6PTDboW6HwsC7PF2_AfjxKsJ4utLrUEu82vKGlwPyyM';
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+async function subscribeToPush() {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    const reg = await navigator.serviceWorker.ready;
+    // Check existing subscription
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    // Save subscription to worker
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token && sub) {
+      await fetch(AUTH_URL + '/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ subscription: sub })
+      }).catch(() => {});
+    }
+  } catch(e) { console.warn('Push subscription failed:', e.message); }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -5539,6 +5599,8 @@ function setCurrentUser(user, token) {
   const _targetPage = (_hash && _validPages.includes(_hash)) ? _hash : 'home';
   currentPage = '';
   navigate(_targetPage);
+  // Subscribe to push notifications after login
+  setTimeout(subscribeToPush, 2000);
 
   // Fresh data load sequence
   setTimeout(function() {
@@ -6869,6 +6931,34 @@ async function adminSetRole(userId, role) {
     else showToast('Error: ' + data.error);
   } catch {
     showToast('Could not update role');
+  }
+}
+
+async function sendPushBroadcast() {
+  const title   = document.getElementById('pushBroadcastTitle')?.value.trim();
+  const message = document.getElementById('pushBroadcastMsg')?.value.trim();
+  const target  = document.getElementById('pushBroadcastTarget')?.value || 'all';
+  const status  = document.getElementById('pushBroadcastStatus');
+  if (!title || !message) { showToast('Enter a title and message'); return; }
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    if (status) { status.style.color='var(--text-muted)'; status.textContent='Sending…'; }
+    const res = await fetch(AUTH_URL + '/push/broadcast', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ title, message, target })
+    });
+    if (res.ok) {
+      showToast('✓ Push sent!');
+      if (status) { status.style.color='#4ade80'; status.textContent='✓ Push sent successfully'; }
+      document.getElementById('pushBroadcastTitle').value = '';
+      document.getElementById('pushBroadcastMsg').value   = '';
+    } else {
+      const d = await res.json();
+      if (status) { status.style.color='var(--pink-coral)'; status.textContent='Error: '+(d.error||'Failed'); }
+    }
+  } catch(e) {
+    if (status) { status.style.color='var(--pink-coral)'; status.textContent='Could not connect'; }
   }
 }
 
