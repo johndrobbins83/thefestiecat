@@ -1866,6 +1866,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .notif-dot.yellow{background:var(--gold-bright);}
 .notif-dot.red{background:var(--pink-coral);}
 .notif-dot.orange{background:#fb923c;}
+.notif-dot.teal{background:var(--teal-glow);}
 .notif-text{font-size:12px;color:var(--text-light);line-height:1.4;}
 .notif-time{font-size:10px;color:var(--text-muted);margin-top:2px;}
 .notif-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;
@@ -1875,6 +1876,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .notif-badge.yellow{background:var(--gold-bright);color:#000;}
 .notif-badge.red{background:var(--pink-coral);color:#fff;}
 .notif-badge.orange{background:#fb923c;color:#000;}
+.notif-badge.teal{background:var(--teal-glow);color:#000;}
 
 /* ══ INBOX ══ */
 .inbox-wrap{max-width:600px;margin:0 auto;}
@@ -4130,6 +4132,19 @@ async function saveArtistOverride(key, data) {
       body: JSON.stringify(existing)
     });
   } catch(e) { console.warn('Could not save artist override', e); }
+}
+
+// Notify all users + push when schedule changes
+async function notifyScheduleChange(artistName, changeMsg) {
+  try {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return;
+    await fetch(AUTH_URL + '/schedule/notify', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ artistName, message: changeMsg })
+    });
+  } catch(e) { console.warn('Schedule notify failed:', e); }
 }
 
 
@@ -6569,7 +6584,6 @@ function addArtistToSchedule(day, stage) {
   if (!SCHEDULE_DATA[day]) SCHEDULE_DATA[day] = {};
   if (!SCHEDULE_DATA[day][stage]) SCHEDULE_DATA[day][stage] = [];
 
-  // Prevent duplicates on this stage/day
   if (SCHEDULE_DATA[day][stage].find(i => i.artist === artistName)) {
     showToast(artistName + ' is already on this stage'); return;
   }
@@ -6578,7 +6592,6 @@ function addArtistToSchedule(day, stage) {
   const entry = { artist: artistName, time: a.time || 'TBA', headliner: !!a.headliner };
   SCHEDULE_DATA[day][stage].push(entry);
 
-  // Update artist's stage and day to match where they were added
   const stageDisplayNames = { dnb:'DNB Stage', atrium:'Atrium', beach:'Beach Stage', locals:'Locals Stage' };
   const stageDisplayName = stageDisplayNames[stage] || stage;
   const dayDisplayName   = { fri:'Fri', sat:'Sat', sun:'Sun' }[day] || day;
@@ -6592,6 +6605,7 @@ function addArtistToSchedule(day, stage) {
   renderSchedule();
   renderMySchedWidget();
   showToast('✓ ' + artistName + ' added to ' + stageDisplayName);
+  notifyScheduleChange(artistName, '📅 Schedule update: ' + artistName + ' added to ' + stageDisplayName + ' · ' + dayDisplayName);
 }
 
 function removeSchedArtist(day, stage, idx) {
@@ -6600,7 +6614,10 @@ function removeSchedArtist(day, stage, idx) {
   renderAdminSchedule();
   renderSchedule();
   renderMySchedWidget();
-  if (removed) showToast('Removed ' + removed.artist + ' from schedule');
+  if (removed) {
+    showToast('Removed ' + removed.artist + ' from schedule');
+    notifyScheduleChange(removed.artist, '📅 Schedule update: ' + removed.artist + ' removed from lineup');
+  }
 }
 
 function updateSchedTime(day, stage, idx, val) {
@@ -6609,10 +6626,13 @@ function updateSchedTime(day, stage, idx, val) {
     const key = SCHEDULE_DATA[day][stage][idx].artist;
     if (artists[key]) {
       artists[key].time = val;
-      saveArtistOverride(key, artists[key]); // persist so it survives refresh
+      saveArtistOverride(key, artists[key]);
     }
     showToast('✓ Time updated');
     renderSchedule();
+    if (val && val !== 'TBA') {
+      notifyScheduleChange(key, '📅 Schedule update: ' + key + ' now playing at ' + val);
+    }
   }
 }
 
@@ -6623,10 +6643,13 @@ function updateSchedHeadliner(day, stage, idx, val) {
     const key = SCHEDULE_DATA[day][stage][idx].artist;
     if (artists[key]) {
       artists[key].headliner = isHeadliner;
-      saveArtistOverride(key, artists[key]); // persist
+      saveArtistOverride(key, artists[key]);
     }
     showToast('✓ Headliner status updated');
     renderSchedule();
+    if (isHeadliner) {
+      notifyScheduleChange(key, '⭐ ' + key + ' confirmed as headliner!');
+    }
   }
 }
 
