@@ -1725,7 +1725,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .dm-msg-time{font-size:10px;opacity:0.5;margin-top:3px;}
 .dm-thread-input-row{display:flex;gap:8px;padding:12px 16px;
   background:#0a0a0a;border-top:1px solid rgba(255,255,255,0.07);
-  padding-bottom:max(12px, env(safe-area-inset-bottom));flex-shrink:0;}
+  padding-bottom:max(12px, env(safe-area-inset-bottom));flex-shrink:0;
+  position:sticky;bottom:0;}
+@media(max-width:767px){
+  .dm-thread-input-row{
+    padding-bottom:calc(68px + env(safe-area-inset-bottom, 0px));
+  }
+}
 .dm-thread-input{flex:1;padding:11px 14px;background:#111;
   border:1px solid rgba(255,255,255,0.1);color:var(--text-light);
   font-family:'Poppins',sans-serif;font-size:14px;outline:none;
@@ -1897,10 +1903,15 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .nav-inbox-btn{position:relative;width:36px;height:36px;display:flex;align-items:center;
   justify-content:center;cursor:pointer;font-size:18px;color:var(--text-muted);transition:all .2s;}
 .nav-inbox-btn:hover{color:var(--text-light);}
-.nav-inbox-btn.has-unread{color:var(--teal-glow);animation:inboxPulse 2s ease-in-out infinite;}
+.nav-inbox-btn.has-unread{
+  background:rgba(0,212,200,0.15);
+  border-radius:50%;
+  color:var(--teal-glow);
+  animation:inboxPulse 1.5s ease-in-out infinite;
+}
 @keyframes inboxPulse{
-  0%,100%{filter:drop-shadow(0 0 3px rgba(0,212,200,0.4));}
-  50%{filter:drop-shadow(0 0 8px rgba(0,212,200,0.9));}
+  0%,100%{box-shadow:0 0 0 0 rgba(0,212,200,0.4);}
+  50%{box-shadow:0 0 0 6px rgba(0,212,200,0);}
 }
 .nav-inbox-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:8px;
   background:var(--pink-coral);color:#fff;font-size:9px;font-weight:800;
