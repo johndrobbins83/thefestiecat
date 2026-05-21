@@ -484,9 +484,15 @@ body{
 .add-btn.added{background:linear-gradient(135deg,var(--teal-glow),#00a89e);
   border-color:var(--teal-glow);color:var(--ocean-deep);font-size:14px;}
 /* Block / grid view */
-.tg-grid{display:grid;gap:8px;}
+.tg-grid-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:8px;}
+.tg-grid-wrap::-webkit-scrollbar{display:none;}
+.tg-grid{display:grid;gap:8px;min-width:max-content;}
+@media(max-width:767px){
+  .tg-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))!important;min-width:unset;width:100%;}
+}
 .tg-col-header{font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:1.5px;
-  text-transform:uppercase;padding:8px 4px 6px;border-bottom:1px solid rgba(245,200,66,0.15);}
+  text-transform:uppercase;padding:8px 4px 6px;border-bottom:1px solid rgba(245,200,66,0.15);
+  white-space:nowrap;}
 .tg-block{position:relative;border-radius:0;padding:8px;cursor:pointer;
   display:flex;flex-direction:column;justify-content:space-between;
   overflow:hidden;transition:all .15s;}
@@ -4523,7 +4529,7 @@ function renderSchedule() {
     if (shouldShowStage('atrium')) stages.push({key:'atrium', name:'Atrium (House)',                  color:'#f59e0b'});
     if (shouldShowStage('beach'))  stages.push({key:'beach',  name:'Beach Stage',                     color:'#06b6d4'});
     if (shouldShowStage('locals')) stages.push({key:'locals', name:'Locals Stage',                    color:'#84cc16'});
-    let html = `<div class="tg-grid" style="grid-template-columns:repeat(${stages.length},1fr);">`;
+    let html = `<div class="tg-grid-wrap"><div class="tg-grid" style="grid-template-columns:repeat(${stages.length},minmax(140px,1fr));">`;
     stages.forEach(st => {
       html += `<div><div class="tg-col-header" style="color:${st.color};">${st.name}</div>`;
       const items = (data[st.key]||[]).filter(i=>matchArtist(i.artist)&&i.time&&i.time!=='TBA');
@@ -4538,7 +4544,7 @@ function renderSchedule() {
       });
       html += '</div>';
     });
-    html += '</div>';
+    html += '</div></div>';
     document.getElementById('schedGridContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon">🔍</div>No artists match your search.</div>';
   }
 }
