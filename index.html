@@ -5340,7 +5340,6 @@ async function subscribeToPush() {
   try {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     const reg = await navigator.serviceWorker.ready;
-    // Check existing subscription
     let sub = await reg.pushManager.getSubscription();
     if (!sub) {
       sub = await reg.pushManager.subscribe({
@@ -5348,15 +5347,16 @@ async function subscribeToPush() {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
     }
-    // Save subscription to worker
+    if (!sub) return;
     const token = localStorage.getItem(TOKEN_KEY);
-    if (token && sub) {
-      await fetch(AUTH_URL + '/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ subscription: sub })
-      }).catch(() => {});
-    }
+    if (!token) return;
+    // Properly serialize PushSubscription (toJSON gives all keys including p256dh/auth)
+    const subJson = sub.toJSON ? sub.toJSON() : JSON.parse(JSON.stringify(sub));
+    await fetch(AUTH_URL + '/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ subscription: subJson })
+    }).catch(() => {});
   } catch(e) { console.warn('Push subscription failed:', e.message); }
 }
 
@@ -5562,7 +5562,6 @@ async function authInit() {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.status === 401) {
-      // Genuine auth failure — token is invalid/expired, force logout
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
       showAuth('login');
@@ -5570,13 +5569,14 @@ async function authInit() {
     }
     if (res.ok) {
       const data = await res.json();
-      setCurrentUser(data.user, token); // update with fresh server data
+      setCurrentUser(data.user, token);
     }
-    // Any other error (5xx, network) — stay logged in with cached data
   } catch(e) {
-    // Network failure — keep user logged in with cached data
     console.warn('authInit: network error, staying logged in with cached data', e.message);
   }
+
+  // Refresh push subscription on every load so it's always current
+  setTimeout(subscribeToPush, 3000);
 }
 
 // ── Set user state + update UI ─────────────────────────────
