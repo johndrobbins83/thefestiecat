@@ -1,54 +1,73 @@
-/* ── Sunken Suite Service Worker ── */
-const CACHE_NAME  = 'sunkensuite-v1';
-const STATIC_URLS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Pirata+One&family=Poppins:wght@400;500;600;700;800;900&family=Orbitron:wght@400;700;900&display=swap'
-];
+// Sunken Suite · The Mutiny 2026 · Service Worker
+const CACHE_NAME = 'sunken-suite-v4';
+const OFFLINE_URL = '/';
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(c => c.addAll(STATIC_URLS)).then(() => self.skipWaiting())
+// ── Install ───────────────────────────────────────────────
+self.addEventListener('install', event => {
+  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(['/'])).catch(() => {})
   );
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
+// ── Activate ──────────────────────────────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', e => {
-  // Don't intercept non-GET, API calls, or cross-origin analytics
-  if (e.request.method !== 'GET') return;
-  const url = new URL(e.request.url);
-  if (url.pathname.startsWith('/api/')) return;
+// ── Fetch ─────────────────────────────────────────────────
+self.addEventListener('fetch', event => {
+  // Skip non-GET, chrome-extension, and API requests
+  if (event.request.method !== 'GET') return;
+  if (event.request.url.startsWith('chrome-extension://')) return;
+  if (event.request.url.includes('workers.dev') && !event.request.url.includes('/manifest')) return;
 
-  // Cache-first for fonts and static assets; network-first for everything else
-  const isStatic = url.pathname.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff2?)$/) ||
-                   url.hostname === 'fonts.googleapis.com' ||
-                   url.hostname === 'fonts.gstatic.com';
+  event.respondWith(
+    fetch(event.request).catch(() =>
+      caches.match(event.request).then(r => r || caches.match(OFFLINE_URL))
+    )
+  );
+});
 
-  if (isStatic) {
-    e.respondWith(
-      caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-        const clone = res.clone();
-        caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-        return res;
-      }))
-    );
-  } else {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-          return res;
-        })
-        .catch(() => caches.match(e.request).then(cached => cached || caches.match('/')))
-    );
-  }
+// ── Push Notifications ────────────────────────────────────
+self.addEventListener('push', event => {
+  let data = { title: 'Sunken Suite', body: 'New update', url: '/' };
+  try {
+    if (event.data) data = { ...data, ...JSON.parse(event.data.text()) };
+  } catch(e) {}
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body:    data.body,
+      icon:    '/icon192.png',
+      badge:   '/icon192.png',
+      tag:     'sunken-suite-push',
+      renotify: true,
+      vibrate: [200, 100, 200],
+      data:    { url: data.url || '/' }
+    })
+  );
+});
+
+// ── Notification Click ────────────────────────────────────
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      // Focus existing window if open
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      // Open new window
+      if (clients.openWindow) return clients.openWindow(url);
+    })
+  );
 });
