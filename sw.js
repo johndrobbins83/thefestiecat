@@ -35,20 +35,30 @@ self.addEventListener('fetch', event => {
 
 // ── Push Notifications ────────────────────────────────────
 self.addEventListener('push', event => {
-  let data = { title: 'Sunken Suite', body: 'New update', url: '/' };
-  try {
-    if (event.data) data = { ...data, ...JSON.parse(event.data.text()) };
-  } catch(e) {}
+  let data = { title: '☠ Sunken Suite', body: 'You have a new notification', url: '/' };
+
+  if (event.data) {
+    try {
+      // Try JSON parse
+      const parsed = JSON.parse(event.data.text());
+      if (parsed.title) data.title = parsed.title;
+      if (parsed.body)  data.body  = parsed.body;
+      if (parsed.url)   data.url   = parsed.url;
+    } catch(e) {
+      // Plain text fallback
+      data.body = event.data.text();
+    }
+  }
 
   event.waitUntil(
     self.registration.showNotification(data.title, {
-      body:    data.body,
-      icon:    '/icon192.png',
-      badge:   '/icon192.png',
-      tag:     'sunken-suite-push',
-      renotify: true,
-      vibrate: [200, 100, 200],
-      data:    { url: data.url || '/' }
+      body:     data.body,
+      icon:     '/icon192.png',
+      badge:    '/icon192.png',
+      tag:      'sunken-suite-' + Date.now(),
+      vibrate:  [200, 100, 200],
+      requireInteraction: false,
+      data:     { url: data.url || '/' }
     })
   );
 });
