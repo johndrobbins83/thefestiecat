@@ -1895,10 +1895,15 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 /* ══ INBOX NAV ICON ══ */
 .nav-inbox-btn{position:relative;width:36px;height:36px;display:flex;align-items:center;
-  justify-content:center;cursor:pointer;font-size:18px;color:var(--text-muted);transition:color .15s;}
+  justify-content:center;cursor:pointer;font-size:18px;color:var(--text-muted);transition:all .2s;}
 .nav-inbox-btn:hover{color:var(--text-light);}
+.nav-inbox-btn.has-unread{color:var(--teal-glow);animation:inboxPulse 2s ease-in-out infinite;}
+@keyframes inboxPulse{
+  0%,100%{filter:drop-shadow(0 0 3px rgba(0,212,200,0.4));}
+  50%{filter:drop-shadow(0 0 8px rgba(0,212,200,0.9));}
+}
 .nav-inbox-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:8px;
-  background:var(--gold-bright);color:#000;font-size:9px;font-weight:800;
+  background:var(--pink-coral);color:#fff;font-size:9px;font-weight:800;
   display:none;align-items:center;justify-content:center;padding:0 3px;}
 
 .pw-field-wrap{position:relative;}
@@ -8815,11 +8820,15 @@ async function pollDMUnread() {
     const d = await res.json();
     const total = d.total || 0;
     const badge = document.getElementById('inboxNavBadge');
+    const btn   = document.getElementById('navInboxBtn');
     if (badge) {
       badge.textContent = total > 99 ? '99+' : total;
       badge.style.display = total > 0 ? 'flex' : 'none';
     }
-    // Also update DM badge in bell area (existing updateDMBadge)
+    // Pulse the bubble when unread messages exist
+    if (btn) {
+      btn.classList.toggle('has-unread', total > 0);
+    }
     if (typeof updateDMBadge === 'function') updateDMBadge(total);
   } catch(e) {}
 }
