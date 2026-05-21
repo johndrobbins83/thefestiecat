@@ -1904,18 +1904,24 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   justify-content:center;cursor:pointer;font-size:18px;color:var(--text-muted);transition:all .2s;}
 .nav-inbox-btn:hover{color:var(--text-light);}
 .nav-inbox-btn.has-unread{
-  background:rgba(0,212,200,0.15);
-  border-radius:50%;
-  color:var(--teal-glow);
-  animation:inboxPulse 1.5s ease-in-out infinite;
+  animation:inboxShake 0.5s ease-in-out, inboxGlow 2s ease-in-out 0.5s infinite;
 }
-@keyframes inboxPulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(0,212,200,0.4);}
-  50%{box-shadow:0 0 0 6px rgba(0,212,200,0);}
+@keyframes inboxShake{
+  0%,100%{transform:rotate(0);}
+  20%{transform:rotate(-15deg);}
+  40%{transform:rotate(15deg);}
+  60%{transform:rotate(-10deg);}
+  80%{transform:rotate(10deg);}
 }
-.nav-inbox-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:8px;
-  background:var(--pink-coral);color:#fff;font-size:9px;font-weight:800;
-  display:none;align-items:center;justify-content:center;padding:0 3px;}
+@keyframes inboxGlow{
+  0%,100%{filter:drop-shadow(0 0 2px rgba(255,77,141,0.6));}
+  50%{filter:drop-shadow(0 0 8px rgba(255,77,141,1));}
+}
+.nav-inbox-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;
+  background:var(--pink-coral);color:#fff;font-size:10px;font-weight:800;
+  display:none;align-items:center;justify-content:center;padding:0 4px;
+  animation:badgePop 0.3s cubic-bezier(0.68,-0.55,0.265,1.55);}
+@keyframes badgePop{0%{transform:scale(0);}100%{transform:scale(1);}}
 
 .pw-field-wrap{position:relative;}
 .pw-field-wrap .auth-input{padding-right:42px;}
@@ -8866,12 +8872,18 @@ async function pollDMUnread() {
     const badge = document.getElementById('inboxNavBadge');
     const btn   = document.getElementById('navInboxBtn');
     if (badge) {
-      badge.textContent = total > 99 ? '99+' : total;
+      badge.textContent = total > 99 ? '99+' : (total || '');
       badge.style.display = total > 0 ? 'flex' : 'none';
     }
-    // Pulse the bubble when unread messages exist
     if (btn) {
-      btn.classList.toggle('has-unread', total > 0);
+      if (total > 0 && !btn.classList.contains('has-unread')) {
+        // New messages — trigger shake by forcing reflow
+        btn.classList.remove('has-unread');
+        void btn.offsetWidth; // force reflow
+        btn.classList.add('has-unread');
+      } else if (total === 0) {
+        btn.classList.remove('has-unread');
+      }
     }
     if (typeof updateDMBadge === 'function') updateDMBadge(total);
   } catch(e) {}
