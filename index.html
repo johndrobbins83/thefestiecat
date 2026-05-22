@@ -8617,12 +8617,12 @@ async function loadFriends() {
       var roleLabel = f.role==='admin'?'Admin':f.role==='employee'?'Staff':'Festie';
       var roleColor = f.role==='admin'?'var(--gold-bright)':f.role==='employee'?'var(--teal-glow)':'#c084fc';
       return '<div class="person-card" onclick="navigateToProfile(\''+f.id+'\')">'+
-        '<div class="person-avatar" style="background:'+(f.avatarColor||'#9b3dff')+';overflow:hidden;">'+avatarHtml+'</div>'+
+        '<div style="position:relative;flex-shrink:0;"><div class="person-avatar" style="background:'+(f.avatarColor||'#9b3dff')+';overflow:hidden;">'+avatarHtml+'</div>'+roleDot(f.role)+'</div>'+
         '<div class="person-info">'+
           '<div class="person-handle">@'+(f.handle||'unknown')+' <span style="font-size:10px;font-weight:700;color:'+roleColor+';">['+roleLabel+']</span></div>'+
-          '<div class="person-bio">'+(f.bio||'No bio yet')+'</div>'+
+          '<div class="person-bio">'+(f.bio||f.name||'')+'</div>'+
         '</div>'+
-        '<span class="person-follow-btn friends">&#x1F4AC; DM</span>'+
+        '<button class="person-follow-btn friends" onclick="event.stopPropagation();navigate(\'people\');setTimeout(function(){switchPeopleTab(\'messages\');openDMThread(\''+f.id+'\',\''+(f.handle||'user')+'\',\''+(f.avatarColor||'#9b3dff')+'\');},200);">&#x1F4AC; DM</button>'+
       '</div>';
     }).join('');
   } catch {}
