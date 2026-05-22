@@ -1729,7 +1729,9 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   position:sticky;bottom:0;}
 @media(max-width:767px){
   .dm-thread-input-row{
-    padding-bottom:calc(68px + env(safe-area-inset-bottom, 0px));
+    padding:10px 12px;
+    padding-bottom:calc(80px + env(safe-area-inset-bottom, 0px));
+    margin-bottom:0;
   }
 }
 .dm-thread-input{flex:1;padding:11px 14px;background:#111;
@@ -3225,11 +3227,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="more-btn-label">Information</div>
         <div class="more-btn-sub">FAQ &amp; details</div>
       </span>
-      <span class="more-btn board" onclick="showBoard();closeMore()">
-        <div class="more-btn-icon">🏴‍☠️</div>
-        <div class="more-btn-label">Mutiny Board</div>
-        <div class="more-btn-sub">Community</div>
-      </span>
       <span class="more-btn findme" onclick="openFindMe();closeMore()" id="findMeBtn" style="display:none;border-color:rgba(155,61,255,0.3);background:rgba(155,61,255,0.05);">
         <div class="more-btn-icon" style="background:rgba(155,61,255,0.2);color:#c084fc;">📍</div>
         <div class="more-btn-label">Find Me!</div>
@@ -4569,7 +4566,7 @@ function renderSchedule() {
       if (!shouldShowStage(stage)) return;
       const items = (data[stage]||[]).filter(item => matchArtist(item.artist));
       if (!items.length) return;
-      const stageNames = {dnb:'DNB Stage (Presented by BP²)',atrium:'Atrium (House)',beach:'Beach Stage',locals:'Locals Stage'};
+      const stageNames = {dnb:'DNB Stage',atrium:'Atrium (House)',beach:'Beach Stage',locals:'Locals Stage'};
       const stageName = stageNames[stage] || stage;
       html += `<div class="stage-section"><div class="stage-section-header ${stage}">`+
         `<div class="stage-dot" style="background:${{dnb:'#9b3dff',atrium:'#f59e0b',beach:'#06b6d4',locals:'#84cc16'}[stage]||'#888'};"></div>${stageName}</div>`+
@@ -4592,8 +4589,8 @@ function renderSchedule() {
   } else {
     gridWrap.style.display = 'block';
     const stages = [];
-    if (shouldShowStage('dnb'))    stages.push({key:'dnb',    name:'DNB Stage (Presented by BP²)', color:'#9b3dff'});
-    if (shouldShowStage('atrium')) stages.push({key:'atrium', name:'Atrium (House)',                  color:'#f59e0b'});
+    if (shouldShowStage('dnb'))    stages.push({key:'dnb',    name:'DNB Stage', color:'#9b3dff'});
+    if (shouldShowStage('atrium')) stages.push({key:'atrium', name:'Atrium',                  color:'#f59e0b'});
     if (shouldShowStage('beach'))  stages.push({key:'beach',  name:'Beach Stage',                     color:'#06b6d4'});
     if (shouldShowStage('locals')) stages.push({key:'locals', name:'Locals Stage',                    color:'#84cc16'});
     let html = `<div class="tg-grid-wrap"><div class="tg-grid" style="grid-template-columns:repeat(${stages.length},minmax(140px,1fr));">`;
@@ -4635,7 +4632,7 @@ function renderMySchedPage() {
   var STAGES = [
     {key:'DNB Stage',     color:'#c084fc', cls:'dnb',    hl:'headliner'},
     {key:'Atrium',        color:'#f59e0b', cls:'atrium', hl:'atrium-headliner'},
-    {key:'Atrium (House)',color:'#f59e0b', cls:'atrium', hl:'atrium-headliner'},
+    {key:'Atrium',color:'#f59e0b', cls:'atrium', hl:'atrium-headliner'},
     {key:'Beach Stage',   color:'#06b6d4', cls:'beach',  hl:'beach-headliner'},
     {key:'Locals Stage',  color:'#84cc16', cls:'locals', hl:'locals-headliner'},
     {key:'Oasis Stage',   color:'#00d4c8', cls:'oasis',  hl:'oasis-headliner'},
@@ -5085,8 +5082,8 @@ function setChecklistCat(cat, btn) {
 }
 function renderChecklist() {
   const allItems = getChecklist();
-  const cats = ['packing','outfits','supplies','food','plans','todo'];
-  const catLabel = {packing:'🧳 Packing',outfits:'👗 Outfits',supplies:'🔧 Supplies',food:'🍔 Food & Drink',plans:'📋 Plans',todo:'✅ To-Do'};
+  const cats = ['packing','outfits','supplies','tech','food','plans','todo'];
+  const catLabel = {packing:'🧳 Packing',outfits:'👗 Outfits',supplies:'🔧 Supplies',tech:'📱 Tech & Charging',food:'🍔 Food & Drink',plans:'📋 Plans',todo:'✅ To-Do'};
   const total = allItems.length, done = allItems.filter(i=>i.done).length;
   document.getElementById('progressCount').textContent = `${done} / ${total}`;
   document.getElementById('progressFill').style.width = total ? Math.round(done/total*100)+'%' : '0%';
@@ -5939,7 +5936,7 @@ async function renderMasterSchedule() {
   const STAGE_COLORS = {
     dnb:    { bg:'rgba(155,61,255,0.15)',  border:'rgba(155,61,255,0.25)',  accent:'#c084fc',  label:'DNB Stage' },
     oasis:  { bg:'rgba(0,212,200,0.12)',   border:'rgba(0,212,200,0.22)',   accent:'#00d4c8',  label:'Oasis Stage' },
-    atrium: { bg:'rgba(245,158,11,0.12)',  border:'rgba(245,158,11,0.25)',  accent:'#f59e0b',  label:'Atrium (House)' },
+    atrium: { bg:'rgba(245,158,11,0.12)',  border:'rgba(245,158,11,0.25)',  accent:'#f59e0b',  label:'Atrium' },
     beach:  { bg:'rgba(6,182,212,0.12)',   border:'rgba(6,182,212,0.25)',   accent:'#06b6d4',  label:'Beach Stage' },
     locals: { bg:'rgba(132,204,22,0.12)',  border:'rgba(132,204,22,0.25)',  accent:'#84cc16',  label:'Locals Stage' },
   };
@@ -6533,7 +6530,7 @@ function renderAdminSchedule() {
 
   const ADMIN_STAGES = [
     { key:'dnb',    name:'DNB Stage',        color:'#c084fc' },
-    { key:'atrium', name:'Atrium (House)',    color:'#f59e0b' },
+    { key:'atrium', name:'Atrium',    color:'#f59e0b' },
     { key:'beach',  name:'Beach Stage',       color:'#06b6d4' },
     { key:'locals', name:'Locals Stage',      color:'#84cc16' },
   ];
