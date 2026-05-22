@@ -1302,7 +1302,7 @@ body{
 .edit-modal-overlay{position:fixed;inset:0;z-index:30000;
   background:rgba(0,0,0,0.85);display:none;
   align-items:center;justify-content:center;
-  padding:12px 12px calc(70px + env(safe-area-inset-bottom,0px));}
+  padding:12px 12px calc(env(safe-area-inset-bottom, 0px) + 16px);}
 .edit-modal-overlay.open{display:flex;}
 .edit-modal{background:#0a0a0a;border:1px solid rgba(245,200,66,0.3);
   width:100%;max-width:540px;
@@ -3419,83 +3419,126 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 <!-- iOS install guide modal (shows on iOS Safari) -->
 <div id="iosInstallTip" style="display:none;position:fixed;inset:0;z-index:70000;
   background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);
-  align-items:flex-end;justify-content:center;padding-bottom:0;">
+  align-items:flex-end;justify-content:center;">
   <div style="background:#0a0a0a;border:1px solid rgba(0,212,200,0.3);
     border-bottom:none;width:100%;max-width:480px;border-radius:16px 16px 0 0;
-    padding:20px 20px 32px;font-family:'Poppins',sans-serif;">
+    max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:20px 20px 0;font-family:'Poppins',sans-serif;
+    padding-bottom:calc(20px + env(safe-area-inset-bottom, 20px));">
 
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <div style="width:44px;height:44px;background:linear-gradient(135deg,#9b3dff,#00d4c8);
           border-radius:10px;display:flex;align-items:center;justify-content:center;
-          font-size:22px;">☠️</div>
+          font-size:22px;flex-shrink:0;">☠️</div>
         <div>
           <div style="font-size:15px;font-weight:800;color:var(--text-light);">Install Sunken Suite</div>
-          <div style="font-size:11px;color:var(--text-muted);">Add to your Home Screen</div>
+          <div style="font-size:11px;color:var(--text-muted);" id="iosInstallSubtitle">Add to your Home Screen</div>
         </div>
       </div>
       <button onclick="dismissIOSInstall()"
         style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);
-        font-size:16px;cursor:pointer;width:32px;height:32px;border-radius:50%;
-        display:flex;align-items:center;justify-content:center;">✕</button>
+        font-size:16px;cursor:pointer;width:36px;height:36px;border-radius:50%;
+        flex-shrink:0;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
 
     <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">
       Get the full app experience — works offline at the festival, loads instantly, and sits on your home screen just like a native app.
     </div>
 
-    <!-- Steps -->
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
-        background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
-        <div style="width:32px;height:32px;background:rgba(0,212,200,0.15);border:1px solid rgba(0,212,200,0.3);
-          border-radius:50%;display:flex;align-items:center;justify-content:center;
-          font-size:16px;flex-shrink:0;">1</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text-light);">Tap the Share button</div>
-          <div style="font-size:11px;color:var(--text-muted);">The <strong style="color:var(--teal-glow);">□↑</strong> icon at the bottom of Safari</div>
+    <!-- Safari steps (default) -->
+    <div id="iosStepsSafari">
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+          background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+          <div style="width:32px;height:32px;background:rgba(0,212,200,0.15);border:1px solid rgba(0,212,200,0.3);
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:15px;font-weight:800;flex-shrink:0;color:var(--teal-glow);">1</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-light);">Tap the Share button</div>
+            <div style="font-size:11px;color:var(--text-muted);">The <strong style="color:var(--teal-glow);">□↑</strong> icon at the bottom of Safari</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+          background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+          <div style="width:32px;height:32px;background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.3);
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:15px;font-weight:800;flex-shrink:0;color:#c084fc;">2</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-light);">Tap "Add to Home Screen"</div>
+            <div style="font-size:11px;color:var(--text-muted);">Scroll down in the Share sheet and look for <strong style="color:#c084fc;">⊕ Add to Home Screen</strong></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+          background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+          <div style="width:32px;height:32px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:15px;font-weight:800;flex-shrink:0;color:var(--gold-bright);">3</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-light);">Tap "Add" in the top right</div>
+            <div style="font-size:11px;color:var(--text-muted);">The Sunken Suite icon appears on your home screen</div>
+          </div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
-        background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
-        <div style="width:32px;height:32px;background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.3);
-          border-radius:50%;display:flex;align-items:center;justify-content:center;
-          font-size:16px;flex-shrink:0;">2</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text-light);">Scroll down &amp; tap "Add to Home Screen"</div>
-          <div style="font-size:11px;color:var(--text-muted);">Look for the <strong style="color:#c084fc;">⊕</strong> icon in the Share sheet</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
-        background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
-        <div style="width:32px;height:32px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);
-          border-radius:50%;display:flex;align-items:center;justify-content:center;
-          font-size:16px;flex-shrink:0;">3</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text-light);">Tap "Add" in the top right</div>
-          <div style="font-size:11px;color:var(--text-muted);">The Sunken Suite icon will appear on your home screen</div>
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;
+          background:rgba(0,212,200,0.08);border:1px solid rgba(0,212,200,0.25);">
+          <span style="font-size:18px;">👇</span>
+          <span style="font-size:12px;color:var(--teal-glow);font-weight:700;">Share button is at the bottom of Safari</span>
         </div>
       </div>
     </div>
 
-    <!-- Arrow pointing down to share button -->
-    <div style="text-align:center;margin-bottom:16px;">
-      <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;
-        background:rgba(0,212,200,0.08);border:1px solid rgba(0,212,200,0.25);">
-        <span style="font-size:20px;">👇</span>
-        <span style="font-size:12px;color:var(--teal-glow);font-weight:700;">Tap Share at the bottom of your screen</span>
+    <!-- Chrome steps -->
+    <div id="iosStepsChrome" style="display:none;">
+      <div style="background:rgba(255,152,0,0.08);border:1px solid rgba(255,152,0,0.25);padding:10px 12px;margin-bottom:12px;font-size:12px;color:rgba(255,152,0,0.9);line-height:1.5;">
+        ⚠️ You're using Chrome on iPhone. Push notifications require Safari. To install the app and enable all features, open this page in <strong>Safari</strong> first.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+          background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+          <div style="width:32px;height:32px;background:rgba(0,212,200,0.15);border:1px solid rgba(0,212,200,0.3);
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:15px;font-weight:800;flex-shrink:0;color:var(--teal-glow);">1</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-light);">Tap the ••• menu (top right)</div>
+            <div style="font-size:11px;color:var(--text-muted);">In Chrome, tap the three dots in the top right corner</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+          background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+          <div style="width:32px;height:32px;background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.3);
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:15px;font-weight:800;flex-shrink:0;color:#c084fc;">2</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-light);">Tap "Open in Safari"</div>
+            <div style="font-size:11px;color:var(--text-muted);">Then follow the Safari install steps above</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+          background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+          <div style="width:32px;height:32px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:15px;font-weight:800;flex-shrink:0;color:var(--gold-bright);">3</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-light);">In Safari: Share → Add to Home Screen</div>
+            <div style="font-size:11px;color:var(--text-muted);">Tap the Share button <strong style="color:var(--teal-glow);">□↑</strong> then "Add to Home Screen"</div>
+          </div>
+        </div>
       </div>
     </div>
 
     <button onclick="dismissIOSInstall()"
-      style="width:100%;padding:12px;background:rgba(0,212,200,0.12);
+      style="width:100%;padding:14px;background:rgba(0,212,200,0.12);
       border:1px solid rgba(0,212,200,0.35);color:var(--teal-glow);
-      font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+      font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;
+      margin-bottom:8px;">
       Got it — I'll add it now
     </button>
   </div>
 </div>
+
 
 <!-- ══ TOAST ══ -->
 <div class="toast" id="toast"></div>
@@ -5468,16 +5511,35 @@ function dismissIOSInstall() {
   const tip = document.getElementById('iosInstallTip');
   if (tip) tip.style.display = 'none';
 }
+
+function showInstallIOSModal() {
+  const tip = document.getElementById('iosInstallTip');
+  if (!tip) return;
+  // Detect Chrome on iOS
+  const isChrome = /CriOS/.test(navigator.userAgent);
+  const safariSteps = document.getElementById('iosStepsSafari');
+  const chromeSteps = document.getElementById('iosStepsChrome');
+  const subtitle    = document.getElementById('iosInstallSubtitle');
+  if (isChrome) {
+    if (safariSteps) safariSteps.style.display = 'none';
+    if (chromeSteps) chromeSteps.style.display = 'block';
+    if (subtitle)    subtitle.textContent = 'Open in Safari to install';
+  } else {
+    if (safariSteps) safariSteps.style.display = 'block';
+    if (chromeSteps) chromeSteps.style.display = 'none';
+    if (subtitle)    subtitle.textContent = 'Add to your Home Screen';
+  }
+  tip.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
 // iOS Safari — no beforeinstallprompt, show manual instructions
 (function() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isStandalone = window.navigator.standalone;
   const dismissed = localStorage.getItem(PWA_DISMISSED_KEY+'_ios');
   if (isIOS && !isStandalone && !dismissed) {
-    setTimeout(function() {
-      const tip = document.getElementById('iosInstallTip');
-      if (tip) tip.style.display = 'flex';
-    }, 5000); // show after 5 seconds
+    setTimeout(function() { showInstallIOSModal(); }, 5000);
   }
 })();
 
