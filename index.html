@@ -8974,24 +8974,36 @@ async function pollDMUnread() {
   const token = localStorage.getItem('ss_auth_token');
   if (!token || !currentUser) return;
   try {
+    // Try /dm/unread first
     const res = await fetch(AUTH_URL + '/dm/unread', {
       headers: {'Authorization': 'Bearer ' + token}
     });
-    if (!res.ok) return;
-    const d = await res.json();
-    const total = d.total || 0;
-    console.log('[DM Unread] total:', total, 'counts:', d.counts);
+    let total = 0;
+    if (res.ok) {
+      const d = await res.json();
+      total = d.total || 0;
+    }
+    // If 0, also check /dm list for unread (catches pre-indexed conversations)
+    if (total === 0) {
+      const res2 = await fetch(AUTH_URL + '/dm', {
+        headers: {'Authorization': 'Bearer ' + token}
+      });
+      if (res2.ok) {
+        const d2 = await res2.json();
+        total = (d2.conversations || []).reduce(function(sum, c) { return sum + (c.unread || 0); }, 0);
+      }
+    }
     const badge = document.getElementById('inboxNavBadge');
     if (badge) {
       if (total > 0) {
         badge.textContent = total > 9 ? '9+' : total;
-        badge.style.cssText = 'position:absolute;top:-4px;right:-4px;z-index:9999;min-width:16px;height:16px;border-radius:8px;background:#ff4d8d;color:#fff;font-size:10px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid #0a0a0a;pointer-events:none;';
+        badge.style.cssText = 'position:absolute;top:-4px;right:-4px;z-index:9999;min-width:16px;height:16px;border-radius:8px;background:#ff4d8d;color:#fff;font-size:10px;font-weight:800;line-height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid #0a0a0a;pointer-events:none;';
       } else {
         badge.style.display = 'none';
       }
     }
     if (typeof updateDMBadge === 'function') updateDMBadge(total);
-  } catch(e) { console.warn('[DM Unread] error:', e); }
+  } catch(e) {}
 }
 
 // ── Helpers ────────────────────────────────────────────────
