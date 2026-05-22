@@ -53,8 +53,9 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body:     data.body,
-      icon:     '/icon192.png',
+      icon:     '/icon512.png',
       badge:    '/icon192.png',
+      image:    data.image || undefined,
       tag:      'sunken-suite-' + Date.now(),
       vibrate:  [200, 100, 200],
       requireInteraction: false,
