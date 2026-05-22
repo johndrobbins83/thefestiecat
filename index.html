@@ -2289,7 +2289,15 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
           <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
         </svg>
-        <div class="nav-inbox-badge" id="inboxNavBadge"></div>
+        <div id="inboxNavBadge" style="
+          position:absolute;top:-3px;right:-3px;
+          min-width:18px;height:18px;border-radius:9px;
+          background:#ff4d8d;color:#fff;
+          font-size:10px;font-weight:800;
+          display:none;align-items:center;justify-content:center;
+          padding:0 4px;border:2px solid #0a0a0a;
+          box-shadow:0 0 6px rgba(255,77,141,0.8);
+        "></div>
       </div>
     </div>
     <div style="position:relative;" id="bellWrap" class="nav-signed-in-only">
@@ -8973,20 +8981,9 @@ async function pollDMUnread() {
     const d = await res.json();
     const total = d.total || 0;
     const badge = document.getElementById('inboxNavBadge');
-    const btn   = document.getElementById('navInboxBtn');
     if (badge) {
-      badge.textContent = total > 99 ? '99+' : (total || '');
+      badge.textContent = total > 9 ? '9+' : (total > 0 ? total : '');
       badge.style.display = total > 0 ? 'flex' : 'none';
-    }
-    if (btn) {
-      if (total > 0 && !btn.classList.contains('has-unread')) {
-        // New messages — trigger shake by forcing reflow
-        btn.classList.remove('has-unread');
-        void btn.offsetWidth; // force reflow
-        btn.classList.add('has-unread');
-      } else if (total === 0) {
-        btn.classList.remove('has-unread');
-      }
     }
     if (typeof updateDMBadge === 'function') updateDMBadge(total);
   } catch(e) {}
