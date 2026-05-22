@@ -8980,13 +8980,18 @@ async function pollDMUnread() {
     if (!res.ok) return;
     const d = await res.json();
     const total = d.total || 0;
+    console.log('[DM Unread] total:', total, 'counts:', d.counts);
     const badge = document.getElementById('inboxNavBadge');
     if (badge) {
-      badge.textContent = total > 9 ? '9+' : (total > 0 ? total : '');
-      badge.style.display = total > 0 ? 'flex' : 'none';
+      if (total > 0) {
+        badge.textContent = total > 9 ? '9+' : total;
+        badge.style.cssText = 'position:absolute;top:-4px;right:-4px;z-index:9999;min-width:16px;height:16px;border-radius:8px;background:#ff4d8d;color:#fff;font-size:10px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid #0a0a0a;pointer-events:none;';
+      } else {
+        badge.style.display = 'none';
+      }
     }
     if (typeof updateDMBadge === 'function') updateDMBadge(total);
-  } catch(e) {}
+  } catch(e) { console.warn('[DM Unread] error:', e); }
 }
 
 // ── Helpers ────────────────────────────────────────────────
