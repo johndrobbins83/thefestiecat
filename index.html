@@ -1085,14 +1085,16 @@ body{
 .auth-overlay{
   position:fixed;inset:0;z-index:50000;
   background:#000;display:none;
-  flex-direction:column;align-items:center;justify-content:center;
-  padding:24px;
+  flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:24px 24px calc(env(safe-area-inset-bottom,0px) + 24px);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
 .auth-overlay.open{display:flex;}
 .auth-box{
   width:100%;max-width:400px;
   background:#0a0a0a;border:1px solid rgba(245,200,66,0.3);
   padding:32px 28px;
+  margin:auto 0;
 }
 .auth-logo{
   font-family:'Pirata One',cursive;font-size:28px;color:var(--gold-bright);
@@ -1302,12 +1304,27 @@ body{
 .edit-modal-overlay{position:fixed;inset:0;z-index:30000;
   background:rgba(0,0,0,0.85);display:none;
   align-items:center;justify-content:center;
-  padding:12px 12px calc(env(safe-area-inset-bottom, 0px) + 16px);}
+  padding:12px;}
 .edit-modal-overlay.open{display:flex;}
 .edit-modal{background:#0a0a0a;border:1px solid rgba(245,200,66,0.3);
   width:100%;max-width:540px;
-  max-height:100%;
+  max-height:calc(100vh - 24px);
   display:flex;flex-direction:column;overflow:hidden;}
+@media(max-width:767px){
+  .edit-modal-overlay{
+    align-items:flex-end;
+    padding:0;
+  }
+  .edit-modal{
+    max-width:100%;
+    border-radius:16px 16px 0 0;
+    border-bottom:none;
+    max-height:calc(100vh - 90px - env(safe-area-inset-top, 44px));
+  }
+  .edit-modal-footer{
+    padding-bottom:calc(16px + env(safe-area-inset-bottom, 20px));
+  }
+}
 .edit-modal-header{display:flex;align-items:center;justify-content:space-between;
   padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
 .edit-modal-title{font-size:15px;font-weight:800;color:var(--gold-bright);
