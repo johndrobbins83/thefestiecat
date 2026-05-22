@@ -1866,9 +1866,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);position:sticky;top:0;background:#0a0a0a;}
 .notif-drawer-title{font-size:12px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;}
 .notif-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;
-  border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background .1s;}
-.notif-item:hover{background:rgba(255,255,255,0.03);}
-.notif-item.unread{background:rgba(255,255,255,0.02);}
+  border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background .1s;
+  border-left:3px solid transparent;}
+.notif-item:hover{background:rgba(255,255,255,0.04);}
+.notif-item.unread{background:rgba(0,212,200,0.05);border-left-color:var(--teal-glow);}
+.notif-item.unread .notif-text{font-weight:700;color:#fff;}
+.notif-item.unread .notif-time{color:var(--teal-glow);font-weight:600;}
+.notif-item:not(.unread){opacity:0.65;}
 .notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
 .notif-dot.blue{background:#60a5fa;}
 .notif-dot.yellow{background:var(--gold-bright);}
