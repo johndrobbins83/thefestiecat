@@ -2566,7 +2566,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <div class="hotel-map-wrap">
       <div class="hotel-map-header">
-        <div><div class="hotel-map-title">🏨 Hotel Grounds</div><div class="hotel-map-sub" style="font-size:12px;color:var(--text-muted);">Tap a pin to see details</div></div>
+        <div><div class="hotel-map-title">🏨 Hotel Grounds</div><div class="hotel-map-sub" style="font-size:12px;color:var(--text-muted);" id="hotelMapSub">Tap a pin to see details</div></div>
+        <div id="hotelMapAdminBtn" style="display:none;">
+          <input type="file" id="hotelMapFileInput" accept="image/*,application/pdf" style="display:none;" onchange="uploadHotelMap(this)">
+          <button class="dash-btn" onclick="document.getElementById('hotelMapFileInput').click()" style="font-size:11px;padding:6px 10px;">📎 Upload Map</button>
+          <button class="dash-btn" onclick="removeHotelMap()" style="font-size:11px;padding:6px 10px;color:var(--pink-coral);">✕ Remove</button>
+        </div>
       </div>
       <div class="map-legend">
         <div class="legend-item"><div class="legend-dot" style="background:#f5c842;"></div>Event Stages</div>
@@ -2575,6 +2580,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="legend-item"><div class="legend-dot" style="background:#9b3dff;"></div>Hotel Facilities</div>
         <div class="legend-item"><div class="legend-dot" style="background:#4ade80;"></div>Entry / Parking</div>
       </div>
+      <!-- Custom uploaded map (shown when available) -->
+      <div id="hotelMapCustom" style="display:none;margin-bottom:12px;">
+        <img id="hotelMapImg" src="" alt="Hotel Grounds Map" style="width:100%;max-width:800px;display:block;border:1px solid rgba(255,255,255,0.1);">
+        <a id="hotelMapPdfLink" href="" target="_blank" rel="noopener" style="display:none;padding:10px 16px;background:rgba(155,61,255,0.1);border:1px solid rgba(155,61,255,0.3);color:#c084fc;font-size:13px;font-weight:700;text-decoration:none;text-align:center;margin-top:8px;display:none;">📄 View Full Map PDF</a>
+      </div>
+      <div class="hotel-svg-wrap" id="hotelSvgWrap">
       <div class="hotel-svg-wrap" id="hotelMapWrap">
         <svg viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg" font-family="Poppins,sans-serif" style="min-width:400px;width:100%;">
           <rect width="700" height="500" fill="#000000"/>
@@ -2646,6 +2657,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           </g>
         </svg>
       </div>
+      </div><!-- /hotelSvgWrap -->
     </div>
   </div><!-- /page-map -->
 
@@ -4390,6 +4402,7 @@ function navigate(page) {
   if (page === 'artists') initArtists();
   if (page === 'games') initGames();
   if (page === 'checklist') renderChecklist();
+  if (page === 'map') initHotelMap();
   if (page === 'admin')  initAdminDashboard();
   if (page === 'staff')  initStaffDashboard();
   if (page === 'people')  { initPeople(); }
@@ -5288,6 +5301,83 @@ function closeSOS() { document.getElementById('sosOverlay').classList.remove('op
 /* ════════════════════════════════════════════════════════════
    MAP TOOLTIP
 ════════════════════════════════════════════════════════════ */
+// ── Hotel Map Upload ───────────────────────────────────────
+async function initHotelMap() {
+  const adminBtn = document.getElementById('hotelMapAdminBtn');
+  if (adminBtn && currentUser && currentUser.role === 'admin') {
+    adminBtn.style.display = 'flex';
+    adminBtn.style.gap = '6px';
+  }
+  try {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const res = await fetch(AUTH_URL + '/site/hotel-map', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    });
+    if (res.ok) {
+      const d = await res.json();
+      if (d.url) applyHotelMap(d.url);
+    }
+  } catch(e) {}
+}
+
+function applyHotelMap(url) {
+  const custom  = document.getElementById('hotelMapCustom');
+  const svgWrap = document.getElementById('hotelSvgWrap');
+  const img     = document.getElementById('hotelMapImg');
+  const sub     = document.getElementById('hotelMapSub');
+  const isPdf   = url.toLowerCase().includes('.pdf');
+  if (isPdf) {
+    if (custom) custom.style.display = 'block';
+    if (img) img.style.display = 'none';
+    const pdfLink = document.getElementById('hotelMapPdfLink');
+    if (pdfLink) { pdfLink.href = url; pdfLink.style.display = 'flex'; }
+    if (sub) sub.textContent = 'Tap to open full map PDF';
+  } else {
+    if (img) { img.src = url; img.style.display = 'block'; }
+    if (custom) custom.style.display = 'block';
+    if (sub) sub.textContent = 'Hotel grounds map';
+  }
+  if (svgWrap) svgWrap.style.display = 'none';
+}
+
+async function uploadHotelMap(input) {
+  const file = input.files[0]; if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('File too large — max 10MB'); return; }
+  showToast('Uploading map…');
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const slug = 'hotelmap_' + Date.now();
+    const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
+      method: 'POST',
+      headers: { 'Content-Type': file.type, 'Authorization': 'Bearer ' + token },
+      body: file
+    });
+    if (res.ok) {
+      const d = await res.json();
+      await fetch(AUTH_URL + '/site/hotel-map', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ url: d.url })
+      });
+      applyHotelMap(d.url);
+      showToast('✓ Map uploaded!');
+    } else { showToast('Upload failed'); }
+  } catch(e) { showToast('Upload error: ' + e.message); }
+  input.value = '';
+}
+
+async function removeHotelMap() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  await fetch(AUTH_URL + '/site/hotel-map', { method:'DELETE', headers:{'Authorization':'Bearer '+token} }).catch(()=>{});
+  const custom = document.getElementById('hotelMapCustom');
+  const svgWrap = document.getElementById('hotelSvgWrap');
+  const sub = document.getElementById('hotelMapSub');
+  if (custom) custom.style.display = 'none';
+  if (svgWrap) svgWrap.style.display = 'block';
+  if (sub) sub.textContent = 'Tap a pin to see details';
+  showToast('Map removed');
+}
+
 function showMapTooltip(el, e) {
   const name = el.dataset.name, sub = el.dataset.sub;
   const tt = document.getElementById('mapTooltip');
@@ -6616,9 +6706,19 @@ async function saveArtistEdit() {
   // Persist the override so it survives refresh for all users
   saveArtistOverride(name, updated);
 
+  // Send schedule change notifications if time, stage, day or headliner changed
+  const old = artists[oldKey] || {};
+  const changes = [];
+  if (updated.time !== (old.time || 'TBA') && updated.time && updated.time !== 'TBA')
+    changes.push('📅 ' + name + ' now playing at ' + updated.time);
+  if (updated.stage !== old.stage && updated.stage)
+    changes.push('📅 ' + name + ' moved to ' + updated.stage);
+  if (updated.headliner && !old.headliner)
+    changes.push('⭐ ' + name + ' confirmed as headliner!');
+  changes.forEach(function(msg) { notifyScheduleChange(name, msg); });
+
   const msg = photoUrl ? '✓ ' + name + ' saved with photo' : '✓ ' + name + ' saved';
   showToast(msg);
-  console.log('Saved artist:', name, 'photo:', photoUrl);
 }
 
 // ── Schedule editor ────────────────────────────────────────
