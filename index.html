@@ -9690,39 +9690,60 @@ function renderNotifications(notifs) {
   const sorted = notifs.slice().sort((a, b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
   list.innerHTML = sorted.map(function(n) {
     const timeAgo = formatTimeAgo(n.createdAt);
-    return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" onclick="handleNotifClick(\''+n.id+'\',\''+( n.type||'')+'\')">' +
+    const fromId  = n.fromId || '';
+    return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" style="cursor:pointer;" onclick="handleNotifClick(\''+n.id+'\',\''+(n.type||'')+'\',\''+fromId+'\')">' +
       '<div class="notif-dot ' + (n.category||'blue') + '"></div>' +
       '<div style="flex:1;">' +
         '<div class="notif-text">' + escapeHTML(n.message||'') + '</div>' +
         '<div class="notif-time">' + timeAgo + '</div>' +
       '</div>' +
+      '<div style="font-size:10px;color:rgba(122,184,224,0.3);flex-shrink:0;padding-left:6px;">›</div>' +
     '</div>';
   }).join('');
 }
 
-async function handleNotifClick(notifId, type) {
-  var fromId = '';
+async function handleNotifClick(notifId, type, fromId) {
   // Mark as read
   const token = localStorage.getItem('ss_auth_token');
   fetch(AUTH_URL + '/notifications/' + notifId + '/read', {
     method: 'PUT', headers: {'Authorization': 'Bearer ' + token}
   }).catch(() => {});
-  // Navigate based on type
-  if (type === 'dm' && fromId) {
-    toggleNotifDrawer();
+
+  toggleNotifDrawer();
+
+  // Navigate based on notification type
+  if (type === 'dm') {
     navigate('people');
-    setTimeout(function() { switchPeopleTab('messages'); openDMThread(fromId); }, 300);
-  } else if (type === 'follow_request') {
-    toggleNotifDrawer();
+    setTimeout(function() {
+      switchPeopleTab('messages');
+      if (fromId) openDMThread(fromId);
+    }, 300);
+  } else if (type === 'sos' || type === 'sos_alert' || type === 'emergency') {
+    // SOS — open staff dashboard if staff/admin, otherwise show the SOS overlay
+    if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'employee')) {
+      navigate('staff');
+      setTimeout(function() { switchStaffTab('announcements', null); }, 300);
+    } else {
+      navigate('home');
+    }
+  } else if (type === 'schedule_change' || type === 'schedule_update') {
+    navigate('schedule');
+  } else if (type === 'follow_request' || type === 'follow_accepted') {
     navigate('people');
+    setTimeout(function() { switchPeopleTab('connect'); }, 300);
   } else if (type === 'shift_assigned' || type === 'task_assigned') {
-    toggleNotifDrawer();
     navigate('staff');
   } else if (type === 'password_reset') {
-    toggleNotifDrawer();
     navigate('admin');
     setTimeout(function() { switchAdminTab('users', null); adminLoadUsers(); }, 300);
+  } else if (type === 'announcement') {
+    navigate('staff');
+    setTimeout(function() { switchStaffTab('announcements', null); }, 300);
+  } else {
+    // Default — go home
+    navigate('home');
   }
+
   loadNotifications();
 }
 
