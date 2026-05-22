@@ -3546,6 +3546,52 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 
 <!-- ══ AUTH OVERLAY ══ -->
+<!-- ── SOS VIEW MODAL (shows received alert) ── -->
+<div id="sosViewModal" style="position:fixed;inset:0;z-index:60000;display:none;
+  align-items:center;justify-content:center;padding:20px;
+  background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);">
+  <div style="background:#0a0a0a;border:2px solid var(--pink-coral);width:100%;max-width:480px;
+    max-height:90vh;overflow-y:auto;padding:0;border-radius:4px;">
+    <!-- Header -->
+    <div style="background:rgba(255,0,70,0.15);padding:16px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,77,141,0.3);">
+      <span style="font-size:24px;animation:pulse 1s infinite;">🆘</span>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:900;color:var(--pink-coral);letter-spacing:2px;text-transform:uppercase;">Emergency Alert Received</div>
+        <div style="font-size:11px;color:rgba(255,77,141,0.6);" id="sosViewRef"></div>
+      </div>
+      <button onclick="closeSosViewModal()" style="background:rgba(255,255,255,0.08);border:none;color:var(--text-light);font-size:18px;cursor:pointer;width:34px;height:34px;border-radius:50%;">✕</button>
+    </div>
+    <!-- Body -->
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">From</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text-light);" id="sosViewFrom">—</div>
+      </div>
+      <div id="sosViewLocationRow">
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📍 Location</div>
+        <div style="font-size:14px;color:var(--text-light);" id="sosViewLocation">—</div>
+      </div>
+      <div id="sosViewStageRow">
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🎵 Nearest Stage / Area</div>
+        <div style="font-size:14px;color:var(--text-light);" id="sosViewStage">—</div>
+      </div>
+      <div id="sosViewGpsRow">
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🛰 GPS</div>
+        <div style="font-size:13px;color:var(--teal-glow);font-family:monospace;" id="sosViewGps">—</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">💬 Message</div>
+        <div style="font-size:14px;color:var(--text-light);line-height:1.6;background:rgba(255,77,141,0.06);border:1px solid rgba(255,77,141,0.15);padding:12px;" id="sosViewMessage">—</div>
+      </div>
+      <div style="font-size:10px;color:var(--text-muted);" id="sosViewTime"></div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <a href="tel:911" style="flex:1;padding:12px;background:rgba(255,0,70,0.15);border:1px solid var(--pink-coral);color:var(--pink-coral);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;text-decoration:none;text-align:center;cursor:pointer;">📞 Call 911</a>
+        <button onclick="closeSosViewModal()" style="flex:1;padding:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Dismiss</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-box">
     <div class="auth-logo">☠ SUNKEN SUITE<span>The Mutiny 2026</span></div>
@@ -5666,6 +5712,61 @@ function setCurrentUser(user, token) {
       }).catch(() => {});
     }
   }, 300);
+}
+
+async function showSosAlertFromNotif(notifId) {
+  const modal = document.getElementById('sosViewModal');
+  if (!modal) return;
+  // Try fetching active alerts
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/alerts/active', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (res.ok) {
+      const d = await res.json();
+      const alert = (d.alerts || [])[0]; // show most recent
+      if (alert) {
+        document.getElementById('sosViewFrom').textContent     = alert.fromName || 'Unknown';
+        document.getElementById('sosViewRef').textContent      = alert.ref || '';
+        document.getElementById('sosViewMessage').textContent  = alert.message || '—';
+        document.getElementById('sosViewLocation').textContent = alert.location || '—';
+        document.getElementById('sosViewStage').textContent    = alert.stage || '—';
+        document.getElementById('sosViewGps').textContent      = alert.gps || '—';
+        document.getElementById('sosViewTime').textContent     = alert.createdAt ? 'Received: ' + formatTimeAgo(alert.createdAt) : '';
+        document.getElementById('sosViewStageRow').style.display   = alert.stage    ? '' : 'none';
+        document.getElementById('sosViewGpsRow').style.display     = alert.gps      ? '' : 'none';
+        document.getElementById('sosViewLocationRow').style.display = alert.location ? '' : 'none';
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        return;
+      }
+    }
+  } catch(e) {}
+  // Fallback: just open SOS form
+  if (typeof openSOS === 'function') openSOS();
+}
+
+function closeSosViewModal() {
+  const modal = document.getElementById('sosViewModal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function showSosAlert(alert) {
+  if (!alert) return;
+  document.getElementById('sosViewFrom').textContent     = alert.fromName || 'Unknown';
+  document.getElementById('sosViewRef').textContent      = alert.ref || '';
+  document.getElementById('sosViewMessage').textContent  = alert.message || '—';
+  document.getElementById('sosViewLocation').textContent = alert.location || '—';
+  document.getElementById('sosViewStage').textContent    = alert.stage || '—';
+  document.getElementById('sosViewGps').textContent      = alert.gps || '—';
+  document.getElementById('sosViewTime').textContent     = alert.createdAt ? 'Received: ' + formatTimeAgo(alert.createdAt) : '';
+  document.getElementById('sosViewStageRow').style.display    = alert.stage    ? '' : 'none';
+  document.getElementById('sosViewGpsRow').style.display      = alert.gps      ? '' : 'none';
+  document.getElementById('sosViewLocationRow').style.display  = alert.location ? '' : 'none';
+  const modal = document.getElementById('sosViewModal');
+  if (modal) { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
 }
 
 function roleLabel(role) {
@@ -9720,10 +9821,9 @@ async function handleNotifClick(notifId, type, fromId) {
       if (fromId) openDMThread(fromId);
     }, 300);
   } else if (type === 'sos' || type === 'sos_alert' || type === 'emergency') {
-    // Open the SOS overlay directly
     toggleNotifDrawer();
-    if (typeof openSOS === 'function') openSOS();
-    else if (typeof openSOSPanel === 'function') openSOSPanel();
+    // Try to fetch the latest active alert and show it
+    showSosAlertFromNotif(notifId);
   } else if (type === 'schedule_change' || type === 'schedule_update') {
     navigate('schedule');
   } else if (type === 'follow_request' || type === 'follow_accepted') {
