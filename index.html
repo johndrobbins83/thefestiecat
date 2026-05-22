@@ -3508,10 +3508,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
       <!-- Desktop controls -->
       <div class="snake-dpad-wrap" style="display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:0 8px;">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
           <button class="snake-btn snake-gb-btn" id="snakeStartBtn" onclick="snakeStart()" style="margin-left:94px;">
-            <span style="font-size:13px;line-height:1;">▶/■</span>
+            <span style="font-size:13px;line-height:1;">▶</span>
             <span class="snake-gb-label">START</span>
+          </button>
+          <button class="snake-btn snake-gb-btn" id="snakePauseBtn" onclick="snakePause()" disabled style="margin-left:94px;">
+            <span style="font-size:13px;line-height:1;">⏸</span>
+            <span class="snake-gb-label">PAUSE</span>
           </button>
           <button class="snake-btn snake-gb-btn" onclick="snakeReset()" style="margin-left:94px;">
             <span style="font-size:16px;line-height:1;">↺</span>
@@ -9716,13 +9720,10 @@ async function handleNotifClick(notifId, type, fromId) {
       if (fromId) openDMThread(fromId);
     }, 300);
   } else if (type === 'sos' || type === 'sos_alert' || type === 'emergency') {
-    // SOS — open staff dashboard if staff/admin, otherwise show the SOS overlay
-    if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'employee')) {
-      navigate('staff');
-      setTimeout(function() { switchStaffTab('announcements', null); }, 300);
-    } else {
-      navigate('home');
-    }
+    // Open the SOS overlay directly
+    toggleNotifDrawer();
+    if (typeof openSOS === 'function') openSOS();
+    else if (typeof openSOSPanel === 'function') openSOSPanel();
   } else if (type === 'schedule_change' || type === 'schedule_update') {
     navigate('schedule');
   } else if (type === 'follow_request' || type === 'follow_accepted') {
@@ -11284,13 +11285,35 @@ function closeRaveworm() {
     setBtns('↺');
   }
 
-  window.snakeStart=function(){
-    if(running){running=false;clearInterval(gameLoop);setBtns('►');var mg=document.getElementById('snakeMsg');if(mg)mg.textContent='PAUSED';return;}
-    window.initGame();running=true;var mg=document.getElementById('snakeMsg');if(mg)mg.textContent='';setBtns('■');
-    gameLoop=setInterval(step,150);
-    (function rp(){if(!running)return;draw();requestAnimationFrame(rp);})();
+  window.snakeStart = function() {
+    if (running) return; // already running, ignore
+    window.initGame(); running = true;
+    var mg = document.getElementById('snakeMsg'); if (mg) mg.textContent = '';
+    document.getElementById('snakeStartBtn').disabled = true;
+    document.getElementById('snakePauseBtn').disabled = false;
+    gameLoop = setInterval(step, 150);
+    (function rp() { if (!running) return; draw(); requestAnimationFrame(rp); })();
   };
-  window.snakeReset=function(){running=false;clearInterval(gameLoop);window.initGame();setBtns('►');};
+  window.snakePause = function() {
+    if (!running) { // resume
+      running = true;
+      var mg = document.getElementById('snakeMsg'); if (mg) mg.textContent = '';
+      document.getElementById('snakePauseBtn').textContent = '⏸';
+      gameLoop = setInterval(step, 150);
+      (function rp() { if (!running) return; draw(); requestAnimationFrame(rp); })();
+    } else { // pause
+      running = false; clearInterval(gameLoop);
+      var mg = document.getElementById('snakeMsg'); if (mg) mg.textContent = 'PAUSED';
+      document.getElementById('snakePauseBtn').textContent = '▶';
+    }
+  };
+  window.snakeReset = function() {
+    running = false; clearInterval(gameLoop);
+    document.getElementById('snakeStartBtn').disabled = false;
+    var pb = document.getElementById('snakePauseBtn');
+    if (pb) { pb.disabled = true; pb.textContent = '⏸'; }
+    window.initGame();
+  };
   window.snakeDir=function(dx,dy){if(dx!==0&&dir.x!==0)return;if(dy!==0&&dir.y!==0)return;nextDir={x:dx,y:dy};};
   window.snakeDirBtn=window.snakeDir;
 
@@ -11299,9 +11322,9 @@ function closeRaveworm() {
   document.addEventListener('DOMContentLoaded',function(){
     var ov=document.getElementById('ravewormOverlay');if(!ov)return;
     var tx=0,ty=0,MS=25;
-    ov.addEventListener('touchstart',function(e){if(!ov.classList.contains('open'))return;if(e.target&&(e.target.id==='snakeStartBtn'||e.target.id==='snakeMobileStartBtn'))return;var t=e.touches[0];tx=t.clientX;ty=t.clientY;e.preventDefault();},{passive:false});
+    ov.addEventListener('touchstart',function(e){if(!ov.classList.contains('open'))return;if(e.target&&(e.target.closest('.raveworm-close')||e.target.id==='snakeStartBtn'||e.target.id==='snakePauseBtn'||e.target.id==='snakeMobileStartBtn'||e.target.closest('.snake-gb-btn')))return;var t=e.touches[0];tx=t.clientX;ty=t.clientY;e.preventDefault();},{passive:false});
     ov.addEventListener('touchmove',function(e){if(!ov.classList.contains('open'))return;e.preventDefault();},{passive:false});
-    ov.addEventListener('touchend',function(e){if(!ov.classList.contains('open'))return;if(e.target&&(e.target.id==='snakeStartBtn'||e.target.id==='snakeMobileStartBtn'))return;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty,ax=Math.abs(dx),ay=Math.abs(dy);if(Math.max(ax,ay)<MS){snakeStart();e.preventDefault();return;}if(ax>ay)window.snakeDir(dx>0?1:-1,0);else window.snakeDir(0,dy>0?1:-1);e.preventDefault();},{passive:false});
+    ov.addEventListener('touchend',function(e){if(!ov.classList.contains('open'))return;if(e.target&&(e.target.closest('.raveworm-close')||e.target.id==='snakeStartBtn'||e.target.id==='snakePauseBtn'||e.target.id==='snakeMobileStartBtn'||e.target.closest('.snake-gb-btn')))return;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty,ax=Math.abs(dx),ay=Math.abs(dy);if(Math.max(ax,ay)<MS){if(running)snakePause();e.preventDefault();return;}if(ax>ay)window.snakeDir(dx>0?1:-1,0);else window.snakeDir(0,dy>0?1:-1);e.preventDefault();},{passive:false});
   });
 
   document.addEventListener('keydown',function(e){
