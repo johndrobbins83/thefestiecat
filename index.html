@@ -1331,25 +1331,17 @@ body{
   max-height:calc(100vh - 24px);
   display:flex;flex-direction:column;overflow:hidden;}
 
-/* Mobile: slide up from bottom, sit above the nav bar */
+/* Mobile: slide up from bottom */
 @media(max-width:767px){
   .edit-modal-overlay{
     align-items:flex-end;
     padding:0;
-    inset:0 !important;
   }
   .edit-modal{
     max-width:100%;
     border-radius:16px 16px 0 0;
     border-bottom:none;
-    max-height:calc(100% - env(safe-area-inset-top, 44px) - 20px);
-    /* Add bottom padding equal to nav height so content clears it */
-    padding-bottom:0;
-  }
-  .edit-modal-footer{
-    padding:14px 20px;
-    /* Extra bottom padding to push above nav */
-    padding-bottom:calc(72px + env(safe-area-inset-bottom, 0px) + 8px) !important;
+    max-height:90vh;
   }
 }
 .edit-modal-header{display:flex;align-items:center;justify-content:space-between;
@@ -6943,6 +6935,15 @@ function adminEditArtist(key) {
   }
   document.getElementById('artistEditModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  if (window.innerWidth <= 767) {
+    const nav = document.querySelector('.bottom-nav');
+    const navH = nav ? nav.getBoundingClientRect().height : 80;
+    const modal = document.getElementById('artistEditModal');
+    const footer = modal && modal.querySelector('.edit-modal-footer');
+    if (footer) footer.style.paddingBottom = (navH + 12) + 'px';
+    const inner = modal && modal.querySelector('.edit-modal');
+    if (inner) inner.style.maxHeight = (window.innerHeight - navH - 20) + 'px';
+  }
 }
 
 function adminNewArtist() {
@@ -9740,6 +9741,15 @@ function openEditProfileModal() {
   pendingBannerFile = null; pendingEditAvatarFile = null;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
+  // On mobile, push footer above nav bar
+  if (window.innerWidth <= 767) {
+    const nav = document.querySelector('.bottom-nav');
+    const navH = nav ? nav.getBoundingClientRect().height : 80;
+    const footer = modal.querySelector('.edit-modal-footer');
+    if (footer) footer.style.paddingBottom = (navH + 12) + 'px';
+    const inner = modal.querySelector('.edit-modal');
+    if (inner) inner.style.maxHeight = (window.innerHeight - navH - 20) + 'px';
+  }
 }
 
 function closeEditProfileModal() {
