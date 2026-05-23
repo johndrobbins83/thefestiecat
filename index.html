@@ -2505,6 +2505,17 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <span class="empty-icon">⭐</span>No artists saved yet.<br>Tap + next to any artist to add them.
       </div>
     </div>
+    <!-- Share Schedule -->
+    <div class="cal-export-section" id="shareSchedSection" style="display:none;">
+      <div class="cal-export-title">📤 Share My Lineup</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="shareSchedFriendSelect" class="edit-select" style="flex:1;min-width:140px;padding:8px 10px;font-size:13px;">
+          <option value="">— Pick a friend —</option>
+        </select>
+        <button class="cal-btn gcal" style="flex-shrink:0;" onclick="sendScheduleToFriend()">Send ✉</button>
+      </div>
+      <div id="shareSchedStatus" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
+    </div>
     <!-- Calendar export -->
     <div class="cal-export-section" id="calExportSection">
       <div class="cal-export-title">Export to Calendar</div>
@@ -4001,6 +4012,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <input class="auth-input" id="editFaveArtists" type="text" maxlength="200" placeholder="Roni Size, Spor..."></div>
       <div class="auth-field"><label class="auth-label">First Rave</label>
         <input class="auth-input" id="editFirstRave" type="text" maxlength="100"></div>
+      <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px;">Social Links</div>
+      <div class="auth-field"><label class="auth-label">📸 Instagram</label>
+        <input class="auth-input" id="editInstagram" type="url" placeholder="https://instagram.com/yourhandle"></div>
+      <div class="auth-field"><label class="auth-label">📘 Facebook</label>
+        <input class="auth-input" id="editFacebook" type="url" placeholder="https://facebook.com/yourname"></div>
+      <div class="auth-field"><label class="auth-label">🎵 TikTok</label>
+        <input class="auth-input" id="editTiktok" type="url" placeholder="https://tiktok.com/@yourhandle"></div>
       <div id="editProfileStatus" style="font-size:12px;color:var(--text-muted);margin-bottom:8px;"></div>
       <button class="auth-btn" id="editProfileSaveBtn" onclick="saveProfileEdits()">Save Changes</button>
     </div>
@@ -4516,30 +4534,66 @@ function updateNavActive(page) {
 
 /* ── My Schedule Widget (home) ── */
 function renderMySchedWidget() {
-  const mine = getMySchedule();
-  const listEl = document.getElementById('mySchedList');
+  const mine  = getMySchedule();
+  const listEl  = document.getElementById('mySchedList');
   const emptyEl = document.getElementById('mySchedEmpty');
   if (!listEl) return;
   if (!mine.length) { listEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
+
+  // Determine current festival day (Fri=Jul17, Sat=Jul18, Sun=Jul19)
+  // Before festival starts, show Friday. After Sunday, show Sunday.
+  const now = new Date();
+  const festStart = new Date('2026-07-17T00:00:00-04:00');
+  const festEnd   = new Date('2026-07-20T06:00:00-04:00');
+  let todayKey = 'Fri'; // default to Friday
+  if (now >= festStart && now < festEnd) {
+    const day = now.toLocaleDateString('en-US', { timeZone:'America/New_York', weekday:'short' });
+    if (day === 'Sat') todayKey = 'Sat';
+    else if (day === 'Sun') todayKey = 'Sun';
+    else todayKey = 'Fri';
+  }
+
+  const STAGE_COLORS = {
+    'DNB Stage':'#c084fc','Oasis Stage':'#00d4c8',
+    'Atrium':'#f59e0b','Atrium (House)':'#f59e0b',
+    'Beach Stage':'#06b6d4','Locals Stage':'#84cc16'
+  };
+
+  // Filter: only today's saved artists with confirmed times
+  const todayArtists = mine
+    .filter(k => {
+      const a = artists[k];
+      return a && a.day === todayKey && a.time && a.time !== 'TBA';
+    })
+    .sort((a, b) => timeToSort(artists[a] && artists[a].time) - timeToSort(artists[b] && artists[b].time));
+
+  if (!todayArtists.length) {
+    listEl.innerHTML = '';
+    emptyEl.style.display = 'block';
+    // Update empty message to be day-specific
+    const emptyMsg = emptyEl.querySelector('p') || emptyEl;
+    if (emptyMsg) emptyMsg.innerHTML = emptyMsg.innerHTML.replace(
+      /Go to.*build your lineup\./,
+      'No confirmed sets saved for today. Go to <a onclick="navigate(\'schedule\')" style="color:var(--teal-glow);cursor:pointer;">Schedule</a> and tap <strong>+</strong> to add artists.'
+    );
+    return;
+  }
+
   emptyEl.style.display = 'none';
-  const days = {Fri:[],Sat:[],Sun:[],TBA:[]};
-  mine.forEach(k => { const a = artists[k]; if (a) (days[a.day]||days.TBA).push(k); });
-  const dayLabels = {Fri:'🎉 Friday · Jul 17',Sat:'🎉 Saturday · Jul 18',Sun:'🎉 Sunday · Jul 19',TBA:'📌 Day TBA'};
-  const dotColors = {'DNB Stage':'#9b3dff','Oasis Stage':'#00d4c8'};
-  let html = '';
-  Object.entries(days).forEach(([day,keys]) => {
-    if (!keys.length) return;
-    html += `<div class="sched-stage-header">${dayLabels[day]}</div>`;
-    keys.forEach(key => {
-      const a = artists[key]; if (!a) return;
-      const dot = dotColors[a.stage]||'#888';
-      html += `<div class="schedule-item" onclick="openArtist('${esc(key)}')">`+
-        `<div class="sched-time" style="font-size:12px;font-weight:700;color:var(--teal-glow);min-width:44px;">${a.time||'TBA'}</div>`+
-        `<div class="sched-dot" style="background:${dot};width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>`+
-        `<div class="sched-info" style="flex:1;"><div class="sched-artist">${key}</div><div class="sched-stage">${a.stage}</div></div>`+
-        `<span class="sched-arrow">›</span></div>`;
-    });
+
+  const dayLabel = {Fri:'Friday · Jul 17',Sat:'Saturday · Jul 18',Sun:'Sunday · Jul 19'}[todayKey];
+  let html = `<div class="sched-stage-header">⭐ ${dayLabel}</div>`;
+
+  todayArtists.forEach(key => {
+    const a = artists[key]; if (!a) return;
+    const dot = STAGE_COLORS[a.stage] || '#888';
+    html += `<div class="schedule-item" onclick="openArtist('${esc(key)}')">`+
+      `<div class="sched-time" style="font-size:12px;font-weight:700;color:var(--teal-glow);min-width:52px;">${a.time}</div>`+
+      `<div style="background:${dot};width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>`+
+      `<div style="flex:1;"><div class="sched-artist">${key}</div><div class="sched-stage">${a.stage||''}</div></div>`+
+      `<span class="sched-arrow">›</span></div>`;
   });
+
   listEl.innerHTML = html;
 }
 
@@ -4752,8 +4806,14 @@ function renderMySchedPage() {
   var mine = getMySchedule();
   var listEl  = document.getElementById('mySchedPageList');
   var emptyEl = document.getElementById('mySchedPageEmpty');
-  if (!mine.length) { listEl.innerHTML=''; emptyEl.style.display='block'; return; }
+  var shareSection = document.getElementById('shareSchedSection');
+  if (!mine.length) {
+    listEl.innerHTML=''; emptyEl.style.display='block';
+    if (shareSection) shareSection.style.display='none';
+    return;
+  }
   emptyEl.style.display = 'none';
+  if (shareSection) { shareSection.style.display='block'; populateShareFriends(); }
 
   function timeToMins(t) {
     if (!t || t==='TBA') return 9999;
@@ -4875,6 +4935,74 @@ function setView(v) {
 }
 
 /* ── Calendar Export ── */
+async function populateShareFriends() {
+  const sel = document.getElementById('shareSchedFriendSelect');
+  if (!sel || !currentUser) return;
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/friends', { headers: {'Authorization':'Bearer '+token} });
+    if (!res.ok) return;
+    const d = await res.json();
+    const friends = d.friends || [];
+    sel.innerHTML = '<option value="">— Pick a friend —</option>' +
+      friends.map(f => `<option value="${f.id}" data-handle="${f.handle||''}">${f.handle || f.name || 'User'}</option>`).join('');
+  } catch(e) {}
+}
+
+async function sendScheduleToFriend() {
+  const sel    = document.getElementById('shareSchedFriendSelect');
+  const status = document.getElementById('shareSchedStatus');
+  const toId   = sel?.value;
+  if (!toId) { if (status) { status.textContent = 'Pick a friend first'; status.style.color = 'var(--pink-coral)'; } return; }
+
+  const mine = getMySchedule();
+  if (!mine.length) { if (status) { status.textContent = 'Your schedule is empty!'; status.style.color = 'var(--pink-coral)'; } return; }
+
+  // Build a readable schedule message
+  const STAGE_EMOJI = { 'DNB Stage':'🟣','Atrium':'🟠','Atrium (House)':'🟠','Beach Stage':'🔵','Locals Stage':'🟢','Oasis Stage':'🔵' };
+  const dayGroups = { Fri:[], Sat:[], Sun:[], TBA:[] };
+  mine.forEach(k => {
+    const a = artists[k]; if (!a) return;
+    (dayGroups[a.day]||dayGroups.TBA).push({ name:k, time:a.time||'TBA', stage:a.stage||'' });
+  });
+
+  let msg = `☠ My Sunken Suite Lineup:\n\n`;
+  const dayLabels = { Fri:'📅 Friday Jul 17', Sat:'📅 Saturday Jul 18', Sun:'📅 Sunday Jul 19', TBA:'📌 TBA' };
+  Object.entries(dayGroups).forEach(([day, sets]) => {
+    if (!sets.length) return;
+    sets.sort((a,b) => timeToSort(a.time) - timeToSort(b.time));
+    msg += dayLabels[day] + '\n';
+    sets.forEach(s => {
+      const em = STAGE_EMOJI[s.stage] || '🎵';
+      msg += `${em} ${s.name} — ${s.time}${s.stage ? ' · ' + s.stage : ''}\n`;
+    });
+    msg += '\n';
+  });
+  msg += `See you on the dance floor! 🎉`;
+
+  // Send as DM
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    if (status) { status.textContent = 'Sending…'; status.style.color = 'var(--text-muted)'; }
+    const res = await fetch(AUTH_URL + '/dm/' + toId, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ text: msg })
+    });
+    if (res.ok) {
+      const handle = sel.options[sel.selectedIndex]?.dataset?.handle || 'your friend';
+      if (status) { status.textContent = '✓ Sent to @' + handle + '!'; status.style.color = '#4ade80'; }
+      showToast('📤 Schedule sent to @' + handle);
+      sel.value = '';
+    } else {
+      const d = await res.json();
+      if (status) { status.textContent = d.error || 'Could not send'; status.style.color = 'var(--pink-coral)'; }
+    }
+  } catch(e) {
+    if (status) { status.textContent = 'Error: ' + e.message; status.style.color = 'var(--pink-coral)'; }
+  }
+}
+
 function exportGCal() {
   const mine = getMySchedule();
   if (!mine.length) { showToast('No artists in your schedule yet!'); return; }
@@ -9419,6 +9547,19 @@ async function initProfile() {
     '<div class="profile-cards">'+(musicTags?'<div class="profile-card"><div class="profile-card-title">&#x1F3B5; Music Styles</div><div class="profile-card-content">'+musicTags+'</div></div>':'')+
     (artistTags?'<div class="profile-card"><div class="profile-card-title">&#x2B50; Favorite Artists</div><div class="profile-card-content">'+artistTags+'</div></div>':'')+
     (user.firstRave?'<div class="profile-card"><div class="profile-card-title">&#x1F389; First Rave</div><div class="profile-card-content">'+escapeHTML(user.firstRave)+'</div></div>':'')+
+    ((user.instagram||user.facebook||user.tiktok)?
+      '<div class="profile-card"><div class="profile-card-title">🔗 Socials</div><div class="profile-card-content" style="display:flex;gap:10px;flex-wrap:wrap;">' +
+      (user.instagram?'<a href="'+escapeHTML(user.instagram)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(155,61,255,0.1);border:1px solid rgba(155,61,255,0.25);color:#c084fc;text-decoration:none;font-size:12px;font-weight:700;">📸 Instagram</a>':'') +
+      (user.facebook?'<a href="'+escapeHTML(user.facebook)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);color:#60a5fa;text-decoration:none;font-size:12px;font-weight:700;">📘 Facebook</a>':'') +
+      (user.tiktok?'<a href="'+escapeHTML(user.tiktok)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(0,212,200,0.1);border:1px solid rgba(0,212,200,0.25);color:var(--teal-glow);text-decoration:none;font-size:12px;font-weight:700;">🎵 TikTok</a>':'') +
+      '</div></div>':'')+
+    (!isOwnProfile && user.mutualFriends && user.mutualFriends.length ?
+      '<div class="profile-card"><div class="profile-card-title">🤝 Mutual Crew</div><div class="profile-card-content"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+      user.mutualFriends.map(function(f){
+        var av = f.profilePic ? '<img src="'+f.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">' : (f.handle?.[0]||'?').toUpperCase();
+        return '<div onclick="navigateToProfile(\''+f.id+'\')" title="@'+escapeHTML(f.handle)+'" style="position:relative;width:40px;height:40px;border-radius:50%;background:'+(f.avatarColor||'#9b3dff')+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer;overflow:hidden;border:2px solid rgba(255,255,255,0.15);flex-shrink:0;">'+av+'</div>';
+      }).join('') +
+      '</div></div></div>' : '') +
     (isOwnProfile&&savedArtists.length ? (function(){ var c=savedArtists.map(function(a){return '<div class="profile-artist-chip" onclick="openArtist(\''+esc(a.key)+'\')"><div class="profile-artist-avatar" style="background:'+a.color+';">'+a.initials+'</div><div class="profile-artist-name">'+a.key+'</div></div>';}).join('');if(mine.length>8)c+='<div class="profile-artist-chip" style="color:var(--text-muted);" onclick="navigate(\'schedule\')">+'+(mine.length-8)+' more</div>';return '<div class="profile-card"><div class="profile-card-title">My Schedule</div><div class="profile-artists-grid">'+c+'</div></div>';})() : '')
     editForm+'</div>';
 }
@@ -9473,6 +9614,10 @@ function openEditProfileModal() {
   document.getElementById('editMusicStyles').value = currentUser.musicStyles || '';
   document.getElementById('editFaveArtists').value = currentUser.favoriteArtists || '';
   document.getElementById('editFirstRave').value = currentUser.firstRave || '';
+  // Social links
+  const igEl = document.getElementById('editInstagram'); if (igEl) igEl.value = currentUser.instagram || '';
+  const fbEl = document.getElementById('editFacebook');  if (fbEl) fbEl.value = currentUser.facebook  || '';
+  const ttEl = document.getElementById('editTiktok');    if (ttEl) ttEl.value = currentUser.tiktok    || '';
   document.getElementById('editProfileStatus').textContent = '';
   const bannerImg = document.getElementById('editBannerImg');
   if (bannerImg) bannerImg.innerHTML = currentUser.bannerPic ? '<img src="'+currentUser.bannerPic+'" style="width:100%;height:100%;object-fit:cover;">' : '';
@@ -9535,6 +9680,9 @@ async function saveProfileEdits() {
   const musicStyles     = (document.getElementById('editMusicStyles')?.value||'').trim();
   const favoriteArtists = (document.getElementById('editFaveArtists')?.value||'').trim();
   const firstRave       = (document.getElementById('editFirstRave')?.value||'').trim();
+  const instagram       = (document.getElementById('editInstagram')?.value||'').trim();
+  const facebook        = (document.getElementById('editFacebook')?.value||'').trim();
+  const tiktok          = (document.getElementById('editTiktok')?.value||'').trim();
   const statusEl        = document.getElementById('editProfileStatus');
   const saveBtn         = document.getElementById('editProfileSaveBtn');
   if (!handle || handle.length < 3) {
@@ -9563,6 +9711,7 @@ async function saveProfileEdits() {
       method: 'PUT',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
       body: JSON.stringify({ handle, bio, hometown, musicStyles, favoriteArtists, firstRave,
+        instagram, facebook, tiktok,
         avatarColor: currentUser.avatarColor||'#9b3dff', profilePic, bannerPic })
     });
     const data = await res.json();
@@ -9606,6 +9755,12 @@ async function saveProfileEdits() {
             (musicTags?'<div class="profile-card"><div class="profile-card-title">&#x1F3B5; Music Styles</div><div class="profile-card-content">'+musicTags+'</div></div>':'')+
             (artistTags?'<div class="profile-card"><div class="profile-card-title">&#x2B50; Favorite Artists</div><div class="profile-card-content">'+artistTags+'</div></div>':'')+
             (savedUser.firstRave?'<div class="profile-card"><div class="profile-card-title">&#x1F389; First Rave</div><div class="profile-card-content">'+escapeHTML(savedUser.firstRave)+'</div></div>':'')+
+            ((savedUser.instagram||savedUser.facebook||savedUser.tiktok)?
+              '<div class="profile-card"><div class="profile-card-title">🔗 Socials</div><div class="profile-card-content" style="display:flex;gap:10px;flex-wrap:wrap;">' +
+              (savedUser.instagram?'<a href="'+escapeHTML(savedUser.instagram)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(155,61,255,0.1);border:1px solid rgba(155,61,255,0.25);color:#c084fc;text-decoration:none;font-size:12px;font-weight:700;">📸 Instagram</a>':'') +
+              (savedUser.facebook?'<a href="'+escapeHTML(savedUser.facebook)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);color:#60a5fa;text-decoration:none;font-size:12px;font-weight:700;">📘 Facebook</a>':'') +
+              (savedUser.tiktok?'<a href="'+escapeHTML(savedUser.tiktok)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(0,212,200,0.1);border:1px solid rgba(0,212,200,0.25);color:var(--teal-glow);text-decoration:none;font-size:12px;font-weight:700;">🎵 TikTok</a>':'') +
+              '</div></div>':'')+
             '</div>';
         }
       }
