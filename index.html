@@ -1336,7 +1336,6 @@ body{
   .edit-modal-overlay{
     align-items:flex-end;
     padding:0;
-    /* End the overlay above the nav so the modal never goes behind it */
     bottom:calc(72px + env(safe-area-inset-bottom, 0px)) !important;
     top:0 !important;
   }
@@ -1347,7 +1346,8 @@ body{
     max-height:100%;
   }
   .edit-modal-footer{
-    padding-bottom:16px;
+    padding:16px 20px 20px;
+    flex-shrink:0;
   }
 }
 .edit-modal-header{display:flex;align-items:center;justify-content:space-between;
@@ -1375,7 +1375,8 @@ body{
   outline:none;resize:vertical;min-height:80px;width:100%;}
 .edit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .edit-modal-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.07);
-  display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;background:#0a0a0a;}
+  display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;background:#0a0a0a;
+  position:sticky;bottom:0;z-index:2;}
 
 /* User management table */
 .user-table{width:100%;border-collapse:collapse;}
