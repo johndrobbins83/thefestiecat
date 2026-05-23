@@ -218,9 +218,9 @@ body{
 @media(min-width:768px){.page{padding:24px 32px 40px;}}
 @media(min-width:768px){
   #getTicketsBtn{
-    padding:14px 28px !important;
-    font-size:14px !important;
-    letter-spacing:1.5px !important;
+    padding:16px 32px !important;
+    font-size:13px !important;
+    letter-spacing:2px !important;
     border-radius:3px !important;
     white-space:nowrap;
   }
@@ -1330,6 +1330,8 @@ body{
   width:100%;max-width:540px;
   max-height:calc(100vh - 24px);
   display:flex;flex-direction:column;overflow:hidden;}
+
+/* Mobile: slide up from bottom, sit above the nav bar */
 @media(max-width:767px){
   .edit-modal-overlay{
     align-items:flex-end;
@@ -1339,10 +1341,18 @@ body{
     max-width:100%;
     border-radius:16px 16px 0 0;
     border-bottom:none;
-    max-height:calc(100vh - 90px - env(safe-area-inset-top, 44px));
+    /* Sit above nav (72px) + safe area bottom + a touch of breathing room */
+    margin-bottom:calc(72px + env(safe-area-inset-bottom, 0px) + 8px);
+    /* Never taller than viewport minus nav, status bar, and breathing room */
+    max-height:calc(100svh
+      - 72px
+      - env(safe-area-inset-bottom, 0px)
+      - env(safe-area-inset-top, 44px)
+      - 24px
+    );
   }
   .edit-modal-footer{
-    padding-bottom:calc(16px + env(safe-area-inset-bottom, 20px));
+    padding-bottom:16px;
   }
 }
 .edit-modal-header{display:flex;align-items:center;justify-content:space-between;
@@ -2400,9 +2410,9 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
       <a href="https://theticketing.co/e/sunkensuite2026?promoLink=GR0J6UYW" target="_blank" rel="noopener"
          id="getTicketsBtn"
-         style="flex-shrink:0;padding:8px 12px;background:var(--gold-bright);color:#000;
+         style="flex-shrink:0;padding:10px 16px;background:var(--gold-bright);color:#000;
                 font-weight:900;font-size:11px;text-decoration:none;text-transform:uppercase;
-                letter-spacing:0.5px;line-height:1.2;text-align:center;border-radius:2px;
+                letter-spacing:0.5px;line-height:1.3;text-align:center;border-radius:2px;
                 transition:filter .15s;"
          onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
         🎟 Get<br>Tickets
@@ -2715,19 +2725,19 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── CHECKLIST PAGE ── -->
   <div class="page" id="page-checklist">
-    <div class="page-header"><div class="page-title">✅ Checklist</div><div class="page-sub">Packing · Plans · To-Dos · All in one place</div></div>
+    <div class="page-header"><div class="page-title">Checklist</div><div class="page-sub">Packing · Plans · To-Dos · All in one place</div></div>
     <div class="progress-wrap">
       <div class="progress-row"><span class="progress-label">Overall progress</span><span class="progress-count" id="progressCount">0 / 0</span></div>
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
     </div>
     <div class="cat-tabs" id="catTabs">
       <button class="cat-tab active" data-cat="all"      onclick="setChecklistCat('all',this)">All <span class="tab-count" id="count-all">0</span></button>
-      <button class="cat-tab"        data-cat="packing"  onclick="setChecklistCat('packing',this)">🧳 Packing <span class="tab-count" id="count-packing">0</span></button>
-      <button class="cat-tab"        data-cat="outfits"  onclick="setChecklistCat('outfits',this)">👗 Outfits <span class="tab-count" id="count-outfits">0</span></button>
-      <button class="cat-tab"        data-cat="supplies" onclick="setChecklistCat('supplies',this)">🔧 Supplies <span class="tab-count" id="count-supplies">0</span></button>
-      <button class="cat-tab"        data-cat="food"     onclick="setChecklistCat('food',this)">🍔 Food <span class="tab-count" id="count-food">0</span></button>
-      <button class="cat-tab"        data-cat="plans"    onclick="setChecklistCat('plans',this)">📋 Plans <span class="tab-count" id="count-plans">0</span></button>
-      <button class="cat-tab"        data-cat="todo"     onclick="setChecklistCat('todo',this)">✅ To-Do <span class="tab-count" id="count-todo">0</span></button>
+      <button class="cat-tab"        data-cat="packing"  onclick="setChecklistCat('packing',this)">Packing <span class="tab-count" id="count-packing">0</span></button>
+      <button class="cat-tab"        data-cat="outfits"  onclick="setChecklistCat('outfits',this)">Outfits <span class="tab-count" id="count-outfits">0</span></button>
+      <button class="cat-tab"        data-cat="supplies" onclick="setChecklistCat('supplies',this)">Supplies <span class="tab-count" id="count-supplies">0</span></button>
+      <button class="cat-tab"        data-cat="food"     onclick="setChecklistCat('food',this)">Food <span class="tab-count" id="count-food">0</span></button>
+      <button class="cat-tab"        data-cat="plans"    onclick="setChecklistCat('plans',this)">Plans <span class="tab-count" id="count-plans">0</span></button>
+      <button class="cat-tab"        data-cat="todo"     onclick="setChecklistCat('todo',this)">To-Do <span class="tab-count" id="count-todo">0</span></button>
     </div>
     <div class="add-form">
       <div class="add-form-inner">
@@ -2737,12 +2747,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </div>
         <div class="add-meta-row">
           <select class="add-select" id="clAddCat">
-            <option value="packing">🧳 Packing</option>
-            <option value="outfits">👗 Outfits</option>
-            <option value="supplies">🔧 Supplies</option>
-            <option value="food">🍔 Food &amp; Drink</option>
-            <option value="plans">📋 Plans</option>
-            <option value="todo">✅ To-Do</option>
+            <option value="packing">Packing</option>
+            <option value="outfits">Outfits</option>
+            <option value="supplies">Supplies</option>
+            <option value="food">Food &amp; Drink</option>
+            <option value="plans">Plans</option>
+            <option value="todo">To-Do</option>
           </select>
           <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);cursor:pointer;white-space:nowrap;">
             <input type="checkbox" id="clIsErrand" onchange="toggleErrandFields(this.checked)" style="accent-color:var(--gold-bright);">
@@ -2756,12 +2766,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <input class="add-date-input" id="clAddTimeStart" type="time" title="Start time" style="flex:1;min-width:90px;">
             <input class="add-date-input" id="clAddTimeEnd" type="time" title="End time" style="flex:1;min-width:90px;">
           </div>
-          <div style="font-size:10px;color:var(--teal-glow);margin-top:4px;">📅 Will be added to your personal schedule</div>
+          <div style="font-size:10px;color:var(--teal-glow);margin-top:4px;">Will be added to your personal schedule</div>
         </div>
       </div>
     </div>
     <div class="preset-section" id="presetSection">
-      <div class="preset-title">✨ Quick-add preset packs</div>
+      <div class="preset-title">Quick-add preset packs</div>
       <div class="preset-grid">
         <button class="preset-pack" onclick="addPreset('festival-basics')">Festival Basics</button>
         <button class="preset-pack" onclick="addPreset('outfit-essentials')">Outfit Checklist</button>
@@ -4603,7 +4613,7 @@ function renderMySchedWidget() {
   emptyEl.style.display = 'none';
 
   const dayLabel = {Fri:'Friday · Jul 17',Sat:'Saturday · Jul 18',Sun:'Sunday · Jul 19'}[todayKey];
-  let html = `<div class="sched-stage-header">⭐ ${dayLabel}</div>`;
+  let html = `<div class="sched-stage-header">${dayLabel}</div>`;
 
   todayArtists.forEach(key => {
     const a = artists[key]; if (!a) return;
@@ -5449,7 +5459,7 @@ function setChecklistCat(cat, btn) {
 function renderChecklist() {
   const allItems = getChecklist();
   const cats = ['packing','outfits','supplies','tech','food','plans','todo'];
-  const catLabel = {packing:'🧳 Packing',outfits:'👗 Outfits',supplies:'🔧 Supplies',tech:'📱 Tech & Charging',food:'🍔 Food & Drink',plans:'📋 Plans',todo:'✅ To-Do'};
+  const catLabel = {packing:'Packing',outfits:'Outfits',supplies:'Supplies',tech:'Tech & Charging',food:'Food & Drink',plans:'Plans',todo:'To-Do'};
   const total = allItems.length, done = allItems.filter(i=>i.done).length;
   document.getElementById('progressCount').textContent = `${done} / ${total}`;
   document.getElementById('progressFill').style.width = total ? Math.round(done/total*100)+'%' : '0%';
