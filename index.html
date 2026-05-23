@@ -543,10 +543,10 @@ body{
 .tg-tba-section{padding:8px 4px 4px;border-top:1px solid rgba(255,255,255,0.06);margin-top:8px;}
 .tg-tba-heading{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;padding:0 4px 5px;}
 /* Calendar export */
-.cal-export-section{margin-top:20px;background:rgba(10,10,10,0.85);border:1px solid rgba(0,212,200,0.15);
-  border-radius:0;padding:14px;}
-.cal-export-title{font-size:13px;font-weight:800;color:var(--gold-bright);letter-spacing:1px;
-  text-transform:uppercase;margin-bottom:10px;}
+.cal-export-section{margin-top:16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);
+  border-radius:0;padding:10px 12px;}
+.cal-export-title{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:8px;opacity:0.6;}
 .cal-btn-row{display:flex;gap:8px;flex-wrap:wrap;}
 .cal-btn{flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:7px;
   padding:10px 12px;border-radius:0;border:none;cursor:pointer;font-family:'Poppins',sans-serif;
@@ -2537,10 +2537,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <!-- Calendar export -->
     <div class="cal-export-section" id="calExportSection">
-      <div class="cal-export-title">Export to Calendar</div>
+      <div class="cal-export-title">Export</div>
       <div class="cal-btn-row">
-        <button class="cal-btn gcal"  onclick="exportGCal()"><span style="background:#4285f4;color:#fff;border-radius:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;">G</span>Google Cal</button>
-        <button class="cal-btn apple" onclick="exportICS()">Apple / .ics</button>
+        <button class="cal-btn gcal" onclick="exportGCal()" style="padding:6px 10px;font-size:11px;min-width:0;"><span style="background:#4285f4;color:#fff;border-radius:0;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">G</span>Google Cal</button>
+        <button class="cal-btn apple" onclick="exportICS()" style="padding:6px 10px;font-size:11px;min-width:0;">Apple / .ics</button>
+        <button class="cal-btn" onclick="downloadSchedulePDF()" style="padding:6px 10px;font-size:11px;min-width:0;background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.25);color:var(--gold-bright);">⬇ PDF</button>
       </div>
     </div>
   </div><!-- /page-schedule -->
@@ -5046,6 +5047,64 @@ async function sendScheduleToFriend() {
   if (sent>0) showToast('\uD83D\uDCE4 Schedule sent to '+sent+' friend'+(sent>1?'s':''));
 }
 
+
+function downloadSchedulePDF() {
+  const mine = getMySchedule();
+  if (!mine.length) { showToast('Your schedule is empty — add some artists first!'); return; }
+
+  const STAGE_COLORS = {
+    'DNB Stage':'#c084fc','Oasis Stage':'#00d4c8',
+    'Atrium':'#f59e0b','Atrium (House)':'#f59e0b',
+    'Beach Stage':'#06b6d4','Locals Stage':'#84cc16'
+  };
+
+  const dayGroups = { Fri:[], Sat:[], Sun:[], TBA:[] };
+  mine.forEach(function(k) {
+    var a = artists[k]; if (!a) return;
+    var day = (a.day||'').trim();
+    day = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+    if (day==='Fri'||day==='Sat'||day==='Sun') dayGroups[day].push(k);
+    else dayGroups.TBA.push(k);
+  });
+  Object.keys(dayGroups).forEach(function(d) {
+    dayGroups[d].sort(function(a,b){ return timeToSort(artists[a]&&artists[a].time) - timeToSort(artists[b]&&artists[b].time); });
+  });
+
+  const dayLabels = { Fri:'Friday — July 17', Sat:'Saturday — July 18', Sun:'Sunday — July 19', TBA:'Day TBA' };
+
+  let rows = '';
+  ['Fri','Sat','Sun','TBA'].forEach(function(day) {
+    if (!dayGroups[day].length) return;
+    rows += '<tr><td colspan="3" style="background:#111;color:#f5c842;font-weight:900;font-size:13px;padding:10px 12px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid #f5c842;">' + dayLabels[day] + '</td></tr>';
+    dayGroups[day].forEach(function(key) {
+      var a = artists[key]; if (!a) return;
+      var color = STAGE_COLORS[a.stage] || '#888';
+      rows += '<tr>' +
+        '<td style="padding:8px 12px;font-weight:700;color:#fff;border-bottom:1px solid #222;">' + key + '</td>' +
+        '<td style="padding:8px 12px;color:' + color + ';font-weight:600;border-bottom:1px solid #222;">' + (a.stage||'') + '</td>' +
+        '<td style="padding:8px 12px;color:#00d4c8;font-family:monospace;border-bottom:1px solid #222;">' + (a.time||'TBA') + '</td>' +
+      '</tr>';
+    });
+  });
+
+  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sunken Suite · My Schedule</title>' +
+    '<style>body{background:#000;color:#fff;font-family:Arial,sans-serif;margin:0;padding:24px;}' +
+    'h1{color:#f5c842;font-size:22px;margin-bottom:4px;}' +
+    'p{color:#888;font-size:13px;margin-bottom:20px;}' +
+    'table{width:100%;border-collapse:collapse;}' +
+    '@media print{body{background:#fff;color:#000;}h1{color:#000;}}</style>' +
+    '</head><body>' +
+    '<h1>☠ Sunken Suite · The Mutiny 2026</h1>' +
+    '<p>My Personal Schedule · July 17–19, 2026 · Sturbridge Host Hotel, MA</p>' +
+    '<table>' + rows + '</table>' +
+    '<p style="margin-top:24px;font-size:11px;color:#555;">Generated from the Sunken Suite app · Powered by The Promo Cat 2026</p>' +
+    '</body></html>';
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(function() { win.print(); }, 400);
+}
 
 function exportGCal() {
   const mine = getMySchedule();
