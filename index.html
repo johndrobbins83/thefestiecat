@@ -216,6 +216,16 @@ body{
   transition:opacity .2s ease,transform .2s ease;transform:translateX(24px);
 }
 @media(min-width:768px){.page{padding:24px 32px 40px;}}
+@media(min-width:768px){
+  #getTicketsBtn{
+    padding:14px 28px !important;
+    font-size:14px !important;
+    letter-spacing:1.5px !important;
+    border-radius:3px !important;
+    white-space:nowrap;
+  }
+  #getTicketsBtn br{display:none;}
+}
 @media(max-width:767px){.page{padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px))!important;}}
 #page-artists{padding-top:0;}
 .page.active{opacity:1;pointer-events:all;transform:translateX(0);}
@@ -424,9 +434,18 @@ body{
 .stage-pill{padding:5px 12px;border-radius:0;border:1px solid rgba(255,255,255,0.1);
   background:transparent;color:var(--text-muted);font-family:'Poppins',sans-serif;
   font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
-.stage-pill.on.all{background:rgba(245,200,66,0.15);border-color:rgba(245,200,66,0.4);color:var(--gold-bright);}
-.stage-pill.on.dnb{background:rgba(155,61,255,0.15);border-color:rgba(155,61,255,0.4);color:#c084fc;}
-.stage-pill.on.oasis{background:rgba(0,212,200,0.15);border-color:rgba(0,212,200,0.4);color:var(--teal-glow);}
+.stage-pill.all   {color:rgba(245,200,66,0.45);  border-color:rgba(245,200,66,0.15);}
+.stage-pill.dnb   {color:rgba(192,132,252,0.45); border-color:rgba(192,132,252,0.15);}
+.stage-pill.atrium{color:rgba(245,158,11,0.45);  border-color:rgba(245,158,11,0.15);}
+.stage-pill.beach {color:rgba(6,182,212,0.45);   border-color:rgba(6,182,212,0.15);}
+.stage-pill.locals{color:rgba(132,204,22,0.45);  border-color:rgba(132,204,22,0.15);}
+.stage-pill.oasis {color:rgba(0,212,200,0.45);   border-color:rgba(0,212,200,0.15);}
+.stage-pill.on.all   {background:rgba(245,200,66,0.15); border-color:rgba(245,200,66,0.5);  color:var(--gold-bright);}
+.stage-pill.on.dnb   {background:rgba(192,132,252,0.15);border-color:rgba(192,132,252,0.5); color:#c084fc;}
+.stage-pill.on.atrium{background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.5);  color:#f59e0b;}
+.stage-pill.on.beach {background:rgba(6,182,212,0.15);  border-color:rgba(6,182,212,0.5);   color:#06b6d4;}
+.stage-pill.on.locals{background:rgba(132,204,22,0.15); border-color:rgba(132,204,22,0.5);  color:#84cc16;}
+.stage-pill.on.oasis {background:rgba(0,212,200,0.15);  border-color:rgba(0,212,200,0.5);   color:var(--teal-glow);}
 .view-toggle{display:flex;gap:4px;margin-left:auto;}
 .view-btn{width:32px;height:32px;border-radius:0;border:1px solid rgba(255,255,255,0.1);
   background:transparent;color:var(--text-muted);font-size:15px;cursor:pointer;
@@ -2380,6 +2399,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <p>Sturbridge Host Hotel · Jul 17–19, 2026</p>
       </div>
       <a href="https://theticketing.co/e/sunkensuite2026?promoLink=GR0J6UYW" target="_blank" rel="noopener"
+         id="getTicketsBtn"
          style="flex-shrink:0;padding:8px 12px;background:var(--gold-bright);color:#000;
                 font-weight:900;font-size:11px;text-decoration:none;text-transform:uppercase;
                 letter-spacing:0.5px;line-height:1.2;text-align:center;border-radius:2px;
@@ -2410,7 +2430,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <div class="stat-card"><div class="stat-num">4</div><div class="stat-label">Stages</div></div>
         </div>
         <div class="section-header">
-          <div class="section-title">⭐ My Schedule</div>
+          <div class="section-title">My Schedule</div>
           <span class="section-see-all" onclick="navigate('schedule')">Full schedule →</span>
         </div>
         <div class="schedule-card" id="mySchedWidget">
@@ -2467,7 +2487,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── SCHEDULE PAGE ── -->
   <div class="page" id="page-schedule">
-    <div class="page-header"><div class="page-title">📅 Full Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
+    <div class="page-header"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
     <div class="controls-bar">
       <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -4284,6 +4304,7 @@ async function loadArtistOverrides() {
     if (typeof renderArtistGrid === 'function') renderArtistGrid();
     if (typeof renderSchedule === 'function') renderSchedule();
     if (typeof renderFeaturedArtists === 'function') renderFeaturedArtists();
+    if (typeof renderMySchedWidget === 'function') renderMySchedWidget();
   } catch(e) { /* Artist overrides unavailable - using defaults */ }
 }
 loadArtistOverrides();
@@ -4588,8 +4609,8 @@ function renderMySchedWidget() {
     const dot = STAGE_COLORS[a.stage] || '#888';
     html += `<div class="schedule-item" onclick="openArtist('${esc(key)}')">`+
       `<div class="sched-time" style="font-size:12px;font-weight:700;color:var(--teal-glow);min-width:52px;">${a.time}</div>`+
-      `<div style="background:${dot};width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>`+
-      `<div style="flex:1;"><div class="sched-artist">${key}</div><div class="sched-stage">${a.stage||''}</div></div>`+
+      `<div style="background:${dot};width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px ${dot};"></div>`+
+      `<div style="flex:1;"><div class="sched-artist">${key}</div><div class="sched-stage" style="color:${dot};">${a.stage||''}</div></div>`+
       `<span class="sched-arrow">›</span></div>`;
   });
 
@@ -4826,14 +4847,27 @@ function renderMySchedPage() {
   var STAGES = [
     {key:'DNB Stage',     color:'#c084fc', cls:'dnb',    hl:'headliner'},
     {key:'Atrium',        color:'#f59e0b', cls:'atrium', hl:'atrium-headliner'},
-    {key:'Atrium',color:'#f59e0b', cls:'atrium', hl:'atrium-headliner'},
     {key:'Beach Stage',   color:'#06b6d4', cls:'beach',  hl:'beach-headliner'},
     {key:'Locals Stage',  color:'#84cc16', cls:'locals', hl:'locals-headliner'},
     {key:'Oasis Stage',   color:'#00d4c8', cls:'oasis',  hl:'oasis-headliner'},
   ];
 
+  // Normalize stage names so 'Atrium (House)' shows as 'Atrium'
+  function normalizeStage(s) {
+    if (!s) return '';
+    if (s.startsWith('Atrium')) return 'Atrium';
+    return s;
+  }
+
   var days = {Fri:[],Sat:[],Sun:[],TBA:[]};
-  mine.forEach(function(k){ var a=artists[k]; if(a)(days[a.day]||days.TBA).push(k); });
+  mine.forEach(function(k){
+    var a=artists[k]; if(!a) return;
+    // Normalize day — handle lowercase or trimmed values
+    var day = (a.day||'').trim();
+    day = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+    if (day==='Fri'||day==='Sat'||day==='Sun') days[day].push(k);
+    else days.TBA.push(k);
+  });
   var dayLabels = {Fri:'Friday - Jul 17',Sat:'Saturday - Jul 18',Sun:'Sunday - Jul 19',TBA:'Day TBA'};
   var isGrid = (schedView === 'grid');
   var out = '';
@@ -4843,10 +4877,10 @@ function renderMySchedPage() {
   ['Fri','Sat','Sun','TBA'].forEach(function(day) {
     var keys = days[day]; if (!keys.length) return;
 
-    // Group by stage
+    // Group by stage (normalize stage names to merge variants like 'Atrium (House)')
     var stageMap = {};
     keys.forEach(function(k) {
-      var s = (artists[k] && artists[k].stage) || 'TBA';
+      var s = normalizeStage((artists[k] && artists[k].stage) || 'TBA');
       if (!stageMap[s]) stageMap[s] = [];
       stageMap[s].push(k);
     });
