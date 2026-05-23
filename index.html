@@ -247,6 +247,7 @@ body{
   color:var(--gold-bright);letter-spacing:2px;text-transform:uppercase;}
 .section-see-all{font-size:13px;color:var(--teal-glow);cursor:pointer;text-decoration:none;font-weight:600;}
 .page-header{margin-bottom:20px;}
+@media(max-width:767px){#page-schedule .page-header{margin-bottom:8px;}}
 .page-title{font-size:24px;font-weight:800;color:var(--gold-bright);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
 .page-sub{font-size:14px;color:var(--text-muted);font-weight:500;}
 
@@ -2508,11 +2509,9 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <!-- Share Schedule -->
     <div class="cal-export-section" id="shareSchedSection" style="display:none;">
       <div class="cal-export-title">📤 Share My Lineup</div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <select id="shareSchedFriendSelect" class="edit-select" style="flex:1;min-width:140px;padding:8px 10px;font-size:13px;">
-          <option value="">— Pick a friend —</option>
-        </select>
-        <button class="cal-btn gcal" style="flex-shrink:0;" onclick="sendScheduleToFriend()">Send ✉</button>
+      <div id="shareSchedFriendList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;max-height:180px;overflow-y:auto;"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="cal-btn gcal" style="flex:1;" onclick="sendScheduleToFriend()">Send to Selected ✉</button>
       </div>
       <div id="shareSchedStatus" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
     </div>
@@ -4936,72 +4935,83 @@ function setView(v) {
 
 /* ── Calendar Export ── */
 async function populateShareFriends() {
-  const sel = document.getElementById('shareSchedFriendSelect');
-  if (!sel || !currentUser) return;
+  const container = document.getElementById('shareSchedFriendList');
+  if (!container || !currentUser) return;
   const token = localStorage.getItem(TOKEN_KEY);
   try {
     const res = await fetch(AUTH_URL + '/friends', { headers: {'Authorization':'Bearer '+token} });
     if (!res.ok) return;
     const d = await res.json();
     const friends = d.friends || [];
-    sel.innerHTML = '<option value="">— Pick a friend —</option>' +
-      friends.map(f => `<option value="${f.id}" data-handle="${f.handle||''}">${f.handle || f.name || 'User'}</option>`).join('');
+    if (!friends.length) {
+      container.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">No friends yet — connect with people first</div>';
+      return;
+    }
+    container.innerHTML = friends.map(function(f) {
+      var av = f.profilePic
+        ? '<img src="'+f.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">'
+        : (f.handle?.[0]||'?').toUpperCase();
+      return '<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">'+
+        '<input type="checkbox" value="'+f.id+'" data-handle="'+(f.handle||'')+'" style="accent-color:var(--teal-glow);width:16px;height:16px;cursor:pointer;">'+
+        '<div style="width:30px;height:30px;border-radius:50%;background:'+(f.avatarColor||'#9b3dff')+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0;">'+av+'</div>'+
+        '<span style="font-size:13px;font-weight:600;color:var(--text-light);">@'+(f.handle||f.name||'User')+'</span>'+
+      '</label>';
+    }).join('');
   } catch(e) {}
 }
 
 async function sendScheduleToFriend() {
-  const sel    = document.getElementById('shareSchedFriendSelect');
-  const status = document.getElementById('shareSchedStatus');
-  const toId   = sel?.value;
-  if (!toId) { if (status) { status.textContent = 'Pick a friend first'; status.style.color = 'var(--pink-coral)'; } return; }
-
+  const container = document.getElementById('shareSchedFriendList');
+  const status    = document.getElementById('shareSchedStatus');
+  const checked   = container ? [...container.querySelectorAll('input[type=checkbox]:checked')] : [];
+  if (!checked.length) {
+    if (status) { status.textContent = 'Select at least one friend'; status.style.color = 'var(--pink-coral)'; }
+    return;
+  }
   const mine = getMySchedule();
-  if (!mine.length) { if (status) { status.textContent = 'Your schedule is empty!'; status.style.color = 'var(--pink-coral)'; } return; }
-
-  // Build a readable schedule message
+  if (!mine.length) {
+    if (status) { status.textContent = 'Your schedule is empty!'; status.style.color = 'var(--pink-coral)'; }
+    return;
+  }
   const STAGE_EMOJI = { 'DNB Stage':'🟣','Atrium':'🟠','Atrium (House)':'🟠','Beach Stage':'🔵','Locals Stage':'🟢','Oasis Stage':'🔵' };
   const dayGroups = { Fri:[], Sat:[], Sun:[], TBA:[] };
-  mine.forEach(k => {
-    const a = artists[k]; if (!a) return;
+  mine.forEach(function(k) {
+    var a = artists[k]; if (!a) return;
     (dayGroups[a.day]||dayGroups.TBA).push({ name:k, time:a.time||'TBA', stage:a.stage||'' });
   });
-
-  let msg = `☠ My Sunken Suite Lineup:\n\n`;
-  const dayLabels = { Fri:'📅 Friday Jul 17', Sat:'📅 Saturday Jul 18', Sun:'📅 Sunday Jul 19', TBA:'📌 TBA' };
-  Object.entries(dayGroups).forEach(([day, sets]) => {
-    if (!sets.length) return;
-    sets.sort((a,b) => timeToSort(a.time) - timeToSort(b.time));
+  var msg = '\u2620 My Sunken Suite Lineup:\n\n';
+  var dayLabels = { Fri:'\uD83D\uDCC5 Friday Jul 17', Sat:'\uD83D\uDCC5 Saturday Jul 18', Sun:'\uD83D\uDCC5 Sunday Jul 19', TBA:'\uD83D\uDCCC TBA' };
+  Object.entries(dayGroups).forEach(function(entry) {
+    var day=entry[0], sets=entry[1]; if (!sets.length) return;
+    sets.sort(function(a,b){ return timeToSort(a.time)-timeToSort(b.time); });
     msg += dayLabels[day] + '\n';
-    sets.forEach(s => {
-      const em = STAGE_EMOJI[s.stage] || '🎵';
-      msg += `${em} ${s.name} — ${s.time}${s.stage ? ' · ' + s.stage : ''}\n`;
+    sets.forEach(function(s) {
+      var em = STAGE_EMOJI[s.stage] || '\uD83C\uDFB5';
+      msg += em + ' ' + s.name + ' \u2014 ' + s.time + (s.stage ? ' \u00B7 ' + s.stage : '') + '\n';
     });
     msg += '\n';
   });
-  msg += `See you on the dance floor! 🎉`;
-
-  // Send as DM
-  const token = localStorage.getItem(TOKEN_KEY);
-  try {
-    if (status) { status.textContent = 'Sending…'; status.style.color = 'var(--text-muted)'; }
-    const res = await fetch(AUTH_URL + '/dm/' + toId, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({ text: msg })
-    });
-    if (res.ok) {
-      const handle = sel.options[sel.selectedIndex]?.dataset?.handle || 'your friend';
-      if (status) { status.textContent = '✓ Sent to @' + handle + '!'; status.style.color = '#4ade80'; }
-      showToast('📤 Schedule sent to @' + handle);
-      sel.value = '';
-    } else {
-      const d = await res.json();
-      if (status) { status.textContent = d.error || 'Could not send'; status.style.color = 'var(--pink-coral)'; }
-    }
-  } catch(e) {
-    if (status) { status.textContent = 'Error: ' + e.message; status.style.color = 'var(--pink-coral)'; }
+  msg += 'See you on the dance floor! \uD83C\uDF89';
+  var token = localStorage.getItem(TOKEN_KEY);
+  if (status) { status.textContent = 'Sending\u2026'; status.style.color = 'var(--text-muted)'; }
+  var sent=0, failed=0;
+  for (var i=0; i<checked.length; i++) {
+    try {
+      var res = await fetch(AUTH_URL + '/dm/' + checked[i].value, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body: JSON.stringify({ text: msg })
+      });
+      if (res.ok) { sent++; checked[i].checked = false; } else failed++;
+    } catch(e) { failed++; }
   }
+  if (status) {
+    status.style.color = failed===0 ? '#4ade80' : 'var(--pink-coral)';
+    status.textContent = sent>0 ? '\u2713 Sent to '+sent+' friend'+(sent>1?'s':'')+(failed?' ('+failed+' failed)':'') : 'Failed to send';
+  }
+  if (sent>0) showToast('\uD83D\uDCE4 Schedule sent to '+sent+' friend'+(sent>1?'s':''));
 }
+
 
 function exportGCal() {
   const mine = getMySchedule();
