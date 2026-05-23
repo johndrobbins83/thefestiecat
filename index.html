@@ -1336,20 +1336,15 @@ body{
   .edit-modal-overlay{
     align-items:flex-end;
     padding:0;
+    /* End the overlay above the nav so the modal never goes behind it */
+    bottom:calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    top:0 !important;
   }
   .edit-modal{
     max-width:100%;
     border-radius:16px 16px 0 0;
     border-bottom:none;
-    /* Sit above nav (72px) + safe area bottom + a touch of breathing room */
-    margin-bottom:calc(72px + env(safe-area-inset-bottom, 0px) + 8px);
-    /* Never taller than viewport minus nav, status bar, and breathing room */
-    max-height:calc(100svh
-      - 72px
-      - env(safe-area-inset-bottom, 0px)
-      - env(safe-area-inset-top, 44px)
-      - 24px
-    );
+    max-height:100%;
   }
   .edit-modal-footer{
     padding-bottom:16px;
@@ -10594,39 +10589,45 @@ async function downloadEmailListPDF() {
 // Default info content — loaded from worker, falls back to defaults
 INFO_DEFAULTS = {
   event: {
-    title: '‍️ Event Info',
+    title: 'Event Info',
     sections: [
-      { title: 'About The Event', body: 'Sunken Suite is a 3-day underground music festival celebrating the best in Drum & Bass, Techno, and Electronic music. The Mutiny is our biggest event yet — three stages, 66 artists, and an immersive experience you won\'t forget.' },
-      { title: ' Festival Days', body: 'Friday July 17 — Gates 4PM, Music 6PM. DNB Stage headlined by Roni Size.\nSaturday July 18 — Gates 2PM, Music 4PM. Oasis Stage headlined by J. Phlip.\nSunday July 19 — Gates 2PM, Music 4PM. DNB Stage headlined by Spor.' },
-      { title: ' Stages', body: 'DNB Stage (Presented by BP²) · Drum & Bass · Main Indoor\nAtrium (House) · Tech House / House Music\nBeach Stage · Outdoor Pool-Side\nLocals Stage · Local & Regional Artists' },
-      { title: ' Contact', body: ' staff@sunkensuite.com\n Emergency: Use the SOS button in More\n The Sturbridge Host Hotel & Conference Center' }
+      { title: 'About The Event', body: 'Sunken Suite is a 3-day underground music festival celebrating the best in Drum & Bass, Techno, House, and Electronic music. The Mutiny 2026 is our biggest event yet — four stages, 66+ artists, and an immersive experience at the Sturbridge Host Hotel on Cedar Lake.' },
+      { title: 'Festival Days', body: 'Friday July 17 — Gates 4PM · Music 6PM\nSaturday July 18 — Gates 2PM · Music 4PM\nSunday July 19 — Gates 2PM · Music 4PM\n\nLast set ends approximately 6AM each night.' },
+      { title: 'Stages', body: 'DNB Stage · Drum & Bass · Main Indoor Stage\nAtrium · Tech House / House Music · Indoor\nBeach Stage · Outdoor Pool-Side · Electronic\nLocals Stage · Local & Regional Artists' },
+      { title: 'Headliners', body: 'Friday DNB Stage — Roni Size\nSaturday — J. Phlip\nSunday DNB Stage — Spor' },
+      { title: 'Contact', body: 'General: info@thefestiecat.com\nStaff: staff@sunkensuite.com\nEmergency: Use the SOS button in the More menu\nVenue: Sturbridge Host Hotel & Conference Center' }
     ]
   },
   venue: {
-    title: ' Venue',
+    title: 'Venue',
     sections: [
-      { title: 'Address', body: 'The Sturbridge Host Hotel & Conference Center\n366 Main Street, Sturbridge, MA 01566' },
-      { title: ' Getting There', body: 'By Car: Exit 2 off I-84 W or Exit 9 off I-90 (Mass Pike). Free parking on site.\nShuttle: From Worcester Union Station, Friday–Sunday. Check schedule at Box Office.' },
-      { title: ' On-Site Locations', body: ' Hotel Lobby — Registration, Info Desk, Lost & Found\n Box Office — Main entrance, open 1hr before gates\n Medical Station — Near Main Entrance, staffed 24/7, free water\n Pool Area — Oasis Stage adjacent, outdoor chill space\n️ Parking — Main lot off Route 20, overflow lot signposted' }
+      { title: 'Address', body: 'Sturbridge Host Hotel & Conference Center\n366 Main Street, Sturbridge, MA 01566\nOn Cedar Lake' },
+      { title: 'Getting There', body: 'By Car: Exit 2 off I-84 W or Exit 9 off I-90 (Mass Pike). Free parking on site.\nShuttle: From Worcester Union Station, Friday–Sunday. Check schedule at Box Office.' },
+      { title: 'On-Site Locations', body: 'Hotel Lobby — Registration, Info Desk, Lost & Found\nBox Office — Main entrance, open 1hr before gates\nMedical Station — Near Main Entrance, staffed 24/7, free water\nGreenhouse — Restaurant on site\nDeadhead — Tavern & Bar on site\nIndoor Pool & Hot Tub — Heated, open daily\nFitness — Gym & Spa\nBeach — Cedar Lake waterfront\nParking — Main lot off Route 20, overflow lot signposted' },
+      { title: 'Hotel Map', body: 'View the interactive grounds map in the Map tab of the app. An uploaded grounds map is available when provided by organizers.' }
     ]
   },
   guidelines: {
-    title: ' Guidelines',
+    title: 'Guidelines',
     sections: [
-      { title: ' General Rules', body: ' Valid ID required for entry\n Wristbands must be worn at all times\n No re-entry without wristband\n No outside alcohol\n No professional cameras without press pass\n No drones\n No crowd surfing or moshing' },
-      { title: ' Safety', body: 'Stay Hydrated — Free water at every stage and Medical Station.\nKnow Your Limits — Feel unwell? Go to Medical Station. No judgment.\nBuddy System — Stay with friends. Use the People tab to connect.\nSOS — Hit SOS in More menu for emergencies. Alerts all staff instantly.' },
-      { title: ' Code of Conduct', body: ' Respect all attendees, staff, and artists\n Consent is everything\n Zero tolerance for harassment or discrimination\n Zero tolerance for violence\nViolations = immediate removal.' },
-      { title: ' Accessibility', body: 'Accessible entrances at Main Gate and Hotel Lobby. Accessible viewing areas at both stages. Contact staff at Info Desk for any accessibility needs.' }
+      { title: 'General Rules', body: 'Valid ID required for entry\nWristbands must be worn at all times\nNo re-entry without wristband\nNo outside alcohol\nNo professional cameras without press pass\nNo drones\nNo crowd surfing or moshing' },
+      { title: 'Safety', body: 'Stay Hydrated — Free water at every stage and Medical Station.\nKnow Your Limits — Feel unwell? Go to Medical Station. No judgment.\nBuddy System — Stay with friends. Use the People tab to connect with your crew.\nSOS — Hit SOS in the More menu for emergencies. Alerts all staff instantly with your location.' },
+      { title: 'Code of Conduct', body: 'Respect all attendees, staff, and artists\nConsent is everything — no means no\nZero tolerance for harassment or discrimination\nZero tolerance for violence\nViolations result in immediate removal with no refund.' },
+      { title: 'Accessibility', body: 'Accessible entrances at Main Gate and Hotel Lobby. Accessible viewing areas at all stages. Contact staff at the Info Desk for any accessibility needs.' }
     ]
   },
   help: {
-    title: ' App Help',
+    title: 'App Help',
     sections: [
-      { title: 'Getting Started', body: '1. Create Your Account — Tap the person icon → Create one free. Choose your @handle.\n2. Set Up Your Profile — Upload a photo, add bio and music styles.\n3. Connect With Crew — People → Connect tab. Search by @handle.' },
-      { title: ' Schedule & Artists', body: 'Browse artists by day and stage. Tap to see set details. Heart to save to My Schedule.' },
-      { title: ' People & Messaging', body: 'Connect tab: find & add festies. Messages tab: DM your crew. Staff contacts appear automatically for staff.' },
-      { title: ' Notifications', body: ' Blue = Connections & DMs\n Yellow = Event Updates & Shifts\n Red = Emergency SOS' },
-      { title: ' SOS', body: 'More → SOS. Sends emergency alert to all staff with your location. Use for genuine emergencies only.' }
+      { title: 'Getting Started', body: '1. Create Your Account — Tap the person icon or Get Started. Choose your @handle.\n2. Set Up Your Profile — Upload a photo and banner, add your bio, music styles, and social links.\n3. Allow Notifications — Enable push notifications when prompted to get real-time alerts even when the app is closed.\n4. Install the App — On iPhone, tap Share then Add to Home Screen. On Android, tap Install when prompted.' },
+      { title: 'Schedule', body: 'Browse artists by day and stage using the Schedule tab. Filter by stage using the color-coded pills. Tap + on any artist to save them to My Schedule. View your personal lineup on the My Schedule tab or the home screen widget.\n\nExport your schedule to Google Calendar or Apple Calendar, download a PDF, or share your lineup directly with friends via DM.' },
+      { title: 'Artists', body: 'Tap any artist card to view their full profile including bio, genre, set time, stage, social links, and streaming. Tap + to save to your schedule. Artist profiles are updated by organizers in real time — you\'ll get a push notification when set times or stages change.' },
+      { title: 'People & Messaging', body: 'Connect tab: search for festies by @handle and send a connection request. Once connected you can DM each other.\nMessages tab: direct message your crew. New messages show a pink badge on the message icon.\nMy Crew: see all your mutual connections with their role tags.' },
+      { title: 'Notifications', body: 'Blue — Connections & DMs\nTeal — Schedule changes & announcements\nOrange — Password reset requests (admin)\nRed — Emergency SOS alerts\n\nUnread notifications appear bold with a teal border. Tap any notification to navigate directly to the relevant section.' },
+      { title: 'Push Notifications', body: 'The app sends real push notifications to your device even when closed. You\'ll be notified for:\n- New direct messages\n- Schedule changes (time updates, new artists, headliner confirmations)\n- Shift and task assignments (staff)\n- SOS alerts (staff & admin)\n- Admin broadcasts\n\nOn iPhone, push notifications only work when the app is installed to your Home Screen via Safari.' },
+      { title: 'SOS & Emergencies', body: 'More → SOS button. Fill in your location, nearest stage, and what\'s happening, then tap Send Emergency Alert. This immediately notifies all staff and admins with your details and GPS coordinates.\n\nTo view a received SOS alert, tap the red notification in your notification bell. For life-threatening emergencies, always call 911 first.' },
+      { title: 'Profile & Socials', body: 'Edit your profile to add:\n- Profile photo and banner image\n- Bio, hometown, music styles, favorite artists\n- First rave memory\n- Instagram, Facebook, and TikTok links\n\nYour profile is visible to people you\'re connected with. Mutual crew members appear on each other\'s profiles.' },
+      { title: 'Staff Features', body: 'Staff and Admin users have access to the Staff Dashboard with:\n- Shift schedule and task list\n- Staff announcements and contacts\n- SOS alert history\n\nAdmins additionally have access to the full Admin Dashboard for managing artists, schedule, users, and broadcasting push notifications.' }
     ]
   }
 };
