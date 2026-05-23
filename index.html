@@ -1336,18 +1336,20 @@ body{
   .edit-modal-overlay{
     align-items:flex-end;
     padding:0;
-    bottom:calc(72px + env(safe-area-inset-bottom, 0px)) !important;
-    top:0 !important;
+    inset:0 !important;
   }
   .edit-modal{
     max-width:100%;
     border-radius:16px 16px 0 0;
     border-bottom:none;
-    max-height:100%;
+    max-height:calc(100% - env(safe-area-inset-top, 44px) - 20px);
+    /* Add bottom padding equal to nav height so content clears it */
+    padding-bottom:0;
   }
   .edit-modal-footer{
-    padding:16px 20px 20px;
-    flex-shrink:0;
+    padding:14px 20px;
+    /* Extra bottom padding to push above nav */
+    padding-bottom:calc(72px + env(safe-area-inset-bottom, 0px) + 8px) !important;
   }
 }
 .edit-modal-header{display:flex;align-items:center;justify-content:space-between;
