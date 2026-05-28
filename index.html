@@ -4952,6 +4952,9 @@ function switchDay(day, btn) {
   schedCurrentDay = day;
   document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
+  // Hide the page header on My Schedule tab to remove the gap
+  const hdr = document.querySelector('#page-schedule .page-header');
+  if (hdr) hdr.style.display = day === 'mine' ? 'none' : '';
   renderSchedule();
 }
 function filterStage(s, btn) {
