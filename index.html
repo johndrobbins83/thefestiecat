@@ -810,7 +810,8 @@ body{
    MORE POPOUT
 ══════════════════════════════════════════════════ */
 .more-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;
-  display:flex;align-items:center;justify-content:center;}
+  display:flex;align-items:center;justify-content:center;
+  padding:16px 16px calc(72px + env(safe-area-inset-bottom,0px)) 16px;}
 .more-overlay.open{pointer-events:all;}
 .more-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);
   opacity:0;transition:opacity .2s ease;}
@@ -818,6 +819,8 @@ body{
 .more-panel{position:relative;z-index:1;background:#0a0a0a;
   border:1px solid rgba(245,200,66,0.25);border-radius:0;padding:20px;
   width:min(320px,calc(100vw - 32px));
+  max-height:calc(100vh - 72px - env(safe-area-inset-bottom,0px) - env(safe-area-inset-top,44px) - 32px);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
   transform:scale(0.95) translateY(-8px);opacity:0;
   transition:transform .22s cubic-bezier(.4,0,.2,1),opacity .22s ease;
   box-shadow:0 24px 64px rgba(0,0,0,0.8);}
@@ -1353,7 +1356,7 @@ body{
     max-width:100%;
     border-radius:16px 16px 0 0;
     border-bottom:none;
-    max-height:90vh;
+    max-height:80vh; /* JS overrides this with exact value */
   }
 }
 .edit-modal-header{display:flex;align-items:center;justify-content:space-between;
@@ -9760,20 +9763,28 @@ function openEditProfileModal() {
   pendingBannerFile = null; pendingEditAvatarFile = null;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
-  // On mobile, push footer above nav bar
+  // On mobile, dynamically size the modal to fit above the nav
   if (window.innerWidth <= 767) {
-    const nav = document.querySelector('.bottom-nav');
-    const navH = nav ? nav.getBoundingClientRect().height : 80;
-    const footer = modal.querySelector('.edit-modal-footer');
-    if (footer) footer.style.paddingBottom = (navH + 12) + 'px';
-    const inner = modal.querySelector('.edit-modal');
-    if (inner) inner.style.maxHeight = (window.innerHeight - navH - 20) + 'px';
+    const nav = document.querySelector('nav.bottom-nav') || document.querySelector('.bottom-nav');
+    const navH = nav ? nav.getBoundingClientRect().height : 83;
+    const availH = window.innerHeight - navH - 8; // 8px breathing room
+    const editModal = modal.querySelector('.edit-modal');
+    const footer    = modal.querySelector('.edit-modal-footer');
+    if (editModal) editModal.style.maxHeight = availH + 'px';
+    if (footer)    footer.style.paddingBottom = '16px';
+    // Ensure overlay ends at nav top
+    modal.style.paddingBottom = navH + 'px';
   }
 }
 
 function closeEditProfileModal() {
   const modal = document.getElementById('editProfileModal');
-  if (modal) modal.classList.remove('open');
+  if (modal) {
+    modal.classList.remove('open');
+    modal.style.paddingBottom = '';
+    const editModal = modal.querySelector('.edit-modal');
+    if (editModal) editModal.style.maxHeight = '';
+  }
   // Restore overflow:hidden if profile overlay is still open
   const profileOverlay = document.getElementById('profileOverlay');
   if (profileOverlay && profileOverlay.classList.contains('open')) {
