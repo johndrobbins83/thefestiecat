@@ -412,15 +412,21 @@ body{
 /* ══════════════════════════════════════════════════
    SCHEDULE PAGE
 ══════════════════════════════════════════════════ */
-.controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;
-  position:sticky;top:56px;z-index:100;background:#000000;backdrop-filter:blur(12px);
-  padding:8px 0 8px;
-  border-bottom:1px solid rgba(245,200,66,0.1);}
-#page-schedule .page-header{
-  position:sticky;top:0;z-index:101;
+.controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+#page-schedule .sched-sticky{
+  position:sticky;top:-16px;z-index:100;
   background:#000;
-  padding-bottom:8px;
-  margin-bottom:0;
+  padding:16px 0 8px;
+  margin:-16px -16px 16px -16px;
+  padding-left:16px;padding-right:16px;
+  border-bottom:1px solid rgba(245,200,66,0.1);
+}
+@media(min-width:768px){
+  #page-schedule .sched-sticky{
+    top:-24px;
+    padding:24px 32px 10px;
+    margin:-24px -32px 16px -32px;
+  }
 }
 .search-wrap{position:relative;}
 .search-input{width:100%;padding:10px 16px 10px 40px;background:rgba(20,20,20,0.9);
@@ -2493,26 +2499,28 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── SCHEDULE PAGE ── -->
   <div class="page" id="page-schedule">
-    <div class="page-header"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
-    <div class="controls-bar">
-      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <div class="day-tabs" style="flex:1;">
-          <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
-          <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
-          <button class="day-tab"        data-day="sun" onclick="switchDay('sun',this)">SUN 7/19</button>
-          <button class="day-tab mine-tab" data-day="mine" onclick="switchDay('mine',this)" id="mySchedTab">My Schedule</button>
-        </div>
-        <div class="filter-row">
-          <span class="filter-label">Stage:</span>
-          <button class="stage-pill all on" data-stage="all"     onclick="filterStage('all',this)">All</button>
-          <button class="stage-pill dnb"    data-stage="dnb"     onclick="filterStage('dnb',this)">DNB</button>
-          <button class="stage-pill atrium" data-stage="atrium"  onclick="filterStage('atrium',this)">Atrium</button>
-          <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
-          <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locals</button>
-          <div class="view-toggle">
-            <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
-            <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
+    <div class="sched-sticky">
+      <div class="page-header" style="margin-bottom:8px;"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
+      <div class="controls-bar">
+        <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <div class="day-tabs" style="flex:1;">
+            <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
+            <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
+            <button class="day-tab"        data-day="sun" onclick="switchDay('sun',this)">SUN 7/19</button>
+            <button class="day-tab mine-tab" data-day="mine" onclick="switchDay('mine',this)" id="mySchedTab">My Schedule</button>
+          </div>
+          <div class="filter-row">
+            <span class="filter-label">Stage:</span>
+            <button class="stage-pill all on" data-stage="all"     onclick="filterStage('all',this)">All</button>
+            <button class="stage-pill dnb"    data-stage="dnb"     onclick="filterStage('dnb',this)">DNB</button>
+            <button class="stage-pill atrium" data-stage="atrium"  onclick="filterStage('atrium',this)">Atrium</button>
+            <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
+            <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locals</button>
+            <div class="view-toggle">
+              <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
+              <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
+            </div>
           </div>
         </div>
       </div>
@@ -4958,7 +4966,6 @@ function switchDay(day, btn) {
   schedCurrentDay = day;
   document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  // On My Schedule: keep header, hide only search and stage filters
   const search  = document.querySelector('#page-schedule .search-wrap');
   const filters = document.querySelector('#page-schedule .filter-row');
   const isMine  = day === 'mine';
