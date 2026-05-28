@@ -1870,7 +1870,21 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 .edit-profile-modal{position:fixed;inset:0;z-index:25000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);padding:16px;}
 .edit-profile-modal.open{display:flex;}
-.edit-profile-box{width:100%;max-width:480px;background:#0a0a0a;border:1px solid rgba(245,200,66,0.25);max-height:90vh;overflow-y:auto;}
+.edit-profile-box{width:100%;max-width:480px;background:#0a0a0a;border:1px solid rgba(245,200,66,0.25);
+  max-height:calc(100svh - 32px);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+@media(max-width:767px){
+  .edit-profile-modal{
+    align-items:flex-end;
+    padding:0;
+    padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));
+  }
+  .edit-profile-box{
+    max-width:100%;
+    border-radius:16px 16px 0 0;
+    border-bottom:none;
+    max-height:calc(100svh - 72px - env(safe-area-inset-bottom,0px) - env(safe-area-inset-top,50px) - 8px);
+  }
+}
 .edit-profile-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07);position:sticky;top:0;background:#0a0a0a;z-index:1;}
 .banner-upload-wrap{position:relative;height:100px;background:linear-gradient(135deg,#1a0030,#000820);cursor:pointer;margin-bottom:44px;overflow:visible;}
 .banner-avatar-overlap{position:absolute;bottom:-36px;left:16px;width:72px;height:72px;border-radius:50%;border:3px solid #0a0a0a;overflow:hidden;background:#9b3dff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;cursor:pointer;}
@@ -4057,6 +4071,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <div class="auth-field"><label class="auth-label">🎵 TikTok</label>
         <input class="auth-input" id="editTiktok" type="url" placeholder="https://tiktok.com/@yourhandle"></div>
       <div id="editProfileStatus" style="font-size:12px;color:var(--text-muted);margin-bottom:8px;"></div>
+    </div>
+    <div style="padding:12px 16px;background:#0a0a0a;border-top:1px solid rgba(255,255,255,0.07);position:sticky;bottom:0;z-index:2;">
       <button class="auth-btn" id="editProfileSaveBtn" onclick="saveProfileEdits()">Save Changes</button>
     </div>
   </div>
@@ -9763,18 +9779,6 @@ function openEditProfileModal() {
   pendingBannerFile = null; pendingEditAvatarFile = null;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
-  // On mobile, dynamically size the modal to fit above the nav
-  if (window.innerWidth <= 767) {
-    const nav = document.querySelector('nav.bottom-nav') || document.querySelector('.bottom-nav');
-    const navH = nav ? nav.getBoundingClientRect().height : 83;
-    const availH = window.innerHeight - navH - 8; // 8px breathing room
-    const editModal = modal.querySelector('.edit-modal');
-    const footer    = modal.querySelector('.edit-modal-footer');
-    if (editModal) editModal.style.maxHeight = availH + 'px';
-    if (footer)    footer.style.paddingBottom = '16px';
-    // Ensure overlay ends at nav top
-    modal.style.paddingBottom = navH + 'px';
-  }
 }
 
 function closeEditProfileModal() {
