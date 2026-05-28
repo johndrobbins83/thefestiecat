@@ -4952,12 +4952,10 @@ function switchDay(day, btn) {
   schedCurrentDay = day;
   document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  // Hide page header and filter controls on My Schedule tab
-  const hdr     = document.querySelector('#page-schedule .page-header');
+  // On My Schedule: keep header, hide only search and stage filters
   const search  = document.querySelector('#page-schedule .search-wrap');
   const filters = document.querySelector('#page-schedule .filter-row');
   const isMine  = day === 'mine';
-  if (hdr)     hdr.style.display     = isMine ? 'none' : '';
   if (search)  search.style.display  = isMine ? 'none' : '';
   if (filters) filters.style.display = isMine ? 'none' : '';
   renderSchedule();
