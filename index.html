@@ -448,13 +448,13 @@ body{
   font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
 .stage-pill.all   {color:rgba(245,200,66,0.45);  border-color:rgba(245,200,66,0.15);}
 .stage-pill.dnb   {color:rgba(192,132,252,0.45); border-color:rgba(192,132,252,0.15);}
-.stage-pill.atrium{color:rgba(245,158,11,0.45);  border-color:rgba(245,158,11,0.15);}
+.stage-pill.oasis{color:rgba(245,158,11,0.45);  border-color:rgba(245,158,11,0.15);}
 .stage-pill.beach {color:rgba(6,182,212,0.45);   border-color:rgba(6,182,212,0.15);}
 .stage-pill.locals{color:rgba(132,204,22,0.45);  border-color:rgba(132,204,22,0.15);}
 .stage-pill.oasis {color:rgba(0,212,200,0.45);   border-color:rgba(0,212,200,0.15);}
 .stage-pill.on.all   {background:rgba(245,200,66,0.15); border-color:rgba(245,200,66,0.5);  color:var(--gold-bright);}
 .stage-pill.on.dnb   {background:rgba(192,132,252,0.15);border-color:rgba(192,132,252,0.5); color:#c084fc;}
-.stage-pill.on.atrium{background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.5);  color:#f59e0b;}
+.stage-pill.on.oasis{background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.5);  color:#f59e0b;}
 .stage-pill.on.beach {background:rgba(6,182,212,0.15);  border-color:rgba(6,182,212,0.5);   color:#06b6d4;}
 .stage-pill.on.locals{background:rgba(132,204,22,0.15); border-color:rgba(132,204,22,0.5);  color:#84cc16;}
 .stage-pill.on.oasis {background:rgba(0,212,200,0.15);  border-color:rgba(0,212,200,0.5);   color:var(--teal-glow);}
@@ -471,7 +471,7 @@ body{
   font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
 .stage-section-header.dnb{background:rgba(155,61,255,0.12);color:#c084fc;border:1px solid rgba(155,61,255,0.2);}
 .stage-section-header.oasis{background:rgba(0,212,200,0.1);color:var(--teal-glow);border:1px solid rgba(0,212,200,0.2);}
-.stage-section-header.atrium{background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);}
+.stage-section-header.oasis{background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);}
 .stage-section-header.beach{background:rgba(6,182,212,0.1);color:#06b6d4;border:1px solid rgba(6,182,212,0.2);}
 .stage-section-header.locals{background:rgba(132,204,22,0.1);color:#84cc16;border:1px solid rgba(132,204,22,0.2);}
 .stage-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
@@ -490,7 +490,7 @@ body{
   border-bottom:1px solid rgba(155,61,255,0.15)!important;padding:10px 8px!important;}
 .sched-item.oasis-headliner{background:rgba(0,212,200,0.06)!important;border-radius:0;
   border-bottom:1px solid rgba(0,212,200,0.15)!important;padding:10px 8px!important;}
-.sched-item.atrium-headliner{background:rgba(245,158,11,0.06)!important;border-radius:0;
+.sched-item.oasis-headliner{background:rgba(245,158,11,0.06)!important;border-radius:0;
   border-bottom:1px solid rgba(245,158,11,0.15)!important;padding:10px 8px!important;}
 .sched-item.beach-headliner{background:rgba(6,182,212,0.06)!important;border-radius:0;
   border-bottom:1px solid rgba(6,182,212,0.15)!important;padding:10px 8px!important;}
@@ -534,7 +534,7 @@ body{
 .tg-block:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.4);}
 .tg-block.dnb-block{background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.25);}
 .tg-block.oasis-block{background:rgba(0,212,200,0.12);border:1px solid rgba(0,212,200,0.22);}
-.tg-block.atrium-block{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);}
+.tg-block.oasis-block{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);}
 .tg-block.beach-block{background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.25);}
 .tg-block.locals-block{background:rgba(132,204,22,0.12);border:1px solid rgba(132,204,22,0.25);}
 .tg-block.headliner-block{border-width:2px;}
@@ -2531,7 +2531,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <span class="filter-label">Stage:</span>
             <button class="stage-pill all on" data-stage="all"     onclick="filterStage('all',this)">All</button>
             <button class="stage-pill dnb"    data-stage="dnb"     onclick="filterStage('dnb',this)">DNB</button>
-            <button class="stage-pill atrium" data-stage="atrium"  onclick="filterStage('atrium',this)">Atrium</button>
+            <button class="stage-pill oasis" data-stage="oasis"  onclick="filterStage('oasis',this)">Oasis Stage</button>
             <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
             <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locals</button>
             <div class="view-toggle">
@@ -2907,7 +2907,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <button class="dash-btn active" onclick="setAdminArtistFilter('all',this)" style="border-color:rgba(245,200,66,0.4);color:var(--gold-bright);" id="adminArtistFilterAll">All</button>
             <button class="dash-btn" onclick="setAdminArtistFilter('tba',this)">⚠ TBA</button>
             <button class="dash-btn" onclick="setAdminArtistFilter('dnb',this)" style="color:#c084fc;border-color:rgba(155,61,255,0.35);">DNB Stage</button>
-            <button class="dash-btn" onclick="setAdminArtistFilter('atrium',this)" style="color:#f59e0b;border-color:rgba(245,158,11,0.35);">Atrium</button>
+            <button class="dash-btn" onclick="setAdminArtistFilter('oasis',this)" style="color:#f59e0b;border-color:rgba(245,158,11,0.35);">Oasis Stage</button>
             <button class="dash-btn" onclick="setAdminArtistFilter('beach',this)" style="color:#06b6d4;border-color:rgba(6,182,212,0.35);">Beach</button>
             <button class="dash-btn" onclick="setAdminArtistFilter('locals',this)" style="color:#84cc16;border-color:rgba(132,204,22,0.35);">Locals</button>
           </div>
@@ -3848,7 +3848,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <label class="edit-label">Stage</label>
           <select class="edit-select" id="editArtistStage">
             <option value="DNB Stage">DNB Stage (Presented by BP²)</option>
-            <option value="Atrium">Atrium (House)</option>
+            <option value="Oasis Stage">Oasis Stage</option>
             <option value="Beach Stage">Beach Stage</option>
             <option value="Locals Stage">Locals Stage</option>
             <option value="TBA">TBA</option>
@@ -4290,7 +4290,7 @@ function syncScheduleDataFromArtists() {
   const stageKeyMap = {
     'DNB Stage': 'dnb',
     'Oasis Stage': 'oasis',
-    'Atrium': 'atrium',
+    'Oasis Stage': 'oasis',
     'Beach Stage': 'beach',
     'Locals Stage': 'locals',
   };
@@ -4450,7 +4450,7 @@ const ROLES = ['security','stage-crew','ticketing','engineers','management'];
 const ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management' };
 const DAYS = ['Fri','Sat','Sun'];
 const DAY_LABELS = {'Fri':'Friday Jul 17','Sat':'Saturday Jul 18','Sun':'Sunday Jul 19'};
-const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Atrium Stage','Atrium Backstage','Beach Stage','Beach Backstage','Locals Stage','Locals Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Parking Lot','Medical Station','General Grounds'];
+const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Oasis Stage Stage','Oasis Stage Backstage','Beach Stage','Beach Backstage','Locals Stage','Locals Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Parking Lot','Medical Station','General Grounds'];
 let taskAssignMode = 'role';
 let AVATAR_COLORS = [];
 let selectedAvatarColor = '#9b3dff';
@@ -4627,7 +4627,7 @@ function renderMySchedWidget() {
 
   const STAGE_COLORS = {
     'DNB Stage':'#c084fc','Oasis Stage':'#00d4c8',
-    'Atrium':'#f59e0b','Atrium (House)':'#f59e0b',
+    'Oasis Stage':'#f59e0b','Oasis Stage':'#f59e0b',
     'Beach Stage':'#06b6d4','Locals Stage':'#84cc16'
   };
 
@@ -4823,14 +4823,16 @@ function renderSchedule() {
   if (schedView === 'list') {
     listWrap.style.display = 'block';
     let html = '';
-    ['dnb','atrium','beach','locals'].forEach(stage => {
+    ['dnb','oasis','beach','locals'].forEach(stage => {
       if (!shouldShowStage(stage)) return;
-      const items = (data[stage]||[]).filter(item => matchArtist(item.artist));
+      const items = (data[stage]||[])
+        .filter(item => matchArtist(item.artist))
+        .sort((a, b) => timeToSort(a.time) - timeToSort(b.time));
       if (!items.length) return;
-      const stageNames = {dnb:'DNB Stage',atrium:'Atrium (House)',beach:'Beach Stage',locals:'Locals Stage'};
+      const stageNames = {dnb:'DNB Stage',oasis:'Oasis Stage',beach:'Beach Stage',locals:'Locals Stage'};
       const stageName = stageNames[stage] || stage;
       html += `<div class="stage-section"><div class="stage-section-header ${stage}">`+
-        `<div class="stage-dot" style="background:${{dnb:'#9b3dff',atrium:'#f59e0b',beach:'#06b6d4',locals:'#84cc16'}[stage]||'#888'};"></div>${stageName}</div>`+
+        `<div class="stage-dot" style="background:${{dnb:'#9b3dff',oasis:'#f59e0b',beach:'#06b6d4',locals:'#84cc16'}[stage]||'#888'};"></div>${stageName}</div>`+
         `<div class="sched-list">`;
       items.forEach(item => {
         const a = artists[item.artist]||{};
@@ -4851,13 +4853,15 @@ function renderSchedule() {
     gridWrap.style.display = 'block';
     const stages = [];
     if (shouldShowStage('dnb'))    stages.push({key:'dnb',    name:'DNB Stage', color:'#9b3dff'});
-    if (shouldShowStage('atrium')) stages.push({key:'atrium', name:'Atrium',                  color:'#f59e0b'});
+    if (shouldShowStage('oasis')) stages.push({key:'oasis', name:'Oasis Stage',                  color:'#f59e0b'});
     if (shouldShowStage('beach'))  stages.push({key:'beach',  name:'Beach Stage',                     color:'#06b6d4'});
     if (shouldShowStage('locals')) stages.push({key:'locals', name:'Locals Stage',                    color:'#84cc16'});
     let html = `<div class="tg-grid-wrap"><div class="tg-grid" style="grid-template-columns:repeat(${stages.length},minmax(140px,1fr));">`;
     stages.forEach(st => {
       html += `<div><div class="tg-col-header" style="color:${st.color};">${st.name}</div>`;
-      const items = (data[st.key]||[]).filter(i=>matchArtist(i.artist)&&i.time&&i.time!=='TBA');
+      const items = (data[st.key]||[])
+        .filter(i=>matchArtist(i.artist)&&i.time&&i.time!=='TBA')
+        .sort((a,b)=>timeToSort(a.time)-timeToSort(b.time));
       items.forEach(item => {
         const a = artists[item.artist]||{};
         const saved = mine.includes(item.artist);
@@ -4898,16 +4902,16 @@ function renderMySchedPage() {
 
   var STAGES = [
     {key:'DNB Stage',     color:'#c084fc', cls:'dnb',    hl:'headliner'},
-    {key:'Atrium',        color:'#f59e0b', cls:'atrium', hl:'atrium-headliner'},
+    {key:'Oasis Stage',        color:'#f59e0b', cls:'oasis', hl:'oasis-headliner'},
     {key:'Beach Stage',   color:'#06b6d4', cls:'beach',  hl:'beach-headliner'},
     {key:'Locals Stage',  color:'#84cc16', cls:'locals', hl:'locals-headliner'},
     {key:'Oasis Stage',   color:'#00d4c8', cls:'oasis',  hl:'oasis-headliner'},
   ];
 
-  // Normalize stage names so 'Atrium (House)' shows as 'Atrium'
+  // Normalize stage names so 'Oasis Stage' shows as 'Oasis Stage'
   function normalizeStage(s) {
     if (!s) return '';
-    if (s.startsWith('Atrium')) return 'Atrium';
+    if (s.startsWith('Oasis Stage')) return 'Oasis Stage';
     return s;
   }
 
@@ -4929,7 +4933,7 @@ function renderMySchedPage() {
   ['Fri','Sat','Sun','TBA'].forEach(function(day) {
     var keys = days[day]; if (!keys.length) return;
 
-    // Group by stage (normalize stage names to merge variants like 'Atrium (House)')
+    // Group by stage (normalize stage names to merge variants like 'Oasis Stage')
     var stageMap = {};
     keys.forEach(function(k) {
       var s = normalizeStage((artists[k] && artists[k].stage) || 'TBA');
@@ -5064,7 +5068,7 @@ async function sendScheduleToFriend() {
     if (status) { status.textContent = 'Your schedule is empty!'; status.style.color = 'var(--pink-coral)'; }
     return;
   }
-  const STAGE_EMOJI = { 'DNB Stage':'🟣','Atrium':'🟠','Atrium (House)':'🟠','Beach Stage':'🔵','Locals Stage':'🟢','Oasis Stage':'🔵' };
+  const STAGE_EMOJI = { 'DNB Stage':'🟣','Oasis Stage':'🟠','Oasis Stage':'🟠','Beach Stage':'🔵','Locals Stage':'🟢','Oasis Stage':'🔵' };
   const dayGroups = { Fri:[], Sat:[], Sun:[], TBA:[] };
   mine.forEach(function(k) {
     var a = artists[k]; if (!a) return;
@@ -5110,7 +5114,7 @@ function downloadSchedulePDF() {
 
   const STAGE_COLORS = {
     'DNB Stage':'#c084fc','Oasis Stage':'#00d4c8',
-    'Atrium':'#f59e0b','Atrium (House)':'#f59e0b',
+    'Oasis Stage':'#f59e0b','Oasis Stage':'#f59e0b',
     'Beach Stage':'#06b6d4','Locals Stage':'#84cc16'
   };
 
@@ -5317,7 +5321,7 @@ function openArtist(key) {
   document.getElementById('modalGenre').textContent = a.genre;
   const stageEl = document.getElementById('modalStage');
   stageEl.textContent = a.stage;
-  const stageColorMap = {'DNB Stage':'#9b3dff','Atrium':'#f59e0b','Atrium (House)':'#f59e0b','Beach Stage':'#06b6d4','Locals Stage':'#84cc16','Oasis Stage':'#00d4c8'};
+  const stageColorMap = {'DNB Stage':'#9b3dff','Oasis Stage':'#f59e0b','Oasis Stage':'#f59e0b','Beach Stage':'#06b6d4','Locals Stage':'#84cc16','Oasis Stage':'#00d4c8'};
   const stageColor = stageColorMap[a.stage] || '#888';
   const stageCard = stageEl.closest('.set-info-card');
   if (stageCard) {
@@ -6542,7 +6546,7 @@ async function renderMasterSchedule() {
   const STAGE_COLORS = {
     dnb:    { bg:'rgba(155,61,255,0.15)',  border:'rgba(155,61,255,0.25)',  accent:'#c084fc',  label:'DNB Stage' },
     oasis:  { bg:'rgba(0,212,200,0.12)',   border:'rgba(0,212,200,0.22)',   accent:'#00d4c8',  label:'Oasis Stage' },
-    atrium: { bg:'rgba(245,158,11,0.12)',  border:'rgba(245,158,11,0.25)',  accent:'#f59e0b',  label:'Atrium' },
+    oasis: { bg:'rgba(245,158,11,0.12)',  border:'rgba(245,158,11,0.25)',  accent:'#f59e0b',  label:'Oasis Stage' },
     beach:  { bg:'rgba(6,182,212,0.12)',   border:'rgba(6,182,212,0.25)',   accent:'#06b6d4',  label:'Beach Stage' },
     locals: { bg:'rgba(132,204,22,0.12)',  border:'rgba(132,204,22,0.25)',  accent:'#84cc16',  label:'Locals Stage' },
   };
@@ -6957,7 +6961,7 @@ function renderAdminArtistGrid() {
   let keys = Object.keys(artists);
   if (adminArtistFilter === 'tba')    keys = keys.filter(k => artists[k].time === 'TBA' || artists[k].stage === 'TBA');
   if (adminArtistFilter === 'dnb')    keys = keys.filter(k => artists[k].stage === 'DNB Stage');
-  if (adminArtistFilter === 'atrium') keys = keys.filter(k => artists[k].stage === 'Atrium' || artists[k].stage === 'Atrium (House)');
+  if (adminArtistFilter === 'oasis') keys = keys.filter(k => artists[k].stage === 'Oasis Stage' || artists[k].stage === 'Oasis Stage');
   if (adminArtistFilter === 'beach')  keys = keys.filter(k => artists[k].stage === 'Beach Stage' || artists[k].stage === 'Oasis Stage');
   if (adminArtistFilter === 'locals') keys = keys.filter(k => artists[k].stage === 'Locals Stage');
   keys.sort((a,b) => a.localeCompare(b));
@@ -7161,7 +7165,7 @@ function renderAdminSchedule() {
 
   const ADMIN_STAGES = [
     { key:'dnb',    name:'DNB Stage',        color:'#c084fc' },
-    { key:'atrium', name:'Atrium',    color:'#f59e0b' },
+    { key:'oasis', name:'Oasis Stage',    color:'#f59e0b' },
     { key:'beach',  name:'Beach Stage',       color:'#06b6d4' },
     { key:'locals', name:'Locals Stage',      color:'#84cc16' },
   ];
@@ -7247,7 +7251,7 @@ function addArtistToSchedule(day, stage) {
   const entry = { artist: artistName, time: a.time || 'TBA', headliner: !!a.headliner };
   SCHEDULE_DATA[day][stage].push(entry);
 
-  const stageDisplayNames = { dnb:'DNB Stage', atrium:'Atrium', beach:'Beach Stage', locals:'Locals Stage' };
+  const stageDisplayNames = { dnb:'DNB Stage', oasis:'Oasis Stage', beach:'Beach Stage', locals:'Locals Stage' };
   const stageDisplayName = stageDisplayNames[stage] || stage;
   const dayDisplayName   = { fri:'Fri', sat:'Sat', sun:'Sun' }[day] || day;
   if (artists[artistName]) {
@@ -10736,7 +10740,7 @@ INFO_DEFAULTS = {
     sections: [
       { title: 'About The Event', body: 'Sunken Suite is a 3-day underground music festival celebrating the best in Drum & Bass, Techno, House, and Electronic music. The Mutiny 2026 is our biggest event yet — four stages, 66+ artists, and an immersive experience at the Sturbridge Host Hotel on Cedar Lake.' },
       { title: 'Festival Days', body: 'Friday July 17 — Gates 4PM · Music 6PM\nSaturday July 18 — Gates 2PM · Music 4PM\nSunday July 19 — Gates 2PM · Music 4PM\n\nLast set ends approximately 6AM each night.' },
-      { title: 'Stages', body: 'DNB Stage · Drum & Bass · Main Indoor Stage\nAtrium · Tech House / House Music · Indoor\nBeach Stage · Outdoor Pool-Side · Electronic\nLocals Stage · Local & Regional Artists' },
+      { title: 'Stages', body: 'DNB Stage · Drum & Bass · Main Indoor Stage\nOasis Stage · Tech House / House Music · Indoor\nBeach Stage · Outdoor Pool-Side · Electronic\nLocals Stage · Local & Regional Artists' },
       { title: 'Headliners', body: 'Friday DNB Stage — Roni Size\nSaturday — J. Phlip\nSunday DNB Stage — Spor' },
       { title: 'Contact', body: 'General: info@thefestiecat.com\nStaff: staff@sunkensuite.com\nEmergency: Use the SOS button in the More menu\nVenue: Sturbridge Host Hotel & Conference Center' }
     ]
