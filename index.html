@@ -8508,10 +8508,12 @@ function closeFindMe() {
   const overlay = document.getElementById('findMeOverlay');
   if (overlay) overlay.style.display = 'none';
   document.body.style.overflow = '';
-  // Exit fullscreen
+  // Exit fullscreen — catch both sync errors and promise rejections
   try {
-    if (document.exitFullscreen) document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    const p = document.exitFullscreen ? document.exitFullscreen()
+            : document.webkitExitFullscreen ? document.webkitExitFullscreen()
+            : null;
+    if (p && p.catch) p.catch(() => {});
   } catch(e) {}
 }
 
@@ -8857,7 +8859,7 @@ function closeTriviaGame() {
   const overlay = document.getElementById('raveTriviaOverlay');
   if (overlay) overlay.style.display = 'none';
   document.body.style.overflow = '';
-  if (state && state.timerInterval) clearInterval(state.timerInterval);
+  try { if (typeof state !== 'undefined' && state && state.timerInterval) clearInterval(state.timerInterval); } catch(e) {}
 }
 
 const STAGES = [
