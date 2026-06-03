@@ -7606,6 +7606,7 @@ function buildUserTableHTML(users) {
       '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
         '<button class="dash-btn" onclick="adminResetPassword(\''+u.id+'\',\''+(u.name||u.handle||u.email)+'\',\''+u.email+'\')" style="flex:1;padding:7px;font-size:11px;font-weight:700;">🔑 Reset PW</button>' +
         '<button id="connectBtn_'+u.id+'" class="dash-btn" onclick="adminConnectUser(\''+u.id+'\',this)" style="flex:1;padding:7px;font-size:11px;font-weight:700;">🤝 Connect</button>' +
+        (u.id !== (currentUser&&currentUser.id) ? '<button class="dash-btn" onclick="adminDMUser(\''+u.id+'\',\''+(u.handle||u.name||'User')+'\')" style="flex:1;padding:7px;font-size:11px;font-weight:700;">💬 DM</button>' : '') +
         '<button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:7px 14px;font-size:11px;font-weight:700;">✕ Remove</button>' +
       '</div>' +
 
@@ -7613,6 +7614,15 @@ function buildUserTableHTML(users) {
   });
 
   return '<div>' + html + '</div>';
+}
+
+function adminDMUser(userId, handle) {
+  // Navigate to messages and open the DM thread
+  navigate('people');
+  setTimeout(function() {
+    switchPeopleTab('messages');
+    openDMThread(userId, handle, '#9b3dff');
+  }, 300);
 }
 
 async function adminConnectUser(userId, btn) {
