@@ -3333,7 +3333,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 <div class="more-overlay" id="moreOverlay">
   <div class="more-backdrop" id="moreBackdrop" onclick="closeMore()"></div>
   <div class="more-panel" id="morePanel">
-    <div class="more-panel-header">More Features</div>
+    <div class="more-panel-header" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>More</span>
+      <button onclick="closeMore()" style="background:rgba(255,255,255,0.08);border:none;color:var(--text-muted);width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+    </div>
     <div class="more-grid">
       <span class="more-btn games" onclick="navigate('games');closeMore()">
         <div class="more-btn-icon">🎮</div>
@@ -5637,6 +5640,19 @@ function closeDrawer() {}
 
 function toggleMore(triggerEl) {
   const overlay = document.getElementById('moreOverlay');
+  // If sub-modals are open, close them and show the More menu
+  const infoOpen = document.getElementById('infoOverlay')?.classList.contains('open');
+  const sosOpen  = document.getElementById('sosOverlay')?.classList.contains('open');
+  const findOpen = document.getElementById('findMeOverlay')?.style.display === 'flex';
+  if (infoOpen || sosOpen || findOpen) {
+    if (typeof closeInfo === 'function') closeInfo();
+    if (typeof closeSOS === 'function') closeSOS();
+    if (typeof closeFindMe === 'function') closeFindMe();
+    overlay.classList.add('open');
+    document.querySelectorAll('.more-trigger').forEach(t=>t.classList.add('more-active'));
+    document.body.style.overflow = 'hidden';
+    return;
+  }
   if (overlay.classList.contains('open')) { closeMore(); return; }
   overlay.classList.add('open');
   document.querySelectorAll('.more-trigger').forEach(t=>t.classList.add('more-active'));
@@ -12169,34 +12185,37 @@ function updateDMBadge(count) {
 }// ── Collapsible headers on scroll (mobile only) ────────────
 (function() {
   if (window.innerWidth > 767) return;
+
   function attachCollapse(pageId, barSelector) {
     var page = document.getElementById(pageId);
     if (!page) return;
-    var lastScroll = 0;
-    page.addEventListener('scroll', function() {
+    // Remove any previous listener
+    page._collapseListener && page.removeEventListener('scroll', page._collapseListener);
+    page._collapseListener = function() {
       var bar = page.querySelector(barSelector);
       if (!bar) return;
-      var scrolled = page.scrollTop > 80;
-      bar.classList.toggle('collapsed', scrolled);
-    }, { passive: true });
+      bar.classList.toggle('collapsed', page.scrollTop > 80);
+    };
+    page.addEventListener('scroll', page._collapseListener, { passive: true });
+    // Also reset on attach
+    var bar = page.querySelector(barSelector);
+    if (bar) bar.classList.remove('collapsed');
   }
-  // Attach after navigate so elements exist
-  var _origNavigate = window.navigate;
-  if (typeof _origNavigate === 'function') {
+
+  // Patch navigate to attach on each visit
+  var _nav = window.navigate;
+  if (typeof _nav === 'function') {
     window.navigate = function(page) {
-      _origNavigate(page);
-      if (page === 'schedule') {
-        setTimeout(function() { attachCollapse('page-schedule', '.sched-sticky'); }, 100);
-      } else if (page === 'artists') {
-        setTimeout(function() { attachCollapse('page-artists', '.artist-controls'); }, 100);
-      }
+      _nav.call(this, page);
+      if (page === 'schedule') setTimeout(function(){ attachCollapse('page-schedule', '.sched-sticky'); }, 150);
+      if (page === 'artists')  setTimeout(function(){ attachCollapse('page-artists',  '.artist-controls'); }, 150);
     };
   }
-  // Also attach on first load
+
   setTimeout(function() {
     attachCollapse('page-schedule', '.sched-sticky');
-    attachCollapse('page-artists', '.artist-controls');
-  }, 1000);
+    attachCollapse('page-artists',  '.artist-controls');
+  }, 1500);
 })();
 
 
