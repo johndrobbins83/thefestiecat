@@ -415,20 +415,23 @@ body{
 ══════════════════════════════════════════════════ */
 .controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
 #page-schedule .sched-sticky{
-  position:sticky;top:-16px;z-index:100;
+  position:sticky;top:0;z-index:100;
   background:#000;
-  padding:16px 0 8px;
-  margin:-16px -16px 16px -16px;
-  padding-left:16px;padding-right:16px;
+  padding:10px 16px 8px;
   border-bottom:1px solid rgba(245,200,66,0.1);
   transition:padding .2s ease;
+}
+@media(min-width:768px){
+  #page-schedule .sched-sticky{
+    padding:12px 32px 10px;
+  }
 }
 /* Collapsed state on mobile scroll */
 @media(max-width:767px){
   #page-schedule .page-header{ display:none; }
   #page-schedule .sched-sticky.collapsed .search-wrap{ display:none; }
   #page-schedule .sched-sticky.collapsed .filter-row{ display:none; }
-  #page-schedule .sched-sticky.collapsed{ padding-top:8px;padding-bottom:6px; }
+  #page-schedule .sched-sticky.collapsed{ padding-top:6px;padding-bottom:6px; }
   .artist-controls{ position:sticky;top:0;z-index:100;background:#000;
     padding:4px 0 4px;
     border-bottom:1px solid rgba(255,255,255,0.07); }
@@ -6525,6 +6528,7 @@ async function loadAdminUsers() {
       const statEl = document.getElementById('statUsers');
       if (statEl) statEl.textContent = window._allUsers.length;
       renderAdminUsersTab();
+      setTimeout(updateConnectButtonStates, 300);
     }
   } catch(e) { console.warn('loadAdminUsers failed:', e); }
 }
@@ -7596,8 +7600,9 @@ function buildUserTableHTML(users) {
       '</div>' +
 
       // Row 3: action buttons
-      '<div style="display:flex;gap:6px;">' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
         '<button class="dash-btn" onclick="adminResetPassword(\''+u.id+'\',\''+(u.name||u.handle||u.email)+'\',\''+u.email+'\')" style="flex:1;padding:7px;font-size:11px;font-weight:700;">🔑 Reset PW</button>' +
+        '<button id="connectBtn_'+u.id+'" class="dash-btn" onclick="adminConnectUser(\''+u.id+'\',this)" style="flex:1;padding:7px;font-size:11px;font-weight:700;">🤝 Connect</button>' +
         '<button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:7px 14px;font-size:11px;font-weight:700;">✕ Remove</button>' +
       '</div>' +
 
@@ -7605,6 +7610,67 @@ function buildUserTableHTML(users) {
   });
 
   return '<div>' + html + '</div>';
+}
+
+async function adminConnectUser(userId, btn) {
+  if (!currentUser || currentUser.id === userId) return;
+  const token = localStorage.getItem(TOKEN_KEY);
+  const label = btn.textContent;
+  // If already connected, do nothing
+  if (btn.dataset.state === 'connected') { showToast('Already connected!'); return; }
+  // If pending, also do nothing
+  if (btn.dataset.state === 'pending') { showToast('Request already sent'); return; }
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const res = await fetch(AUTH_URL + '/follow', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ targetId: userId })
+    });
+    const d = await res.json();
+    if (res.ok) {
+      if (d.mutual || d.status === 'mutual') {
+        btn.textContent = '✓ Connected';
+        btn.dataset.state = 'connected';
+        btn.style.color = '#4ade80';
+        btn.style.borderColor = 'rgba(74,222,128,0.4)';
+      } else {
+        btn.textContent = '⏳ Pending';
+        btn.dataset.state = 'pending';
+        btn.style.color = 'var(--gold-bright)';
+      }
+    } else {
+      btn.textContent = label;
+    }
+  } catch(e) { btn.textContent = label; }
+  btn.disabled = false;
+}
+
+// After loading users, check connection status for each
+async function updateConnectButtonStates() {
+  if (!currentUser) return;
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const [fwRes, frRes] = await Promise.all([
+      fetch(AUTH_URL + '/following', { headers:{'Authorization':'Bearer '+token} }),
+      fetch(AUTH_URL + '/followers', { headers:{'Authorization':'Bearer '+token} })
+    ]);
+    const following = fwRes.ok ? ((await fwRes.json()).following || []) : [];
+    const followers = frRes.ok ? ((await frRes.json()).followers || []) : [];
+    document.querySelectorAll('[id^="connectBtn_"]').forEach(function(btn) {
+      const uid = btn.id.replace('connectBtn_','');
+      if (uid === currentUser.id) { btn.style.display='none'; return; }
+      const isMutual  = following.includes(uid) && followers.includes(uid);
+      const isPending = following.includes(uid) && !followers.includes(uid);
+      if (isMutual) {
+        btn.textContent = '✓ Connected'; btn.dataset.state = 'connected';
+        btn.style.color = '#4ade80'; btn.style.borderColor = 'rgba(74,222,128,0.4)';
+      } else if (isPending) {
+        btn.textContent = '⏳ Pending'; btn.dataset.state = 'pending';
+        btn.style.color = 'var(--gold-bright)';
+      }
+    });
+  } catch(e) {}
 }
 
 async function adminSetStaffRole(userId, staffRole) {
