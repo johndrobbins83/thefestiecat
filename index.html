@@ -417,13 +417,16 @@ body{
 #page-schedule .sched-sticky{
   position:sticky;top:0;z-index:100;
   background:#000;
-  padding:10px 16px 8px;
+  padding:8px 16px 8px;
   border-bottom:1px solid rgba(245,200,66,0.1);
   transition:padding .2s ease;
+  /* Counteract page padding so it goes edge-to-edge */
+  margin:-16px -16px 12px;
 }
 @media(min-width:768px){
   #page-schedule .sched-sticky{
-    padding:12px 32px 10px;
+    margin:-24px -32px 16px;
+    padding:10px 32px 10px;
   }
 }
 /* Collapsed state on mobile scroll */
