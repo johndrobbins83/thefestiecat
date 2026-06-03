@@ -420,13 +420,21 @@ body{
   margin:-16px -16px 16px -16px;
   padding-left:16px;padding-right:16px;
   border-bottom:1px solid rgba(245,200,66,0.1);
+  transition:padding .2s ease;
 }
-@media(min-width:768px){
-  #page-schedule .sched-sticky{
-    top:-24px;
-    padding:24px 32px 10px;
-    margin:-24px -32px 16px -32px;
-  }
+/* Collapsed state on mobile scroll */
+@media(max-width:767px){
+  #page-schedule .sched-sticky.collapsed .page-header{ display:none; }
+  #page-schedule .sched-sticky.collapsed .search-wrap{ display:none; }
+  #page-schedule .sched-sticky.collapsed .filter-row{ display:none; }
+  #page-schedule .sched-sticky.collapsed{ padding-top:8px;padding-bottom:6px; }
+  .artist-controls{ position:sticky;top:-16px;z-index:100;background:#000;
+    margin:-16px -16px 8px;padding:8px 16px 6px;
+    border-bottom:1px solid rgba(255,255,255,0.07);transition:padding .2s ease; }
+  .artist-controls.collapsed .az-bar{ display:none; }
+  .artist-controls.collapsed .search-wrap{ display:none; }
+  .artist-controls.collapsed .artist-filters{ display:none; }
+  .artist-controls.collapsed{ padding-top:6px;padding-bottom:4px; }
 }
 .search-wrap{position:relative;}
 .search-input{width:100%;padding:10px 16px 10px 40px;background:rgba(20,20,20,0.9);
@@ -12151,10 +12159,40 @@ function updateDMBadge(count) {
     if (count > 0) { el.style.display='inline-flex'; el.textContent=count; }
     else           { el.style.display='none'; }
   });
-}
+}// ── Collapsible headers on scroll (mobile only) ────────────
+(function() {
+  if (window.innerWidth > 767) return;
+  function attachCollapse(pageId, barSelector) {
+    var page = document.getElementById(pageId);
+    if (!page) return;
+    var lastScroll = 0;
+    page.addEventListener('scroll', function() {
+      var bar = page.querySelector(barSelector);
+      if (!bar) return;
+      var scrolled = page.scrollTop > 80;
+      bar.classList.toggle('collapsed', scrolled);
+    }, { passive: true });
+  }
+  // Attach after navigate so elements exist
+  var _origNavigate = window.navigate;
+  if (typeof _origNavigate === 'function') {
+    window.navigate = function(page) {
+      _origNavigate(page);
+      if (page === 'schedule') {
+        setTimeout(function() { attachCollapse('page-schedule', '.sched-sticky'); }, 100);
+      } else if (page === 'artists') {
+        setTimeout(function() { attachCollapse('page-artists', '.artist-controls'); }, 100);
+      }
+    };
+  }
+  // Also attach on first load
+  setTimeout(function() {
+    attachCollapse('page-schedule', '.sched-sticky');
+    attachCollapse('page-artists', '.artist-controls');
+  }, 1000);
+})();
 
 
 </script>
 </body>
 </html>
-</script>
