@@ -6,7 +6,27 @@
 <title>Sunken Suite · The Mutiny 2026</title>
 
 <!-- PWA -->
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" id="pwaManifest">
+<script>
+// Generate manifest inline to control orientation
+(function(){
+  var manifest = {
+    name: "Sunken Suite · The Mutiny",
+    short_name: "Sunken Suite",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#000000",
+    theme_color: "#000000",
+    orientation: "any",
+    icons: [
+      { src: "/icon192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icon512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+    ]
+  };
+  var blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  document.getElementById('pwaManifest').href = URL.createObjectURL(blob);
+})();
+</script>
 <meta name="theme-color" content="#020b1a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -217,6 +237,24 @@ body{
   -webkit-overflow-scrolling:touch;
 }
 @media(min-width:768px){.page{padding:24px 32px 40px;}}
+
+/* Landscape on mobile phones */
+@media(max-height:500px) and (orientation:landscape) and (max-width:900px){
+  .bottom-nav{
+    height:calc(54px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  .nav-label{ display:none !important; }
+  .nav-icon-wrap{ font-size:18px !important; }
+  .page{ padding-bottom:calc(58px + env(safe-area-inset-bottom,0px)) !important; }
+  .page-header{ margin-bottom:8px; }
+  .page-title{ font-size:20px !important; }
+  /* Schedule sticky bar more compact */
+  #page-schedule .sched-sticky{ padding:4px 16px 4px; }
+  /* Artist grid 3 columns in landscape */
+  .artist-grid{ grid-template-columns:repeat(3,1fr) !important; }
+  /* More overlay fits in landscape */
+  .more-panel{ max-height:calc(100svh - 60px); }
+}
 @media(min-width:768px){
   #getTicketsBtn{
     padding:16px 32px !important;
