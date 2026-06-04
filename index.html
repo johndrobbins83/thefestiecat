@@ -214,27 +214,8 @@ body{
   position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
   padding:16px 16px 24px;opacity:0;pointer-events:none;
   transition:opacity .2s ease,transform .2s ease;transform:translateX(24px);
-  -webkit-overflow-scrolling:touch;
 }
 @media(min-width:768px){.page{padding:24px 32px 40px;}}
-
-/* Landscape on mobile phones */
-@media(max-height:500px) and (orientation:landscape) and (max-width:900px){
-  .bottom-nav{
-    height:calc(54px + env(safe-area-inset-bottom,0px)) !important;
-  }
-  .nav-label{ display:none !important; }
-  .nav-icon-wrap{ font-size:18px !important; }
-  .page{ padding-bottom:calc(58px + env(safe-area-inset-bottom,0px)) !important; }
-  .page-header{ margin-bottom:8px; }
-  .page-title{ font-size:20px !important; }
-  /* Schedule sticky bar more compact */
-  #page-schedule .sched-sticky{ padding:4px 16px 4px; }
-  /* Artist grid 3 columns in landscape */
-  .artist-grid{ grid-template-columns:repeat(3,1fr) !important; }
-  /* More overlay fits in landscape */
-  .more-panel{ max-height:calc(100svh - 60px); }
-}
 @media(min-width:768px){
   #getTicketsBtn{
     padding:16px 32px !important;
@@ -433,29 +414,19 @@ body{
 ══════════════════════════════════════════════════ */
 .controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
 #page-schedule .sched-sticky{
-  position:sticky;top:0;z-index:100;
+  position:sticky;top:-16px;z-index:100;
   background:#000;
-  padding:8px 16px 8px;
+  padding:16px 0 8px;
+  margin:-16px -16px 16px -16px;
+  padding-left:16px;padding-right:16px;
   border-bottom:1px solid rgba(245,200,66,0.1);
-  transition:padding .2s ease;
-  /* Counteract page padding so it goes edge-to-edge */
-  margin:-16px -16px 12px;
 }
 @media(min-width:768px){
   #page-schedule .sched-sticky{
-    margin:-24px -32px 16px;
-    padding:10px 32px 10px;
+    top:-24px;
+    padding:24px 32px 10px;
+    margin:-24px -32px 16px -32px;
   }
-}
-/* Collapsed state on mobile scroll */
-@media(max-width:767px){
-  #page-schedule .page-header{ display:none; }
-  #page-schedule .sched-sticky.collapsed .search-wrap{ display:none; }
-  #page-schedule .sched-sticky.collapsed .filter-row{ display:none; }
-  #page-schedule .sched-sticky.collapsed{ padding-top:6px;padding-bottom:6px; }
-  .artist-controls{ position:sticky;top:0;z-index:100;background:#000;
-    padding:4px 0 4px;
-    border-bottom:1px solid rgba(255,255,255,0.07); }
 }
 .search-wrap{position:relative;}
 .search-input{width:100%;padding:10px 16px 10px 40px;background:rgba(20,20,20,0.9);
@@ -607,7 +578,8 @@ body{
 .artist-controls{display:flex;flex-direction:column;gap:8px;margin-bottom:0;
   position:sticky;top:0;z-index:100;background:#000;
   padding:8px 0 6px;
-  border-bottom:1px solid rgba(255,255,255,0.08);}
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  clip-path:inset(0 -100vw 0 -100vw);}
 
 /* A–Z bar */
 .az-bar{display:flex;gap:2px;flex-wrap:wrap;padding:8px 16px 8px;overflow-x:auto;}
@@ -839,20 +811,20 @@ body{
 ══════════════════════════════════════════════════ */
 .more-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;
   display:flex;align-items:center;justify-content:center;
-  padding:16px;}
+  padding:16px 16px calc(72px + env(safe-area-inset-bottom,0px)) 16px;}
 .more-overlay.open{pointer-events:all;}
 .more-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);
   opacity:0;transition:opacity .2s ease;}
 .more-overlay.open .more-backdrop{opacity:1;}
 .more-panel{position:relative;z-index:1;background:#0a0a0a;
   border:1px solid rgba(245,200,66,0.25);border-radius:0;padding:20px;
-  width:min(340px,calc(100vw - 32px));
-  max-height:calc(100svh - 80px - env(safe-area-inset-top,44px) - env(safe-area-inset-bottom,0px));
+  width:min(320px,calc(100vw - 32px));
+  max-height:calc(100vh - 72px - env(safe-area-inset-bottom,0px) - env(safe-area-inset-top,44px) - 32px);
   overflow-y:auto;-webkit-overflow-scrolling:touch;
-  transform:scale(0.95);opacity:0;
+  transform:scale(0.95) translateY(-8px);opacity:0;
   transition:transform .22s cubic-bezier(.4,0,.2,1),opacity .22s ease;
   box-shadow:0 24px 64px rgba(0,0,0,0.8);}
-.more-overlay.open .more-panel{transform:scale(1);opacity:1;}
+.more-overlay.open .more-panel{transform:scale(1) translateY(0);opacity:1;}
 .more-panel-header{font-size:11px;font-weight:800;color:var(--text-muted);letter-spacing:2px;
   text-transform:uppercase;margin-bottom:12px;padding-bottom:10px;
   border-bottom:1px solid rgba(255,255,255,0.07);}
@@ -2030,11 +2002,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 /* ══ INFO OVERLAY ══ */
 .info-overlay{position:fixed;inset:0;z-index:20000;display:none;flex-direction:column;background:#050510;}
 .info-overlay.open{display:flex;}
-@media(max-width:767px){
-  .info-overlay{
-    bottom:calc(72px + env(safe-area-inset-bottom, 0px));
-  }
-}
 .info-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
   border-bottom:1px solid rgba(245,200,66,0.2);background:#050510;flex-shrink:0;}
 .info-header-title{font-size:14px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;}
@@ -2044,8 +2011,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .info-tab{flex:1;padding:10px 6px;text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);
   cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;text-transform:uppercase;letter-spacing:0.5px;}
 .info-tab.active{color:var(--gold-bright);border-bottom-color:var(--gold-bright);}
-.info-body{flex:1;overflow-y:auto;padding:20px 16px;-webkit-overflow-scrolling:touch;
-  padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px));}
+.info-body{flex:1;overflow-y:auto;padding:20px 16px;-webkit-overflow-scrolling:touch;}
 .info-section{margin-bottom:28px;}
 .info-section-title{font-size:11px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;
   letter-spacing:1.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(245,200,66,0.15);}
@@ -2613,17 +2579,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── ARTISTS PAGE ── -->
   <div class="page" id="page-artists">
-    <div class="artist-controls" id="artistControls">
-      <!-- Search + Sort -->
-      <div style="display:flex;gap:8px;padding:8px 16px 4px;align-items:center;">
-        <div class="search-wrap" style="flex:1;"><span class="search-icon">🔍</span><input type="text" class="search-input" id="artistSearchInput" placeholder="Search artists…" oninput="renderArtists()"></div>
-        <select id="artistSortSelect" onchange="renderArtists()" style="flex-shrink:0;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
-          <option value="alpha">A–Z</option>
-          <option value="za">Z–A</option>
-          <option value="stage">By Stage</option>
-          <option value="day">By Day</option>
-          <option value="headliner">Headliners First</option>
-        </select>
+    <div class="artist-controls">
+      <!-- A–Z bar -->
+      <div class="az-bar" id="azBar"></div>
+      <!-- Search + filters -->
+      <div style="display:flex;gap:8px;padding:0 16px;align-items:center;margin-bottom:2px;">
+        <div class="search-wrap" style="flex:1;"><span class="search-icon">🔍</span><input type="text" class="search-input" id="artistSearchInput" placeholder="Search artists…" oninput="setArtistLetter('');renderArtists()"></div>
       </div>
       <div class="artist-filters" id="artistFilters">
         <button class="af-pill active" data-filter="all"   onclick="setArtistFilter('all',this)">All</button>
@@ -3357,10 +3318,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 <div class="more-overlay" id="moreOverlay">
   <div class="more-backdrop" id="moreBackdrop" onclick="closeMore()"></div>
   <div class="more-panel" id="morePanel">
-    <div class="more-panel-header" style="display:flex;align-items:center;justify-content:space-between;">
-      <span>More</span>
-      <button onclick="closeMore()" style="background:rgba(255,255,255,0.08);border:none;color:var(--text-muted);width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
-    </div>
+    <div class="more-panel-header">More Features</div>
     <div class="more-grid">
       <span class="more-btn games" onclick="navigate('games');closeMore()">
         <div class="more-btn-icon">🎮</div>
@@ -5299,21 +5257,14 @@ function renderArtists() {
   if (artistFilter === 'sun')   keys = keys.filter(k=>artists[k].day==='Sun');
   if (artistFilter === 'saved') keys = keys.filter(k=>mine.includes(k));
 
-  // Letter filter (removed - replaced with sort)
+  // Letter filter
+  if (artistLetterFilter) keys = keys.filter(k=>k[0].toUpperCase()===artistLetterFilter);
+
   // Text search
   if (q) keys = keys.filter(k=>(k+' '+(artists[k].genre||'')+(artists[k].stage||'')).toLowerCase().includes(q));
 
-  // Sort based on dropdown
-  const sortVal = (document.getElementById('artistSortSelect')||{}).value || 'alpha';
-  if (sortVal === 'alpha')      keys.sort((a,b)=>a.localeCompare(b));
-  else if (sortVal === 'za')    keys.sort((a,b)=>b.localeCompare(a));
-  else if (sortVal === 'stage') keys.sort((a,b)=>(artists[a].stage||'').localeCompare(artists[b].stage||'') || a.localeCompare(b));
-  else if (sortVal === 'day') {
-    const dayOrd = {Fri:0,Sat:1,Sun:2,TBA:3};
-    keys.sort((a,b)=>(dayOrd[artists[a].day]??3)-(dayOrd[artists[b].day]??3) || a.localeCompare(b));
-  }
-  else if (sortVal === 'headliner') keys.sort((a,b)=>(artists[b].headliner?1:0)-(artists[a].headliner?1:0) || a.localeCompare(b));
-  else keys.sort((a,b)=>a.localeCompare(b));
+  // Sort alphabetically
+  keys.sort((a,b)=>a.localeCompare(b));
 
   if (!keys.length) {
     grid.innerHTML='<div class="no-results"><div class="no-results-icon">🎤</div>No artists found.</div>';
@@ -5671,19 +5622,6 @@ function closeDrawer() {}
 
 function toggleMore(triggerEl) {
   const overlay = document.getElementById('moreOverlay');
-  // If sub-modals are open, close them and show the More menu
-  const infoOpen = document.getElementById('infoOverlay')?.classList.contains('open');
-  const sosOpen  = document.getElementById('sosOverlay')?.classList.contains('open');
-  const findOpen = document.getElementById('findMeOverlay')?.style.display === 'flex';
-  if (infoOpen || sosOpen || findOpen) {
-    if (typeof closeInfo === 'function') closeInfo();
-    if (typeof closeSOS === 'function') closeSOS();
-    if (typeof closeFindMe === 'function') closeFindMe();
-    overlay.classList.add('open');
-    document.querySelectorAll('.more-trigger').forEach(t=>t.classList.add('more-active'));
-    document.body.style.overflow = 'hidden';
-    return;
-  }
   if (overlay.classList.contains('open')) { closeMore(); return; }
   overlay.classList.add('open');
   document.querySelectorAll('.more-trigger').forEach(t=>t.classList.add('more-active'));
@@ -6549,7 +6487,6 @@ async function loadAdminUsers() {
       const statEl = document.getElementById('statUsers');
       if (statEl) statEl.textContent = window._allUsers.length;
       renderAdminUsersTab();
-      setTimeout(updateConnectButtonStates, 300);
     }
   } catch(e) { console.warn('loadAdminUsers failed:', e); }
 }
@@ -7621,10 +7558,8 @@ function buildUserTableHTML(users) {
       '</div>' +
 
       // Row 3: action buttons
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+      '<div style="display:flex;gap:6px;">' +
         '<button class="dash-btn" onclick="adminResetPassword(\''+u.id+'\',\''+(u.name||u.handle||u.email)+'\',\''+u.email+'\')" style="flex:1;padding:7px;font-size:11px;font-weight:700;">🔑 Reset PW</button>' +
-        '<button id="connectBtn_'+u.id+'" class="dash-btn" onclick="adminConnectUser(\''+u.id+'\',this)" style="flex:1;padding:7px;font-size:11px;font-weight:700;">🤝 Connect</button>' +
-        (u.id !== (currentUser&&currentUser.id) ? '<button class="dash-btn" onclick="adminDMUser(\''+u.id+'\',\''+(u.handle||u.name||'User')+'\')" style="flex:1;padding:7px;font-size:11px;font-weight:700;">💬 DM</button>' : '') +
         '<button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:7px 14px;font-size:11px;font-weight:700;">✕ Remove</button>' +
       '</div>' +
 
@@ -7632,76 +7567,6 @@ function buildUserTableHTML(users) {
   });
 
   return '<div>' + html + '</div>';
-}
-
-function adminDMUser(userId, handle) {
-  // Navigate to messages and open the DM thread
-  navigate('people');
-  setTimeout(function() {
-    switchPeopleTab('messages');
-    openDMThread(userId, handle, '#9b3dff');
-  }, 300);
-}
-
-async function adminConnectUser(userId, btn) {
-  if (!currentUser || currentUser.id === userId) return;
-  const token = localStorage.getItem(TOKEN_KEY);
-  const label = btn.textContent;
-  // If already connected, do nothing
-  if (btn.dataset.state === 'connected') { showToast('Already connected!'); return; }
-  // If pending, also do nothing
-  if (btn.dataset.state === 'pending') { showToast('Request already sent'); return; }
-  btn.disabled = true; btn.textContent = '…';
-  try {
-    const res = await fetch(AUTH_URL + '/follow', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({ targetId: userId })
-    });
-    const d = await res.json();
-    if (res.ok) {
-      if (d.mutual || d.status === 'mutual') {
-        btn.textContent = '✓ Connected';
-        btn.dataset.state = 'connected';
-        btn.style.color = '#4ade80';
-        btn.style.borderColor = 'rgba(74,222,128,0.4)';
-      } else {
-        btn.textContent = '⏳ Pending';
-        btn.dataset.state = 'pending';
-        btn.style.color = 'var(--gold-bright)';
-      }
-    } else {
-      btn.textContent = label;
-    }
-  } catch(e) { btn.textContent = label; }
-  btn.disabled = false;
-}
-
-// After loading users, check connection status for each
-async function updateConnectButtonStates() {
-  if (!currentUser) return;
-  const token = localStorage.getItem(TOKEN_KEY);
-  try {
-    const [fwRes, frRes] = await Promise.all([
-      fetch(AUTH_URL + '/following', { headers:{'Authorization':'Bearer '+token} }),
-      fetch(AUTH_URL + '/followers', { headers:{'Authorization':'Bearer '+token} })
-    ]);
-    const following = fwRes.ok ? ((await fwRes.json()).following || []) : [];
-    const followers = frRes.ok ? ((await frRes.json()).followers || []) : [];
-    document.querySelectorAll('[id^="connectBtn_"]').forEach(function(btn) {
-      const uid = btn.id.replace('connectBtn_','');
-      if (uid === currentUser.id) { btn.style.display='none'; return; }
-      const isMutual  = following.includes(uid) && followers.includes(uid);
-      const isPending = following.includes(uid) && !followers.includes(uid);
-      if (isMutual) {
-        btn.textContent = '✓ Connected'; btn.dataset.state = 'connected';
-        btn.style.color = '#4ade80'; btn.style.borderColor = 'rgba(74,222,128,0.4)';
-      } else if (isPending) {
-        btn.textContent = '⏳ Pending'; btn.dataset.state = 'pending';
-        btn.style.color = 'var(--gold-bright)';
-      }
-    });
-  } catch(e) {}
 }
 
 async function adminSetStaffRole(userId, staffRole) {
@@ -12286,43 +12151,10 @@ function updateDMBadge(count) {
     if (count > 0) { el.style.display='inline-flex'; el.textContent=count; }
     else           { el.style.display='none'; }
   });
-}// ── Collapsible headers on scroll (mobile only) ────────────
-(function() {
-  if (window.innerWidth > 767) return;
-
-  function attachCollapse(pageId, barSelector) {
-    var page = document.getElementById(pageId);
-    if (!page) return;
-    // Remove any previous listener
-    page._collapseListener && page.removeEventListener('scroll', page._collapseListener);
-    page._collapseListener = function() {
-      var bar = page.querySelector(barSelector);
-      if (!bar) return;
-      bar.classList.toggle('collapsed', page.scrollTop > 80);
-    };
-    page.addEventListener('scroll', page._collapseListener, { passive: true });
-    // Also reset on attach
-    var bar = page.querySelector(barSelector);
-    if (bar) bar.classList.remove('collapsed');
-  }
-
-  // Patch navigate to attach on each visit
-  var _nav = window.navigate;
-  if (typeof _nav === 'function') {
-    window.navigate = function(page) {
-      _nav.call(this, page);
-      if (page === 'schedule') setTimeout(function(){ attachCollapse('page-schedule', '.sched-sticky'); }, 150);
-      if (page === 'artists')  setTimeout(function(){ attachCollapse('page-artists',  '.artist-controls'); }, 150);
-    };
-  }
-
-  setTimeout(function() {
-    attachCollapse('page-schedule', '.sched-sticky');
-    attachCollapse('page-artists',  '.artist-controls');
-  }, 1500);
-})();
+}
 
 
 </script>
 </body>
 </html>
+</script>
