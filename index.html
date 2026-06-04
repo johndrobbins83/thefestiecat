@@ -414,33 +414,12 @@ body{
 /* ══════════════════════════════════════════════════
    SCHEDULE PAGE
 ══════════════════════════════════════════════════ */
-.controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
-#page-schedule .sched-sticky{
-  position:sticky;top:0;z-index:100;
-  background:#000;
-  padding:8px 0 8px;
-  border-bottom:1px solid rgba(245,200,66,0.1);
-  transition:padding .2s ease;
-  /* Pull out to fill page padding on mobile */
-  margin:-16px -16px 12px;
-  padding-left:16px;padding-right:16px;
-}
-@media(min-width:768px){
-  #page-schedule .sched-sticky{
-    /* On desktop stay within page padding, no edge-to-edge */
-    margin:0 0 16px 0;
-    padding:10px 0 10px;
-  }
-}
-/* Collapsed state on mobile scroll */
+.controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;
+  position:sticky;top:0;z-index:100;background:#000000;backdrop-filter:blur(12px);
+  padding:12px 0 8px;
+  border-bottom:1px solid rgba(245,200,66,0.1);}
 @media(max-width:767px){
   #page-schedule .page-header{ display:none; }
-  #page-schedule .sched-sticky.collapsed .search-wrap{ display:none; }
-  #page-schedule .sched-sticky.collapsed .filter-row{ display:none; }
-  #page-schedule .sched-sticky.collapsed{ padding-top:6px;padding-bottom:6px; }
-  .artist-controls{ position:sticky;top:0;z-index:100;background:#000;
-    padding:4px 0 4px;
-    border-bottom:1px solid rgba(255,255,255,0.07); }
 }
 .search-wrap{position:relative;}
 .search-input{width:100%;padding:10px 16px 10px 40px;background:rgba(20,20,20,0.9);
@@ -2535,28 +2514,26 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── SCHEDULE PAGE ── -->
   <div class="page" id="page-schedule">
-    <div class="sched-sticky">
-      <div class="page-header" style="margin-bottom:8px;"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
-      <div class="controls-bar">
-        <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-          <div class="day-tabs" style="flex:1;">
-            <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
-            <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
-            <button class="day-tab"        data-day="sun" onclick="switchDay('sun',this)">SUN 7/19</button>
-            <button class="day-tab mine-tab" data-day="mine" onclick="switchDay('mine',this)" id="mySchedTab">My Schedule</button>
-          </div>
-          <div class="filter-row">
-            <span class="filter-label">Stage:</span>
-            <button class="stage-pill all on" data-stage="all"     onclick="filterStage('all',this)">All</button>
-            <button class="stage-pill dnb"    data-stage="dnb"     onclick="filterStage('dnb',this)">DNB</button>
-            <button class="stage-pill oasis" data-stage="oasis"  onclick="filterStage('oasis',this)">Oasis Stage</button>
-            <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
-            <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locals</button>
-            <div class="view-toggle">
-              <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
-              <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
-            </div>
+    <div class="page-header" style="margin-bottom:8px;"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
+    <div class="controls-bar">
+      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <div class="day-tabs" style="flex:1;">
+          <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
+          <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
+          <button class="day-tab"        data-day="sun" onclick="switchDay('sun',this)">SUN 7/19</button>
+          <button class="day-tab mine-tab" data-day="mine" onclick="switchDay('mine',this)" id="mySchedTab">My Schedule</button>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Stage:</span>
+          <button class="stage-pill all on" data-stage="all"     onclick="filterStage('all',this)">All</button>
+          <button class="stage-pill dnb"    data-stage="dnb"     onclick="filterStage('dnb',this)">DNB</button>
+          <button class="stage-pill oasis"  data-stage="oasis"   onclick="filterStage('oasis',this)">Oasis Stage</button>
+          <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
+          <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locals</button>
+          <div class="view-toggle">
+            <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
+            <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
           </div>
         </div>
       </div>
