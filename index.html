@@ -6,27 +6,7 @@
 <title>Sunken Suite · The Mutiny 2026</title>
 
 <!-- PWA -->
-<link rel="manifest" id="pwaManifest">
-<script>
-// Generate manifest inline to control orientation
-(function(){
-  var manifest = {
-    name: "Sunken Suite · The Mutiny",
-    short_name: "Sunken Suite",
-    start_url: "/",
-    display: "standalone",
-    background_color: "#000000",
-    theme_color: "#000000",
-    orientation: "any",
-    icons: [
-      { src: "/icon192.png", sizes: "192x192", type: "image/png" },
-      { src: "/icon512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
-    ]
-  };
-  var blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-  document.getElementById('pwaManifest').href = URL.createObjectURL(blob);
-})();
-</script>
+<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#020b1a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
