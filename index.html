@@ -419,6 +419,9 @@ body{
   padding:12px 0 8px;
   border-bottom:1px solid rgba(245,200,66,0.1);}
 @media(max-width:767px){
+  .controls-bar{ padding:8px 0 6px; }
+}
+@media(max-width:767px){
   #page-schedule .page-header{ display:none; }
 }
 .search-wrap{position:relative;}
@@ -2517,7 +2520,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="page-header" style="margin-bottom:8px;"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
     <div class="controls-bar">
       <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:nowrap;">
         <div class="day-tabs" style="flex:1;">
           <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
           <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
