@@ -7609,22 +7609,17 @@ async function adminConnectUser(userId, btn) {
   if (!currentUser || currentUser.id === userId) return;
   const token = localStorage.getItem(TOKEN_KEY);
   if (btn.dataset.state === 'connected') { showToast('Already connected!'); return; }
-  if (btn.dataset.state === 'pending') { showToast('Request already sent'); return; }
   btn.disabled = true; btn.textContent = '…';
   try {
-    const res = await fetch(AUTH_URL + '/follow/' + userId, {
+    const res = await fetch(AUTH_URL + '/admin/connect/' + userId, {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token}
+      headers: {'Authorization':'Bearer '+token}
     });
     const d = await res.json();
     if (res.ok) {
-      if (d.mutual || d.status === 'mutual') {
-        btn.textContent = '✓ Connected'; btn.dataset.state = 'connected';
-        btn.style.color = '#4ade80'; btn.style.borderColor = 'rgba(74,222,128,0.4)';
-      } else {
-        btn.textContent = '⏳ Pending'; btn.dataset.state = 'pending';
-        btn.style.color = 'var(--gold-bright)';
-      }
+      btn.textContent = '✓ Connected'; btn.dataset.state = 'connected';
+      btn.style.color = '#4ade80'; btn.style.borderColor = 'rgba(74,222,128,0.4)';
+      showToast('✓ Connected!');
     } else {
       btn.textContent = '🤝 Connect';
       showToast(d.error || 'Could not connect');
@@ -7638,25 +7633,20 @@ async function updateConnectButtonStates() {
   if (!currentUser) return;
   const token = localStorage.getItem(TOKEN_KEY);
   try {
-    // Get mutual friends (connected both ways)
-    const frRes = await fetch(AUTH_URL + '/friends', { headers:{'Authorization':'Bearer '+token} });
-    const frData = frRes.ok ? await frRes.json() : {};
-    const friends = (frData.friends || []).map(function(f){ return f.id; });
-
-    // Get follow requests sent (pending)
-    const fwRes = await fetch(AUTH_URL + '/follow/requests', { headers:{'Authorization':'Bearer '+token} });
-    const fwData = fwRes.ok ? await fwRes.json() : {};
-    const sentRequests = (fwData.sent || fwData.outgoing || []).map(function(r){ return r.id || r; });
-
+    const res = await fetch(AUTH_URL + '/admin/connections', {
+      headers: {'Authorization':'Bearer '+token}
+    });
+    if (!res.ok) return;
+    const d = await res.json();
+    const following = d.following || [];
+    const followers = d.followers || [];
     document.querySelectorAll('[id^="connectBtn_"]').forEach(function(btn) {
       const uid = btn.id.replace('connectBtn_','');
       if (uid === currentUser.id) { btn.style.display='none'; return; }
-      if (friends.includes(uid)) {
+      const isConnected = following.includes(uid) && followers.includes(uid);
+      if (isConnected) {
         btn.textContent = '✓ Connected'; btn.dataset.state = 'connected';
         btn.style.color = '#4ade80'; btn.style.borderColor = 'rgba(74,222,128,0.4)';
-      } else if (sentRequests.includes(uid)) {
-        btn.textContent = '⏳ Pending'; btn.dataset.state = 'pending';
-        btn.style.color = 'var(--gold-bright)';
       }
     });
   } catch(e) {}
