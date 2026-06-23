@@ -3590,7 +3590,7 @@ window.addEventListener('error', function(e) {
 window.addEventListener('unhandledrejection', function(e) {
   console.error('UNHANDLED PROMISE:', e.reason);
 });
-const AUTH_URL = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
+var AUTH_URL = 'https://sunkensuite-auth.johndrobbins83.workers.dev';
 /* ════════════════════════════════════════════════════════════
    ARTIST DATABASE
 ════════════════════════════════════════════════════════════ */
@@ -4954,8 +4954,8 @@ document.addEventListener('keydown', e=>{
 /* ════════════════════════════════════════════════════════════
    AUTH SYSTEM
 ════════════════════════════════════════════════════════════ */
-const TOKEN_KEY = 'ss_auth_token';
-const USER_KEY  = 'ss_auth_user';
+var TOKEN_KEY  = 'ss_auth_token';
+var USER_KEY   = 'ss_auth_user';
 
 var currentUser = null;
 
