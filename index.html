@@ -418,9 +418,15 @@ body{
   position:sticky;top:0;z-index:100;background:#000000;
   padding:12px 0 8px;
   border-bottom:1px solid rgba(245,200,66,0.1);}
+/* Mobile schedule dropdowns */
+.sched-mobile-dropdowns{display:none;gap:6px;align-items:center;}
+.sched-desktop-controls{display:flex;}
 @media(max-width:767px){
   #page-schedule .page-header{ display:none; }
   #page-schedule{ padding-top:0 !important; }
+  .sched-mobile-dropdowns{display:flex;}
+  .sched-desktop-controls{display:none !important;}
+}
 }
 .search-wrap{position:relative;}
 .search-input{width:100%;padding:10px 16px 10px 40px;background:rgba(20,20,20,0.9);
@@ -2518,7 +2524,30 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="page-header" style="margin-bottom:8px;"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
     <div class="controls-bar">
       <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:nowrap;">
+
+      <!-- MOBILE: dropdowns row -->
+      <div class="sched-mobile-dropdowns">
+        <select id="dayDropdown" onchange="switchDayMobile(this.value)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+          <option value="fri">FRI 7/17</option>
+          <option value="sat">SAT 7/18</option>
+          <option value="sun">SUN 7/19</option>
+          <option value="mine">My Schedule</option>
+        </select>
+        <select id="stageDropdown" onchange="filterStageMobile(this.value)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+          <option value="all">All Stages</option>
+          <option value="dnb">DNB Stage</option>
+          <option value="oasis">Oasis Stage</option>
+          <option value="beach">Beach Stage</option>
+          <option value="locals">Locals Stage</option>
+        </select>
+        <div class="view-toggle">
+          <button class="view-btn" id="viewListBtnM" onclick="setView('list')" title="List view">☰</button>
+          <button class="view-btn active" id="viewGridBtnM" onclick="setView('grid')" title="Block view">⊞</button>
+        </div>
+      </div>
+
+      <!-- DESKTOP: tabs + pills -->
+      <div class="sched-desktop-controls" style="display:flex;gap:10px;align-items:center;flex-wrap:nowrap;">
         <div class="day-tabs" style="flex:1;">
           <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
           <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
@@ -5008,10 +5037,32 @@ function renderMySchedPage() {
 
 
 
+function switchDayMobile(day) {
+  // Sync desktop tabs
+  document.querySelectorAll('.day-tab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.day === day);
+  });
+  switchDay(day, document.querySelector('.day-tab[data-day="'+day+'"]') || {classList:{add:function(){},remove:function(){}}});
+}
+
+function filterStageMobile(stage) {
+  // Sync desktop pills
+  document.querySelectorAll('.stage-pill').forEach(function(p){
+    p.classList.toggle('on', p.dataset.stage === stage);
+  });
+  filterStage(stage, document.querySelector('.stage-pill[data-stage="'+stage+'"]') || {});
+}
+
 function switchDay(day, btn) {
   schedCurrentDay = day;
   document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
-  btn.classList.add('active');
+  if (btn && btn.classList) btn.classList.add('active');
+  // Sync mobile dropdown
+  var dd = document.getElementById('dayDropdown');
+  if (dd) dd.value = day;
+  // On My Schedule, hide stage dropdown on mobile
+  var stageDd = document.getElementById('stageDropdown');
+  if (stageDd) stageDd.style.display = day === 'mine' ? 'none' : '';
   const search  = document.querySelector('#page-schedule .search-wrap');
   const filters = document.querySelector('#page-schedule .filter-row');
   const isMine  = day === 'mine';
