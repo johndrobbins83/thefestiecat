@@ -4354,13 +4354,21 @@ async function loadArtistOverrides() {
     const d = await res.json();
     const overrides = d.artists || {};
     Object.entries(overrides).forEach(([key, data]) => {
-      if (artists[key]) Object.assign(artists[key], data);
-      else artists[key] = data;
+      // Skip malformed keys (undefined, empty, non-string)
+      if (!key || key === 'undefined' || typeof key !== 'string') return;
+      // Skip tombstoned / deleted entries — remove from in-memory artists if present
+      if (!data || data._deleted) { delete artists[key]; return; }
+      // Only merge into existing hardcoded artists, or add if it has enough real data
+      if (artists[key]) {
+        Object.assign(artists[key], data);
+      } else if (data.initials && data.color) {
+        // Only add KV-only artists if they have the minimum required fields
+        artists[key] = data;
+      }
     });
     // Sync SCHEDULE_DATA so the live schedule reflects saved overrides
     syncScheduleDataFromArtists();
     // Re-render pages that use artist data
-    if (typeof renderArtistGrid === 'function') renderArtistGrid();
     if (typeof renderArtists === 'function') renderArtists();
     if (typeof renderSchedule === 'function') renderSchedule();
     if (typeof renderFeaturedArtists === 'function') renderFeaturedArtists();
@@ -4375,7 +4383,6 @@ async function saveArtistOverride(key, data) {
     const getRes = await fetch(AUTH_URL + '/artists');
     const existing = getRes.ok ? ((await getRes.json()).artists || {}) : {};
     existing[key] = { ...(existing[key]||{}), ...data };
-    if (!data._deleted) delete existing[key]._deleted;
       // Force cache bust by appending timestamp to photo URLs
       if (existing[key].photo && !existing[key].photo.includes('?v=')) {
         existing[key].photoTs = Date.now();
@@ -5343,7 +5350,9 @@ function renderArtists() {
   if (!grid) return;
   const q = ((document.getElementById('artistSearchInput')||{}).value||'').toLowerCase();
   const mine = getMySchedule();
-  let keys = Object.keys(artists);
+  let keys = Object.keys(artists).filter(k =>
+    k && k !== 'undefined' && artists[k] && !artists[k]._deleted && artists[k].initials
+  );
 
   // Stage/day filter
   if (artistFilter === 'dnb')   keys = keys.filter(k=>artists[k].stage==='DNB Stage');
@@ -7157,7 +7166,7 @@ function getEditSlots() {
 
 function adminDeleteArtist(key) {
   if (!confirm('Delete ' + key + ' from the roster? This cannot be undone.')) return;
-  // Remove from artists object
+  // Remove from in-memory artists
   delete artists[key];
   // Remove from SCHEDULE_DATA
   Object.keys(SCHEDULE_DATA).forEach(function(day) {
@@ -7165,16 +7174,10 @@ function adminDeleteArtist(key) {
       SCHEDULE_DATA[day][stage] = (SCHEDULE_DATA[day][stage]||[]).filter(function(item){ return item.artist !== key; });
     });
   });
-  // Persist deletion via override (empty object signals removal)
-  const token = localStorage.getItem(TOKEN_KEY);
-  fetch(AUTH_URL + '/artists/' + encodeURIComponent(key), {
-    method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + token }
-  }).catch(function(){});
-  // Also save a tombstone override so it stays deleted
+  // Persist tombstone to KV so it stays deleted for all users after reload
   saveArtistOverride(key, { _deleted: true });
-  renderArtistGrid();
-  renderAdminArtistTab();
+  renderArtists();
+  renderAdminArtistGrid();
   renderSchedule();
   showToast('✓ ' + key + ' deleted from roster');
 }
