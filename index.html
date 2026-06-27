@@ -4305,60 +4305,44 @@ function syncScheduleDataFromArtists() {
   const stageKeyMap = {
     'DNB Stage': 'dnb', 'Oasis Stage': 'oasis',
     'Beach Stage': 'beach', "Davey Jones Locker": 'locals', 'Deep Sea': 'deepsea',
-    'Atrium': 'oasis',
   };
   const dayKeyMap = { 'Fri': 'fri', 'Sat': 'sat', 'Sun': 'sun', 'All': null, 'TBA': null };
 
-  // Pass 1: update time + headliner for artists already in SCHEDULE_DATA
+  // First pass: update time + headliner for artists already in SCHEDULE_DATA
   Object.keys(SCHEDULE_DATA).forEach(function(day) {
     Object.keys(SCHEDULE_DATA[day]).forEach(function(stageKey) {
       SCHEDULE_DATA[day][stageKey].forEach(function(item) {
         const a = artists[item.artist];
         if (!a) return;
-        if (a.time && a.time !== 'TBA') item.time = a.time;
+        item.time = a.time || item.time;
         if (typeof a.headliner === 'boolean') item.headliner = a.headliner;
       });
     });
   });
 
-  // Pass 2: move artists whose stage/day changed, or add new ones
+  // Second pass: handle slots array for multi-slot artists
   Object.entries(artists).forEach(function([name, a]) {
     if (!a || a._deleted) return;
-    const newStageKey = stageKeyMap[a.stage];
-    const newDayKey   = dayKeyMap[a.day] || (a.day ? a.day.toLowerCase() : null);
-    if (!newStageKey || !newDayKey) return;
+    const slots = a.slots && a.slots.length ? a.slots : [{ stage: a.stage, day: a.day, time: a.time }];
 
-    // Find where this artist currently lives
-    var foundDay = null, foundStage = null, foundIdx = -1;
+    // Remove artist from all current schedule positions
     Object.keys(SCHEDULE_DATA).forEach(function(day) {
       Object.keys(SCHEDULE_DATA[day]).forEach(function(stageKey) {
-        var idx = (SCHEDULE_DATA[day][stageKey]||[]).findIndex(function(i){ return i.artist === name; });
-        if (idx !== -1) { foundDay = day; foundStage = stageKey; foundIdx = idx; }
+        SCHEDULE_DATA[day][stageKey] = SCHEDULE_DATA[day][stageKey].filter(function(i){ return i.artist !== name; });
       });
     });
 
-    if (foundDay === null) {
-      // New artist — add them
+    // Re-add for each slot
+    slots.forEach(function(slot) {
+      const newStageKey = stageKeyMap[slot.stage];
+      const newDayKey   = dayKeyMap[slot.day] || (slot.day ? slot.day.toLowerCase() : null);
+      if (!newStageKey || !newDayKey) return;
       if (!SCHEDULE_DATA[newDayKey]) SCHEDULE_DATA[newDayKey] = {};
       if (!SCHEDULE_DATA[newDayKey][newStageKey]) SCHEDULE_DATA[newDayKey][newStageKey] = [];
-      SCHEDULE_DATA[newDayKey][newStageKey].push({ artist: name, time: a.time || 'TBA', headliner: !!a.headliner });
-    } else if (foundDay !== newDayKey || foundStage !== newStageKey) {
-      // Artist moved stage/day — relocate
-      var entry = SCHEDULE_DATA[foundDay][foundStage].splice(foundIdx, 1)[0];
-      if (a.time && a.time !== 'TBA') entry.time = a.time;
-      entry.headliner = typeof a.headliner === 'boolean' ? a.headliner : entry.headliner;
-      if (!SCHEDULE_DATA[newDayKey]) SCHEDULE_DATA[newDayKey] = {};
-      if (!SCHEDULE_DATA[newDayKey][newStageKey]) SCHEDULE_DATA[newDayKey][newStageKey] = [];
-      SCHEDULE_DATA[newDayKey][newStageKey].push(entry);
-    }
-  });
-
-  // Pass 3: remove deleted artists from schedule
-  Object.keys(SCHEDULE_DATA).forEach(function(day) {
-    Object.keys(SCHEDULE_DATA[day]).forEach(function(stageKey) {
-      SCHEDULE_DATA[day][stageKey] = SCHEDULE_DATA[day][stageKey].filter(function(item) {
-        return artists[item.artist] && !artists[item.artist]._deleted;
-      });
+      // Only add if not already there
+      if (!SCHEDULE_DATA[newDayKey][newStageKey].find(function(i){ return i.artist === name; })) {
+        SCHEDULE_DATA[newDayKey][newStageKey].push({ artist: name, time: slot.time || 'TBA', headliner: !!a.headliner });
+      }
     });
   });
 }
@@ -4370,12 +4354,8 @@ async function loadArtistOverrides() {
     const d = await res.json();
     const overrides = d.artists || {};
     Object.entries(overrides).forEach(([key, data]) => {
-      if (data && data._deleted) {
-        // Only remove if NOT in the hardcoded base artists object
-        // If they ARE in base data, the delete was reversed by re-adding — ignore tombstone
-        if (!artists[key]) delete artists[key];
-        return;
-      }
+      if (data && data._deleted && !artists[key]) return; // skip tombstone if not in base data
+      if (data && data._deleted) return; // skip tombstone — artist exists in base, ignore delete
       if (artists[key]) Object.assign(artists[key], data);
       else artists[key] = data;
     });
@@ -4391,15 +4371,16 @@ async function loadArtistOverrides() {
 loadArtistOverrides();
 
 async function saveArtistOverride(key, data) {
+  // Merge into full overrides object and push to worker
   try {
     const getRes = await fetch(AUTH_URL + '/artists');
     const existing = getRes.ok ? ((await getRes.json()).artists || {}) : {};
     existing[key] = { ...(existing[key]||{}), ...data };
-    // Always clear _deleted when saving a live artist
     if (!data._deleted) delete existing[key]._deleted;
-    if (existing[key].photo && !existing[key].photo.includes('?v=')) {
-      existing[key].photoTs = Date.now();
-    }
+      // Force cache bust by appending timestamp to photo URLs
+      if (existing[key].photo && !existing[key].photo.includes('?v=')) {
+        existing[key].photoTs = Date.now();
+      }
     const token = localStorage.getItem('ss_auth_token');
     await fetch(AUTH_URL + '/artists', {
       method: 'PUT',
