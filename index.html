@@ -2534,7 +2534,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <select id="dayDropdown" onchange="switchDayMobile(this.value)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
           <option value="fri">FRI 7/17</option>
           <option value="sat">SAT 7/18</option>
-          
+          <option value="sun">SUN 7/19</option>
           <option value="mine">My Schedule</option>
         </select>
         <select id="stageDropdown" onchange="filterStageMobile(this.value)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
@@ -2556,7 +2556,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="day-tabs" style="flex:1;">
           <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
           <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
-          
+          <button class="day-tab"        data-day="sun" onclick="switchDay('sun',this)">SUN 7/19</button>
           <button class="day-tab mine-tab" data-day="mine" onclick="switchDay('mine',this)" id="mySchedTab">My Schedule</button>
         </div>
         <div class="filter-row">
@@ -3883,12 +3883,40 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <label class="edit-label">Artist Name</label>
         <input class="edit-input" id="editArtistName" placeholder="e.g. RONI SIZE">
       </div>
-      <div class="edit-field" style="margin-bottom:8px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <label class="edit-label" style="margin:0;">Set Slots</label>
-          <button type="button" onclick="addEditSlot()" style="background:rgba(0,212,200,0.12);border:1px solid rgba(0,212,200,0.35);color:var(--teal-glow);font-size:18px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;">+</button>
+      <div class="edit-row">
+        <div class="edit-field">
+          <label class="edit-label">Stage</label>
+          <select class="edit-select" id="editArtistStage">
+            <option value="DNB Stage">DNB Stage (Presented by BP²)</option>
+            <option value="Oasis Stage">Oasis Stage</option>
+            <option value="Beach Stage">Beach Stage</option>
+            <option value="Davey Jones Locker">Davey Jones Locker</option>
+            <option value="Deep Sea">Deep Sea</option>
+            <option value="TBA">TBA</option>
+          </select>
         </div>
-        <div id="editSlotsList"></div>
+        <div class="edit-field">
+          <label class="edit-label">Day</label>
+          <select class="edit-select" id="editArtistDay">
+            <option value="Fri">Friday 7/17</option>
+            <option value="Sat">Saturday 7/18</option>
+            <option value="Sun">Sunday 7/19</option>
+            <option value="All">All Days</option>
+            <option value="TBA">TBA</option>
+          </select>
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-field">
+          <label class="edit-label">Set Time</label>
+          <select class="edit-select" id="editArtistTime">
+            <option value="TBA">TBA — time not set</option><option value="10:00 AM">10:00 AM</option><option value="10:15 AM">10:15 AM</option><option value="10:30 AM">10:30 AM</option><option value="10:45 AM">10:45 AM</option><option value="11:00 AM">11:00 AM</option><option value="11:15 AM">11:15 AM</option><option value="11:30 AM">11:30 AM</option><option value="11:45 AM">11:45 AM</option><option value="12:00 PM">12:00 PM</option><option value="12:15 PM">12:15 PM</option><option value="12:30 PM">12:30 PM</option><option value="12:45 PM">12:45 PM</option><option value="1:00 PM">1:00 PM</option><option value="1:15 PM">1:15 PM</option><option value="1:30 PM">1:30 PM</option><option value="1:45 PM">1:45 PM</option><option value="2:00 PM">2:00 PM</option><option value="2:15 PM">2:15 PM</option><option value="2:30 PM">2:30 PM</option><option value="2:45 PM">2:45 PM</option><option value="3:00 PM">3:00 PM</option><option value="3:15 PM">3:15 PM</option><option value="3:30 PM">3:30 PM</option><option value="3:45 PM">3:45 PM</option><option value="4:00 PM">4:00 PM</option><option value="4:15 PM">4:15 PM</option><option value="4:30 PM">4:30 PM</option><option value="4:45 PM">4:45 PM</option><option value="5:00 PM">5:00 PM</option><option value="5:15 PM">5:15 PM</option><option value="5:30 PM">5:30 PM</option><option value="5:45 PM">5:45 PM</option><option value="6:00 PM">6:00 PM</option><option value="6:15 PM">6:15 PM</option><option value="6:30 PM">6:30 PM</option><option value="6:45 PM">6:45 PM</option><option value="7:00 PM">7:00 PM</option><option value="7:15 PM">7:15 PM</option><option value="7:30 PM">7:30 PM</option><option value="7:45 PM">7:45 PM</option><option value="8:00 PM">8:00 PM</option><option value="8:15 PM">8:15 PM</option><option value="8:30 PM">8:30 PM</option><option value="8:45 PM">8:45 PM</option><option value="9:00 PM">9:00 PM</option><option value="9:15 PM">9:15 PM</option><option value="9:30 PM">9:30 PM</option><option value="9:45 PM">9:45 PM</option><option value="10:00 PM">10:00 PM</option><option value="10:15 PM">10:15 PM</option><option value="10:30 PM">10:30 PM</option><option value="10:45 PM">10:45 PM</option><option value="11:00 PM">11:00 PM</option><option value="11:15 PM">11:15 PM</option><option value="11:30 PM">11:30 PM</option><option value="11:45 PM">11:45 PM</option><option value="12:00 AM">12:00 AM</option><option value="12:15 AM">12:15 AM</option><option value="12:30 AM">12:30 AM</option><option value="12:45 AM">12:45 AM</option><option value="1:00 AM">1:00 AM</option><option value="1:15 AM">1:15 AM</option><option value="1:30 AM">1:30 AM</option><option value="1:45 AM">1:45 AM</option><option value="2:00 AM">2:00 AM</option><option value="2:15 AM">2:15 AM</option><option value="2:30 AM">2:30 AM</option><option value="2:45 AM">2:45 AM</option><option value="3:00 AM">3:00 AM</option><option value="3:15 AM">3:15 AM</option><option value="3:30 AM">3:30 AM</option><option value="3:45 AM">3:45 AM</option><option value="4:00 AM">4:00 AM</option><option value="4:15 AM">4:15 AM</option><option value="4:30 AM">4:30 AM</option><option value="4:45 AM">4:45 AM</option><option value="5:00 AM">5:00 AM</option><option value="5:15 AM">5:15 AM</option><option value="5:30 AM">5:30 AM</option><option value="5:45 AM">5:45 AM</option><option value="6:00 AM">6:00 AM</option><option value="6:15 AM">6:15 AM</option><option value="6:30 AM">6:30 AM</option><option value="6:45 AM">6:45 AM</option><option value="7:00 AM">7:00 AM</option><option value="7:15 AM">7:15 AM</option><option value="7:30 AM">7:30 AM</option><option value="7:45 AM">7:45 AM</option><option value="8:00 AM">8:00 AM</option><option value="8:15 AM">8:15 AM</option><option value="8:30 AM">8:30 AM</option><option value="8:45 AM">8:45 AM</option><option value="9:00 AM">9:00 AM</option><option value="9:15 AM">9:15 AM</option><option value="9:30 AM">9:30 AM</option><option value="9:45 AM">9:45 AM</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Genre</label>
+          <input class="edit-input" id="editArtistGenre" placeholder="e.g. Drum & Bass">
+        </div>
       </div>
       <div class="edit-field">
         <label class="edit-label">Headliner</label>
@@ -3896,10 +3924,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <option value="false">No</option>
           <option value="true">Yes — Headliner</option>
         </select>
-      </div>
-      <div class="edit-field">
-        <label class="edit-label">Genre</label>
-        <input class="edit-input" id="editArtistGenre" placeholder="e.g. Drum & Bass">
       </div>
       <div class="edit-field">
         <label class="edit-label">Bio</label>
@@ -4302,16 +4326,22 @@ const artists = {
 // Sync SCHEDULE_DATA from the artists object so edits to stage/day/time/headliner
 // are reflected on the live schedule page.
 function syncScheduleDataFromArtists() {
+  // Build a lookup: artistName -> { day, stageKey, time, headliner }
+  // stage display name -> SCHEDULE_DATA key
   const stageKeyMap = {
-    'DNB Stage': 'dnb', 'Oasis Stage': 'oasis',
-    'Beach Stage': 'beach', "Davey Jones Locker": 'locals', 'Deep Sea': 'deepsea',
+    'DNB Stage': 'dnb',
+    'Oasis Stage': 'oasis',
+    'Oasis Stage': 'oasis',
+    'Beach Stage': 'beach',
+    "Davey Jones Locker": 'locals',
+    'Deep Sea': 'deepsea',
   };
   const dayKeyMap = { 'Fri': 'fri', 'Sat': 'sat', 'Sun': 'sun', 'All': null, 'TBA': null };
 
   // First pass: update time + headliner for artists already in SCHEDULE_DATA
-  Object.keys(SCHEDULE_DATA).forEach(function(day) {
-    Object.keys(SCHEDULE_DATA[day]).forEach(function(stageKey) {
-      SCHEDULE_DATA[day][stageKey].forEach(function(item) {
+  Object.keys(SCHEDULE_DATA).forEach(day => {
+    Object.keys(SCHEDULE_DATA[day]).forEach(stageKey => {
+      SCHEDULE_DATA[day][stageKey].forEach(item => {
         const a = artists[item.artist];
         if (!a) return;
         item.time = a.time || item.time;
@@ -4320,30 +4350,35 @@ function syncScheduleDataFromArtists() {
     });
   });
 
-  // Second pass: handle slots array for multi-slot artists
-  Object.entries(artists).forEach(function([name, a]) {
-    if (!a || a._deleted) return;
-    const slots = a.slots && a.slots.length ? a.slots : [{ stage: a.stage, day: a.day, time: a.time }];
+  // Second pass: move artists whose stage or day changed
+  Object.entries(artists).forEach(([name, a]) => {
+    const newStageKey = stageKeyMap[a.stage];
+    const newDayKey   = dayKeyMap[a.day] || (a.day ? a.day.toLowerCase() : null);
+    if (!newStageKey || !newDayKey) return;
 
-    // Remove artist from all current schedule positions
-    Object.keys(SCHEDULE_DATA).forEach(function(day) {
-      Object.keys(SCHEDULE_DATA[day]).forEach(function(stageKey) {
-        SCHEDULE_DATA[day][stageKey] = SCHEDULE_DATA[day][stageKey].filter(function(i){ return i.artist !== name; });
+    // Find where this artist currently lives in SCHEDULE_DATA
+    let foundDay = null, foundStage = null, foundIdx = -1;
+    Object.keys(SCHEDULE_DATA).forEach(day => {
+      Object.keys(SCHEDULE_DATA[day]).forEach(stageKey => {
+        const idx = SCHEDULE_DATA[day][stageKey].findIndex(i => i.artist === name);
+        if (idx !== -1) { foundDay = day; foundStage = stageKey; foundIdx = idx; }
       });
     });
 
-    // Re-add for each slot
-    slots.forEach(function(slot) {
-      const newStageKey = stageKeyMap[slot.stage];
-      const newDayKey   = dayKeyMap[slot.day] || (slot.day ? slot.day.toLowerCase() : null);
-      if (!newStageKey || !newDayKey) return;
+    if (foundDay === null) {
+      // New artist not yet in SCHEDULE_DATA — add them
       if (!SCHEDULE_DATA[newDayKey]) SCHEDULE_DATA[newDayKey] = {};
       if (!SCHEDULE_DATA[newDayKey][newStageKey]) SCHEDULE_DATA[newDayKey][newStageKey] = [];
-      // Only add if not already there
-      if (!SCHEDULE_DATA[newDayKey][newStageKey].find(function(i){ return i.artist === name; })) {
-        SCHEDULE_DATA[newDayKey][newStageKey].push({ artist: name, time: slot.time || 'TBA', headliner: !!a.headliner });
-      }
-    });
+      SCHEDULE_DATA[newDayKey][newStageKey].push({ artist: name, time: a.time || 'TBA', headliner: !!a.headliner });
+    } else if (foundDay !== newDayKey || foundStage !== newStageKey) {
+      // Artist moved — remove from old slot, add to new
+      const entry = SCHEDULE_DATA[foundDay][foundStage].splice(foundIdx, 1)[0];
+      entry.time = a.time || entry.time;
+      entry.headliner = typeof a.headliner === 'boolean' ? a.headliner : entry.headliner;
+      if (!SCHEDULE_DATA[newDayKey]) SCHEDULE_DATA[newDayKey] = {};
+      if (!SCHEDULE_DATA[newDayKey][newStageKey]) SCHEDULE_DATA[newDayKey][newStageKey] = [];
+      SCHEDULE_DATA[newDayKey][newStageKey].push(entry);
+    }
   });
 }
 
@@ -4354,8 +4389,6 @@ async function loadArtistOverrides() {
     const d = await res.json();
     const overrides = d.artists || {};
     Object.entries(overrides).forEach(([key, data]) => {
-      if (data && data._deleted && !artists[key]) return; // skip tombstone if not in base data
-      if (data && data._deleted) return; // skip tombstone — artist exists in base, ignore delete
       if (artists[key]) Object.assign(artists[key], data);
       else artists[key] = data;
     });
@@ -4376,7 +4409,6 @@ async function saveArtistOverride(key, data) {
     const getRes = await fetch(AUTH_URL + '/artists');
     const existing = getRes.ok ? ((await getRes.json()).artists || {}) : {};
     existing[key] = { ...(existing[key]||{}), ...data };
-    if (!data._deleted) delete existing[key]._deleted;
       // Force cache bust by appending timestamp to photo URLs
       if (existing[key].photo && !existing[key].photo.includes('?v=')) {
         existing[key].photoTs = Date.now();
@@ -4681,7 +4713,7 @@ function renderMySchedWidget() {
 
 /* ── Featured artists ── */
 function renderFeaturedArtists() {
-  const allKeys   = Object.keys(artists).filter(k => artists[k] && !artists[k]._deleted && artists[k].stage !== 'TBA');
+  const allKeys   = Object.keys(artists).filter(k => artists[k] && artists[k].stage !== 'TBA');
   const headliners = allKeys.filter(k => artists[k].headliner);
   const nonHeadliners = allKeys.filter(k => !artists[k].headliner);
 
@@ -5304,7 +5336,7 @@ function initArtists() {
 function buildAZBar() {
   const bar = document.getElementById('azBar');
   if (!bar) return;
-  const allKeys = Object.keys(artists).filter(k => artists[k] && !artists[k]._deleted);
+  const allKeys = Object.keys(artists);
   // Which letters actually exist
   const usedLetters = new Set(allKeys.map(k => k[0].toUpperCase()));
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -5351,7 +5383,7 @@ function renderArtists() {
   if (artistFilter === 'oasis') keys = keys.filter(k=>artists[k].stage==='Oasis Stage');
   if (artistFilter === 'fri')   keys = keys.filter(k=>artists[k].day==='Fri');
   if (artistFilter === 'sat')   keys = keys.filter(k=>artists[k].day==='Sat');
-  // Sunday removed
+  if (artistFilter === 'sun')   keys = keys.filter(k=>artists[k].day==='Sun');
   if (artistFilter === 'saved') keys = keys.filter(k=>mine.includes(k));
 
   // Letter filter (removed - replaced with sort)
@@ -7099,93 +7131,20 @@ function renderAdminArtistGrid() {
       </div>
       ${isTBA ? '<div class="admin-artist-tba">TBA</div>' : ''}
       <button class="admin-artist-edit" onclick="event.stopPropagation();adminEditArtist('${esc(key)}')">✏</button>
-      <button class="admin-artist-edit" onclick="event.stopPropagation();adminDeleteArtist('${esc(key)}')" style="right:36px;background:rgba(255,77,141,0.15);border-color:rgba(255,77,141,0.4);color:var(--pink-coral);">✕</button>
     </div>`;
   }).join('');
 }
 
 // ── Artist edit modal ──────────────────────────────────────
-// ── Multi-slot management ──────────────────────────────────
-const TIME_OPTIONS_HTML = '<option value="TBA">TBA</option>' + (function(){
-  var t=[],h,m,ampm;
-  var order=[[10,'AM'],[11,'AM'],[12,'PM']];
-  for(h=1;h<=11;h++) order.push([h,'PM']);
-  order.push([12,'AM']);
-  for(h=1;h<=9;h++) order.push([h,'AM']);
-  order.forEach(function(hap){ for(m=0;m<60;m+=15){ t.push('<option value="'+hap[0]+':'+('0'+m).slice(-2)+' '+hap[1]+'">'+hap[0]+':'+('0'+m).slice(-2)+' '+hap[1]+'</option>'); } });
-  return t.join('');
-})();
-
-const STAGE_OPTIONS_HTML = '<option value="TBA">TBA</option><option value="DNB Stage">DNB Stage (Presented by BP²)</option><option value="Oasis Stage">Oasis Stage</option><option value="Beach Stage">Beach Stage</option><option value="Davey Jones Locker">Davey Jones Locker</option><option value="Deep Sea">Deep Sea</option>';
-const DAY_OPTIONS_HTML   = '<option value="TBA">TBA</option><option value="Fri">Friday 7/17</option><option value="Sat">Saturday 7/18</option><option value="All">All Days</option>';
-
-function renderEditSlots(slots) {
-  const container = document.getElementById('editSlotsList');
-  if (!container) return;
-  container.innerHTML = slots.map(function(slot, i) {
-    return '<div class="edit-slot-row" style="display:flex;gap:6px;align-items:center;margin-bottom:6px;padding:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">' +
-      '<select class="edit-select slot-stage" style="flex:1;font-size:11px;padding:5px 4px;">' + STAGE_OPTIONS_HTML.replace('value="'+(slot.stage||'TBA')+'"', 'value="'+(slot.stage||'TBA')+'" selected') + '</select>' +
-      '<select class="edit-select slot-day" style="flex:0 0 90px;font-size:11px;padding:5px 4px;">' + DAY_OPTIONS_HTML.replace('value="'+(slot.day||'TBA')+'"', 'value="'+(slot.day||'TBA')+'" selected') + '</select>' +
-      '<select class="edit-select slot-time" style="flex:0 0 90px;font-size:11px;padding:5px 4px;">' + TIME_OPTIONS_HTML.replace('value="'+(slot.time||'TBA')+'"', 'value="'+(slot.time||'TBA')+'" selected') + '</select>' +
-      (slots.length > 1 ? '<button type="button" onclick="removeEditSlot(this)" style="flex-shrink:0;width:24px;height:24px;background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;font-size:14px;">✕</button>' : '') +
-    '</div>';
-  }).join('');
-}
-
-function addEditSlot() {
-  const container = document.getElementById('editSlotsList');
-  if (!container) return;
-  const slots = getEditSlots();
-  slots.push({ stage:'TBA', day:'TBA', time:'TBA' });
-  renderEditSlots(slots);
-}
-
-function removeEditSlot(btn) {
-  const row = btn.closest('.edit-slot-row');
-  if (row) { row.remove(); }
-}
-
-function getEditSlots() {
-  const rows = document.querySelectorAll('#editSlotsList .edit-slot-row');
-  return Array.from(rows).map(function(row) {
-    return {
-      stage: row.querySelector('.slot-stage').value,
-      day:   row.querySelector('.slot-day').value,
-      time:  row.querySelector('.slot-time').value
-    };
-  });
-}
-
-function adminDeleteArtist(key) {
-  if (!confirm('Delete ' + key + ' from the roster? This cannot be undone.')) return;
-  // Remove from artists object
-  delete artists[key];
-  // Remove from SCHEDULE_DATA
-  Object.keys(SCHEDULE_DATA).forEach(function(day) {
-    Object.keys(SCHEDULE_DATA[day]||{}).forEach(function(stage) {
-      SCHEDULE_DATA[day][stage] = (SCHEDULE_DATA[day][stage]||[]).filter(function(item){ return item.artist !== key; });
-    });
-  });
-  // Persist deletion via override (empty object signals removal)
-  const token = localStorage.getItem(TOKEN_KEY);
-  fetch(AUTH_URL + '/artists/' + encodeURIComponent(key), {
-    method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + token }
-  }).catch(function(){});
-  // Also save a tombstone override so it stays deleted
-  saveArtistOverride(key, { _deleted: true });
-  renderArtistGrid();
-  renderAdminArtistTab();
-  renderSchedule();
-  showToast('✓ ' + key + ' deleted from roster');
-}
-
 function adminEditArtist(key) {
   const a = artists[key];
   if (!a) return;
   document.getElementById('editModalTitle').textContent = 'Edit · ' + key;
   document.getElementById('editArtistKey').value        = key;
   document.getElementById('editArtistName').value       = key;
+  document.getElementById('editArtistStage').value      = a.stage || 'TBA';
+  document.getElementById('editArtistDay').value        = a.day   || 'TBA';
+  document.getElementById('editArtistTime').value       = a.time  || 'TBA';
   document.getElementById('editArtistGenre').value      = a.genre || '';
   document.getElementById('editArtistHeadliner').value  = a.headliner ? 'true' : 'false';
   document.getElementById('editArtistBio').value        = a.bio   || '';
@@ -7205,10 +7164,12 @@ function adminEditArtist(key) {
   const ttEl = document.getElementById('editArtistTiktok');
   if (ttEl) ttEl.value = a.tiktok || '';
   document.getElementById('editArtistPhoto').value      = a.photo || '';
+  // Reset file input and status
   const fi = document.getElementById('editPhotoFile');
   if (fi) fi.value = '';
   const st = document.getElementById('editPhotoStatus');
   if (st) { st.textContent = ''; st.style.color = ''; }
+  // Show current photo or gradient placeholder in preview
   const preview = document.getElementById('editPhotoPreview');
   if (preview) {
     if (a.photo) {
@@ -7219,9 +7180,6 @@ function adminEditArtist(key) {
         font-size:18px;font-weight:900;color:#fff;">${a.initials}</div>`;
     }
   }
-  // Load slots - migrate legacy single slot to slots array
-  const slots = a.slots && a.slots.length ? a.slots : [{stage: a.stage||'TBA', day: a.day||'TBA', time: a.time||'TBA'}];
-  renderEditSlots(slots);
   document.getElementById('artistEditModal').classList.add('open');
   document.body.style.overflow = 'hidden';
   if (window.innerWidth <= 767) {
@@ -7239,7 +7197,9 @@ function adminNewArtist() {
   document.getElementById('editModalTitle').textContent = 'Add New Artist';
   document.getElementById('editArtistKey').value        = '';
   document.getElementById('editArtistName').value       = '';
-  renderEditSlots([{ stage:'TBA', day:'TBA', time:'TBA' }]);
+  document.getElementById('editArtistStage').value      = 'TBA';
+  document.getElementById('editArtistDay').value        = 'TBA';
+  document.getElementById('editArtistTime').value       = 'TBA';
   document.getElementById('editArtistGenre').value      = '';
   document.getElementById('editArtistHeadliner').value  = 'false';
   document.getElementById('editArtistBio').value        = '';
@@ -7281,16 +7241,11 @@ async function saveArtistEdit() {
     if (uploaded) photoUrl = uploaded;
   }
 
-  // Read slots
-  const slots = getEditSlots();
-  const primarySlot = slots[0] || { stage:'TBA', day:'TBA', time:'TBA' };
-
   const updated = {
     ...(artists[oldKey] || {}),
-    stage:     primarySlot.stage,
-    day:       primarySlot.day,
-    time:      primarySlot.time,
-    slots:     slots,
+    stage:     document.getElementById('editArtistStage').value,
+    day:       document.getElementById('editArtistDay').value,
+    time:      document.getElementById('editArtistTime').value || 'TBA',
     genre:     document.getElementById('editArtistGenre').value,
     headliner: document.getElementById('editArtistHeadliner').value === 'true',
     bio:       document.getElementById('editArtistBio').value,
@@ -7473,16 +7428,8 @@ function removeSchedArtist(day, stage, idx) {
   renderSchedule();
   renderMySchedWidget();
   if (removed) {
-    // Clear the artist's time/stage/day from the artists object and persist
-    const key = removed.artist;
-    if (artists[key]) {
-      artists[key].time  = 'TBA';
-      artists[key].stage = 'TBA';
-      artists[key].day   = 'TBA';
-      saveArtistOverride(key, artists[key]);
-    }
-    showToast('✓ ' + key + ' removed from schedule');
-    notifyScheduleChange(key, '📅 Schedule update: ' + key + ' removed from lineup');
+    showToast('Removed ' + removed.artist + ' from schedule');
+    notifyScheduleChange(removed.artist, '📅 Schedule update: ' + removed.artist + ' removed from lineup');
   }
 }
 
@@ -11004,7 +10951,7 @@ INFO_DEFAULTS = {
     title: 'Event Info',
     sections: [
       { title: 'About The Event', body: 'Sunken Suite is a 3-day underground music festival celebrating the best in Drum & Bass, Techno, House, and Electronic music. The Mutiny 2026 is our biggest event yet — four stages, 66+ artists, and an immersive experience at the Sturbridge Host Hotel on Cedar Lake.' },
-      { title: 'Festival Days', body: 'Friday July 17 — Gates 4PM · Music 6PM\nSaturday July 18 — Gates 2PM · Music 4PM\n\nLast set ends approximately 6AM each night.' },
+      { title: 'Festival Days', body: 'Friday July 17 — Gates 4PM · Music 6PM\nSaturday July 18 — Gates 2PM · Music 4PM\nSunday July 19 — Gates 2PM · Music 4PM\n\nLast set ends approximately 6AM each night.' },
       { title: 'Stages', body: 'DNB Stage · Drum & Bass · Main Indoor Stage\nOasis Stage · Tech House / House Music · Indoor\nBeach Stage · Outdoor Pool-Side · Electronic\nDavey Jones Locker · Local & Regional Artists' },
       { title: 'Headliners', body: 'Friday DNB Stage — Roni Size\nSaturday — J. Phlip\nSunday DNB Stage — Spor' },
       { title: 'Contact', body: 'General: info@thefestiecat.com\nStaff: staff@sunkensuite.com\nEmergency: Use the SOS button in the More menu\nVenue: Sturbridge Host Hotel & Conference Center' }
@@ -11736,7 +11683,7 @@ ALL_QUESTIONS = [
 { stage:4, cat:"Lineup Deep",    q:"Deekline has collaborated extensively with which Bristolian MC known for jungle and DnB?", opts:["Dynamite MC","Skibadee","Ed Solo","Redman"],                        ans:2, fact:"Deekline and Ed Solo have been long-time collaborators, releasing jungle and DnB music together." },
 { stage:4, cat:"Expert DnB",     q:"What year was the Metalheadz Sunday Sessions at the Blue Note club in London launched?", opts:["1993","1994","1995","1996"],                                        ans:1, fact:"The Metalheadz Sunday Sessions launched in 1994 at the Blue Note in Hoxton, becoming one of the most legendary club nights in DnB history." },
 { stage:4, cat:"Expert History", q:"Which seminal 1992 EP by 4Hero is considered one of the first true jungle records?",  opts:["Mr. Kirk's Nightmare","Terminator","Playing with Fire","Journey into Bass"], ans:0, fact:"'Mr. Kirk's Nightmare' by 4Hero (1992) is a seminal early jungle record, sampling from classic breaks." },
-{ stage:4, cat:"Scene Knowledge",q:"Sunken Suite 2026 runs across how many days?",                                       opts:["1","2","3","4"],                                                          ans:1, fact:"Sunken Suite 2026 runs Friday July 17 through Saturday July 18 — two days of music on Cedar Lake." },
+{ stage:4, cat:"Scene Knowledge",q:"Sunken Suite 2026 runs across how many days?",                                       opts:["1","2","3","4"],                                                          ans:2, fact:"Sunken Suite 2026 runs Friday July 17 through Sunday July 19 — three days of music on Cedar Lake." },
 { stage:4, cat:"Expert DnB",     q:"Which DnB producer created the iconic 'Valve D' bass sound that defined the 'dark' era?", opts:["Dillinja","Goldie","Grooverider","4Hero"],                          ans:0, fact:"Dillinja, known as the 'Dark Destroyer', created the Valve D synthesizer and helped define dark and technical DnB." },
 { stage:4, cat:"Lineup Deep",    q:"Carlo Lio's music is primarily released on which type of labels?",                   opts:["Major labels","Underground techno and house labels","Pop crossover labels","DnB labels"], ans:1, fact:"Carlo Lio releases on underground labels like Rawthentic, Cocoon, and Rejection, staying true to the underground scene." },
 { stage:4, cat:"Expert History", q:"What was the name of the pirate radio station that championed early jungle and DnB in the UK?", opts:["Kiss FM","Rinse FM","Kool FM","Flex FM"],                      ans:2, fact:"Kool FM was one of the most important pirate radio stations for jungle and drum & bass in the early 1990s." },
