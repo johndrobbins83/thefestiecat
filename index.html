@@ -3890,7 +3890,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <option value="DNB Stage">DNB Stage (Presented by BP²)</option>
             <option value="Oasis Stage">Oasis Stage</option>
             <option value="Beach Stage">Beach Stage</option>
-            <option value="Davey Jones's Locker">Davey Jones's Locker</option>
+            <option value="Davey Jones Locker">Davey Jones Locker</option>
+            <option value="Deep Sea">Deep Sea</option>
             <option value="TBA">TBA</option>
           </select>
         </div>
@@ -4333,6 +4334,7 @@ function syncScheduleDataFromArtists() {
     'Oasis Stage': 'oasis',
     'Beach Stage': 'beach',
     "Davey Jones Locker": 'locals',
+    'Deep Sea': 'deepsea',
   };
   const dayKeyMap = { 'Fri': 'fri', 'Sat': 'sat', 'Sun': 'sun', 'All': null, 'TBA': null };
 
@@ -7319,6 +7321,7 @@ function renderAdminSchedule() {
     { key:'oasis', name:'Oasis Stage',    color:'#f59e0b' },
     { key:'beach',  name:'Beach Stage',       color:'#06b6d4' },
     { key:'locals', name:"Davey Jones Locker",      color:'#84cc16' },
+    { key:'deepsea', name:'Deep Sea',                color:'#0ea5e9' },
   ];
 
   let html = '';
@@ -7402,7 +7405,7 @@ function addArtistToSchedule(day, stage) {
   const entry = { artist: artistName, time: a.time || 'TBA', headliner: !!a.headliner };
   SCHEDULE_DATA[day][stage].push(entry);
 
-  const stageDisplayNames = { dnb:'DNB Stage', oasis:'Oasis Stage', beach:'Beach Stage', locals:"Davey Jones Locker" };
+  const stageDisplayNames = { dnb:'DNB Stage', oasis:'Oasis Stage', beach:'Beach Stage', locals:"Davey Jones Locker", deepsea:'Deep Sea' };
   const stageDisplayName = stageDisplayNames[stage] || stage;
   const dayDisplayName   = { fri:'Fri', sat:'Sat', sun:'Sun' }[day] || day;
   if (artists[artistName]) {
