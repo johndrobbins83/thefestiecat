@@ -4354,20 +4354,15 @@ async function loadArtistOverrides() {
     const d = await res.json();
     const overrides = d.artists || {};
     Object.entries(overrides).forEach(([key, data]) => {
-      if (data && data._deleted && !artists[key]) return;
-      if (data && data._deleted) return;
       if (artists[key]) Object.assign(artists[key], data);
       else artists[key] = data;
     });
     // Sync SCHEDULE_DATA so the live schedule reflects saved overrides
     syncScheduleDataFromArtists();
-    // Re-render — use setTimeout to ensure DOM is ready
-    setTimeout(function() {
-      if (typeof renderArtists === 'function') renderArtists();
-      if (typeof renderSchedule === 'function') renderSchedule();
-      if (typeof renderFeaturedArtists === 'function') renderFeaturedArtists();
-      if (typeof renderMySchedWidget === 'function') renderMySchedWidget();
-    }, 100);
+    // Re-render pages that use artist data
+    if (typeof renderArtistGrid === 'function') renderArtistGrid();
+    if (typeof renderArtists === 'function') renderArtists();
+    if (typeof renderSchedule === 'function') renderSchedule();
     if (typeof renderFeaturedArtists === 'function') renderFeaturedArtists();
     if (typeof renderMySchedWidget === 'function') renderMySchedWidget();
   } catch(e) { /* Artist overrides unavailable - using defaults */ }
