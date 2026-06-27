@@ -4362,7 +4362,7 @@ async function loadArtistOverrides() {
     // Sync SCHEDULE_DATA so the live schedule reflects saved overrides
     syncScheduleDataFromArtists();
     // Re-render pages that use artist data
-    if (typeof renderArtistGrid === 'function') renderArtistGrid();
+    if (typeof renderArtists === 'function') renderArtists();
     if (typeof renderSchedule === 'function') renderSchedule();
     if (typeof renderFeaturedArtists === 'function') renderFeaturedArtists();
     if (typeof renderMySchedWidget === 'function') renderMySchedWidget();
