@@ -4379,21 +4379,24 @@ loadArtistOverrides();
 
 async function saveArtistOverride(key, data) {
   // Merge into full overrides object and push to worker
-  try {
-    const getRes = await fetch(AUTH_URL + '/artists');
-    const existing = getRes.ok ? ((await getRes.json()).artists || {}) : {};
-    existing[key] = { ...(existing[key]||{}), ...data };
-      // Force cache bust by appending timestamp to photo URLs
-      if (existing[key].photo && !existing[key].photo.includes('?v=')) {
-        existing[key].photoTs = Date.now();
-      }
-    const token = localStorage.getItem('ss_auth_token');
-    await fetch(AUTH_URL + '/artists', {
-      method: 'PUT',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify(existing)
-    });
-  } catch(e) { console.warn('Could not save artist override', e); }
+  const getRes = await fetch(AUTH_URL + '/artists');
+  if (!getRes.ok) throw new Error('Could not read artist data from server');
+  const existing = (await getRes.json()).artists || {};
+  existing[key] = { ...(existing[key]||{}), ...data };
+  // Force cache bust by appending timestamp to photo URLs
+  if (existing[key].photo && !existing[key].photo.includes('?v=')) {
+    existing[key].photoTs = Date.now();
+  }
+  const token = localStorage.getItem('ss_auth_token');
+  const putRes = await fetch(AUTH_URL + '/artists', {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body: JSON.stringify(existing)
+  });
+  if (!putRes.ok) {
+    const errData = await putRes.json().catch(() => ({}));
+    throw new Error(errData.error || 'Server returned ' + putRes.status);
+  }
 }
 
 // Notify all users + push when schedule changes
@@ -7332,9 +7335,6 @@ async function saveArtistEdit() {
   renderSchedule();
   renderMySchedWidget();
 
-  // Persist the override so it survives refresh for all users
-  saveArtistOverride(name, updated);
-
   // Send schedule change notifications if time, stage, day or headliner changed
   const old = artists[oldKey] || {};
   const changes = [];
@@ -7346,8 +7346,15 @@ async function saveArtistEdit() {
     changes.push('⭐ ' + name + ' confirmed as headliner!');
   changes.forEach(function(msg) { notifyScheduleChange(name, msg); });
 
-  const msg = photoUrl ? '✓ ' + name + ' saved with photo' : '✓ ' + name + ' saved';
-  showToast(msg);
+  // Persist the override so it survives refresh for all users
+  try {
+    await saveArtistOverride(name, updated);
+    const msg = photoUrl ? '✓ ' + name + ' saved with photo' : '✓ ' + name + ' saved';
+    showToast(msg);
+  } catch(e) {
+    console.error('saveArtistOverride failed:', e);
+    showToast('⚠ ' + name + ' saved locally but NOT to server — ' + e.message);
+  }
 }
 
 // ── Schedule editor ────────────────────────────────────────
