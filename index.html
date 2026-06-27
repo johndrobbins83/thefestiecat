@@ -5420,7 +5420,8 @@ function openArtist(key) {
   avatarEl.style.background = a.color || '#1a0a35';
   if (a.photo) {
     const initials2 = (a.initials||key[0]);
-    avatarEl.innerHTML = '<img src="'+a.photo+'?v='+(a.photoTs||Date.now())+'" '+
+    // a.photo already contains ?v=timestamp from saveArtistEdit — use it directly
+    avatarEl.innerHTML = '<img src="'+a.photo+'" '+
       'style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block;" '+
       'onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<span style=\"font-size:72px;font-weight:900;color:rgba(255,255,255,0.2);\">'+initials2+'</span>\'">';
   } else {
@@ -7276,11 +7277,17 @@ async function saveArtistEdit() {
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
 
   // Upload photo if one was selected
-  let photoUrl = document.getElementById('editArtistPhoto')?.value || artists[oldKey]?.photo || null;
+  // Strip any previous cache-bust timestamp from stored URL to get clean base URL
+  const existingPhoto = (artists[oldKey]?.photo || '').replace(/\?v=\d+$/, '') || null;
+  let photoUrl = existingPhoto;
   const fileInput = document.getElementById('editPhotoFile');
   if (fileInput?.files[0]) {
     const uploaded = await uploadArtistPhoto(name);
-    if (uploaded) photoUrl = uploaded;
+    // New upload: append fresh timestamp to bust the cache on every device
+    if (uploaded) photoUrl = uploaded.replace(/\?v=\d+$/, '') + '?v=' + Date.now();
+  } else if (photoUrl) {
+    // No new file — keep the existing URL with its existing timestamp intact
+    photoUrl = (artists[oldKey]?.photo || existingPhoto);
   }
 
   // Read slots
