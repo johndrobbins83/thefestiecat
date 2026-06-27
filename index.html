@@ -2534,7 +2534,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <select id="dayDropdown" onchange="switchDayMobile(this.value)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
           <option value="fri">FRI 7/17</option>
           <option value="sat">SAT 7/18</option>
-          <option value="sun">SUN 7/19</option>
+          
           <option value="mine">My Schedule</option>
         </select>
         <select id="stageDropdown" onchange="filterStageMobile(this.value)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
@@ -2556,7 +2556,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="day-tabs" style="flex:1;">
           <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
           <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
-          <button class="day-tab"        data-day="sun" onclick="switchDay('sun',this)">SUN 7/19</button>
+          
           <button class="day-tab mine-tab" data-day="mine" onclick="switchDay('mine',this)" id="mySchedTab">My Schedule</button>
         </div>
         <div class="filter-row">
@@ -3900,7 +3900,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <select class="edit-select" id="editArtistDay">
             <option value="Fri">Friday 7/17</option>
             <option value="Sat">Saturday 7/18</option>
-            <option value="Sun">Sunday 7/19</option>
+            
             <option value="All">All Days</option>
             <option value="TBA">TBA</option>
           </select>
@@ -4713,7 +4713,7 @@ function renderMySchedWidget() {
 
 /* ── Featured artists ── */
 function renderFeaturedArtists() {
-  const allKeys   = Object.keys(artists).filter(k => artists[k] && artists[k].stage !== 'TBA');
+  const allKeys   = Object.keys(artists).filter(k => artists[k] && !artists[k]._deleted && artists[k].stage !== 'TBA');
   const headliners = allKeys.filter(k => artists[k].headliner);
   const nonHeadliners = allKeys.filter(k => !artists[k].headliner);
 
@@ -5336,7 +5336,7 @@ function initArtists() {
 function buildAZBar() {
   const bar = document.getElementById('azBar');
   if (!bar) return;
-  const allKeys = Object.keys(artists);
+  const allKeys = Object.keys(artists).filter(k => artists[k] && !artists[k]._deleted);
   // Which letters actually exist
   const usedLetters = new Set(allKeys.map(k => k[0].toUpperCase()));
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -5383,7 +5383,7 @@ function renderArtists() {
   if (artistFilter === 'oasis') keys = keys.filter(k=>artists[k].stage==='Oasis Stage');
   if (artistFilter === 'fri')   keys = keys.filter(k=>artists[k].day==='Fri');
   if (artistFilter === 'sat')   keys = keys.filter(k=>artists[k].day==='Sat');
-  if (artistFilter === 'sun')   keys = keys.filter(k=>artists[k].day==='Sun');
+  // Sunday removed
   if (artistFilter === 'saved') keys = keys.filter(k=>mine.includes(k));
 
   // Letter filter (removed - replaced with sort)
@@ -7131,11 +7131,36 @@ function renderAdminArtistGrid() {
       </div>
       ${isTBA ? '<div class="admin-artist-tba">TBA</div>' : ''}
       <button class="admin-artist-edit" onclick="event.stopPropagation();adminEditArtist('${esc(key)}')">✏</button>
+      <button class="admin-artist-edit" onclick="event.stopPropagation();adminDeleteArtist('${esc(key)}')" style="right:36px;background:rgba(255,77,141,0.15);border-color:rgba(255,77,141,0.4);color:var(--pink-coral);">✕</button>
     </div>`;
   }).join('');
 }
 
 // ── Artist edit modal ──────────────────────────────────────
+function adminDeleteArtist(key) {
+  if (!confirm('Delete ' + key + ' from the roster? This cannot be undone.')) return;
+  // Remove from artists object
+  delete artists[key];
+  // Remove from SCHEDULE_DATA
+  Object.keys(SCHEDULE_DATA).forEach(function(day) {
+    Object.keys(SCHEDULE_DATA[day]||{}).forEach(function(stage) {
+      SCHEDULE_DATA[day][stage] = (SCHEDULE_DATA[day][stage]||[]).filter(function(item){ return item.artist !== key; });
+    });
+  });
+  // Persist deletion via override (empty object signals removal)
+  const token = localStorage.getItem(TOKEN_KEY);
+  fetch(AUTH_URL + '/artists/' + encodeURIComponent(key), {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).catch(function(){});
+  // Also save a tombstone override so it stays deleted
+  saveArtistOverride(key, { _deleted: true });
+  renderArtistGrid();
+  renderAdminArtistTab();
+  renderSchedule();
+  showToast('✓ ' + key + ' deleted from roster');
+}
+
 function adminEditArtist(key) {
   const a = artists[key];
   if (!a) return;
@@ -7428,8 +7453,16 @@ function removeSchedArtist(day, stage, idx) {
   renderSchedule();
   renderMySchedWidget();
   if (removed) {
-    showToast('Removed ' + removed.artist + ' from schedule');
-    notifyScheduleChange(removed.artist, '📅 Schedule update: ' + removed.artist + ' removed from lineup');
+    // Clear the artist's time/stage/day from the artists object and persist
+    const key = removed.artist;
+    if (artists[key]) {
+      artists[key].time  = 'TBA';
+      artists[key].stage = 'TBA';
+      artists[key].day   = 'TBA';
+      saveArtistOverride(key, artists[key]);
+    }
+    showToast('✓ ' + key + ' removed from schedule');
+    notifyScheduleChange(key, '📅 Schedule update: ' + key + ' removed from lineup');
   }
 }
 
@@ -10951,7 +10984,7 @@ INFO_DEFAULTS = {
     title: 'Event Info',
     sections: [
       { title: 'About The Event', body: 'Sunken Suite is a 3-day underground music festival celebrating the best in Drum & Bass, Techno, House, and Electronic music. The Mutiny 2026 is our biggest event yet — four stages, 66+ artists, and an immersive experience at the Sturbridge Host Hotel on Cedar Lake.' },
-      { title: 'Festival Days', body: 'Friday July 17 — Gates 4PM · Music 6PM\nSaturday July 18 — Gates 2PM · Music 4PM\nSunday July 19 — Gates 2PM · Music 4PM\n\nLast set ends approximately 6AM each night.' },
+      { title: 'Festival Days', body: 'Friday July 17 — Gates 4PM · Music 6PM\nSaturday July 18 — Gates 2PM · Music 4PM\n\nLast set ends approximately 6AM each night.' },
       { title: 'Stages', body: 'DNB Stage · Drum & Bass · Main Indoor Stage\nOasis Stage · Tech House / House Music · Indoor\nBeach Stage · Outdoor Pool-Side · Electronic\nDavey Jones Locker · Local & Regional Artists' },
       { title: 'Headliners', body: 'Friday DNB Stage — Roni Size\nSaturday — J. Phlip\nSunday DNB Stage — Spor' },
       { title: 'Contact', body: 'General: info@thefestiecat.com\nStaff: staff@sunkensuite.com\nEmergency: Use the SOS button in the More menu\nVenue: Sturbridge Host Hotel & Conference Center' }
@@ -11683,7 +11716,7 @@ ALL_QUESTIONS = [
 { stage:4, cat:"Lineup Deep",    q:"Deekline has collaborated extensively with which Bristolian MC known for jungle and DnB?", opts:["Dynamite MC","Skibadee","Ed Solo","Redman"],                        ans:2, fact:"Deekline and Ed Solo have been long-time collaborators, releasing jungle and DnB music together." },
 { stage:4, cat:"Expert DnB",     q:"What year was the Metalheadz Sunday Sessions at the Blue Note club in London launched?", opts:["1993","1994","1995","1996"],                                        ans:1, fact:"The Metalheadz Sunday Sessions launched in 1994 at the Blue Note in Hoxton, becoming one of the most legendary club nights in DnB history." },
 { stage:4, cat:"Expert History", q:"Which seminal 1992 EP by 4Hero is considered one of the first true jungle records?",  opts:["Mr. Kirk's Nightmare","Terminator","Playing with Fire","Journey into Bass"], ans:0, fact:"'Mr. Kirk's Nightmare' by 4Hero (1992) is a seminal early jungle record, sampling from classic breaks." },
-{ stage:4, cat:"Scene Knowledge",q:"Sunken Suite 2026 runs across how many days?",                                       opts:["1","2","3","4"],                                                          ans:2, fact:"Sunken Suite 2026 runs Friday July 17 through Sunday July 19 — three days of music on Cedar Lake." },
+{ stage:4, cat:"Scene Knowledge",q:"Sunken Suite 2026 runs across how many days?",                                       opts:["1","2","3","4"],                                                          ans:1, fact:"Sunken Suite 2026 runs Friday July 17 through Saturday July 18 — two days of music on Cedar Lake." },
 { stage:4, cat:"Expert DnB",     q:"Which DnB producer created the iconic 'Valve D' bass sound that defined the 'dark' era?", opts:["Dillinja","Goldie","Grooverider","4Hero"],                          ans:0, fact:"Dillinja, known as the 'Dark Destroyer', created the Valve D synthesizer and helped define dark and technical DnB." },
 { stage:4, cat:"Lineup Deep",    q:"Carlo Lio's music is primarily released on which type of labels?",                   opts:["Major labels","Underground techno and house labels","Pop crossover labels","DnB labels"], ans:1, fact:"Carlo Lio releases on underground labels like Rawthentic, Cocoon, and Rejection, staying true to the underground scene." },
 { stage:4, cat:"Expert History", q:"What was the name of the pirate radio station that championed early jungle and DnB in the UK?", opts:["Kiss FM","Rinse FM","Kool FM","Flex FM"],                      ans:2, fact:"Kool FM was one of the most important pirate radio stations for jungle and drum & bass in the early 1990s." },
