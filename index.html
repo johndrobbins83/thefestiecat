@@ -4358,11 +4358,10 @@ async function loadArtistOverrides() {
       if (!key || key === 'undefined' || typeof key !== 'string') return;
       // Skip tombstoned / deleted entries — remove from in-memory artists if present
       if (!data || data._deleted) { delete artists[key]; return; }
-      // Only merge into existing hardcoded artists, or add if it has enough real data
+      // Merge into existing hardcoded artists, or add as new KV-only artist
       if (artists[key]) {
         Object.assign(artists[key], data);
-      } else if (data.initials && data.color) {
-        // Only add KV-only artists if they have the minimum required fields
+      } else {
         artists[key] = data;
       }
     });
