@@ -3883,40 +3883,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <label class="edit-label">Artist Name</label>
         <input class="edit-input" id="editArtistName" placeholder="e.g. RONI SIZE">
       </div>
-      <div class="edit-row">
-        <div class="edit-field">
-          <label class="edit-label">Stage</label>
-          <select class="edit-select" id="editArtistStage">
-            <option value="DNB Stage">DNB Stage (Presented by BP²)</option>
-            <option value="Oasis Stage">Oasis Stage</option>
-            <option value="Beach Stage">Beach Stage</option>
-            <option value="Davey Jones Locker">Davey Jones Locker</option>
-            <option value="Deep Sea">Deep Sea</option>
-            <option value="TBA">TBA</option>
-          </select>
+      <div class="edit-field" style="margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <label class="edit-label" style="margin:0;">Set Slots</label>
+          <button type="button" onclick="addEditSlot()" style="background:rgba(0,212,200,0.12);border:1px solid rgba(0,212,200,0.35);color:var(--teal-glow);font-size:18px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;">+</button>
         </div>
-        <div class="edit-field">
-          <label class="edit-label">Day</label>
-          <select class="edit-select" id="editArtistDay">
-            <option value="Fri">Friday 7/17</option>
-            <option value="Sat">Saturday 7/18</option>
-            
-            <option value="All">All Days</option>
-            <option value="TBA">TBA</option>
-          </select>
-        </div>
-      </div>
-      <div class="edit-row">
-        <div class="edit-field">
-          <label class="edit-label">Set Time</label>
-          <select class="edit-select" id="editArtistTime">
-            <option value="TBA">TBA — time not set</option><option value="10:00 AM">10:00 AM</option><option value="10:15 AM">10:15 AM</option><option value="10:30 AM">10:30 AM</option><option value="10:45 AM">10:45 AM</option><option value="11:00 AM">11:00 AM</option><option value="11:15 AM">11:15 AM</option><option value="11:30 AM">11:30 AM</option><option value="11:45 AM">11:45 AM</option><option value="12:00 PM">12:00 PM</option><option value="12:15 PM">12:15 PM</option><option value="12:30 PM">12:30 PM</option><option value="12:45 PM">12:45 PM</option><option value="1:00 PM">1:00 PM</option><option value="1:15 PM">1:15 PM</option><option value="1:30 PM">1:30 PM</option><option value="1:45 PM">1:45 PM</option><option value="2:00 PM">2:00 PM</option><option value="2:15 PM">2:15 PM</option><option value="2:30 PM">2:30 PM</option><option value="2:45 PM">2:45 PM</option><option value="3:00 PM">3:00 PM</option><option value="3:15 PM">3:15 PM</option><option value="3:30 PM">3:30 PM</option><option value="3:45 PM">3:45 PM</option><option value="4:00 PM">4:00 PM</option><option value="4:15 PM">4:15 PM</option><option value="4:30 PM">4:30 PM</option><option value="4:45 PM">4:45 PM</option><option value="5:00 PM">5:00 PM</option><option value="5:15 PM">5:15 PM</option><option value="5:30 PM">5:30 PM</option><option value="5:45 PM">5:45 PM</option><option value="6:00 PM">6:00 PM</option><option value="6:15 PM">6:15 PM</option><option value="6:30 PM">6:30 PM</option><option value="6:45 PM">6:45 PM</option><option value="7:00 PM">7:00 PM</option><option value="7:15 PM">7:15 PM</option><option value="7:30 PM">7:30 PM</option><option value="7:45 PM">7:45 PM</option><option value="8:00 PM">8:00 PM</option><option value="8:15 PM">8:15 PM</option><option value="8:30 PM">8:30 PM</option><option value="8:45 PM">8:45 PM</option><option value="9:00 PM">9:00 PM</option><option value="9:15 PM">9:15 PM</option><option value="9:30 PM">9:30 PM</option><option value="9:45 PM">9:45 PM</option><option value="10:00 PM">10:00 PM</option><option value="10:15 PM">10:15 PM</option><option value="10:30 PM">10:30 PM</option><option value="10:45 PM">10:45 PM</option><option value="11:00 PM">11:00 PM</option><option value="11:15 PM">11:15 PM</option><option value="11:30 PM">11:30 PM</option><option value="11:45 PM">11:45 PM</option><option value="12:00 AM">12:00 AM</option><option value="12:15 AM">12:15 AM</option><option value="12:30 AM">12:30 AM</option><option value="12:45 AM">12:45 AM</option><option value="1:00 AM">1:00 AM</option><option value="1:15 AM">1:15 AM</option><option value="1:30 AM">1:30 AM</option><option value="1:45 AM">1:45 AM</option><option value="2:00 AM">2:00 AM</option><option value="2:15 AM">2:15 AM</option><option value="2:30 AM">2:30 AM</option><option value="2:45 AM">2:45 AM</option><option value="3:00 AM">3:00 AM</option><option value="3:15 AM">3:15 AM</option><option value="3:30 AM">3:30 AM</option><option value="3:45 AM">3:45 AM</option><option value="4:00 AM">4:00 AM</option><option value="4:15 AM">4:15 AM</option><option value="4:30 AM">4:30 AM</option><option value="4:45 AM">4:45 AM</option><option value="5:00 AM">5:00 AM</option><option value="5:15 AM">5:15 AM</option><option value="5:30 AM">5:30 AM</option><option value="5:45 AM">5:45 AM</option><option value="6:00 AM">6:00 AM</option><option value="6:15 AM">6:15 AM</option><option value="6:30 AM">6:30 AM</option><option value="6:45 AM">6:45 AM</option><option value="7:00 AM">7:00 AM</option><option value="7:15 AM">7:15 AM</option><option value="7:30 AM">7:30 AM</option><option value="7:45 AM">7:45 AM</option><option value="8:00 AM">8:00 AM</option><option value="8:15 AM">8:15 AM</option><option value="8:30 AM">8:30 AM</option><option value="8:45 AM">8:45 AM</option><option value="9:00 AM">9:00 AM</option><option value="9:15 AM">9:15 AM</option><option value="9:30 AM">9:30 AM</option><option value="9:45 AM">9:45 AM</option>
-          </select>
-        </div>
-        <div class="edit-field">
-          <label class="edit-label">Genre</label>
-          <input class="edit-input" id="editArtistGenre" placeholder="e.g. Drum & Bass">
-        </div>
+        <div id="editSlotsList"></div>
       </div>
       <div class="edit-field">
         <label class="edit-label">Headliner</label>
@@ -3924,6 +3896,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <option value="false">No</option>
           <option value="true">Yes — Headliner</option>
         </select>
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Genre</label>
+        <input class="edit-input" id="editArtistGenre" placeholder="e.g. Drum & Bass">
       </div>
       <div class="edit-field">
         <label class="edit-label">Bio</label>
@@ -4326,59 +4302,64 @@ const artists = {
 // Sync SCHEDULE_DATA from the artists object so edits to stage/day/time/headliner
 // are reflected on the live schedule page.
 function syncScheduleDataFromArtists() {
-  // Build a lookup: artistName -> { day, stageKey, time, headliner }
-  // stage display name -> SCHEDULE_DATA key
   const stageKeyMap = {
-    'DNB Stage': 'dnb',
-    'Oasis Stage': 'oasis',
-    'Oasis Stage': 'oasis',
-    'Beach Stage': 'beach',
-    "Davey Jones Locker": 'locals',
-    'Deep Sea': 'deepsea',
+    'DNB Stage': 'dnb', 'Oasis Stage': 'oasis',
+    'Beach Stage': 'beach', "Davey Jones Locker": 'locals', 'Deep Sea': 'deepsea',
+    'Atrium': 'oasis',
   };
   const dayKeyMap = { 'Fri': 'fri', 'Sat': 'sat', 'Sun': 'sun', 'All': null, 'TBA': null };
 
-  // First pass: update time + headliner for artists already in SCHEDULE_DATA
-  Object.keys(SCHEDULE_DATA).forEach(day => {
-    Object.keys(SCHEDULE_DATA[day]).forEach(stageKey => {
-      SCHEDULE_DATA[day][stageKey].forEach(item => {
+  // Pass 1: update time + headliner for artists already in SCHEDULE_DATA
+  Object.keys(SCHEDULE_DATA).forEach(function(day) {
+    Object.keys(SCHEDULE_DATA[day]).forEach(function(stageKey) {
+      SCHEDULE_DATA[day][stageKey].forEach(function(item) {
         const a = artists[item.artist];
         if (!a) return;
-        item.time = a.time || item.time;
+        if (a.time && a.time !== 'TBA') item.time = a.time;
         if (typeof a.headliner === 'boolean') item.headliner = a.headliner;
       });
     });
   });
 
-  // Second pass: move artists whose stage or day changed
-  Object.entries(artists).forEach(([name, a]) => {
+  // Pass 2: move artists whose stage/day changed, or add new ones
+  Object.entries(artists).forEach(function([name, a]) {
+    if (!a || a._deleted) return;
     const newStageKey = stageKeyMap[a.stage];
     const newDayKey   = dayKeyMap[a.day] || (a.day ? a.day.toLowerCase() : null);
     if (!newStageKey || !newDayKey) return;
 
-    // Find where this artist currently lives in SCHEDULE_DATA
-    let foundDay = null, foundStage = null, foundIdx = -1;
-    Object.keys(SCHEDULE_DATA).forEach(day => {
-      Object.keys(SCHEDULE_DATA[day]).forEach(stageKey => {
-        const idx = SCHEDULE_DATA[day][stageKey].findIndex(i => i.artist === name);
+    // Find where this artist currently lives
+    var foundDay = null, foundStage = null, foundIdx = -1;
+    Object.keys(SCHEDULE_DATA).forEach(function(day) {
+      Object.keys(SCHEDULE_DATA[day]).forEach(function(stageKey) {
+        var idx = (SCHEDULE_DATA[day][stageKey]||[]).findIndex(function(i){ return i.artist === name; });
         if (idx !== -1) { foundDay = day; foundStage = stageKey; foundIdx = idx; }
       });
     });
 
     if (foundDay === null) {
-      // New artist not yet in SCHEDULE_DATA — add them
+      // New artist — add them
       if (!SCHEDULE_DATA[newDayKey]) SCHEDULE_DATA[newDayKey] = {};
       if (!SCHEDULE_DATA[newDayKey][newStageKey]) SCHEDULE_DATA[newDayKey][newStageKey] = [];
       SCHEDULE_DATA[newDayKey][newStageKey].push({ artist: name, time: a.time || 'TBA', headliner: !!a.headliner });
     } else if (foundDay !== newDayKey || foundStage !== newStageKey) {
-      // Artist moved — remove from old slot, add to new
-      const entry = SCHEDULE_DATA[foundDay][foundStage].splice(foundIdx, 1)[0];
-      entry.time = a.time || entry.time;
+      // Artist moved stage/day — relocate
+      var entry = SCHEDULE_DATA[foundDay][foundStage].splice(foundIdx, 1)[0];
+      if (a.time && a.time !== 'TBA') entry.time = a.time;
       entry.headliner = typeof a.headliner === 'boolean' ? a.headliner : entry.headliner;
       if (!SCHEDULE_DATA[newDayKey]) SCHEDULE_DATA[newDayKey] = {};
       if (!SCHEDULE_DATA[newDayKey][newStageKey]) SCHEDULE_DATA[newDayKey][newStageKey] = [];
       SCHEDULE_DATA[newDayKey][newStageKey].push(entry);
     }
+  });
+
+  // Pass 3: remove deleted artists from schedule
+  Object.keys(SCHEDULE_DATA).forEach(function(day) {
+    Object.keys(SCHEDULE_DATA[day]).forEach(function(stageKey) {
+      SCHEDULE_DATA[day][stageKey] = SCHEDULE_DATA[day][stageKey].filter(function(item) {
+        return artists[item.artist] && !artists[item.artist]._deleted;
+      });
+    });
   });
 }
 
@@ -4389,6 +4370,12 @@ async function loadArtistOverrides() {
     const d = await res.json();
     const overrides = d.artists || {};
     Object.entries(overrides).forEach(([key, data]) => {
+      if (data && data._deleted) {
+        // Only remove if NOT in the hardcoded base artists object
+        // If they ARE in base data, the delete was reversed by re-adding — ignore tombstone
+        if (!artists[key]) delete artists[key];
+        return;
+      }
       if (artists[key]) Object.assign(artists[key], data);
       else artists[key] = data;
     });
@@ -4404,15 +4391,15 @@ async function loadArtistOverrides() {
 loadArtistOverrides();
 
 async function saveArtistOverride(key, data) {
-  // Merge into full overrides object and push to worker
   try {
     const getRes = await fetch(AUTH_URL + '/artists');
     const existing = getRes.ok ? ((await getRes.json()).artists || {}) : {};
     existing[key] = { ...(existing[key]||{}), ...data };
-      // Force cache bust by appending timestamp to photo URLs
-      if (existing[key].photo && !existing[key].photo.includes('?v=')) {
-        existing[key].photoTs = Date.now();
-      }
+    // Always clear _deleted when saving a live artist
+    if (!data._deleted) delete existing[key]._deleted;
+    if (existing[key].photo && !existing[key].photo.includes('?v=')) {
+      existing[key].photoTs = Date.now();
+    }
     const token = localStorage.getItem('ss_auth_token');
     await fetch(AUTH_URL + '/artists', {
       method: 'PUT',
@@ -7137,6 +7124,57 @@ function renderAdminArtistGrid() {
 }
 
 // ── Artist edit modal ──────────────────────────────────────
+// ── Multi-slot management ──────────────────────────────────
+const TIME_OPTIONS_HTML = '<option value="TBA">TBA</option>' + (function(){
+  var t=[],h,m,ampm;
+  var order=[[10,'AM'],[11,'AM'],[12,'PM']];
+  for(h=1;h<=11;h++) order.push([h,'PM']);
+  order.push([12,'AM']);
+  for(h=1;h<=9;h++) order.push([h,'AM']);
+  order.forEach(function(hap){ for(m=0;m<60;m+=15){ t.push('<option value="'+hap[0]+':'+('0'+m).slice(-2)+' '+hap[1]+'">'+hap[0]+':'+('0'+m).slice(-2)+' '+hap[1]+'</option>'); } });
+  return t.join('');
+})();
+
+const STAGE_OPTIONS_HTML = '<option value="TBA">TBA</option><option value="DNB Stage">DNB Stage (Presented by BP²)</option><option value="Oasis Stage">Oasis Stage</option><option value="Beach Stage">Beach Stage</option><option value="Davey Jones Locker">Davey Jones Locker</option><option value="Deep Sea">Deep Sea</option>';
+const DAY_OPTIONS_HTML   = '<option value="TBA">TBA</option><option value="Fri">Friday 7/17</option><option value="Sat">Saturday 7/18</option><option value="All">All Days</option>';
+
+function renderEditSlots(slots) {
+  const container = document.getElementById('editSlotsList');
+  if (!container) return;
+  container.innerHTML = slots.map(function(slot, i) {
+    return '<div class="edit-slot-row" style="display:flex;gap:6px;align-items:center;margin-bottom:6px;padding:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">' +
+      '<select class="edit-select slot-stage" style="flex:1;font-size:11px;padding:5px 4px;">' + STAGE_OPTIONS_HTML.replace('value="'+(slot.stage||'TBA')+'"', 'value="'+(slot.stage||'TBA')+'" selected') + '</select>' +
+      '<select class="edit-select slot-day" style="flex:0 0 90px;font-size:11px;padding:5px 4px;">' + DAY_OPTIONS_HTML.replace('value="'+(slot.day||'TBA')+'"', 'value="'+(slot.day||'TBA')+'" selected') + '</select>' +
+      '<select class="edit-select slot-time" style="flex:0 0 90px;font-size:11px;padding:5px 4px;">' + TIME_OPTIONS_HTML.replace('value="'+(slot.time||'TBA')+'"', 'value="'+(slot.time||'TBA')+'" selected') + '</select>' +
+      (slots.length > 1 ? '<button type="button" onclick="removeEditSlot(this)" style="flex-shrink:0;width:24px;height:24px;background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;font-size:14px;">✕</button>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function addEditSlot() {
+  const container = document.getElementById('editSlotsList');
+  if (!container) return;
+  const slots = getEditSlots();
+  slots.push({ stage:'TBA', day:'TBA', time:'TBA' });
+  renderEditSlots(slots);
+}
+
+function removeEditSlot(btn) {
+  const row = btn.closest('.edit-slot-row');
+  if (row) { row.remove(); }
+}
+
+function getEditSlots() {
+  const rows = document.querySelectorAll('#editSlotsList .edit-slot-row');
+  return Array.from(rows).map(function(row) {
+    return {
+      stage: row.querySelector('.slot-stage').value,
+      day:   row.querySelector('.slot-day').value,
+      time:  row.querySelector('.slot-time').value
+    };
+  });
+}
+
 function adminDeleteArtist(key) {
   if (!confirm('Delete ' + key + ' from the roster? This cannot be undone.')) return;
   // Remove from artists object
@@ -7167,9 +7205,6 @@ function adminEditArtist(key) {
   document.getElementById('editModalTitle').textContent = 'Edit · ' + key;
   document.getElementById('editArtistKey').value        = key;
   document.getElementById('editArtistName').value       = key;
-  document.getElementById('editArtistStage').value      = a.stage || 'TBA';
-  document.getElementById('editArtistDay').value        = a.day   || 'TBA';
-  document.getElementById('editArtistTime').value       = a.time  || 'TBA';
   document.getElementById('editArtistGenre').value      = a.genre || '';
   document.getElementById('editArtistHeadliner').value  = a.headliner ? 'true' : 'false';
   document.getElementById('editArtistBio').value        = a.bio   || '';
@@ -7189,12 +7224,10 @@ function adminEditArtist(key) {
   const ttEl = document.getElementById('editArtistTiktok');
   if (ttEl) ttEl.value = a.tiktok || '';
   document.getElementById('editArtistPhoto').value      = a.photo || '';
-  // Reset file input and status
   const fi = document.getElementById('editPhotoFile');
   if (fi) fi.value = '';
   const st = document.getElementById('editPhotoStatus');
   if (st) { st.textContent = ''; st.style.color = ''; }
-  // Show current photo or gradient placeholder in preview
   const preview = document.getElementById('editPhotoPreview');
   if (preview) {
     if (a.photo) {
@@ -7205,6 +7238,9 @@ function adminEditArtist(key) {
         font-size:18px;font-weight:900;color:#fff;">${a.initials}</div>`;
     }
   }
+  // Load slots - migrate legacy single slot to slots array
+  const slots = a.slots && a.slots.length ? a.slots : [{stage: a.stage||'TBA', day: a.day||'TBA', time: a.time||'TBA'}];
+  renderEditSlots(slots);
   document.getElementById('artistEditModal').classList.add('open');
   document.body.style.overflow = 'hidden';
   if (window.innerWidth <= 767) {
@@ -7222,9 +7258,7 @@ function adminNewArtist() {
   document.getElementById('editModalTitle').textContent = 'Add New Artist';
   document.getElementById('editArtistKey').value        = '';
   document.getElementById('editArtistName').value       = '';
-  document.getElementById('editArtistStage').value      = 'TBA';
-  document.getElementById('editArtistDay').value        = 'TBA';
-  document.getElementById('editArtistTime').value       = 'TBA';
+  renderEditSlots([{ stage:'TBA', day:'TBA', time:'TBA' }]);
   document.getElementById('editArtistGenre').value      = '';
   document.getElementById('editArtistHeadliner').value  = 'false';
   document.getElementById('editArtistBio').value        = '';
@@ -7266,11 +7300,16 @@ async function saveArtistEdit() {
     if (uploaded) photoUrl = uploaded;
   }
 
+  // Read slots
+  const slots = getEditSlots();
+  const primarySlot = slots[0] || { stage:'TBA', day:'TBA', time:'TBA' };
+
   const updated = {
     ...(artists[oldKey] || {}),
-    stage:     document.getElementById('editArtistStage').value,
-    day:       document.getElementById('editArtistDay').value,
-    time:      document.getElementById('editArtistTime').value || 'TBA',
+    stage:     primarySlot.stage,
+    day:       primarySlot.day,
+    time:      primarySlot.time,
+    slots:     slots,
     genre:     document.getElementById('editArtistGenre').value,
     headliner: document.getElementById('editArtistHeadliner').value === 'true',
     bio:       document.getElementById('editArtistBio').value,
