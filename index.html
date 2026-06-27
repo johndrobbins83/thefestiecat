@@ -4355,14 +4355,9 @@ async function loadArtistOverrides() {
     const overrides = d.artists || {};
     Object.entries(overrides).forEach(([key, data]) => {
       if (data && data._deleted) {
-        // Only delete if NOT in the hardcoded base artists (allows re-adding)
-        // If they're in base artists, the re-add was intentional - clear the tombstone
-        if (artists[key]) {
-          // Artist exists in base data - tombstone is stale, ignore it
-          // (saveArtistOverride will clear it next save)
-          return;
-        }
-        delete artists[key]; // fully remove artist not in base data
+        // Only remove if NOT in the hardcoded base artists object
+        // If they ARE in base data, the delete was reversed by re-adding — ignore tombstone
+        if (!artists[key]) delete artists[key];
         return;
       }
       if (artists[key]) Object.assign(artists[key], data);
@@ -4384,10 +4379,8 @@ async function saveArtistOverride(key, data) {
     const getRes = await fetch(AUTH_URL + '/artists');
     const existing = getRes.ok ? ((await getRes.json()).artists || {}) : {};
     existing[key] = { ...(existing[key]||{}), ...data };
-    // If we're saving a real artist (not a tombstone), always clear _deleted
-    if (!data._deleted) {
-      delete existing[key]._deleted;
-    }
+    // Always clear _deleted when saving a live artist
+    if (!data._deleted) delete existing[key]._deleted;
     if (existing[key].photo && !existing[key].photo.includes('?v=')) {
       existing[key].photoTs = Date.now();
     }
@@ -7168,37 +7161,26 @@ function getEditSlots() {
 
 function adminDeleteArtist(key) {
   if (!confirm('Delete ' + key + ' from the roster? This cannot be undone.')) return;
-  
   // Remove from artists object
   delete artists[key];
-
-  // Remove from ALL SCHEDULE_DATA entries
+  // Remove from SCHEDULE_DATA
   Object.keys(SCHEDULE_DATA).forEach(function(day) {
     Object.keys(SCHEDULE_DATA[day]||{}).forEach(function(stage) {
       SCHEDULE_DATA[day][stage] = (SCHEDULE_DATA[day][stage]||[]).filter(function(item){ return item.artist !== key; });
     });
   });
-
-  // Delete from worker KV directly
+  // Persist deletion via override (empty object signals removal)
   const token = localStorage.getItem(TOKEN_KEY);
   fetch(AUTH_URL + '/artists/' + encodeURIComponent(key), {
     method: 'DELETE',
     headers: { 'Authorization': 'Bearer ' + token }
   }).catch(function(){});
-
-  // Save a standalone tombstone override that completely replaces the artist
-  const tombstone = { _deleted: true, stage:'TBA', day:'TBA', time:'TBA' };
-  fetch(AUTH_URL + '/artists', {
-    method: 'PUT',
-    headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
-    body: JSON.stringify({ key: key, data: tombstone })
-  }).catch(function(){});
-
-  renderArtistGrid && renderArtistGrid();
-  renderAdminArtistGrid && renderAdminArtistGrid();
-  renderSchedule && renderSchedule();
-  renderAdminSchedule && renderAdminSchedule();
-  showToast('✓ ' + key + ' deleted');
+  // Also save a tombstone override so it stays deleted
+  saveArtistOverride(key, { _deleted: true });
+  renderArtistGrid();
+  renderAdminArtistTab();
+  renderSchedule();
+  showToast('✓ ' + key + ' deleted from roster');
 }
 
 function adminEditArtist(key) {
