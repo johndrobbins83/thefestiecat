@@ -889,6 +889,15 @@ body{
 .more-btn.board:hover{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);}
 
 /* ══════════════════════════════════════════════════
+   PHOTO BOOTH
+══════════════════════════════════════════════════ */
+.booth-photo-item{break-inside:avoid;margin-bottom:8px;position:relative;overflow:hidden;background:#111;border:1px solid rgba(255,255,255,0.07);}
+.booth-photo-item img{width:100%;display:block;object-fit:cover;}
+.booth-photo-meta{position:absolute;bottom:0;left:0;right:0;padding:6px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.8));font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;}
+.booth-photo-del{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;}
+.booth-photo-item:hover .booth-photo-del{opacity:1;}
+
+/* ══════════════════════════════════════════════════
    SOS OVERLAY
 ══════════════════════════════════════════════════ */
 .sos-overlay{position:fixed;inset:0;z-index:10000;pointer-events:none;}
@@ -1022,13 +1031,16 @@ body{
    PWA INSTALL BANNER
 ══════════════════════════════════════════════════ */
 .pwa-install-banner{
-  display:none;position:fixed;bottom:80px;left:12px;right:12px;z-index:8000;
+  display:none;position:fixed;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  width:calc(100% - 32px);max-width:400px;
+  z-index:8000;
   background:linear-gradient(135deg,rgba(10,37,64,0.98),rgba(4,29,58,0.98));
   border:1px solid rgba(245,200,66,0.4);border-radius:0;padding:16px;
-  box-shadow:0 8px 32px rgba(0,0,0,0.6);animation:bannerSlideUp .35s ease;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);animation:bannerFadeIn .25s ease;
 }
-@media(min-width:768px){.pwa-install-banner{max-width:400px;left:50%;transform:translateX(-50%);bottom:20px;}}
-@keyframes bannerSlideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(min-width:768px){.pwa-install-banner{max-width:440px;}}
+@keyframes bannerFadeIn{from{opacity:0;transform:translate(-50%,-46%)}to{opacity:1;transform:translate(-50%,-50%)}}
 .pwa-install-banner.show{display:block;}
 .pwa-banner-inner{display:flex;align-items:center;gap:12px;}
 .pwa-banner-icon{font-size:28px;flex-shrink:0;}
@@ -3409,6 +3421,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <button onclick="closeMore()" style="background:rgba(255,255,255,0.08);border:none;color:var(--text-muted);width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
     </div>
     <div class="more-grid">
+      <span class="more-btn" onclick="openPhotoBooth();closeMore()" style="border-color:rgba(255,105,180,0.3);background:rgba(255,105,180,0.05);">
+        <div class="more-btn-icon" style="background:rgba(255,105,180,0.2);color:#ff69b4;">📸</div>
+        <div class="more-btn-label">Photo Booth</div>
+        <div class="more-btn-sub">Share your moments</div>
+      </span>
       <span class="more-btn games" onclick="navigate('games');closeMore()">
         <div class="more-btn-icon">🎮</div>
         <div class="more-btn-label">Games</div>
@@ -3439,6 +3456,53 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="more-btn-label" style="color:var(--pink-coral);">Emergency SOS</div>
         <div class="more-btn-sub">Alert staff</div>
       </span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PHOTO BOOTH OVERLAY ══ -->
+<div id="photoBoothOverlay" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.92);backdrop-filter:blur(6px);overflow-y:auto;">
+  <div style="max-width:680px;margin:0 auto;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 24px);">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0 14px;position:sticky;top:0;background:rgba(0,0,0,0.95);z-index:2;border-bottom:1px solid rgba(255,105,180,0.2);margin-bottom:16px;">
+      <div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:#ff69b4;letter-spacing:1px;">📸 PHOTO BOOTH</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Share your Mutiny moments for the recap</div>
+      </div>
+      <button onclick="closePhotoBooth()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+
+    <!-- Upload buttons -->
+    <div id="photoBoothUploadArea" style="display:flex;gap:10px;margin-bottom:20px;">
+      <!-- Upload from gallery -->
+      <label style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 12px;border:2px dashed rgba(255,105,180,0.4);background:rgba(255,105,180,0.05);cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='rgba(255,105,180,0.8)'" onmouseout="this.style.borderColor='rgba(255,105,180,0.4)'">
+        <input type="file" accept="image/*" multiple style="display:none;" onchange="handleBoothFiles(this.files)">
+        <span style="font-size:32px;">🖼️</span>
+        <span style="font-size:12px;font-weight:700;color:#ff69b4;text-align:center;line-height:1.3;">Upload from<br>Gallery</span>
+      </label>
+      <!-- Open camera -->
+      <label style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 12px;border:2px dashed rgba(0,212,200,0.4);background:rgba(0,212,200,0.05);cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='rgba(0,212,200,0.8)'" onmouseout="this.style.borderColor='rgba(0,212,200,0.4)'">
+        <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="handleBoothFiles(this.files)">
+        <span style="font-size:32px;">📷</span>
+        <span style="font-size:12px;font-weight:700;color:var(--teal-glow);text-align:center;line-height:1.3;">Take a<br>Photo</span>
+      </label>
+    </div>
+
+    <!-- Upload progress -->
+    <div id="photoBoothProgress" style="display:none;margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px;" id="photoBoothProgressLabel">Uploading…</div>
+      <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:0;overflow:hidden;">
+        <div id="photoBoothProgressBar" style="height:100%;background:linear-gradient(90deg,#ff69b4,var(--purple-mutiny));width:0%;transition:width .3s ease;"></div>
+      </div>
+    </div>
+
+    <!-- Community photos grid -->
+    <div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:2px;text-transform:uppercase;">Community Photos</div>
+      <button onclick="loadBoothPhotos()" style="font-size:11px;color:var(--teal-glow);background:none;border:none;cursor:pointer;font-weight:700;">↻ Refresh</button>
+    </div>
+    <div id="photoBoothGrid" style="columns:2;gap:8px;column-gap:8px;">
+      <div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px;">Loading photos…</div>
     </div>
   </div>
 </div>
@@ -3575,6 +3639,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 </div>
 
 <!-- ══ PWA INSTALL BANNER ══ -->
+<div id="pwaInstallBackdrop" style="display:none;position:fixed;inset:0;z-index:7999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);" onclick="dismissInstall()"></div>
 <div class="pwa-install-banner" id="pwaInstallBanner">
   <div class="pwa-banner-inner">
     <div class="pwa-banner-icon">☠️</div>
@@ -6171,11 +6236,15 @@ window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredInstallPrompt = e;
   if (!localStorage.getItem(PWA_DISMISSED_KEY)) {
-    setTimeout(()=>document.getElementById('pwaInstallBanner').classList.add('show'), 3000);
+    setTimeout(()=>{
+      document.getElementById('pwaInstallBanner').classList.add('show');
+      document.getElementById('pwaInstallBackdrop').style.display='block';
+    }, 3000);
   }
 });
 window.addEventListener('appinstalled', ()=>{
   document.getElementById('pwaInstallBanner').classList.remove('show');
+  document.getElementById('pwaInstallBackdrop').style.display='none';
   showToast('✅ App installed! Find it on your home screen.');
 });
 function installPWA() {
@@ -6185,11 +6254,13 @@ function installPWA() {
     if (c.outcome==='accepted') showToast('✅ Installing Sunken Suite app…');
     deferredInstallPrompt=null;
     document.getElementById('pwaInstallBanner').classList.remove('show');
+    document.getElementById('pwaInstallBackdrop').style.display='none';
   });
 }
 function dismissInstall() {
   localStorage.setItem(PWA_DISMISSED_KEY,'1');
   document.getElementById('pwaInstallBanner').classList.remove('show');
+  document.getElementById('pwaInstallBackdrop').style.display='none';
 }
 function dismissIOSInstall() {
   localStorage.setItem(PWA_DISMISSED_KEY+'_ios', '1');
@@ -12901,6 +12972,130 @@ function updateDMBadge(count) {
     attachCollapse('page-artists',  '.artist-controls');
   }, 1500);
 })();
+
+/* ════════════════════════════════════════════════════════════
+   PHOTO BOOTH
+════════════════════════════════════════════════════════════ */
+function openPhotoBooth() {
+  const el = document.getElementById('photoBoothOverlay');
+  if (!el) return;
+  el.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  loadBoothPhotos();
+}
+function closePhotoBooth() {
+  const el = document.getElementById('photoBoothOverlay');
+  if (el) el.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+async function handleBoothFiles(files) {
+  if (!files || !files.length) return;
+  if (!currentUser) { showToast('Sign in to upload photos'); return; }
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) { showToast('Sign in to upload photos'); return; }
+
+  const progressWrap = document.getElementById('photoBoothProgress');
+  const progressBar  = document.getElementById('photoBoothProgressBar');
+  const progressLabel = document.getElementById('photoBoothProgressLabel');
+  progressWrap.style.display = 'block';
+
+  let uploaded = 0;
+  let failed   = 0;
+  const total  = files.length;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    progressLabel.textContent = 'Uploading ' + (i + 1) + ' of ' + total + '…';
+    progressBar.style.width = Math.round(((i) / total) * 100) + '%';
+
+    if (!file.type.startsWith('image/')) { failed++; continue; }
+    if (file.size > 8 * 1024 * 1024) { showToast(file.name + ' is too large (max 8MB)'); failed++; continue; }
+
+    try {
+      const slug = 'booth_' + (currentUser.handle || currentUser.id) + '_' + Date.now() + '_' + i;
+      const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
+        method: 'POST',
+        headers: { 'Content-Type': file.type, 'Authorization': 'Bearer ' + token },
+        body: file
+      });
+      if (res.ok) {
+        const d = await res.json();
+        // Save photo record to KV via a lightweight POST
+        await fetch(AUTH_URL + '/booth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ url: d.url, uploadedBy: currentUser.handle || currentUser.id, uploadedById: currentUser.id })
+        }).catch(() => {});
+        uploaded++;
+      } else { failed++; }
+    } catch(e) { failed++; }
+  }
+
+  progressBar.style.width = '100%';
+  progressLabel.textContent = uploaded + ' photo' + (uploaded !== 1 ? 's' : '') + ' uploaded!' + (failed ? ' (' + failed + ' failed)' : '');
+  setTimeout(() => {
+    progressWrap.style.display = 'none';
+    progressBar.style.width = '0%';
+  }, 2500);
+
+  if (uploaded > 0) loadBoothPhotos();
+}
+
+async function loadBoothPhotos() {
+  const grid = document.getElementById('photoBoothGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px;">Loading photos…</div>';
+
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/booth', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    });
+    if (!res.ok) { grid.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px;">Could not load photos.</div>'; return; }
+    const d = await res.json();
+    const photos = d.photos || [];
+    if (!photos.length) {
+      grid.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px;">No photos yet — be the first to share a moment! 📸</div>';
+      return;
+    }
+    const isAdmin = currentUser && (currentUser.role === 'admin');
+    grid.innerHTML = photos.map(function(p) {
+      const canDel = isAdmin || (currentUser && p.uploadedById === currentUser.id);
+      return '<div class="booth-photo-item">' +
+        '<img src="' + p.url + '" loading="lazy" onclick="boothZoom(\'' + p.url + '\')" onerror="this.closest(\'.booth-photo-item\').style.display=\'none\'">' +
+        '<div class="booth-photo-meta">@' + (p.uploadedBy || 'festie') + '</div>' +
+        (canDel ? '<button class="booth-photo-del" onclick="deleteBoothPhoto(\'' + p.id + '\',this)" title="Delete">✕</button>' : '') +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px;">Could not load photos.</div>';
+  }
+}
+
+async function deleteBoothPhoto(photoId, btn) {
+  if (!confirm('Remove this photo?')) return;
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/booth/' + photoId, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      btn.closest('.booth-photo-item').remove();
+      showToast('Photo removed');
+    } else { showToast('Could not remove photo'); }
+  } catch { showToast('Could not connect'); }
+}
+
+function boothZoom(url) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;padding:16px;cursor:pointer;';
+  el.innerHTML = '<img src="' + url + '" style="max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 0 60px rgba(0,0,0,0.8);">';
+  el.onclick = function() { document.body.removeChild(el); };
+  document.body.appendChild(el);
+}
+
 
 
 </script>
