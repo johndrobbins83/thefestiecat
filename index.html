@@ -3374,53 +3374,53 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── PEOPLE PAGE ── -->
   <div class="page" id="page-people">
-    <div class="page-header" style="margin-bottom:0;"><div class="page-title">👥 People</div></div>
-    <div class="dash-tabs" style="margin-bottom:14px;">
-      <button class="dash-tab active" onclick="switchPeopleTab('connect',this)">🤝 Connect</button>
-      
-      <button class="dash-tab" onclick="switchPeopleTab('messages',this)">💬 Messages<span id="dmBadgeTab" style="display:none;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;padding:1px 5px;margin-left:4px;border-radius:4px;">0</span></button>
-    </div>
-    <div id="peopleTab-connect">
-    <!-- Friend requests -->
-    <div id="friendRequestsSection" style="display:none;margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:8px;"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Friend Requests</div>
-      <div id="friendRequestsList"></div>
-    </div>
-    <!-- Friends -->
-    <div id="friendsSection" style="margin-bottom:20px;">
-      <div class="section-header"><div class="section-title"> My Crew</div></div>
-      <div id="friendsList"></div>
-    </div>
-    <!-- Search -->
-    <div class="section-title" style="margin-bottom:10px;"> Find Festies</div>
-    <div class="people-search-wrap">
-      <span class="people-search-icon"></span>
-      <input type="text" class="people-search-input" id="peopleSearchInput"
-        placeholder="Search by @handle or email…" oninput="searchPeople(this.value)" autocomplete="off">
-    </div>
-    <div class="people-results" id="peopleResults">
-      <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">
-        Type a handle to search for Festies
-      </div>
-    </div>
-    </div><!-- /peopleTab-connect -->
+    <div class="page-header" style="margin-bottom:12px;"><div class="page-title">👥 People</div></div>
 
-    <!-- Feed Tab -->
-    <!-- Messages Tab -->
-    <div id="peopleTab-messages" style="display:none;">
-      <div class="inbox-wrap">
-        <!-- Staff Contacts (employees/admin only) -->
-        <div id="staffContactsSection" style="display:none;">
-          <div class="staff-section-label"> Staff</div>
-          <div id="staffContactsList"></div>
-        </div>
-        <!-- DM Conversations -->
-        <div id="inboxConvsSection">
-          <div class="staff-section-label">💬 Messages</div>
-          <div id="dmList"></div>
+    <!-- Merged single-page layout — no tabs -->
+    <div id="peopleTab-connect">
+
+      <!-- Friend requests -->
+      <div id="friendRequestsSection" style="display:none;margin-bottom:16px;">
+        <div class="section-title" style="margin-bottom:8px;"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Friend Requests</div>
+        <div id="friendRequestsList"></div>
+      </div>
+
+      <!-- My Crew -->
+      <div id="friendsSection" style="margin-bottom:20px;">
+        <div class="section-header"><div class="section-title">My Crew</div></div>
+        <div id="friendsList"></div>
+      </div>
+
+      <!-- Active Conversations -->
+      <div id="peopleTab-messages" style="margin-bottom:20px;">
+        <div class="inbox-wrap">
+          <div id="staffContactsSection" style="display:none;">
+            <div class="staff-section-label">👷 Staff</div>
+            <div id="staffContactsList"></div>
+          </div>
+          <div id="inboxConvsSection">
+            <div class="staff-section-label" style="display:flex;align-items:center;justify-content:space-between;">
+              <span>💬 Messages <span id="dmBadgeTab" style="display:none;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;padding:1px 6px;margin-left:4px;border-radius:4px;vertical-align:middle;">0</span></span>
+            </div>
+            <div id="dmList"></div>
+          </div>
         </div>
       </div>
-    </div>
+
+      <!-- Find Festies -->
+      <div class="section-title" style="margin-bottom:10px;">Find Festies</div>
+      <div class="people-search-wrap">
+        <span class="people-search-icon">🔍</span>
+        <input type="text" class="people-search-input" id="peopleSearchInput"
+          placeholder="Search by @handle or email…" oninput="searchPeople(this.value)" autocomplete="off">
+      </div>
+      <div class="people-results" id="peopleResults">
+        <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">
+          Type a handle to search for Festies
+        </div>
+      </div>
+
+    </div><!-- /peopleTab-connect -->
   </div><!-- /page-people -->
 
 
@@ -9904,17 +9904,10 @@ async function deletePost(postId) {
 function initPeople() {
   loadFriendRequests();
   loadFriends();
+  loadDMList(); // load conversations on every visit since tabs are merged
 }
 
-// Also reload friends whenever connect tab is switched to
-_origSwitchPeopleTab = switchPeopleTab;
-switchPeopleTab = function(tab, btn) {
-  _origSwitchPeopleTab(tab, btn);
-  if (tab === 'connect') {
-    loadFriendRequests();
-    loadFriends();
-  }
-};
+// Override no longer needed — switchPeopleTab handles both now
 
 
 
@@ -10325,8 +10318,8 @@ function startDMPolling() {
   pollDMUnread();
   dmPollTimer = setInterval(function() {
     pollDMUnread();
-    const msgTab = document.getElementById('peopleTab-messages');
-    if (msgTab && msgTab.style.display !== 'none') loadDMList();
+    // Always refresh DM list when on people page (tabs are merged)
+    if (document.getElementById('page-people') && document.getElementById('page-people').classList.contains('active')) loadDMList();
   }, 8000);
 }
 
@@ -13157,18 +13150,21 @@ function closeRaveworm() {
    PEOPLE PAGE SUB-TABS
 ════════════════════════════════════════ */
 function switchPeopleTab(tab, btn) {
-  ['connect','messages'].forEach(t => {
-    const el = document.getElementById('peopleTab-'+t);
-    if (el) el.style.display = t === tab ? 'block' : 'none';
-  });
-  document.querySelectorAll('#page-people .dash-tab').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  // Tabs are now merged — always show everything, just trigger relevant data loads
+  // Keep this function so existing callers (DM buttons, notifications, etc.) still work
+  if (tab === 'messages') {
+    loadDMList();
+    // Scroll to the Messages section smoothly
+    setTimeout(function() {
+      const msgsEl = document.getElementById('inboxConvsSection');
+      if (msgsEl) msgsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+  }
   if (tab === 'connect') {
     loadFriendRequests();
     loadFriends();
   }
   if (tab === 'feed') {
-    // Render feed compose + list inside the tab
     const inner = document.getElementById('peopleFeedInner');
     if (inner && !inner.dataset.built) {
       inner.dataset.built = '1';
@@ -13176,9 +13172,6 @@ function switchPeopleTab(tab, btn) {
       initFeedCompose();
     }
     loadFeed(feedFilter);
-  }
-  if (tab === 'messages') {
-    loadDMList();
   }
 }
 
