@@ -10883,6 +10883,8 @@ async function handleNotifClick(notifId, type, fromId) {
   } else if (type === 'announcement') {
     navigate('staff');
     setTimeout(function() { switchStaffTab('announcements', null); }, 300);
+  } else if (type === 'broadcast') {
+    navigate('home');
   } else {
     // Default — go home
     navigate('home');
