@@ -8794,7 +8794,8 @@ async function searchUsersForAssign(containerId, query) {
     var safeName = esc(u.name||u.handle||u.email||'');
     var safeCid = containerId;
     return '<div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);" '+
-      'onmousedown="selectUserForAssign(\''+safeCid+'\',\''+safeId+'\',\''+safeName+'\');" '+
+      'ontouchstart="event.preventDefault();selectUserForAssign(\''+safeCid+'\',\''+safeId+'\',\''+safeName+'\')" '+
+      'onmousedown="event.preventDefault();selectUserForAssign(\''+safeCid+'\',\''+safeId+'\',\''+safeName+'\')" '+
       'onmouseover="this.style.background=\'rgba(245,200,66,0.1)\'" onmouseout="this.style.background=\'\'">'+
       '<span style="font-weight:700;color:var(--text-light);">'+(u.name||u.handle||'—')+'</span> '+
       '<span style="font-size:11px;color:var(--text-muted);">'+u.email+'</span> '+
@@ -8804,25 +8805,21 @@ async function searchUsersForAssign(containerId, query) {
 }
 
 function selectUserForAssign(containerId, userId, userName) {
+  // Find the suggestions dropdown
   const sugg = document.getElementById(containerId + '-userSuggestions');
-  const idEl = document.getElementById(containerId + '-assignUserId');
-  const nameInput = document.getElementById(containerId + '-assignUserName') || 
-                    document.getElementById(containerId.replace('-shift','') + '-shiftAssignName');
-  const displayEl = document.getElementById(containerId + '-assignDisplayName') ||
-                    document.getElementById(containerId.replace('-shift','') + '-shiftAssignDisplayName');
-  if (idEl) idEl.value = userId;
-  if (displayEl) displayEl.value = userName;
-  if (nameInput) nameInput.value = userName;
   if (sugg) sugg.style.display = 'none';
-}
-
-function selectUserForAssign(containerId, userId, userName) {
-  const nameEl = document.getElementById(containerId + '-assignUserName');
-  const idEl   = document.getElementById(containerId + '-assignUserId');
-  const sugg   = document.getElementById(containerId + '-userSuggestions');
+  // Find and set the hidden userId field
+  const idEl = document.getElementById(containerId + '-assignUserId');
+  if (idEl) idEl.value = userId;
+  // Find and set the display name field — try all naming patterns used across forms
+  const nameEl = document.getElementById(containerId + '-assignUserName') ||
+                 document.getElementById(containerId + '-assignDisplayName') ||
+                 document.getElementById(containerId.replace(/-shiftAssign$/, '') + '-shiftAssignName') ||
+                 document.getElementById(containerId.replace(/-taskAssign$/, '') + '-taskAssignName');
   if (nameEl) nameEl.value = userName;
-  if (idEl)   idEl.value   = userId;
-  if (sugg)   sugg.style.display = 'none';
+  // Also set the display name hidden field if it exists
+  const dispEl = document.getElementById(containerId + '-assignDisplayName');
+  if (dispEl) dispEl.value = userName;
 }
 
 async function submitCreateTask(containerId) {
