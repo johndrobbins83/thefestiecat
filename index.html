@@ -2538,7 +2538,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="controls-bar">
       <!-- Desktop search + PDF row -->
       <div class="sched-search-row" style="display:flex;align-items:center;gap:12px;padding-bottom:10px;">
-        <div class="search-wrap" style="width:50%;"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
+        <div class="search-wrap" style="width:50%;"><span class="search-icon"></span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
         <button class="sched-pdf-btn" onclick="downloadSchedulePDF()" style="padding:9px 18px;background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.25);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">⬇ PDF</button>
       </div>
 
@@ -4915,7 +4915,7 @@ function renderSchedule() {
       });
       html += '</div></div>';
     });
-    document.getElementById('schedListContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon">🔍</div>No artists match your search.</div>';
+    document.getElementById('schedListContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon"></div>No artists match your search.</div>';
   } else {
     gridWrap.style.display = 'block';
     const stages = [];
@@ -4942,7 +4942,7 @@ function renderSchedule() {
       html += '</div>';
     });
     html += '</div></div>';
-    document.getElementById('schedGridContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon">🔍</div>No artists match your search.</div>';
+    document.getElementById('schedGridContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon"></div>No artists match your search.</div>';
   }
 }
 
@@ -5548,11 +5548,11 @@ function openArtist(key) {
 
   const socialLinks = [];
   if (a.instagram && a.instagram.trim())
-    socialLinks.push(`<a class="social-link" href="${a.instagram.trim()}" target="_blank" rel="noopener">📸 Instagram</a>`);
+    socialLinks.push(`<a class="social-link" href="${a.instagram.trim()}" target="_blank" rel="noopener"> Instagram</a>`);
   if (a.facebook && a.facebook.trim())
-    socialLinks.push(`<a class="social-link" href="${a.facebook.trim()}" target="_blank" rel="noopener">📘 Facebook</a>`);
+    socialLinks.push(`<a class="social-link" href="${a.facebook.trim()}" target="_blank" rel="noopener"> Facebook</a>`);
   if (a.tiktok && a.tiktok.trim())
-    socialLinks.push(`<a class="social-link" href="${a.tiktok.trim()}" target="_blank" rel="noopener">🎵 TikTok</a>`);
+    socialLinks.push(`<a class="social-link" href="${a.tiktok.trim()}" target="_blank" rel="noopener"> TikTok</a>`);
 
   const socialsEl = document.getElementById('modalSocials');
   const socialsSection = socialsEl && socialsEl.closest('.modal-section');
