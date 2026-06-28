@@ -1845,7 +1845,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .dm-thread-overlay{position:fixed;inset:0;z-index:15000;background:#0a0a0a;
   display:none;flex-direction:column;
   /* Use dvh so the overlay shrinks when the mobile keyboard opens */
-  height:100dvh;}
+  height:100dvh;overflow:hidden;}
 .dm-thread-overlay.open{display:flex;}
 @media(min-width:768px){
   .dm-thread-overlay.open{
@@ -1868,8 +1868,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .dm-msg-time{font-size:10px;opacity:0.45;margin-top:3px;}
 .dm-thread-input-row{display:flex;gap:8px;padding:10px 14px;
   background:#0a0a0a;border-top:1px solid rgba(255,255,255,0.07);
-  padding-bottom:max(10px, env(safe-area-inset-bottom));flex-shrink:0;
-  position:sticky;bottom:0;z-index:10;}
+  padding-bottom:max(10px, env(safe-area-inset-bottom));flex-shrink:0;}
 @media(max-width:767px){
   .dm-thread-input-row{
     padding:10px 12px;
