@@ -2032,6 +2032,16 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 /* ══ INBOX ══ */
 .inbox-wrap{max-width:600px;margin:0 auto;}
+
+/* People page 50/50 split */
+.people-split-layout{display:flex;gap:0;align-items:flex-start;}
+.people-split-left{flex:1;min-width:0;padding-right:16px;border-right:1px solid rgba(255,255,255,0.06);}
+.people-split-right{flex:1;min-width:0;padding-left:16px;position:sticky;top:0;}
+@media(max-width:767px){
+  .people-split-layout{flex-direction:column;gap:0;}
+  .people-split-left{padding-right:0;border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:20px;margin-bottom:20px;width:100%;}
+  .people-split-right{padding-left:0;width:100%;position:static;}
+}
 .inbox-contact{display:flex;align-items:center;gap:12px;padding:12px 16px;
   border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background .1s;}
 .inbox-contact:hover{background:rgba(255,255,255,0.03);}
@@ -3376,50 +3386,49 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <div class="page" id="page-people">
     <div class="page-header" style="margin-bottom:12px;"><div class="page-title">👥 People</div></div>
 
-    <!-- Merged single-page layout — no tabs -->
     <div id="peopleTab-connect">
-
-      <!-- Friend requests -->
+      <!-- Friend requests — full width above the split -->
       <div id="friendRequestsSection" style="display:none;margin-bottom:16px;">
         <div class="section-title" style="margin-bottom:8px;"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Friend Requests</div>
         <div id="friendRequestsList"></div>
       </div>
 
-      <!-- My Crew -->
-      <div id="friendsSection" style="margin-bottom:20px;">
-        <div class="section-header"><div class="section-title">My Crew</div></div>
-        <div id="friendsList"></div>
-      </div>
+      <!-- 50/50 split -->
+      <div class="people-split-layout">
 
-      <!-- Active Conversations -->
-      <div id="peopleTab-messages" style="margin-bottom:20px;">
-        <div class="inbox-wrap">
+        <!-- LEFT — My Crew + Find Festies -->
+        <div class="people-split-left">
+          <div class="section-header" style="margin-bottom:10px;"><div class="section-title">My Crew</div></div>
+          <div id="friendsList"></div>
+
+          <div class="section-title" style="margin:18px 0 10px;">Find Festies</div>
+          <div class="people-search-wrap">
+            <span class="people-search-icon">🔍</span>
+            <input type="text" class="people-search-input" id="peopleSearchInput"
+              placeholder="Search by @handle or email…" oninput="searchPeople(this.value)" autocomplete="off">
+          </div>
+          <div class="people-results" id="peopleResults">
+            <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">
+              Type a handle to search for Festies
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT — Inbox / Messages -->
+        <div class="people-split-right" id="peopleTab-messages">
           <div id="staffContactsSection" style="display:none;">
             <div class="staff-section-label">👷 Staff</div>
             <div id="staffContactsList"></div>
           </div>
           <div id="inboxConvsSection">
-            <div class="staff-section-label" style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="staff-section-label" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
               <span>💬 Messages <span id="dmBadgeTab" style="display:none;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;padding:1px 6px;margin-left:4px;border-radius:4px;vertical-align:middle;">0</span></span>
             </div>
             <div id="dmList"></div>
           </div>
         </div>
-      </div>
 
-      <!-- Find Festies -->
-      <div class="section-title" style="margin-bottom:10px;">Find Festies</div>
-      <div class="people-search-wrap">
-        <span class="people-search-icon">🔍</span>
-        <input type="text" class="people-search-input" id="peopleSearchInput"
-          placeholder="Search by @handle or email…" oninput="searchPeople(this.value)" autocomplete="off">
-      </div>
-      <div class="people-results" id="peopleResults">
-        <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">
-          Type a handle to search for Festies
-        </div>
-      </div>
-
+      </div><!-- /people-split-layout -->
     </div><!-- /peopleTab-connect -->
   </div><!-- /page-people -->
 
@@ -5273,9 +5282,21 @@ async function renderMySchedPage() {
 
   // Inject work shifts as grey blocks per day
   if (myShifts.length) {
-    var shiftsByDay = {Fri:[],Sat:[],Sun:[]};
-    myShifts.forEach(function(s) { if (shiftsByDay[s.day]) shiftsByDay[s.day].push(s); });
-    var shiftDayLabels = {Fri:'Friday - Jul 17', Sat:'Saturday - Jul 18', Sun:'Sunday - Jul 19'};
+    // Group shifts by date (supports both legacy 'Fri/Sat/Sun' and ISO dates)
+    var shiftsByDay = {};
+    var legacyLabels = {Fri:'Friday - Jul 17', Sat:'Saturday - Jul 18', Sun:'Sunday - Jul 19'};
+    function formatShiftDayLabel(day) {
+      if (legacyLabels[day]) return legacyLabels[day];
+      try {
+        var d = new Date(day + 'T12:00:00');
+        return d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+      } catch { return day; }
+    }
+    myShifts.forEach(function(s) {
+      var k = s.day || 'Unscheduled';
+      if (!shiftsByDay[k]) shiftsByDay[k] = [];
+      shiftsByDay[k].push(s);
+    });
 
     function fmt24(t) {
       if (!t) return '';
@@ -5288,11 +5309,18 @@ async function renderMySchedPage() {
       if (h < 8) h += 24; return h * 60 + parseInt(parts[1]||0);
     }
 
-    ['Fri','Sat','Sun'].forEach(function(day) {
+    // Sort days: legacy keys first, then ISO dates in order
+    var sortedDays = Object.keys(shiftsByDay).sort(function(a, b) {
+      var aISO = /^\d{4}-\d{2}-\d{2}$/.test(a), bISO = /^\d{4}-\d{2}-\d{2}$/.test(b);
+      if (!aISO && !bISO) return 0; if (!aISO) return -1; if (!bISO) return 1;
+      return a.localeCompare(b);
+    });
+
+    sortedDays.forEach(function(day) {
       var shifts = shiftsByDay[day]; if (!shifts.length) return;
       shifts.sort(function(a,b){ return shiftSortVal(a)-shiftSortVal(b); });
       var shiftHtml = '<div style="margin-bottom:20px;">' +
-        '<div class="stage-section-header" style="background:rgba(255,255,255,0.04);color:var(--text-muted);border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;">🔧 ' + shiftDayLabels[day] + ' — Work Shifts</div>' +
+        '<div class="stage-section-header" style="background:rgba(255,255,255,0.04);color:var(--text-muted);border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;">🔧 ' + formatShiftDayLabel(day) + ' — Work Shifts</div>' +
         '<div class="sched-list">';
       shifts.forEach(function(s) {
         var timeStr = s.startTime && s.endTime ? fmt24(s.startTime) + ' – ' + fmt24(s.endTime) : (s.startTime ? fmt24(s.startTime) : 'TBA');
@@ -8948,10 +8976,7 @@ function buildCreateTaskForm(containerId) {
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Due Date</label>
-              <select class="form-select" id="${containerId}-taskDay">
-                <option value="">Any day</option>
-                ${DAYS.map(d => `<option value="${d}">${DAY_LABELS[d]}</option>`).join('')}
-              </select>
+              <input class="form-input" type="date" id="${containerId}-taskDay" min="2026-07-01" style="color-scheme:dark;">
             </div>
             <div class="form-field">
               <label class="form-label">Due Time</label>
@@ -9242,24 +9267,48 @@ async function renderShiftManager(containerId) {
 
 function buildShiftDayBlocks(shifts, personalBlocks, containerId, isMgmt, roleFilter) {
   let html = '';
-  DAYS.forEach(day => {
-    const dayShifts = shifts.filter(s => s.day === day && (roleFilter === 'all' || s.role === roleFilter));
+
+  // Helper: format any ISO date or legacy day key into a readable label
+  function formatDayLabel(day) {
+    if (!day) return 'Unscheduled';
+    // Legacy keys like 'Fri','Sat','Sun'
+    if (DAY_LABELS[day]) return DAY_LABELS[day];
+    // ISO date like '2026-07-17'
+    try {
+      const d = new Date(day + 'T12:00:00');
+      return d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+    } catch { return day; }
+  }
+
+  // Get all unique dates from shifts + personal blocks, sorted
+  const allDays = [...new Set([
+    ...shifts.map(s => s.day || 'Unscheduled'),
+    ...personalBlocks.map(b => b.day || 'Unscheduled')
+  ])].sort(function(a, b) {
+    // ISO dates sort naturally; put legacy keys first
+    const aIsISO = /^\d{4}-\d{2}-\d{2}$/.test(a);
+    const bIsISO = /^\d{4}-\d{2}-\d{2}$/.test(b);
+    if (!aIsISO && !bIsISO) return 0;
+    if (!aIsISO) return -1;
+    if (!bIsISO) return 1;
+    return a.localeCompare(b);
+  });
+
+  allDays.forEach(day => {
+    const dayShifts   = shifts.filter(s => s.day === day && (roleFilter === 'all' || s.role === roleFilter));
     const dayPersonal = personalBlocks.filter(b => b.day === day);
     if (!dayShifts.length && !dayPersonal.length) return;
 
     html += `<div class="schedule-day-section">
-      <div class="schedule-day-label">${DAY_LABELS[day]}</div>`;
+      <div class="schedule-day-label">${formatDayLabel(day)}</div>`;
 
-    // Locked shifts
     dayShifts.forEach(s => {
-      const assignedTo = s.assignedUserName ? '👤 '+s.assignedUserName : (s.role && s.role !== 'all' ? '👥 '+( ROLE_LABELS[s.role]||s.role) : '');
+      const assignedTo = s.assignedUserName ? '👤 '+s.assignedUserName : (s.role && s.role !== 'all' ? '👥 '+(ROLE_LABELS[s.role]||s.role) : '');
       const confirmedBadge = s.confirmed ? '<span style="color:var(--teal-glow);font-size:10px;font-weight:700;margin-left:6px;">✓ Confirmed</span>' : '<span style="color:var(--gold-bright);font-size:10px;margin-left:6px;">Pending</span>';
       html += `<div class="shift-block locked-shift">
         <div class="shift-block-time">${s.startTime} — ${s.endTime}</div>
         <div class="shift-block-body" style="flex:1;">
-          <div class="shift-block-title">${s.title}
-            <span class="shift-lock-badge">🔒 LOCKED</span>
-          </div>
+          <div class="shift-block-title">${s.title}<span class="shift-lock-badge">🔒 LOCKED</span></div>
           ${assignedTo ? `<div class="shift-block-meta" style="color:var(--text-light);font-weight:600;">${assignedTo}${confirmedBadge}</div>` : ''}
           <div class="shift-block-meta">${s.location?'📍 '+s.location:''}${s.notes?' · '+s.notes:''}</div>
         </div>
@@ -9271,14 +9320,11 @@ function buildShiftDayBlocks(shifts, personalBlocks, containerId, isMgmt, roleFi
       </div>`;
     });
 
-    // Personal blocks
     dayPersonal.forEach(b => {
       html += `<div class="shift-block personal-block">
         <div class="shift-block-time">${b.startTime} — ${b.endTime}</div>
         <div class="shift-block-body">
-          <div class="shift-block-title">${b.title}
-            <span class="shift-personal-badge">Personal</span>
-          </div>
+          <div class="shift-block-title">${b.title}<span class="shift-personal-badge">Personal</span></div>
           ${b.notes?`<div class="shift-block-meta">${b.notes}</div>`:''}
         </div>
         <button class="shift-block-del" onclick="deletePersonalBlock('${b.id}','${containerId}')" title="Remove">✕</button>
@@ -9289,12 +9335,7 @@ function buildShiftDayBlocks(shifts, personalBlocks, containerId, isMgmt, roleFi
   });
 
   if (!html) html = '<div style="text-align:center;padding:24px;color:var(--text-muted);">No shifts scheduled yet.</div>';
-
-  // Add personal block button for all users
-  html += `<button class="add-personal-btn" onclick="showPersonalBlockForm('${containerId}')">
-    + Add personal block to my schedule
-  </button>`;
-
+  html += `<button class="add-personal-btn" onclick="showPersonalBlockForm('${containerId}')">+ Add personal block to my schedule</button>`;
   return html;
 }
 
@@ -9313,12 +9354,12 @@ function buildCreateShiftForm(containerId) {
     '<div class="dash-section-header"><div class="dash-section-title">Assign Shift to Staff</div>' +
     '<button class="dash-btn" onclick="hideShiftForm(\''+containerId+'\')">✕ Cancel</button></div>' +
     '<div class="dash-section-body"><div class="create-task-form">' +
-    // Title + Day row
+    // Title + Date row
     '<div class="form-row">' +
       '<div class="form-field"><label class="form-label">Shift Title</label>' +
         '<input class="form-input" id="'+containerId+'-shiftTitle" placeholder="e.g. Gate Security A"></div>' +
-      '<div class="form-field"><label class="form-label">Day</label>' +
-        '<select class="form-select" id="'+containerId+'-shiftDay">'+dayOptions+'</select></div>' +
+      '<div class="form-field"><label class="form-label">Date</label>' +
+        '<input class="form-input" type="date" id="'+containerId+'-shiftDay" min="2026-07-01" style="color-scheme:dark;"></div>' +
     '</div>' +
     // Start/End time row
     '<div class="form-row">' +
@@ -9353,11 +9394,12 @@ function buildCreateShiftForm(containerId) {
 function showCreateShift(containerId) {
   const f = document.getElementById(containerId+'-shiftform');
   if (!f) return;
-  // Set sensible defaults each time the form is opened
   const startSel = document.getElementById(containerId+'-shiftStart');
   const endSel   = document.getElementById(containerId+'-shiftEnd');
+  const datePick = document.getElementById(containerId+'-shiftDay');
   if (startSel) startSel.value = '18:00';
   if (endSel)   endSel.value   = '02:00';
+  if (datePick && !datePick.value) datePick.value = '2026-07-17';
   f.style.display = 'block';
   f.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
@@ -9379,6 +9421,7 @@ async function submitCreateShift(containerId) {
   const status = document.getElementById(containerId+'-shiftCreateStatus');
 
   if (!title) { if(status){status.textContent='Title required';status.style.color='var(--pink-coral)';} return; }
+  if (!day)   { if(status){status.textContent='Date required';status.style.color='var(--pink-coral)';} return; }
   if (!startTime||!endTime) { if(status){status.textContent='Start and end time required';status.style.color='var(--pink-coral)';} return; }
   if(status){status.textContent='Creating...';status.style.color='var(--text-muted)';}
 
