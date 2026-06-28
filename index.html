@@ -3438,12 +3438,31 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <div id="staffContactsList"></div>
           </div>
           <div id="inboxConvsSection">
-            <div class="staff-section-label" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <span>💬 Messages <span id="dmBadgeTab" style="display:none;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;padding:1px 6px;margin-left:4px;border-radius:4px;vertical-align:middle;">0</span></span>
-              <button onclick="openNewGroupModal()" style="font-size:11px;font-weight:700;padding:5px 10px;background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.3);color:#c084fc;cursor:pointer;white-space:nowrap;">+ Group Chat</button>
+            <!-- Toggle: Personal / Staff -->
+            <div style="display:flex;gap:0;margin-bottom:12px;border:1px solid rgba(255,255,255,0.1);">
+              <button id="chatTogglePersonal" onclick="switchChatTab('personal')" style="flex:1;padding:7px;font-size:11px;font-weight:700;border:none;background:var(--purple-mutiny);color:#fff;cursor:pointer;transition:all .15s;">💬 Personal</button>
+              <button id="chatToggleStaff" onclick="switchChatTab('staff')" style="flex:1;padding:7px;font-size:11px;font-weight:700;border:none;background:rgba(245,200,66,0.08);color:var(--gold-bright);cursor:pointer;transition:all .15s;">📢 Staff</button>
             </div>
-            <div id="groupList"></div>
-            <div id="dmList"></div>
+
+            <!-- Personal tab: regular DMs + personal groups -->
+            <div id="chatTabPersonal">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <span style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Messages <span id="dmBadgeTab" style="display:none;background:var(--purple-mutiny);color:#fff;font-size:9px;font-weight:900;padding:1px 6px;margin-left:4px;border-radius:4px;vertical-align:middle;">0</span></span>
+                <button onclick="openNewGroupModal(false)" style="font-size:11px;font-weight:700;padding:4px 10px;background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.3);color:#c084fc;cursor:pointer;">+ Group</button>
+              </div>
+              <div id="groupList"></div>
+              <div id="dmList"></div>
+            </div>
+
+            <!-- Staff tab: staff groups only (admin/management can create) -->
+            <div id="chatTabStaff" style="display:none;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <span style="font-size:10px;font-weight:800;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;">📢 Staff Chats</span>
+                <button id="createStaffGroupBtn" onclick="openNewGroupModal(true)" style="display:none;font-size:11px;font-weight:700;padding:4px 10px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);color:var(--gold-bright);cursor:pointer;">+ Staff Group</button>
+              </div>
+              <div id="staffGroupList"></div>
+              <div id="staffGroupEmpty" style="display:none;text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">No staff groups yet.</div>
+            </div>
           </div>
         </div>
 
@@ -14066,9 +14085,9 @@ async function deleteTaskComment(taskId, commentId) {
 
 <!-- ══ NEW GROUP CHAT MODAL ══ -->
 <div id="newGroupModal" style="display:none;position:fixed;inset:0;z-index:70000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px;">
-  <div style="width:100%;max-width:440px;background:#0e0e0e;border:1px solid rgba(155,61,255,0.35);max-height:85vh;display:flex;flex-direction:column;">
+  <div style="width:100%;max-width:440px;background:#0e0e0e;border:1px solid rgba(155,61,255,0.35);max-height:85vh;display:flex;flex-direction:column;" id="newGroupModalBox">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
-      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#c084fc;letter-spacing:1px;">👥 NEW GROUP CHAT</span>
+      <span id="newGroupModalTitle" style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#c084fc;letter-spacing:1px;">👥 NEW GROUP CHAT</span>
       <button onclick="closeNewGroupModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
     </div>
     <div style="padding:16px;overflow-y:auto;flex:1;">
@@ -14078,53 +14097,119 @@ async function deleteTaskComment(taskId, commentId) {
           style="width:100%;padding:10px 12px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;outline:none;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:8px;">Add People (from your crew)</label>
+        <label style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:8px;" id="newGroupMemberLabel">Add People (from your crew)</label>
         <div id="newGroupMemberList" style="display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;"></div>
       </div>
       <div id="newGroupStatus" style="font-size:12px;color:var(--text-muted);margin-top:10px;min-height:16px;"></div>
     </div>
     <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;">
       <button onclick="closeNewGroupModal()" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
-      <button onclick="submitNewGroup()" style="flex:1;padding:10px;background:rgba(155,61,255,0.2);border:1px solid rgba(155,61,255,0.45);color:#c084fc;font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Create Group</button>
+      <button onclick="submitNewGroup()" id="newGroupSubmitBtn" style="flex:1;padding:10px;background:rgba(155,61,255,0.2);border:1px solid rgba(155,61,255,0.45);color:#c084fc;font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Create Group</button>
     </div>
   </div>
 </div>
 
 <script>
 /* ════════════════════════════════════════════════════════════
-   GROUP CHATS
+   GROUP CHATS (Personal + Staff)
 ════════════════════════════════════════════════════════════ */
-var _currentGroupId   = null;
-var _groupPollTimer   = null;
+var _currentGroupId    = null;
+var _groupPollTimer    = null;
+var _newGroupIsStaff   = false;
+var _currentChatTab    = 'personal';
 
-function openNewGroupModal() {
+// ── Tab toggle ──────────────────────────────────────────────
+function switchChatTab(tab) {
+  _currentChatTab = tab;
+  var personal = document.getElementById('chatTabPersonal');
+  var staff    = document.getElementById('chatTabStaff');
+  var btnP     = document.getElementById('chatTogglePersonal');
+  var btnS     = document.getElementById('chatToggleStaff');
+  if (personal) personal.style.display = tab === 'personal' ? 'block' : 'none';
+  if (staff)    staff.style.display    = tab === 'staff'    ? 'block' : 'none';
+  if (btnP) { btnP.style.background = tab === 'personal' ? 'var(--purple-mutiny)' : 'rgba(155,61,255,0.08)'; btnP.style.color = tab === 'personal' ? '#fff' : '#c084fc'; }
+  if (btnS) { btnS.style.background = tab === 'staff' ? 'rgba(245,200,66,0.25)' : 'rgba(245,200,66,0.08)'; btnS.style.color = 'var(--gold-bright)'; }
+  if (tab === 'staff') {
+    loadGroupList(); // reload to make sure staff list is fresh
+    // Show create button only for admin/management
+    var createBtn = document.getElementById('createStaffGroupBtn');
+    if (createBtn) createBtn.style.display = isAdminOrMgmt() ? 'block' : 'none';
+  }
+}
+
+// ── Open New Group Modal ────────────────────────────────────
+function openNewGroupModal(isStaff) {
   if (!currentUser) { showToast('Sign in to create a group'); return; }
-  var modal = document.getElementById('newGroupModal');
-  var nameEl = document.getElementById('newGroupName');
-  var status = document.getElementById('newGroupStatus');
-  if (nameEl) nameEl.value = '';
-  if (status) status.textContent = '';
+  _newGroupIsStaff = !!isStaff;
+  if (isStaff && !isAdminOrMgmt()) { showToast('Only admins and managers can create Staff Groups'); return; }
+
+  var modal    = document.getElementById('newGroupModal');
+  var box      = document.getElementById('newGroupModalBox');
+  var titleEl  = document.getElementById('newGroupModalTitle');
+  var submitBtn= document.getElementById('newGroupSubmitBtn');
+  var labelEl  = document.getElementById('newGroupMemberLabel');
+  var nameEl   = document.getElementById('newGroupName');
+  var status   = document.getElementById('newGroupStatus');
+  if (nameEl)   nameEl.value = '';
+  if (status)   status.textContent = '';
+
+  if (isStaff) {
+    if (box)      box.style.borderColor = 'rgba(245,200,66,0.4)';
+    if (titleEl)  { titleEl.textContent = '📢 NEW STAFF GROUP'; titleEl.style.color = 'var(--gold-bright)'; }
+    if (submitBtn){ submitBtn.style.background='rgba(245,200,66,0.2)'; submitBtn.style.borderColor='rgba(245,200,66,0.45)'; submitBtn.style.color='var(--gold-bright)'; submitBtn.textContent='Create Staff Group'; }
+    if (labelEl)  labelEl.textContent = 'Add Staff Members';
+    if (nameEl)   nameEl.placeholder = 'e.g. Security Team, Stage Crew…';
+  } else {
+    if (box)      box.style.borderColor = 'rgba(155,61,255,0.35)';
+    if (titleEl)  { titleEl.textContent = '👥 NEW GROUP CHAT'; titleEl.style.color = '#c084fc'; }
+    if (submitBtn){ submitBtn.style.background='rgba(155,61,255,0.2)'; submitBtn.style.borderColor='rgba(155,61,255,0.45)'; submitBtn.style.color='#c084fc'; submitBtn.textContent='Create Group'; }
+    if (labelEl)  labelEl.textContent = 'Add People (from your crew)';
+    if (nameEl)   nameEl.placeholder = 'e.g. Festival Crew 🏴‍☠️';
+  }
+
   if (modal) modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-  // Populate member list from cached friends
-  var listEl = document.getElementById('newGroupMemberList');
-  var friends = window._cachedFriends || [];
-  if (!friends.length) {
-    listEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">Connect with people first to add them to a group.</div>';
+
+  // Populate member list
+  var listEl  = document.getElementById('newGroupMemberList');
+  var people  = isStaff ? (window._cachedUsers || []).filter(function(u){ return u.role === 'employee' || u.role === 'admin'; })
+                        : (window._cachedFriends || []);
+  if (!people.length) {
+    listEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">' + (isStaff ? 'No staff users found.' : 'Connect with people first to start a group.') + '</div>';
+    if (isStaff) {
+      // Try loading all users for staff mode
+      loadUsersForGroupPicker(listEl);
+    }
     return;
   }
-  listEl.innerHTML = friends.map(function(f) {
+  renderGroupMemberPicker(listEl, people);
+}
+
+function renderGroupMemberPicker(listEl, people) {
+  listEl.innerHTML = people.map(function(f) {
     var initials = (f.handle || f.name || '?')[0].toUpperCase();
+    var roleTag  = f.staffRole ? ' <span style="font-size:9px;color:#c084fc;">['+f.staffRole+']</span>' : (f.role === 'admin' ? ' <span style="font-size:9px;color:var(--gold-bright);">[Admin]</span>' : '');
     return '<label style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer;border:1px solid rgba(255,255,255,0.06);transition:background .1s;" onmouseover="this.style.background=\'rgba(155,61,255,0.07)\'" onmouseout="this.style.background=\'\'">' +
       '<input type="checkbox" value="' + f.id + '" style="accent-color:#9b3dff;width:16px;height:16px;flex-shrink:0;">' +
       '<div style="width:32px;height:32px;border-radius:50%;background:' + (f.avatarColor||'#9b3dff') + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0;">' +
         (f.profilePic ? '<img src="'+f.profilePic+'" style="width:100%;height:100%;object-fit:cover;">' : initials) +
       '</div>' +
-      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:var(--text-light);">@' + escapeHTML(f.handle||f.name||'user') + '</div>' +
-        (f.bio ? '<div style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHTML(f.bio.slice(0,40)) + '</div>' : '') +
-      '</div>' +
+      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:var(--text-light);">@' + escapeHTML(f.handle||f.name||'user') + roleTag + '</div></div>' +
     '</label>';
   }).join('');
+}
+
+async function loadUsersForGroupPicker(listEl) {
+  var token = localStorage.getItem(TOKEN_KEY);
+  try {
+    var res = await fetch(AUTH_URL + '/auth/users', { headers:{'Authorization':'Bearer '+token} });
+    var ct  = res.headers.get('content-type')||'';
+    if (!res.ok || !ct.includes('json')) return;
+    var d = await res.json();
+    var staff = (d.users||[]).filter(function(u){ return u.role === 'employee' || u.role === 'admin'; });
+    window._cachedUsers = d.users || [];
+    renderGroupMemberPicker(listEl, staff);
+  } catch {}
 }
 
 function closeNewGroupModal() {
@@ -14145,19 +14230,21 @@ async function submitNewGroup() {
   try {
     var res = await fetch(AUTH_URL + '/groups', {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({ name:name, memberIds:memberIds })
+      body: JSON.stringify({ name:name, memberIds:memberIds, staffGroup:_newGroupIsStaff })
     });
     var d = await res.json();
     if (res.ok) {
       closeNewGroupModal();
-      showToast('👥 "'+name+'" created!');
+      showToast((_newGroupIsStaff ? '📢' : '👥') + ' "'+name+'" created!');
       loadGroupList();
-      openGroupThread(d.group.id, d.group.name, d.group.members.length);
+      openGroupThread(d.group.id, d.group.name, d.group.members.length, d.group.staffGroup);
+      if (_newGroupIsStaff) switchChatTab('staff'); else switchChatTab('personal');
     } else { status.style.color='var(--pink-coral)'; status.textContent = d.error||'Failed to create'; }
   } catch { status.style.color='var(--pink-coral)'; status.textContent='Could not connect'; }
 }
 
-async function openGroupThread(groupId, groupName, memberCount) {
+// ── Open Group Thread ───────────────────────────────────────
+async function openGroupThread(groupId, groupName, memberCount, isStaffGroup) {
   _currentGroupId = groupId;
   currentDMFriendId = null;
   stopThreadPolling();
@@ -14170,8 +14257,16 @@ async function openGroupThread(groupId, groupName, memberCount) {
   if (overlay)  overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   if (nameEl)   nameEl.textContent = groupName;
-  if (subtitle) { subtitle.textContent = (memberCount||'') + ' members · Group Chat'; subtitle.style.display='block'; }
-  if (avatarEl) { avatarEl.style.background='#9b3dff'; avatarEl.textContent='👥'; avatarEl.innerHTML='<span style="font-size:18px;">👥</span>'; }
+  if (subtitle) {
+    var tag = isStaffGroup ? ' · 📢 Staff' : ' · Group';
+    subtitle.textContent = (memberCount||'') + ' members' + tag;
+    subtitle.style.display = 'block';
+    subtitle.style.color   = isStaffGroup ? 'var(--gold-bright)' : 'var(--text-muted)';
+  }
+  if (avatarEl) {
+    avatarEl.style.background = isStaffGroup ? '#f5c842' : '#9b3dff';
+    avatarEl.innerHTML = '<span style="font-size:18px;">' + (isStaffGroup ? '📢' : '👥') + '</span>';
+  }
 
   var msgs = document.getElementById('dmThreadMessages');
   if (msgs) { msgs.innerHTML='<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</div>'; delete msgs.dataset.cacheKey; }
@@ -14250,8 +14345,8 @@ async function sendGroupMessage() {
   }
   var imageUrl = '';
   if (photo) {
-    var token2 = localStorage.getItem(TOKEN_KEY);
     try {
+      var token2 = localStorage.getItem(TOKEN_KEY);
       var slug = 'chat_'+(currentUser.handle||currentUser.id)+'_'+Date.now();
       var ur = await fetch(AUTH_URL+'/media/upload?artist='+encodeURIComponent(slug),{method:'POST',headers:{'Content-Type':photo.file.type,'Authorization':'Bearer '+token2},body:photo.file});
       if (ur.ok){ var ud=await ur.json(); imageUrl=ud.url||''; }
@@ -14269,14 +14364,14 @@ async function sendGroupMessage() {
   finally { _dmSending=false; if(btn){btn.style.opacity='';btn.style.pointerEvents='';} }
 }
 
-// Patch sendDM to route to group if active
+// ── Patch sendDM to route to group ─────────────────────────
 var _origSendDMBase = window.sendDM;
 window.sendDM = function() {
   if (_currentGroupId) { sendGroupMessage(); return; }
   if (_origSendDMBase) _origSendDMBase();
 };
 
-// Patch closeDMThread to clear group state too
+// ── Patch closeDMThread ─────────────────────────────────────
 var _origCloseDMBase = window.closeDMThread;
 window.closeDMThread = function() {
   stopGroupPolling();
@@ -14286,12 +14381,10 @@ window.closeDMThread = function() {
   if (_origCloseDMBase) _origCloseDMBase();
 };
 
-// Load groups into the inbox
+// ── Load groups into inbox ──────────────────────────────────
 async function loadGroupList() {
   var token = localStorage.getItem(TOKEN_KEY);
   if (!token || !currentUser) return;
-  var listEl = document.getElementById('groupList');
-  if (!listEl) return;
   try {
     var res = await fetch(AUTH_URL+'/groups', { headers:{'Authorization':'Bearer '+token} });
     if (!res.ok) return;
@@ -14299,20 +14392,43 @@ async function loadGroupList() {
     if (!ct.includes('json')) return;
     var d = await res.json();
     var groups = (d.groups||[]).sort(function(a,b){ return (b.lastAt||b.createdAt).localeCompare(a.lastAt||a.createdAt); });
-    if (!groups.length) { listEl.innerHTML=''; return; }
-    listEl.innerHTML = groups.map(function(g) {
-      return '<div class="inbox-contact" style="border-left:3px solid rgba(155,61,255,0.5);cursor:pointer;" onclick="openGroupThread(\''+g.id+'\',\''+escapeHTML(g.name)+'\','+g.members.length+')">' +
-        '<div class="inbox-avatar" style="background:#9b3dff;display:flex;align-items:center;justify-content:center;font-size:18px;">👥</div>' +
-        '<div class="inbox-info">' +
-          '<div class="inbox-name">'+escapeHTML(g.name)+' <span style="font-size:10px;color:#c084fc;font-weight:700;">['+g.members.length+' members]</span></div>' +
-          '<div class="inbox-preview">'+escapeHTML(g.lastMessage||'Tap to open chat')+'</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+    var personal = groups.filter(function(g){ return !g.staffGroup; });
+    var staff    = groups.filter(function(g){ return !!g.staffGroup; });
+
+    // Personal groups
+    var listEl = document.getElementById('groupList');
+    if (listEl) {
+      listEl.innerHTML = personal.map(function(g) {
+        return '<div class="inbox-contact" style="border-left:3px solid rgba(155,61,255,0.5);cursor:pointer;" onclick="openGroupThread(\''+g.id+'\',\''+escapeHTML(g.name)+'\','+g.members.length+',false)">' +
+          '<div class="inbox-avatar" style="background:#9b3dff;display:flex;align-items:center;justify-content:center;font-size:18px;">👥</div>' +
+          '<div class="inbox-info">' +
+            '<div class="inbox-name">'+escapeHTML(g.name)+' <span style="font-size:10px;color:#c084fc;font-weight:700;">['+g.members.length+' members]</span></div>' +
+            '<div class="inbox-preview">'+escapeHTML(g.lastMessage||'Tap to open chat')+'</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    // Staff groups
+    var staffEl   = document.getElementById('staffGroupList');
+    var emptyEl   = document.getElementById('staffGroupEmpty');
+    if (staffEl) {
+      staffEl.innerHTML = staff.map(function(g) {
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border:1px solid rgba(245,200,66,0.2);background:rgba(245,200,66,0.04);margin-bottom:6px;transition:background .15s;" onclick="openGroupThread(\''+g.id+'\',\''+escapeHTML(g.name)+'\','+g.members.length+',true)" onmouseover="this.style.background=\'rgba(245,200,66,0.08)\'" onmouseout="this.style.background=\'rgba(245,200,66,0.04)\'">' +
+          '<div style="width:40px;height:40px;border-radius:50%;background:#f5c842;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📢</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:13px;font-weight:700;color:var(--gold-bright);">'+escapeHTML(g.name)+'</div>' +
+            '<div style="font-size:11px;color:var(--text-muted);">'+g.members.length+' members · '+escapeHTML(g.lastMessage||'Tap to open')+'</div>' +
+          '</div>' +
+          '<div style="font-size:9px;font-weight:800;color:var(--gold-bright);background:rgba(245,200,66,0.15);padding:2px 6px;border:1px solid rgba(245,200,66,0.3);">STAFF</div>' +
+        '</div>';
+      }).join('');
+      if (emptyEl) emptyEl.style.display = staff.length ? 'none' : 'block';
+    }
   } catch {}
 }
 
-// Cache friends for the member picker and load groups
+// ── Cache friends + users ───────────────────────────────────
 var _origLoadFriendsForGroup = window.loadFriends;
 window.loadFriends = async function() {
   if (_origLoadFriendsForGroup) await _origLoadFriendsForGroup();
@@ -14325,11 +14441,13 @@ window.loadFriends = async function() {
   } catch {}
 };
 
-// Extend initPeople to also load groups
 var _origInitPeople = window.initPeople;
 window.initPeople = function() {
   if (_origInitPeople) _origInitPeople();
   loadGroupList();
+  // Show staff create button if admin/management
+  var createBtn = document.getElementById('createStaffGroupBtn');
+  if (createBtn) createBtn.style.display = isAdminOrMgmt() ? 'block' : 'none';
 };
 </script>
 </body>
