@@ -10152,13 +10152,18 @@ async function loadDMThread(friendId) {
     if (!res.ok) { msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>'; return; }
     const data = await res.json();
     const messages = data.messages || [];
+    // Dedup: skip re-render if nothing changed (compare last msg id + count)
+    const lastMsg  = messages[messages.length - 1];
+    const cacheKey = messages.length + '|' + (lastMsg ? lastMsg.id||lastMsg.createdAt : '');
+    if (msgs.dataset.cacheKey === cacheKey) return; // nothing new
+    msgs.dataset.cacheKey = cacheKey;
     renderDMMessages(messages);
     // Mark as read
     fetch(AUTH_URL+'/dm/'+friendId+'/read', { method:'POST', headers:{'Authorization':'Bearer '+token} }).catch(()=>{});
     // Update unread badge
     pollDMUnread();
   } catch {
-    msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>';
+    if (!msgs.dataset.cacheKey) msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>';
   }
 }
 
@@ -10169,6 +10174,8 @@ function renderDMMessages(messages) {
     msgs.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet. Say hi! 👋</div>';
     return;
   }
+  // Only auto-scroll if user is already near the bottom (within 80px)
+  const atBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 80;
   msgs.innerHTML = messages.map(m => {
     const mine = m.fromId === currentUser?.id;
     return `<div class="dm-msg ${mine?'mine':'theirs'}">
@@ -10176,7 +10183,7 @@ function renderDMMessages(messages) {
       <div class="dm-msg-time">${getTimeAgo(m.createdAt)}</div>
     </div>`;
   }).join('');
-  msgs.scrollTop = msgs.scrollHeight;
+  if (atBottom) msgs.scrollTop = msgs.scrollHeight;
 }
 
 async function sendDM() {
@@ -10184,6 +10191,22 @@ async function sendDM() {
   const text  = (input?.value||'').trim();
   if (!text || !currentDMFriendId) return;
   input.value = '';
+
+  // Optimistic render — show message immediately
+  const msgs = document.getElementById('dmThreadMessages');
+  if (msgs) {
+    const noMsg = msgs.querySelector('[style*="No messages"]');
+    if (noMsg) noMsg.remove();
+    const bubble = document.createElement('div');
+    bubble.className = 'dm-msg mine';
+    bubble.dataset.optimistic = '1';
+    bubble.innerHTML = escapeHTML(text) + '<div class="dm-msg-time">sending…</div>';
+    msgs.appendChild(bubble);
+    msgs.scrollTop = msgs.scrollHeight;
+    // Clear dedup cache so next poll re-renders with real data
+    if (msgs.dataset.cacheKey) delete msgs.dataset.cacheKey;
+  }
+
   const token = localStorage.getItem('ss_auth_token');
   try {
     const res = await fetch(AUTH_URL+'/dm/'+currentDMFriendId, {
@@ -10211,13 +10234,29 @@ function startDMPolling() {
 function startThreadPolling() {
   stopThreadPolling();
   if (!currentDMFriendId) return;
-  dmThreadPollTimer = setInterval(function() {
-    if (currentDMFriendId) loadDMThread(currentDMFriendId);
-  }, 3000);
+  // Adaptive: 1.5s when tab is visible, 6s when backgrounded
+  function scheduleNextPoll() {
+    const interval = document.hidden ? 6000 : 1500;
+    dmThreadPollTimer = setTimeout(function() {
+      if (!currentDMFriendId) return;
+      loadDMThread(currentDMFriendId).finally(scheduleNextPoll);
+    }, interval);
+  }
+  scheduleNextPoll();
+  // Re-poll immediately when tab becomes visible again
+  if (!window._dmVisibilityBound) {
+    window._dmVisibilityBound = true;
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden && currentDMFriendId) {
+        stopThreadPolling();
+        startThreadPolling();
+      }
+    });
+  }
 }
 
 function stopThreadPolling() {
-  if (dmThreadPollTimer) { clearInterval(dmThreadPollTimer); dmThreadPollTimer = null; }
+  if (dmThreadPollTimer) { clearTimeout(dmThreadPollTimer); dmThreadPollTimer = null; }
 }
 
 async function pollDMUnread() {
