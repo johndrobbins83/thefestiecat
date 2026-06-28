@@ -4194,11 +4194,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
   </div>
 </div>
-  </div>
-</div>
-
-
-<!-- ══ FIND ME OVERLAY ══ -->
+  <!-- ══ FIND ME OVERLAY ══ -->
 <div id="findMeOverlay" style="
   position:fixed;inset:0;z-index:99999;display:none;
   align-items:center;justify-content:center;flex-direction:column;
@@ -6127,9 +6123,14 @@ renderChecklist();
 
 // Inject footer into every page
 (function() {
-  const footer = '<div class="page-footer">Powered by The Festie Cat 2026 &nbsp;·&nbsp; <a onclick="openTermsModal()">Terms of Service</a> &nbsp;·&nbsp; <a onclick="openBugReportModal()">Report a Bug</a></div>';
+  const footer = '<div class="page-footer">Powered by The Festie Cat 2026 &nbsp;·&nbsp; <a class="footer-tos-link">Terms of Service</a> &nbsp;·&nbsp; <a class="footer-bug-link">Report a Bug</a></div>';
   document.querySelectorAll('.page').forEach(function(p) {
     p.insertAdjacentHTML('beforeend', footer);
+  });
+  // Use event delegation so clicks always work
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('footer-tos-link')) openTermsModal();
+    if (e.target.classList.contains('footer-bug-link')) openBugReportModal();
   });
 })();
 
