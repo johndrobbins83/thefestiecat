@@ -2557,8 +2557,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── SCHEDULE PAGE ── -->
   <div class="page" id="page-schedule">
-    <div class="page-header" style="margin-bottom:8px;"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
     <div class="controls-bar">
+      <div class="page-header" style="margin-bottom:4px;padding-bottom:4px;"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
       <!-- Desktop search + PDF row -->
       <div class="sched-search-row" style="display:flex;align-items:center;gap:12px;padding-bottom:10px;">
         <div class="search-wrap" style="width:50%;"><span class="search-icon"></span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
@@ -2635,12 +2635,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <div id="shareSchedStatus" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
     </div>
     <!-- Calendar export -->
-    <div class="cal-export-section" id="calExportSection">
-      <div class="cal-export-title">Export & Reminders</div>
-      <div class="cal-btn-row">
-        <button class="cal-btn" onclick="downloadSchedulePDF()" style="padding:6px 10px;font-size:11px;min-width:0;background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.25);color:var(--gold-bright);">⬇ PDF</button>
-      </div>
-    </div>
+
   </div><!-- /page-schedule -->
 
   <!-- ── ARTISTS PAGE ── -->
@@ -4931,7 +4926,9 @@ function renderSchedule() {
         const hl = item.headliner ? (stage === 'dnb' ? 'headliner' : stage + '-headliner') : '';
         html += `<div class="sched-item ${hl}" onclick="openArtist('${esc(item.artist)}')">`+
           `<div class="item-time">${item.time.replace(' PM','<div class="ampm">PM</div>').replace(' AM','<div class="ampm">AM</div>')}</div>`+
-          `<div class="item-avatar" style="background:${a.color||'#333'};">${a.initials||'?'}</div>`+
+          `<div class="item-avatar" style="background:${a.color||'#333'};overflow:hidden;position:relative;">`+
+            (a.photo ? `<img src="${a.photo}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;" onerror="this.style.display='none'">` : '')+
+            `<span style="position:relative;z-index:1;">${a.initials||'?'}</span></div>`+
           `<div class="item-info"><div class="item-name">${item.artist}${item.headliner?'<span class="item-headliner-badge">HEADLINER</span>':''}</div>`+
           `<div class="item-meta">${a.genre||''}</div></div>`+
           `<div class="item-actions"><span class="item-arrow">›</span>`+
@@ -5085,7 +5082,9 @@ function renderMySchedPage() {
           var hlCls = a.headliner ? ' ' + stg.hl : '';
           out += '<div class="sched-item' + hlCls + '" onclick="openArtist(\'' + sk + '\')">';
           out += '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>';
-          out += '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>';
+          out += '<div class="item-avatar" style="background:' + a.color + ';overflow:hidden;position:relative;">' +
+            (a.photo ? '<img src="' + a.photo + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;" onerror="this.style.display=\'none\'">' : '') +
+            '<span style="position:relative;z-index:1;">' + a.initials + '</span></div>';
           out += '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>';
           var aData = artists[key]||{};
           var bellOn = getReminderOn(key);
