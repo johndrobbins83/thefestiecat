@@ -3098,6 +3098,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <button class="dash-btn" onclick="adminLoadUsers()">↻ Refresh</button>
           </div>
         </div>
+        <!-- Master profile activation banner — only shown if not yet activated -->
+        <div id="masterActivateBanner" style="display:none;margin:10px 14px;padding:10px 14px;background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.35);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span style="font-size:12px;color:var(--gold-bright);font-weight:700;">👑 Activate your Master Profile to lock this account permanently</span>
+          <button class="dash-btn" onclick="activateMasterProfile()" style="border-color:rgba(245,200,66,0.5);color:var(--gold-bright);white-space:nowrap;font-weight:800;">Activate</button>
+        </div>
         <!-- Sort + Filter bar -->
         <div style="display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);flex-wrap:wrap;align-items:center;">
           <select id="userSortSelect" onchange="applyUserSort()" style="flex:1;min-width:130px;padding:7px 10px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;outline:none;">
@@ -7862,6 +7867,12 @@ async function adminLoadUsers() {
     const data = await res.json();
     if (res.ok) {
       window._cachedUsers = data.users || [];
+      // Show master activation banner only if current user is not yet master
+      const banner = document.getElementById('masterActivateBanner');
+      if (banner && currentUser) {
+        const me = (data.users || []).find(u => u.id === currentUser.id);
+        banner.style.display = (me && !me.isMaster) ? 'flex' : 'none';
+      }
       applyUserSort();
     } else {
       list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">' + (data.error||'Failed to load') + '</div>';
@@ -8092,7 +8103,7 @@ function buildUserTableHTML(users) {
         '<button class="dash-btn" onclick="adminResetPassword(\''+u.id+'\',\''+(u.name||u.handle||u.email)+'\',\''+u.email+'\')" style="flex:1;padding:7px;font-size:11px;font-weight:700;">🔑 Reset PW</button>' +
         '<button id="connectBtn_'+u.id+'" class="dash-btn" onclick="adminConnectUser(\''+u.id+'\',this)" style="flex:1;padding:7px;font-size:11px;font-weight:700;">🤝 Connect</button>' +
         (u.id !== (currentUser&&currentUser.id) ? '<button class="dash-btn" onclick="adminDMUser(\''+u.id+'\',\''+(u.handle||u.name||'User')+'\')" style="flex:1;padding:7px;font-size:11px;font-weight:700;">💬 DM</button>' : '') +
-        '<button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:7px 14px;font-size:11px;font-weight:700;">✕ Remove</button>' +
+        (!u.isMaster ? '<button class="dash-btn danger" onclick="adminDeleteUser(\''+u.id+'\',\''+(u.name||u.email)+'\')" style="padding:7px 14px;font-size:11px;font-weight:700;">✕ Remove</button>' : '<span style="padding:7px 14px;font-size:11px;font-weight:700;color:var(--gold-bright);">👑 Master</span>') +
       '</div>' +
 
     '</div>';
@@ -8188,6 +8199,27 @@ async function adminDeleteUser(userId, userName) {
       alert('Error: ' + (d.error || 'Failed'));
     }
   } catch(e) { alert('Could not connect'); }
+}
+
+// ── Activate master profile (run once, logged in as John) ──
+async function activateMasterProfile() {
+  const token = localStorage.getItem('ss_auth_token');
+  if (!token) { showToast('Sign in first'); return; }
+  try {
+    const res = await fetch(AUTH_URL + '/master/seed', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const d = await res.json();
+    if (res.ok) {
+      showToast('👑 Master profile activated! Your account is now permanently protected.');
+      const banner = document.getElementById('masterActivateBanner');
+      if (banner) banner.style.display = 'none';
+      adminLoadUsers();
+    } else {
+      showToast('Error: ' + (d.error || 'Failed'));
+    }
+  } catch { showToast('Could not connect'); }
 }
 
 async function adminSetRole(userId, role) {
