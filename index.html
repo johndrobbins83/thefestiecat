@@ -5002,13 +5002,14 @@ async function renderMySchedPage() {
   var listEl  = document.getElementById('mySchedPageList');
   var emptyEl = document.getElementById('mySchedPageEmpty');
   var shareSection = document.getElementById('shareSchedSection');
-  if (!mine.length) {
+  // Only show empty state if BOTH no saved artists AND no shifts
+  if (!mine.length && !myShifts.length) {
     listEl.innerHTML=''; emptyEl.style.display='block';
     if (shareSection) shareSection.style.display='none';
     return;
   }
   emptyEl.style.display = 'none';
-  if (shareSection) { shareSection.style.display='block'; populateShareFriends(); }
+  if (shareSection) { shareSection.style.display = mine.length ? 'block' : 'none'; if (mine.length) populateShareFriends(); }
 
   function timeToMins(t) {
     if (!t || t==='TBA') return 9999;
