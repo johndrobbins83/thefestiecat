@@ -1279,6 +1279,8 @@ body{
 .user-menu-role.festie  {color:var(--teal-glow);}
 .user-menu-role.employee{color:#c084fc;}
 .user-menu-role.admin   {color:var(--gold-bright);}
+.user-menu-role.admin.master{color:#b0b8c8;font-size:9px;letter-spacing:1.5px;}
+.nav-role-badge.admin.master{background:#7a8799;}
 .user-menu-item{
   display:flex;align-items:center;gap:10px;padding:11px 16px;
   font-size:13px;font-weight:600;color:var(--text-muted);
@@ -6606,10 +6608,10 @@ function setCurrentUser(user, token) {
       avatar.textContent = user.avatar || user.name.slice(0,2).toUpperCase();
     }
   }
-  if (badge)  { badge.textContent  = roleLabel(user.role); badge.className = `nav-role-badge ${user.role}`; }
+  if (badge)  { badge.textContent  = roleLabel(user.role, user.isMaster); badge.className = `nav-role-badge ${user.role}${user.isMaster?' master':''}`; }
   if (name)   name.textContent     = user.name;
   if (email)  email.textContent    = user.email;
-  if (role)   { role.textContent   = roleLabel(user.role); role.className = `user-menu-role ${user.role}`; }
+  if (role)   { role.textContent   = roleLabel(user.role, user.isMaster); role.className = `user-menu-role ${user.role}${user.isMaster?' master':''}`; }
 
   // Apply role class to body
   document.body.classList.remove('role-festie','role-employee','role-admin');
@@ -6718,7 +6720,8 @@ function showSosAlert(alert) {
   if (modal) { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
 }
 
-function roleLabel(role) {
+function roleLabel(role, isMaster) {
+  if (isMaster && role === 'admin') return 'Master Admin';
   return { festie:'Festie', employee:'Staff', admin:'Admin' }[role] || role;
 }
 
