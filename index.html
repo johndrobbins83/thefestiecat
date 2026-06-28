@@ -2010,6 +2010,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .notif-dot.blue{background:#60a5fa;}
 .notif-dot.yellow{background:var(--gold-bright);}
 .notif-dot.red{background:var(--pink-coral);}
+.notif-dot.pink{background:#ff69b4;}
 .notif-dot.orange{background:#fb923c;}
 .notif-dot.teal{background:var(--teal-glow);}
 .notif-text{font-size:12px;color:var(--text-light);line-height:1.4;}
@@ -11164,7 +11165,24 @@ function renderNotifications(notifs) {
       '</div>';
     }
 
-    return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" style="cursor:pointer;" onclick="handleNotifClick(\''+nid+'\',\''+(n.type||'')+'\',\''+fromId+'\')">' +
+    if (n.type === 'booth_tag') {
+      const avatarHtml = n.fromPic
+        ? '<img src="'+escapeHTML(n.fromPic)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">'
+        : (n.fromHandle ? escapeHTML(n.fromHandle[0].toUpperCase()) : '📸');
+      const thumbHtml = n.photoUrl
+        ? '<img src="'+escapeHTML(n.photoUrl)+'" style="width:42px;height:42px;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,105,180,0.3);" onerror="this.style.display=\'none\'">'
+        : '';
+      return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" style="cursor:pointer;" onclick="handleNotifClick(\''+nid+'\',\'booth_tag\',\''+fromId+'\')">' +
+        '<div class="person-avatar" style="background:'+(n.fromColor||'#ff69b4')+';width:36px;height:36px;min-width:36px;font-size:14px;flex-shrink:0;">'+avatarHtml+'</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="notif-text">' + escapeHTML(n.message||'') + '</div>' +
+          '<div class="notif-time">' + timeAgo + '</div>' +
+        '</div>' +
+        thumbHtml +
+      '</div>';
+    }
+
+
       '<div class="notif-dot ' + (n.category||'blue') + '"></div>' +
       '<div style="flex:1;">' +
         '<div class="notif-text">' + escapeHTML(n.message||'') + '</div>' +
@@ -11245,6 +11263,8 @@ async function handleNotifClick(notifId, type, fromId) {
     setTimeout(function() { switchPeopleTab('connect'); }, 300);
   } else if (type === 'shift_assigned' || type === 'shift_updated' || type === 'shift_confirmed' || type === 'task_assigned') {
     navigate('staff');
+  } else if (type === 'booth_tag') {
+    setTimeout(function() { openPhotoBooth(); }, 300);
   } else if (type === 'password_reset') {
     navigate('admin');
     setTimeout(function() { switchAdminTab('users', null); adminLoadUsers(); }, 300);
