@@ -417,7 +417,7 @@ body{
 /* ══════════════════════════════════════════════════
    SCHEDULE PAGE
 ══════════════════════════════════════════════════ */
-.controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;
+.controls-bar{display:flex;flex-direction:column;gap:0;margin-bottom:16px;
   position:sticky;top:0;z-index:100;background:#000000;
   padding:12px 0 8px;
   border-bottom:1px solid rgba(245,200,66,0.1);}
@@ -429,6 +429,12 @@ body{
   #page-schedule{ padding-top:0 !important; }
   .sched-mobile-dropdowns{display:flex;}
   .sched-desktop-controls{display:none !important;}
+  .sched-search-row .search-wrap{width:100% !important;}
+  .sched-pdf-btn{display:none !important;}
+}
+@media(min-width:768px){
+  .sched-search-row{display:flex !important;}
+  #calExportSection .cal-btn[onclick="downloadSchedulePDF()"]{display:none !important;}
 }
 }
 .search-wrap{position:relative;}
@@ -2530,7 +2536,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <div class="page" id="page-schedule">
     <div class="page-header" style="margin-bottom:8px;"><div class="page-title">Schedule</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
     <div class="controls-bar">
-      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
+      <!-- Desktop search + PDF row -->
+      <div class="sched-search-row" style="display:flex;align-items:center;gap:12px;padding-bottom:10px;">
+        <div class="search-wrap" style="width:50%;"><span class="search-icon">🔍</span><input type="text" class="search-input" id="schedSearchInput" placeholder="Search artists, stage, genre…" oninput="filterSchedule()"></div>
+        <button class="sched-pdf-btn" onclick="downloadSchedulePDF()" style="padding:9px 18px;background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.25);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">⬇ PDF</button>
+      </div>
 
       <!-- MOBILE: dropdowns row -->
       <div class="sched-mobile-dropdowns">
@@ -4160,6 +4170,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;
         font-size:13px;font-weight:700;cursor:pointer;">Close</button>
     </div>
+  </div>
+</div>
 
 <!-- ── BUG REPORT MODAL ── -->
 <div id="bugReportModal" style="position:fixed;inset:0;z-index:60000;display:none;align-items:center;
@@ -6123,14 +6135,23 @@ renderChecklist();
 
 // Inject footer into every page
 (function() {
-  const footer = '<div class="page-footer">Powered by The Festie Cat 2026 &nbsp;·&nbsp; <a class="footer-tos-link">Terms of Service</a> &nbsp;·&nbsp; <a class="footer-bug-link">Report a Bug</a></div>';
   document.querySelectorAll('.page').forEach(function(p) {
-    p.insertAdjacentHTML('beforeend', footer);
-  });
-  // Use event delegation so clicks always work
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('footer-tos-link')) openTermsModal();
-    if (e.target.classList.contains('footer-bug-link')) openBugReportModal();
+    const div = document.createElement('div');
+    div.className = 'page-footer';
+    div.innerHTML = 'Powered by The Festie Cat 2026 &nbsp;&middot;&nbsp; ';
+    const tos = document.createElement('a');
+    tos.textContent = 'Terms of Service';
+    tos.style.cursor = 'pointer';
+    tos.addEventListener('click', function() { openTermsModal(); });
+    const sep = document.createTextNode(' · ');
+    const bug = document.createElement('a');
+    bug.textContent = 'Report a Bug';
+    bug.style.cursor = 'pointer';
+    bug.addEventListener('click', function() { openBugReportModal(); });
+    div.appendChild(tos);
+    div.appendChild(sep);
+    div.appendChild(bug);
+    p.appendChild(div);
   });
 })();
 
