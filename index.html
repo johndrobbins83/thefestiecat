@@ -2623,14 +2623,21 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <option value="headliner">Headliners First</option>
         </select>
       </div>
-      <div class="artist-filters" id="artistFilters">
-        <button class="af-pill active" data-filter="all"   onclick="setArtistFilter('all',this)">All</button>
-        <button class="af-pill dnb"    data-filter="dnb"   onclick="setArtistFilter('dnb',this)">DNB</button>
-        <button class="af-pill oasis"  data-filter="oasis" onclick="setArtistFilter('oasis',this)">Oasis</button>
-        <button class="af-pill"        data-filter="fri"   onclick="setArtistFilter('fri',this)">Fri</button>
-        <button class="af-pill"        data-filter="sat"   onclick="setArtistFilter('sat',this)">Sat</button>
-        <button class="af-pill"        data-filter="sun"   onclick="setArtistFilter('sun',this)">Sun</button>
-        <button class="af-pill saved"  data-filter="saved" onclick="setArtistFilter('saved',this)">⭐ Saved</button>
+      <div class="artist-filters" id="artistFilters" style="display:flex;gap:8px;padding:4px 16px 8px;">
+        <select id="artistStageSelect" onchange="setArtistFilterMobile(this)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+          <option value="all">All Stages</option>
+          <option value="dnb">DNB Stage</option>
+          <option value="oasis">Oasis Stage</option>
+          <option value="beach">Beach Stage</option>
+          <option value="djl">Davey Jones Locker</option>
+          <option value="deepsea">Deep Sea</option>
+        </select>
+        <select id="artistDaySelect" onchange="setArtistFilterMobile(this)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+          <option value="all">All Days</option>
+          <option value="fri">Fri 7/17</option>
+          <option value="sat">Sat 7/18</option>
+          <option value="saved">⭐ Saved</option>
+        </select>
       </div>
     </div>
     <div class="artists-grid" id="artistsGrid"></div>
@@ -5346,6 +5353,21 @@ function setArtistFilter(f, btn) {
   renderArtists();
 }
 
+function setArtistFilterMobile(sel) {
+  // When stage dropdown changes, reset day to All and vice versa
+  const stageEl = document.getElementById('artistStageSelect');
+  const dayEl   = document.getElementById('artistDaySelect');
+  if (sel.id === 'artistStageSelect') {
+    if (dayEl) dayEl.value = 'all';
+    artistFilter = sel.value;
+  } else {
+    if (stageEl) stageEl.value = 'all';
+    artistFilter = sel.value;
+  }
+  setArtistLetter('', document.querySelector('.az-btn[data-letter=""]'));
+  renderArtists();
+}
+
 function renderArtists() {
   const grid = document.getElementById('artistsGrid');
   if (!grid) return;
@@ -5356,12 +5378,15 @@ function renderArtists() {
   );
 
   // Stage/day filter
-  if (artistFilter === 'dnb')   keys = keys.filter(k=>artists[k].stage==='DNB Stage');
-  if (artistFilter === 'oasis') keys = keys.filter(k=>artists[k].stage==='Oasis Stage');
-  if (artistFilter === 'fri')   keys = keys.filter(k=>artists[k].day==='Fri');
-  if (artistFilter === 'sat')   keys = keys.filter(k=>artists[k].day==='Sat');
+  if (artistFilter === 'dnb')     keys = keys.filter(k=>artists[k].stage==='DNB Stage');
+  if (artistFilter === 'oasis')   keys = keys.filter(k=>artists[k].stage==='Oasis Stage');
+  if (artistFilter === 'beach')   keys = keys.filter(k=>artists[k].stage==='Beach Stage');
+  if (artistFilter === 'djl')     keys = keys.filter(k=>artists[k].stage==='Davey Jones Locker');
+  if (artistFilter === 'deepsea') keys = keys.filter(k=>artists[k].stage==='Deep Sea');
+  if (artistFilter === 'fri')     keys = keys.filter(k=>artists[k].day==='Fri');
+  if (artistFilter === 'sat')     keys = keys.filter(k=>artists[k].day==='Sat');
   // Sunday removed
-  if (artistFilter === 'saved') keys = keys.filter(k=>mine.includes(k));
+  if (artistFilter === 'saved')   keys = keys.filter(k=>mine.includes(k));
 
   // Letter filter (removed - replaced with sort)
   // Text search
