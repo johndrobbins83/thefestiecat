@@ -228,6 +228,16 @@ body{
   }
   #getTicketsBtn br{display:none;}
 }
+@media(max-width:767px){
+  #getTicketsBtn{
+    align-self:stretch;
+    padding:10px 12px !important;
+    font-size:11px !important;
+    white-space:nowrap;
+    min-width:80px;
+    text-align:center;
+  }
+}
 @media(max-width:767px){.page{padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px))!important;}}
 #page-artists{padding-top:0;}
 .page.active{opacity:1;pointer-events:all;transform:translateX(0);}
@@ -279,20 +289,22 @@ body{
 ══════════════════════════════════════════════════ */
 .announce-banner{background:linear-gradient(90deg,rgba(155,61,255,0.18),rgba(0,212,200,0.18));
   border:1px solid rgba(155,61,255,0.3);border-radius:0;padding:10px 14px;
-  display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
 .announce-icon{font-size:18px;flex-shrink:0;}
 .announce-text{flex:1;min-width:0;}
 .announce-text strong{display:block;font-size:11px;font-weight:800;color:var(--gold-bright);
   letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
 .announce-text p{font-size:12px;color:var(--text-muted);margin-top:5px;}
-.countdown-clock{display:flex;align-items:center;gap:4px;}
+.countdown-clock{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;}
 .cd-unit{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,0.6);
-  border:1px solid rgba(255,255,255,0.1);border-radius:0;padding:4px 8px;min-width:42px;}
-.cd-num{font-size:22px;font-weight:900;color:var(--text-light);line-height:1;font-variant-numeric:tabular-nums;}
+  border:1px solid rgba(255,255,255,0.1);border-radius:0;padding:4px 6px;min-width:36px;}
+.cd-num{font-size:20px;font-weight:900;color:var(--text-light);line-height:1;font-variant-numeric:tabular-nums;}
 .cd-lbl{font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
-.cd-sep{font-size:20px;font-weight:900;color:var(--gold-bright);line-height:1;margin-bottom:10px;opacity:0.7;}
+.cd-sep{font-size:18px;font-weight:900;color:var(--gold-bright);line-height:1;margin-bottom:10px;opacity:0.7;}
 @keyframes cdPulse{0%,100%{opacity:1}50%{opacity:0.6}}
 #cd-secs{animation:cdPulse 1s ease-in-out infinite;}
+/* Ticket button — never overlaps countdown */
+#getTicketsBtn{flex-shrink:0;}
 .flyer-section{position:relative;border-radius:0;overflow:hidden;
   border:2px solid rgba(245,200,66,0.45);margin-bottom:16px;
   box-shadow:0 0 40px rgba(245,200,66,0.15),0 0 80px rgba(0,212,200,0.08);}
