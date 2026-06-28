@@ -343,6 +343,21 @@ body{
   text-transform:uppercase;padding:8px 0 4px;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;}
 .sched-stage-header:first-child{border-top:none;margin-top:0;}
 .sched-arrow{font-size:18px;color:var(--teal-glow);font-weight:600;flex-shrink:0;}
+.reminder-bell{flex-shrink:0;width:28px;height:28px;border-radius:50%;
+  border:2px solid rgba(245,200,66,0.35);background:transparent;color:rgba(245,200,66,0.7);
+  font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .18s;margin-left:4px;padding:0;}
+.reminder-bell:hover{background:rgba(245,200,66,0.12);border-color:var(--gold-bright);color:var(--gold-bright);transform:scale(1.1);}
+.reminder-bell.on{background:rgba(245,200,66,0.18);border-color:var(--gold-bright);color:var(--gold-bright);}
+.tg-bell{position:absolute;top:4px;right:28px;width:18px;height:18px;border-radius:50%;
+  border:1px solid rgba(245,200,66,0.4);background:transparent;color:rgba(245,200,66,0.7);
+  font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;}
+.tg-bell.on{background:rgba(245,200,66,0.2);color:var(--gold-bright);}
+.artist-card-bell{position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;
+  border:1.5px solid rgba(245,200,66,0.5);background:rgba(0,0,0,0.5);color:rgba(245,200,66,0.8);
+  font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;
+  transition:all .15s;z-index:2;}
+.artist-card-bell.on{background:rgba(245,200,66,0.25);color:var(--gold-bright);}
 .sched-add-btn{flex-shrink:0;width:30px;height:30px;border-radius:50%;
   border:2px solid rgba(0,212,200,0.4);background:transparent;color:var(--teal-glow);
   font-size:20px;font-weight:300;line-height:1;cursor:pointer;display:flex;
@@ -2390,14 +2405,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <div style="position:relative;" id="bellWrap" class="nav-signed-in-only">
       <div class="nav-bell" id="navBell" onclick="toggleNotifDrawer()" style="cursor:pointer;">
-        🔔
+        <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg>
         <div class="notif-dot" id="notifDot" style="position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;display:none;"></div>
         <div class="notif-badge" id="notifCount" style="display:none;position:absolute;top:-4px;right:-4px;"></div>
         <div class="notif-count" id="notifCount">0</div>
       </div>
       <div class="notif-drawer" id="notifDrawer">
         <div class="notif-drawer-header">
-          <span class="notif-drawer-title">🔔 Notifications</span>
+          <span class="notif-drawer-title"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Notifications</span>
           <button onclick="markAllNotifsRead()" style="font-size:11px;background:none;border:none;color:var(--text-muted);cursor:pointer;">Mark all read</button>
         </div>
         <div id="notifList"><div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications</div></div>
@@ -2616,9 +2631,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <div class="cal-export-title">Export & Reminders</div>
       <div class="cal-btn-row">
         <button class="cal-btn" onclick="downloadSchedulePDF()" style="padding:6px 10px;font-size:11px;min-width:0;background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.25);color:var(--gold-bright);">⬇ PDF</button>
-        <button class="cal-btn" onclick="scheduleSetReminders()" id="setRemindersBtn" style="padding:6px 10px;font-size:11px;min-width:0;background:rgba(0,212,200,0.08);border:1px solid rgba(0,212,200,0.3);color:var(--teal-glow);">🔔 Remind Me 10 Min Before Sets</button>
       </div>
-      <div id="reminderStatus" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
     </div>
   </div><!-- /page-schedule -->
 
@@ -3130,7 +3143,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <button class="dash-btn primary" onclick="sendPushBroadcast()">📣 Send Push Notification</button>
           <div id="pushBroadcastStatus" style="font-size:12px;color:var(--text-muted);"></div>
           <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
-            <button class="dash-btn" onclick="testMyPush()" style="font-size:11px;">🔔 Test Push to Me</button>
+            <button class="dash-btn" onclick="testMyPush()" style="font-size:11px;"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Test Push to Me</button>
             <div id="pushTestStatus" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
           </div>
         </div>
@@ -3307,7 +3320,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div id="peopleTab-connect">
     <!-- Friend requests -->
     <div id="friendRequestsSection" style="display:none;margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:8px;">🔔 Friend Requests</div>
+      <div class="section-title" style="margin-bottom:8px;"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Friend Requests</div>
       <div id="friendRequestsList"></div>
     </div>
     <!-- Friends -->
@@ -4914,7 +4927,9 @@ function renderSchedule() {
           `<div class="item-info"><div class="item-name">${item.artist}${item.headliner?'<span class="item-headliner-badge">HEADLINER</span>':''}</div>`+
           `<div class="item-meta">${a.genre||''}</div></div>`+
           `<div class="item-actions"><span class="item-arrow">›</span>`+
-          `<button class="add-btn ${saved?'added':''}" data-key="${esc(item.artist)}" onclick="event.stopPropagation();toggleSaved('${esc(item.artist)}')">${saved?'✓':'+'}</button></div></div>`;
+          `<button class="add-btn ${saved?'added':''}" data-key="${esc(item.artist)}" onclick="event.stopPropagation();toggleSaved('${esc(item.artist)}')">${saved?'✓':'+'}</button>`+
+          (saved && item.time && item.time!=='TBA' ? `<button class="reminder-bell ${getReminderOn(item.artist)?'on':''}" data-rkey="${esc(item.artist)}" onclick="event.stopPropagation();toggleReminder('${esc(item.artist)}')"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg></button>` : '')+
+          `</div></div>`;
       });
       html += '</div></div>';
     });
@@ -4940,7 +4955,9 @@ function renderSchedule() {
           `<div class="tg-block-time">${item.time}</div>`+
           `<div class="tg-block-name">${item.artist}</div>`+
           `<div class="tg-block-genre">${(a.genre||'').split('·')[0].trim()}</div>`+
-          `<button class="tg-block-add ${saved?'added':''}" data-key="${esc(item.artist)}" onclick="event.stopPropagation();toggleSaved('${esc(item.artist)}')">${saved?'✓':'+'}</button></div>`;
+          `<button class="tg-block-add ${saved?'added':''}" data-key="${esc(item.artist)}" onclick="event.stopPropagation();toggleSaved('${esc(item.artist)}')">${saved?'✓':'+'}</button>`+
+          (saved && item.time && item.time!=='TBA' ? `<button class="tg-bell ${getReminderOn(item.artist)?'on':''}" data-rkey="${esc(item.artist)}" onclick="event.stopPropagation();toggleReminder('${esc(item.artist)}')"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg></button>` : '')+
+          `</div>`;
       });
       html += '</div>';
     });
@@ -5032,7 +5049,10 @@ function renderMySchedPage() {
           out += '<div class="tg-block-time">' + a.time + '</div>';
           out += '<div class="tg-block-name">' + key + '</div>';
           out += '<div class="tg-block-genre">' + (a.genre||'').split('-')[0].trim() + '</div>';
-          out += '<button class="tg-block-add added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button></div>';
+          var aGrid = artists[key]||{};
+          out += '<button class="tg-block-add added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button>';
+          if (aGrid.time && aGrid.time!=='TBA') out += '<button class="tg-bell' + (getReminderOn(key)?' on':'') + '" onclick="event.stopPropagation();toggleReminder(\'' + sk + '\')"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg></button>';
+          out += '</div>';
         });
         if (tbas.length) {
           out += '<div class="tg-tba-section"><div class="tg-tba-heading">TBA</div>';
@@ -5059,7 +5079,12 @@ function renderMySchedPage() {
           out += '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>';
           out += '<div class="item-avatar" style="background:' + a.color + ';">' + a.initials + '</div>';
           out += '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>';
-          out += '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button></div>';
+          var aData = artists[key]||{};
+          var bellOn = getReminderOn(key);
+          var hasBell = aData.time && aData.time!=='TBA';
+          out += '<button class="add-btn added" onclick="event.stopPropagation();toggleSaved(\'' + sk + '\')">&#x2713;</button>';
+          if (hasBell) out += '<button class="reminder-bell' + (bellOn?' on':'') + '" onclick="event.stopPropagation();toggleReminder(\'' + sk + '\')"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg></button>';
+          out += '</div>';
         });
         out += '</div></div>';
       });
@@ -5201,67 +5226,107 @@ async function sendScheduleToFriend() {
 }
 
 
-async function scheduleSetReminders() {
-  const btn    = document.getElementById('setRemindersBtn');
-  const status = document.getElementById('reminderStatus');
-  const mine   = getMySchedule();
-  if (!mine.length) { if (status) { status.textContent = 'No artists saved — add some first!'; status.style.color = 'var(--pink-coral)'; } return; }
+// ── Per-artist reminders ────────────────────────────────────
+const REMINDERS_KEY = 'ss_reminders';
+const _reminderTimers = {};
 
-  // Request notification permission
-  if (!('Notification' in window)) { if (status) { status.textContent = 'Notifications not supported on this browser.'; } return; }
-  let perm = Notification.permission;
-  if (perm === 'denied') { if (status) { status.textContent = '⚠ Notifications blocked — enable them in your browser settings.'; status.style.color = 'var(--pink-coral)'; } return; }
-  if (perm !== 'granted') perm = await Notification.requestPermission();
-  if (perm !== 'granted') { if (status) { status.textContent = 'Permission denied.'; status.style.color = 'var(--pink-coral)'; } return; }
+function getReminders() {
+  try { return JSON.parse(localStorage.getItem(REMINDERS_KEY) || '{}'); } catch { return {}; }
+}
+function saveReminders(obj) {
+  localStorage.setItem(REMINDERS_KEY, JSON.stringify(obj));
+}
+function getReminderOn(key) {
+  return !!getReminders()[key];
+}
 
-  // Festival dates: Fri Jul 17, Sat Jul 18, Sun Jul 19 2026 (US Eastern = UTC-4)
-  const dayDates = { Fri:'2026-07-17', Sat:'2026-07-18', Sun:'2026-07-19' };
-  let scheduled = 0;
-  const now = Date.now();
-
-  mine.forEach(function(key) {
-    var a = artists[key];
-    if (!a || !a.time || a.time === 'TBA' || !dayDates[a.day]) return;
-    // Parse time
-    var m = a.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-    if (!m) return;
-    var h = parseInt(m[1]), mn = parseInt(m[2]);
-    var pm = m[3].toUpperCase() === 'PM';
-    if (pm && h !== 12) h += 12;
-    if (!pm && h === 12) h = 0;
-    // Late night sets (before 8 AM) belong to next calendar day
-    var dateStr = dayDates[a.day];
-    if (h < 8) {
-      var d = new Date(dateStr + 'T00:00:00-04:00');
-      d.setDate(d.getDate() + 1);
-      dateStr = d.toISOString().slice(0, 10);
-    }
-    var setTime = new Date(dateStr + 'T' + String(h).padStart(2,'0') + ':' + String(mn).padStart(2,'0') + ':00-04:00').getTime();
-    var remindAt = setTime - 10 * 60 * 1000; // 10 min before
-    var msUntil  = remindAt - now;
-    if (msUntil < 0) return; // already past
-    setTimeout(function() {
-      try {
-        new Notification('🎧 ' + key + ' in 10 minutes!', {
-          body: (a.stage || '') + (a.time ? ' · ' + a.time : ''),
-          icon: '/icon192.png',
-          tag: 'set-reminder-' + key
-        });
-      } catch(e) {}
-    }, msUntil);
-    scheduled++;
-  });
-
-  if (status) {
-    if (scheduled > 0) {
-      status.textContent = '✓ ' + scheduled + ' reminder' + (scheduled > 1 ? 's' : '') + ' set! You\'ll be notified 10 min before each set.';
-      status.style.color = '#4ade80';
-      if (btn) { btn.textContent = '✓ Reminders Set'; btn.style.color = '#4ade80'; }
-    } else {
-      status.textContent = 'No upcoming sets found (sets may already be past).';
-      status.style.color = 'var(--text-muted)';
-    }
+function _scheduleReminderTimer(key) {
+  const a = artists[key];
+  if (!a || !a.time || a.time === 'TBA') return;
+  const dayDates = { Fri:'2026-07-17', Sat:'2026-07-18' };
+  if (!dayDates[a.day]) return;
+  var m = a.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return;
+  var h = parseInt(m[1]), mn = parseInt(m[2]);
+  var pm = m[3].toUpperCase() === 'PM';
+  if (pm && h !== 12) h += 12;
+  if (!pm && h === 12) h = 0;
+  var dateStr = dayDates[a.day];
+  if (h < 8) {
+    var d = new Date(dateStr + 'T00:00:00-04:00');
+    d.setDate(d.getDate() + 1);
+    dateStr = d.toISOString().slice(0, 10);
   }
+  var setTime = new Date(dateStr + 'T' + String(h).padStart(2,'0') + ':' + String(mn).padStart(2,'0') + ':00-04:00').getTime();
+  var remindAt = setTime - 10 * 60 * 1000;
+  var msUntil = remindAt - Date.now();
+  if (msUntil < 0) return;
+  if (_reminderTimers[key]) clearTimeout(_reminderTimers[key]);
+  _reminderTimers[key] = setTimeout(function() {
+    try {
+      new Notification('🎧 ' + key + ' in 10 minutes!', {
+        body: (a.stage || '') + (a.time ? ' · ' + a.time : ''),
+        icon: '/icon192.png',
+        tag: 'set-reminder-' + key
+      });
+    } catch(e) {}
+    // Clean up stored reminder after firing
+    var r = getReminders(); delete r[key]; saveReminders(r);
+  }, msUntil);
+}
+
+async function toggleReminder(key) {
+  const a = artists[key];
+  if (!a || !a.time || a.time === 'TBA') { showToast('No set time for this artist yet.'); return; }
+
+  // Ensure notification permission
+  if (!('Notification' in window)) { showToast('Notifications not supported on this browser.'); return; }
+  if (Notification.permission === 'denied') { showToast('⚠ Notifications blocked — enable in browser settings.'); return; }
+  if (Notification.permission !== 'granted') {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { showToast('Permission denied.'); return; }
+  }
+
+  const reminders = getReminders();
+  if (reminders[key]) {
+    // Turn off
+    delete reminders[key];
+    saveReminders(reminders);
+    if (_reminderTimers[key]) { clearTimeout(_reminderTimers[key]); delete _reminderTimers[key]; }
+    showToast('Reminder off for ' + key);
+  } else {
+    // Turn on
+    reminders[key] = true;
+    saveReminders(reminders);
+    _scheduleReminderTimer(key);
+    const dayDates = { Fri:'2026-07-17', Sat:'2026-07-18' };
+    var setTime = null;
+    var m = a.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (m && dayDates[a.day]) {
+      var h=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';
+      if(pm&&h!==12)h+=12; if(!pm&&h===12)h=0;
+      var dateStr=dayDates[a.day];
+      if(h<8){var d=new Date(dateStr+'T00:00:00-04:00');d.setDate(d.getDate()+1);dateStr=d.toISOString().slice(0,10);}
+      var remindAt=new Date(dateStr+'T'+String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0')+':00-04:00').getTime()-10*60*1000;
+      if (remindAt < Date.now()) { showToast('⏰ That set has already passed!'); delete reminders[key]; saveReminders(reminders); return; }
+    }
+    showToast('<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Reminder set — you\'ll be notified 10 min before ' + key + '!');
+  }
+  // Refresh all bell buttons in DOM
+  document.querySelectorAll('[data-rkey="' + key + '"]').forEach(function(btn) {
+    btn.classList.toggle('on', !!getReminders()[key]);
+  });
+  // Re-render artist cards and schedule to sync bell state
+  if (typeof renderArtists === 'function') renderArtists();
+  if (typeof renderSchedule === 'function') renderSchedule();
+}
+
+// Restore reminder timers on page load
+function restoreReminderTimers() {
+  const reminders = getReminders();
+  Object.keys(reminders).forEach(function(key) {
+    if (artists[key]) _scheduleReminderTimer(key);
+  });
 }
 
 function downloadSchedulePDF() {
@@ -5478,6 +5543,7 @@ function renderArtists() {
       `</div>`+
       `${a.headliner?'<div class="artist-card-hl">⭐ Headliner</div>':''}`+
       `<button class="artist-card-save ${saved?'added':''}" data-key="${esc(key)}" onclick="event.stopPropagation();toggleSaved('${esc(key)}')">${saved?'✓':'+'}</button>`+
+      (saved && a.time && a.time!=='TBA' ? `<button class="artist-card-bell ${getReminderOn(key)?'on':''}" data-rkey="${esc(key)}" onclick="event.stopPropagation();toggleReminder('${esc(key)}')"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg></button>` : '')+
     `</div>`;
   }).join('');
 }
@@ -6355,6 +6421,8 @@ async function authInit() {
   setTimeout(subscribeToPush, 3000);
   // Start DM polling on every load
   setTimeout(startDMPolling, 1000);
+  // Restore per-artist reminder timers
+  setTimeout(restoreReminderTimers, 1500);
 }
 
 // ── Set user state + update UI ─────────────────────────────
@@ -7848,7 +7916,7 @@ function buildUserTableHTML(users) {
             (u.handle ? '<div style="font-size:10px;color:rgba(122,184,224,0.4);">@'+u.handle+'</div>' : '') +
             '<div style="display:flex;gap:6px;margin-top:4px;">' +
               (u.emailList ? '<span title="Opted in to marketing emails" style="font-size:9px;font-weight:800;padding:2px 6px;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);color:#4ade80;letter-spacing:0.5px;text-transform:uppercase;">📧 Email List</span>' : '<span title="Not on email list" style="font-size:9px;font-weight:700;padding:2px 6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(122,184,224,0.3);letter-spacing:0.5px;text-transform:uppercase;">No Email</span>') +
-              (u.notifConsent ? '<span title="Opted in to notifications" style="font-size:9px;font-weight:800;padding:2px 6px;background:rgba(0,212,200,0.1);border:1px solid rgba(0,212,200,0.25);color:var(--teal-glow);letter-spacing:0.5px;text-transform:uppercase;">🔔 Notifs</span>' : '') +
+              (u.notifConsent ? '<span title="Opted in to notifications" style="font-size:9px;font-weight:800;padding:2px 6px;background:rgba(0,212,200,0.1);border:1px solid rgba(0,212,200,0.25);color:var(--teal-glow);letter-spacing:0.5px;text-transform:uppercase;"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Notifs</span>' : '') +
             '</div>' +
           '</div>' +
         '</div>' +
