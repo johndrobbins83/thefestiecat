@@ -2415,6 +2415,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigate('schedule');setTimeout(()=>{const btn=document.getElementById('mySchedTab');if(btn)switchDay('mine',btn);},150);">📅 My Schedule</button>
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigate('people');">👥 People &amp; Feed</button>
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigateToProfile(null);">👤 My Profile</button>
+        <button class="user-menu-item" id="menuEnablePush" style="display:none;color:var(--teal-glow);" onclick="event.stopPropagation();closeUserMenu();enablePushFromMenu();">🔔 Enable Push Notifications</button>
         <button class="user-menu-item nav-admin-only" style="color:#f5c842;display:none;" onclick="event.stopPropagation();closeUserMenu();navigate('admin');">⚙ Admin Dashboard</button>
         <button class="user-menu-item nav-staff-only" style="color:#c084fc;display:none;" onclick="event.stopPropagation();closeUserMenu();navigate('staff');">📋 Staff Dashboard</button>
         <button class="user-menu-item logout" onclick="event.stopPropagation();closeUserMenu();authLogout();">Sign out</button>
@@ -6087,6 +6088,26 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
 
+function updatePushMenuButton() {
+  const btn = document.getElementById('menuEnablePush');
+  if (!btn) return;
+  const supported = ('serviceWorker' in navigator) && ('PushManager' in window);
+  if (!supported || Notification.permission === 'granted') {
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = '';
+  }
+}
+
+async function enablePushFromMenu() {
+  if (!('Notification' in window)) return;
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    await subscribeToPush();
+  }
+  updatePushMenuButton();
+}
+
 async function subscribeToPush() {
   try {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
@@ -6649,6 +6670,7 @@ function authLogout() {
 
 // ── User menu ──────────────────────────────────────────────
 function toggleUserMenu(e) {
+  updatePushMenuButton();
   if (e) e.stopPropagation();
   document.getElementById('userMenu').classList.toggle('open');
 }
