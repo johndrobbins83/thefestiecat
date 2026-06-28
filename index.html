@@ -432,13 +432,16 @@ body{
 /* ══════════════════════════════════════════════════
    SCHEDULE PAGE
 ══════════════════════════════════════════════════ */
-.controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:0;
+.controls-bar{display:flex;flex-direction:column;gap:0;margin-bottom:0;
   position:sticky;top:0;z-index:100;background:#000000;
   padding:12px 0 8px;
   border-bottom:1px solid rgba(245,200,66,0.1);}
 /* Mobile schedule dropdowns */
 .sched-mobile-dropdowns{display:none;gap:6px;align-items:center;}
 .sched-desktop-controls{display:flex;}
+@media(min-width:768px){
+  .list-view-wrap, .block-view-wrap, #mySchedPage { padding-top:16px; }
+}
 @media(max-width:767px){
   #page-schedule .page-header{ display:none; }
   #page-schedule{ padding-top:0 !important; }
@@ -448,8 +451,6 @@ body{
   .sched-pdf-btn{display:none !important;}
 }
 @media(min-width:768px){
-     .list-view-wrap, .block-view-wrap, #mySchedPage { padding-top:16px; }
-}
   .sched-search-row{display:flex !important;}
   #calExportSection .cal-btn[onclick="downloadSchedulePDF()"]{display:none !important;}
 }
@@ -494,9 +495,6 @@ body{
 .schedule-day{display:none;}.schedule-day.active{display:block;}
 .list-view-wrap{}.list-view-wrap.hidden{display:none;}
 .block-view-wrap{display:none;}.block-view-wrap.visible{display:block;}
-@media(min-width:768px){
-  .list-view-wrap, .block-view-wrap { margin-top: -8px; }
-}
 .stage-section{margin-bottom:16px;}
 .stage-section-header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:0;
   font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
@@ -5097,8 +5095,9 @@ async function renderMySchedPage() {
           out += '<div class="sched-item' + hlCls + '" onclick="openArtist(\'' + sk + '\')">';
           out += '<div class="item-time"><div>' + (a.time||'TBA') + '</div></div>';
           out += '<div class="item-avatar" style="background:' + a.color + ';overflow:hidden;position:relative;">' +
-            (a.photo ? '<img src="' + a.photo + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;" onerror="this.style.display=\'none\'">' : '') +
-            '<span style="position:relative;z-index:1;">' + a.initials + '</span></div>';
+            '<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;">' + a.initials + '</span>' +
+            (a.photo ? '<img src="' + a.photo + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;z-index:1;" onerror="this.style.display=\'none\'">' : '') +
+            '</div>';
           out += '<div class="item-info"><div class="item-name">' + key + '</div><div class="item-meta">' + (a.genre||'') + '</div></div>';
           var aData = artists[key]||{};
           var bellOn = getReminderOn(key);
