@@ -234,15 +234,18 @@ body{
 /* Max-width content container — centered on wide screens */
 .page > *{max-width:1280px;margin-left:auto;margin-right:auto;}
 /* Powered by footer on all pages */
-.page::after{
-  content:'Powered by The Promo Cat · 2026';
-  display:block;
+.page-footer{
   text-align:center;
   font-size:10px;
   color:rgba(122,184,224,0.25);
   letter-spacing:1px;
-  padding:20px 0 8px;
+  padding:20px 0 12px;
   font-family:'Poppins',sans-serif;
+}
+.page-footer a{
+  color:rgba(122,184,224,0.45);
+  text-decoration:underline;
+  cursor:pointer;
 }
 /* Nav inner content also capped */
 .top-nav > *{flex-shrink:0;}
@@ -4157,6 +4160,40 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;
         font-size:13px;font-weight:700;cursor:pointer;">Close</button>
     </div>
+
+<!-- ── BUG REPORT MODAL ── -->
+<div id="bugReportModal" style="position:fixed;inset:0;z-index:60000;display:none;align-items:center;
+  justify-content:center;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);padding:20px;">
+  <div style="background:#0a0a0a;border:1px solid rgba(255,77,141,0.35);width:100%;max-width:480px;
+    display:flex;flex-direction:column;border-radius:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+      border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;
+        color:var(--pink-coral);letter-spacing:2px;text-transform:uppercase;">🐛 Report a Bug</span>
+      <button onclick="closeBugReportModal()" style="background:rgba(255,255,255,0.07);border:none;
+        color:var(--text-light);font-size:16px;cursor:pointer;width:32px;height:32px;">&#x2715;</button>
+    </div>
+    <div style="padding:20px;">
+      <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;line-height:1.6;">
+        Found something broken? Tell us what happened and we'll get it fixed.</p>
+      <textarea id="bugReportText" placeholder="Describe the bug — what you did, what you expected, and what actually happened…"
+        style="width:100%;min-height:140px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);
+        color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;padding:12px;
+        resize:vertical;outline:none;box-sizing:border-box;"></textarea>
+      <div id="bugReportStatus" style="font-size:12px;margin-top:8px;min-height:18px;"></div>
+    </div>
+    <div style="padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;
+      display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeBugReportModal()" style="padding:9px 20px;background:rgba(255,255,255,0.06);
+        border:1px solid rgba(255,255,255,0.15);color:var(--text-muted);font-family:'Poppins',sans-serif;
+        font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button onclick="submitBugReport()" id="bugReportSendBtn" style="padding:9px 24px;
+        background:rgba(255,77,141,0.15);border:1px solid rgba(255,77,141,0.4);
+        color:var(--pink-coral);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+        Send Report</button>
+    </div>
+  </div>
+</div>
   </div>
 </div>
 
@@ -6088,10 +6125,18 @@ function urlBase64ToUint8Array(base64String) {
 renderMySchedWidget();
 renderChecklist();
 
+// Inject footer into every page
+(function() {
+  const footer = '<div class="page-footer">Powered by The Festie Cat 2026 &nbsp;·&nbsp; <a onclick="openTermsModal()">Terms of Service</a> &nbsp;·&nbsp; <a onclick="openBugReportModal()">Report a Bug</a></div>';
+  document.querySelectorAll('.page').forEach(function(p) {
+    p.insertAdjacentHTML('beforeend', footer);
+  });
+})();
+
 // Keyboard: Escape closes modals
 document.addEventListener('keydown', e=>{
   if (e.key==='Escape') {
-    closeModal(); closeSOS(); closeMore(); closeDrawer(); closeTermsModal();
+    closeModal(); closeSOS(); closeMore(); closeDrawer(); closeTermsModal(); closeBugReportModal();
   }
 });
 /* ── SOS SYSTEM (original) ── */
@@ -11199,6 +11244,60 @@ function closeTermsModal() {
   // Only restore overflow if auth overlay is also closed
   const authOpen = document.getElementById('authOverlay')?.classList.contains('open');
   if (!authOpen) document.body.style.overflow = '';
+}
+
+// ── Bug Report Modal ──────────────────────────────────────────
+const FORMSPREE_ID = 'xaqgjpkj'; // Replace with your Formspree form ID
+
+function openBugReportModal() {
+  const modal = document.getElementById('bugReportModal');
+  if (!modal) return;
+  document.getElementById('bugReportText').value = '';
+  document.getElementById('bugReportStatus').textContent = '';
+  const btn = document.getElementById('bugReportSendBtn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Send Report'; }
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ const t = document.getElementById('bugReportText'); if(t) t.focus(); }, 100);
+}
+
+function closeBugReportModal() {
+  const modal = document.getElementById('bugReportModal');
+  if (modal) modal.style.display = 'none';
+  const authOpen = document.getElementById('authOverlay')?.classList.contains('open');
+  if (!authOpen) document.body.style.overflow = '';
+}
+
+async function submitBugReport() {
+  const text = (document.getElementById('bugReportText')?.value || '').trim();
+  const status = document.getElementById('bugReportStatus');
+  const btn = document.getElementById('bugReportSendBtn');
+  if (!text) { if (status) { status.style.color='var(--pink-coral)'; status.textContent='Please describe the bug before sending.'; } return; }
+  if (FORMSPREE_ID === 'YOUR_FORM_ID') {
+    if (status) { status.style.color='var(--pink-coral)'; status.textContent='Bug reports not configured yet.'; } return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  if (status) { status.style.color='var(--text-muted)'; status.textContent=''; }
+  // Include logged-in user info if available
+  const user = currentUser || {};
+  const reportBody = (user.handle ? '[' + user.handle + '] ' : '') + text;
+  try {
+    const res = await fetch('https://formspree.io/f/' + FORMSPREE_ID, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ message: reportBody, _subject: '🐛 Bug Report — The Mutiny 2026' })
+    });
+    if (res.ok) {
+      if (status) { status.style.color='#4ade80'; status.textContent='✓ Report sent — thank you!'; }
+      if (btn) btn.textContent = '✓ Sent';
+      setTimeout(closeBugReportModal, 1800);
+    } else {
+      throw new Error('Server error ' + res.status);
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Send Report'; }
+    if (status) { status.style.color='var(--pink-coral)'; status.textContent='Failed to send — please try again.'; }
+  }
 }
 
 function switchInfoTab(tab) {
