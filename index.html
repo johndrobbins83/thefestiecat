@@ -3516,8 +3516,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 </div>
 
 <!-- ══ PHOTO BOOTH — Caption & Tag Modal ══ -->
-<div id="boothUploadModal" style="display:none;position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;">
-  <div style="width:100%;max-width:540px;background:#0e0e0e;border-top:2px solid rgba(255,105,180,0.3);border-radius:0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 20px);max-height:90vh;overflow-y:auto;">
+<div id="boothUploadModal" style="display:none;position:fixed;inset:0;bottom:0;z-index:9600;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 60px);">
+  <div style="width:100%;max-width:540px;background:#0e0e0e;border-top:2px solid rgba(255,105,180,0.3);border-radius:0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 80px);max-height:85vh;overflow-y:auto;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-size:14px;font-weight:800;color:#ff69b4;">Add Details</div>
       <button onclick="closeBoothUploadModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;">✕</button>
@@ -13164,8 +13164,9 @@ async function submitBoothUpload() {
 
   const caption     = (document.getElementById('boothCaption').value || '').trim();
   const taggedUsers = _boothTaggedUsers.slice();
+  const filesToUpload = _boothPendingFiles.slice(); // save before clearing
 
-  closeBoothUploadModal();
+  closeBoothUploadModal(); // now safe to clear
 
   const progressWrap  = document.getElementById('photoBoothProgress');
   const progressBar   = document.getElementById('photoBoothProgressBar');
@@ -13173,10 +13174,10 @@ async function submitBoothUpload() {
   progressWrap.style.display = 'block';
 
   let uploaded = 0, failed = 0;
-  const total  = _boothPendingFiles.length;
+  const total  = filesToUpload.length;
 
   for (let i = 0; i < total; i++) {
-    const file = _boothPendingFiles[i];
+    const file = filesToUpload[i];
     progressLabel.textContent = 'Uploading ' + (i + 1) + ' of ' + total + '…';
     progressBar.style.width = Math.round((i / total) * 100) + '%';
 
