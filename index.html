@@ -4971,8 +4971,17 @@ function renderSchedule() {
   }
 }
 
-function renderMySchedPage() {
+async function renderMySchedPage() {
   var mine = getMySchedule();
+  // Fetch work shifts for staff/admin
+  var myShifts = [];
+  if (currentUser && (currentUser.role === 'employee' || currentUser.role === 'admin')) {
+    try {
+      const token = localStorage.getItem('ss_auth_token');
+      const sr = await fetch(AUTH_URL+'/shifts', { headers:{'Authorization':'Bearer '+token} });
+      if (sr.ok) { const sd = await sr.json(); myShifts = sd.shifts || []; }
+    } catch(e) {}
+  }
   var listEl  = document.getElementById('mySchedPageList');
   var emptyEl = document.getElementById('mySchedPageEmpty');
   var shareSection = document.getElementById('shareSchedSection');
@@ -5098,6 +5107,52 @@ function renderMySchedPage() {
     }
     out += '</div>';
   });
+
+  // Inject work shifts as grey blocks per day
+  if (myShifts.length) {
+    var shiftsByDay = {Fri:[],Sat:[],Sun:[]};
+    myShifts.forEach(function(s) { if (shiftsByDay[s.day]) shiftsByDay[s.day].push(s); });
+    var shiftDayLabels = {Fri:'Friday - Jul 17', Sat:'Saturday - Jul 18', Sun:'Sunday - Jul 19'};
+
+    function fmt24(t) {
+      if (!t) return '';
+      var parts = t.split(':'); var h = parseInt(parts[0]), m = parseInt(parts[1]||0);
+      var ampm = h < 12 ? 'AM' : 'PM'; var h12 = h % 12 || 12;
+      return h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+    }
+    function shiftSortVal(s) {
+      var parts = (s.startTime||'00:00').split(':'); var h = parseInt(parts[0]);
+      if (h < 8) h += 24; return h * 60 + parseInt(parts[1]||0);
+    }
+
+    ['Fri','Sat','Sun'].forEach(function(day) {
+      var shifts = shiftsByDay[day]; if (!shifts.length) return;
+      shifts.sort(function(a,b){ return shiftSortVal(a)-shiftSortVal(b); });
+      var shiftHtml = '<div style="margin-bottom:20px;">' +
+        '<div class="stage-section-header" style="background:rgba(255,255,255,0.04);color:var(--text-muted);border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;">🔧 ' + shiftDayLabels[day] + ' — Work Shifts</div>' +
+        '<div class="sched-list">';
+      shifts.forEach(function(s) {
+        var timeStr = s.startTime && s.endTime ? fmt24(s.startTime) + ' – ' + fmt24(s.endTime) : (s.startTime ? fmt24(s.startTime) : 'TBA');
+        var confirmed = s.confirmed ? '✓ Confirmed' : 'Pending';
+        var confirmedColor = s.confirmed ? 'var(--teal-glow)' : 'var(--gold-bright)';
+        shiftHtml +=
+          '<div class="sched-item" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);margin-bottom:6px;cursor:default;">' +
+            '<div class="item-time" style="color:var(--text-muted);">' + timeStr.replace(' – ', '<br>– ') + '</div>' +
+            '<div class="item-avatar" style="background:#2a2a2a;border-color:rgba(255,255,255,0.15);overflow:hidden;position:relative;">' +
+              '<span style="font-size:16px;">🔧</span>' +
+            '</div>' +
+            '<div class="item-info">' +
+              '<div class="item-name" style="color:var(--text-light);">' + (s.title||'Work Shift') + '</div>' +
+              '<div class="item-meta">' + (s.location||'') + (s.notes ? ' · '+s.notes : '') + '</div>' +
+            '</div>' +
+            '<div style="font-size:11px;font-weight:700;color:'+confirmedColor+';flex-shrink:0;">' + confirmed + '</div>' +
+          '</div>';
+      });
+      shiftHtml += '</div></div>';
+      // Prepend shift section before artist content for this day
+      out = shiftHtml + out;
+    });
+  }
 
   listEl.innerHTML = out;
 }
@@ -11023,7 +11078,7 @@ async function handleNotifClick(notifId, type, fromId) {
   } else if (type === 'follow_request' || type === 'follow_accepted') {
     navigate('people');
     setTimeout(function() { switchPeopleTab('connect'); }, 300);
-  } else if (type === 'shift_assigned' || type === 'task_assigned') {
+  } else if (type === 'shift_assigned' || type === 'shift_updated' || type === 'shift_confirmed' || type === 'task_assigned') {
     navigate('staff');
   } else if (type === 'password_reset') {
     navigate('admin');
