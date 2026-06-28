@@ -2398,7 +2398,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <span class="desktop-nav-link"        data-page="map"      onclick="navigate('map')"><span style="color:var(--gold-bright);margin-right:4px;">⊕</span>Map</span>
     <span class="desktop-nav-link"        data-page="checklist" onclick="navigate('checklist')"><span style="color:var(--gold-bright);margin-right:4px;">☑</span>List</span>
     <span class="desktop-nav-link" data-page="people" onclick="navigate('people')">👥 People</span>
-    <span class="desktop-nav-link more-trigger" onclick="toggleMore(this)">⋯ More</span>
+    <span class="desktop-nav-link more-trigger" onclick="if(document.getElementById('dmThreadOverlay')&&document.getElementById('dmThreadOverlay').classList.contains('open')){closeDMThread();}toggleMore(this)">⋯ More</span>
   </nav>
   <div class="nav-right">
     <!-- Weather -->
@@ -3419,7 +3419,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">⊕</div><span class="nav-label">Map</span></span>
   <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">☑</div><span class="nav-label">List</span></span>
   <span class="nav-item" data-page="people" onclick="navigate('people')"><div class="nav-icon-wrap">👥</div><span class="nav-label">People</span></span>
-  <span class="nav-item more-trigger" onclick="toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
+  <span class="nav-item more-trigger" onclick="if(document.getElementById('dmThreadOverlay')&&document.getElementById('dmThreadOverlay').classList.contains('open')){closeDMThread();}toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
 </nav>
 
 <!-- ══ MORE POPOUT ══ -->
@@ -3483,16 +3483,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
 
     <!-- Upload buttons -->
-    <div id="photoBoothUploadArea" style="display:flex;gap:10px;margin-bottom:20px;">
-      <!-- Upload from gallery -->
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
       <label style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 12px;border:2px dashed rgba(255,105,180,0.4);background:rgba(255,105,180,0.05);cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='rgba(255,105,180,0.8)'" onmouseout="this.style.borderColor='rgba(255,105,180,0.4)'">
-        <input type="file" accept="image/*" multiple style="display:none;" onchange="handleBoothFiles(this.files)">
+        <input type="file" accept="image/*" multiple style="display:none;" onchange="boothPickFiles(this.files,'gallery')">
         <span style="font-size:32px;">🖼️</span>
         <span style="font-size:12px;font-weight:700;color:#ff69b4;text-align:center;line-height:1.3;">Upload from<br>Gallery</span>
       </label>
-      <!-- Open camera -->
       <label style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 12px;border:2px dashed rgba(0,212,200,0.4);background:rgba(0,212,200,0.05);cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='rgba(0,212,200,0.8)'" onmouseout="this.style.borderColor='rgba(0,212,200,0.4)'">
-        <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="handleBoothFiles(this.files)">
+        <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="boothPickFiles(this.files,'camera')">
         <span style="font-size:32px;">📷</span>
         <span style="font-size:12px;font-weight:700;color:var(--teal-glow);text-align:center;line-height:1.3;">Take a<br>Photo</span>
       </label>
@@ -3514,6 +3512,46 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div id="photoBoothGrid" style="columns:2;gap:8px;column-gap:8px;">
       <div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px;">Loading photos…</div>
     </div>
+  </div>
+</div>
+
+<!-- ══ PHOTO BOOTH — Caption & Tag Modal ══ -->
+<div id="boothUploadModal" style="display:none;position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;">
+  <div style="width:100%;max-width:540px;background:#0e0e0e;border-top:2px solid rgba(255,105,180,0.3);border-radius:0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 20px);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:14px;font-weight:800;color:#ff69b4;">Add Details</div>
+      <button onclick="closeBoothUploadModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Preview thumbnails -->
+    <div id="boothPreviewThumbs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;"></div>
+
+    <!-- Caption -->
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">Caption</div>
+      <textarea id="boothCaption" placeholder="Say something about this moment…" rows="2"
+        style="width:100%;padding:10px 12px;background:#111;border:1px solid rgba(255,255,255,0.1);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;resize:none;outline:none;box-sizing:border-box;"
+        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+    </div>
+
+    <!-- Tag users -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">Tag People</div>
+      <div style="position:relative;">
+        <input id="boothTagInput" type="text" placeholder="Search by @handle or name…"
+          style="width:100%;padding:10px 12px;background:#111;border:1px solid rgba(255,255,255,0.1);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;outline:none;box-sizing:border-box;"
+          oninput="boothTagSearch(this.value)" autocomplete="off">
+        <div id="boothTagDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1a1a1a;border:1px solid rgba(255,255,255,0.12);z-index:10;max-height:160px;overflow-y:auto;"></div>
+      </div>
+      <!-- Tagged chips -->
+      <div id="boothTaggedChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+    </div>
+
+    <!-- Submit -->
+    <button onclick="submitBoothUpload()"
+      style="width:100%;padding:13px;background:linear-gradient(90deg,#ff69b4,var(--purple-mutiny));border:none;color:#fff;font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1px;cursor:pointer;">
+      📤 Upload Photo
+    </button>
   </div>
 </div>
 
@@ -8050,13 +8088,15 @@ function buildUserTableHTML(users) {
     var initials  = (u.name||u.handle||'?').charAt(0).toUpperCase();
     var avatarBg  = u.avatarColor || '#9b3dff';
 
-    var roleSelect = '<select onchange="adminSetRole(\''+u.id+'\',this.value)" style="flex:1;padding:7px 8px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
-      '<option '+(u.role==='festie'   ?'selected':'')+' value="festie">🎟 Festie</option>' +
-      '<option '+(u.role==='employee' ?'selected':'')+' value="employee">👷 Staff</option>' +
-      '<option '+(u.role==='admin'    ?'selected':'')+' value="admin">⭐ Admin</option>' +
-      '</select>';
+    var roleSelect = u.isMaster
+      ? '<div style="padding:7px 10px;background:rgba(154,163,176,0.06);border:1px solid rgba(154,163,176,0.2);color:#9aa3b0;font-size:12px;font-weight:700;flex:1;display:flex;align-items:center;gap:6px;">👑 Master Admin <span style="font-size:9px;opacity:0.5;margin-left:auto;">LOCKED</span></div>'
+      : '<select onchange="adminSetRole(\''+u.id+'\',this.value)" style="flex:1;padding:7px 8px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
+        '<option '+(u.role==='festie'   ?'selected':'')+' value="festie">🎟 Festie</option>' +
+        '<option '+(u.role==='employee' ?'selected':'')+' value="employee">👷 Staff</option>' +
+        '<option '+(u.role==='admin'    ?'selected':'')+' value="admin">⭐ Admin</option>' +
+        '</select>';
 
-    var staffRoleSelect = (u.role === 'admin' || u.role === 'festie')
+    var staffRoleSelect = (u.isMaster || u.role === 'admin' || u.role === 'festie')
       ? '<div style="padding:7px 8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:rgba(122,184,224,0.3);font-size:12px;flex:1;">N/A</div>'
       : '<select onchange="adminSetStaffRole(\''+u.id+'\',this.value)" style="flex:1;padding:7px 8px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">' +
         '<option value="">— No role —</option>' +
@@ -13014,6 +13054,9 @@ function updateDMBadge(count) {
 /* ════════════════════════════════════════════════════════════
    PHOTO BOOTH
 ════════════════════════════════════════════════════════════ */
+var _boothPendingFiles   = [];
+var _boothTaggedUsers    = [];  // [{id, handle, name}]
+
 function openPhotoBooth() {
   const el = document.getElementById('photoBoothOverlay');
   if (!el) return;
@@ -13027,56 +13070,152 @@ function closePhotoBooth() {
   document.body.style.overflow = '';
 }
 
-async function handleBoothFiles(files) {
+// ── Step 1: user picks files → open caption/tag modal ──────
+function boothPickFiles(files) {
   if (!files || !files.length) return;
   if (!currentUser) { showToast('Sign in to upload photos'); return; }
+  _boothPendingFiles = Array.from(files);
+
+  // Show preview thumbnails
+  const thumbs = document.getElementById('boothPreviewThumbs');
+  thumbs.innerHTML = '';
+  _boothPendingFiles.slice(0, 6).forEach(function(f) {
+    const img = document.createElement('img');
+    img.style.cssText = 'width:64px;height:64px;object-fit:cover;border:1px solid rgba(255,255,255,0.1);';
+    const reader = new FileReader();
+    reader.onload = function(e) { img.src = e.target.result; };
+    reader.readAsDataURL(f);
+    thumbs.appendChild(img);
+  });
+  if (_boothPendingFiles.length > 6) {
+    const more = document.createElement('div');
+    more.style.cssText = 'width:64px;height:64px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);font-weight:700;';
+    more.textContent = '+' + (_boothPendingFiles.length - 6) + ' more';
+    thumbs.appendChild(more);
+  }
+
+  // Reset fields
+  document.getElementById('boothCaption').value = '';
+  document.getElementById('boothTagInput').value = '';
+  document.getElementById('boothTaggedChips').innerHTML = '';
+  document.getElementById('boothTagDropdown').style.display = 'none';
+  _boothTaggedUsers = [];
+
+  const modal = document.getElementById('boothUploadModal');
+  modal.style.display = 'flex';
+}
+
+function closeBoothUploadModal() {
+  const modal = document.getElementById('boothUploadModal');
+  if (modal) modal.style.display = 'none';
+  _boothPendingFiles = [];
+  _boothTaggedUsers  = [];
+}
+
+// ── Tag search ──────────────────────────────────────────────
+async function boothTagSearch(q) {
+  const drop = document.getElementById('boothTagDropdown');
+  if (!q || q.length < 2) { drop.style.display = 'none'; return; }
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/auth/users', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) return;
+    const data = await res.json();
+    const lower = q.toLowerCase().replace('@','');
+    const matches = (data.users || []).filter(function(u) {
+      if (u.id === currentUser.id) return false;
+      if (_boothTaggedUsers.find(function(t){return t.id===u.id;})) return false;
+      return (u.handle||'').toLowerCase().includes(lower) || (u.name||'').toLowerCase().includes(lower);
+    }).slice(0, 8);
+
+    if (!matches.length) { drop.style.display = 'none'; return; }
+    drop.innerHTML = matches.map(function(u) {
+      return '<div onclick="boothTagUser(\''+u.id+'\',\''+(u.handle||u.name||'user')+'\',\''+(u.name||u.handle||'User')+'\')" style="padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.05);" onmouseover="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseout="this.style.background=\'\'">'+
+        '<div style="width:28px;height:28px;border-radius:50%;background:'+(u.avatarColor||'#9b3dff')+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0;">'+(u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;">':((u.handle||u.name||'?')[0].toUpperCase()))+'</div>'+
+        '<div><div style="font-size:12px;font-weight:700;color:var(--text-light);">'+(u.name||u.handle||'User')+'</div><div style="font-size:10px;color:var(--text-muted);">@'+(u.handle||'')+'</div></div>'+
+      '</div>';
+    }).join('');
+    drop.style.display = 'block';
+  } catch {}
+}
+
+function boothTagUser(id, handle, name) {
+  if (_boothTaggedUsers.find(function(t){return t.id===id;})) return;
+  _boothTaggedUsers.push({ id:id, handle:handle, name:name });
+  const chips = document.getElementById('boothTaggedChips');
+  const chip = document.createElement('span');
+  chip.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 10px;background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.3);font-size:11px;font-weight:700;color:#c084fc;';
+  chip.innerHTML = '@' + handle + ' <button onclick="boothRemoveTag(\''+id+'\',this.closest(\'span\'))" style="background:none;border:none;color:#c084fc;cursor:pointer;font-size:13px;line-height:1;padding:0;">×</button>';
+  chips.appendChild(chip);
+  document.getElementById('boothTagInput').value = '';
+  document.getElementById('boothTagDropdown').style.display = 'none';
+}
+
+function boothRemoveTag(id, chip) {
+  _boothTaggedUsers = _boothTaggedUsers.filter(function(t){return t.id!==id;});
+  if (chip) chip.remove();
+}
+
+// ── Step 2: submit with caption + tags ─────────────────────
+async function submitBoothUpload() {
+  if (!_boothPendingFiles.length) return;
   const token = localStorage.getItem(TOKEN_KEY);
   if (!token) { showToast('Sign in to upload photos'); return; }
 
-  const progressWrap = document.getElementById('photoBoothProgress');
-  const progressBar  = document.getElementById('photoBoothProgressBar');
+  const caption     = (document.getElementById('boothCaption').value || '').trim();
+  const taggedUsers = _boothTaggedUsers.slice();
+
+  closeBoothUploadModal();
+
+  const progressWrap  = document.getElementById('photoBoothProgress');
+  const progressBar   = document.getElementById('photoBoothProgressBar');
   const progressLabel = document.getElementById('photoBoothProgressLabel');
   progressWrap.style.display = 'block';
 
-  let uploaded = 0;
-  let failed   = 0;
-  const total  = files.length;
+  let uploaded = 0, failed = 0;
+  const total  = _boothPendingFiles.length;
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
+  for (let i = 0; i < total; i++) {
+    const file = _boothPendingFiles[i];
     progressLabel.textContent = 'Uploading ' + (i + 1) + ' of ' + total + '…';
-    progressBar.style.width = Math.round(((i) / total) * 100) + '%';
+    progressBar.style.width = Math.round((i / total) * 100) + '%';
 
     if (!file.type.startsWith('image/')) { failed++; continue; }
     if (file.size > 8 * 1024 * 1024) { showToast(file.name + ' is too large (max 8MB)'); failed++; continue; }
 
     try {
       const slug = 'booth_' + (currentUser.handle || currentUser.id) + '_' + Date.now() + '_' + i;
-      const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
+      const res  = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
         method: 'POST',
         headers: { 'Content-Type': file.type, 'Authorization': 'Bearer ' + token },
         body: file
       });
       if (res.ok) {
         const d = await res.json();
-        // Save photo record to KV via a lightweight POST
         await fetch(AUTH_URL + '/booth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ url: d.url, uploadedBy: currentUser.handle || currentUser.id, uploadedById: currentUser.id })
-        }).catch(() => {});
+          body: JSON.stringify({
+            url: d.url,
+            uploadedBy:   currentUser.handle || currentUser.id,
+            uploadedById: currentUser.id,
+            caption:      caption,
+            taggedUsers:  taggedUsers
+          })
+        }).catch(function(){});
         uploaded++;
       } else { failed++; }
-    } catch(e) { failed++; }
+    } catch { failed++; }
   }
 
   progressBar.style.width = '100%';
   progressLabel.textContent = uploaded + ' photo' + (uploaded !== 1 ? 's' : '') + ' uploaded!' + (failed ? ' (' + failed + ' failed)' : '');
-  setTimeout(() => {
+  setTimeout(function() {
     progressWrap.style.display = 'none';
     progressBar.style.width = '0%';
   }, 2500);
 
+  _boothPendingFiles = [];
   if (uploaded > 0) loadBoothPhotos();
 }
 
@@ -13084,12 +13223,9 @@ async function loadBoothPhotos() {
   const grid = document.getElementById('photoBoothGrid');
   if (!grid) return;
   grid.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px;">Loading photos…</div>';
-
   const token = localStorage.getItem(TOKEN_KEY);
   try {
-    const res = await fetch(AUTH_URL + '/booth', {
-      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
-    });
+    const res = await fetch(AUTH_URL + '/booth', { headers: token ? { 'Authorization': 'Bearer ' + token } : {} });
     if (!res.ok) { grid.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px;">Could not load photos.</div>'; return; }
     const d = await res.json();
     const photos = d.photos || [];
@@ -13100,13 +13236,16 @@ async function loadBoothPhotos() {
     const isAdmin = currentUser && (currentUser.role === 'admin');
     grid.innerHTML = photos.map(function(p) {
       const canDel = isAdmin || (currentUser && p.uploadedById === currentUser.id);
+      const tags   = (p.taggedUsers || []).map(function(t){return '@'+t.handle;}).join(' ');
+      const caption = p.caption ? '<div style="font-size:11px;color:rgba(255,255,255,0.8);margin-top:3px;line-height:1.3;">'+p.caption+'</div>' : '';
+      const tagLine = tags ? '<div style="font-size:10px;color:#c084fc;margin-top:2px;">'+tags+'</div>' : '';
       return '<div class="booth-photo-item">' +
         '<img src="' + p.url + '" loading="lazy" onclick="boothZoom(\'' + p.url + '\')" onerror="this.closest(\'.booth-photo-item\').style.display=\'none\'">' +
-        '<div class="booth-photo-meta">@' + (p.uploadedBy || 'festie') + '</div>' +
+        '<div class="booth-photo-meta">@' + (p.uploadedBy || 'festie') + caption + tagLine + '</div>' +
         (canDel ? '<button class="booth-photo-del" onclick="deleteBoothPhoto(\'' + p.id + '\',this)" title="Delete">✕</button>' : '') +
       '</div>';
     }).join('');
-  } catch(e) {
+  } catch {
     grid.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px;">Could not load photos.</div>';
   }
 }
@@ -13115,14 +13254,9 @@ async function deleteBoothPhoto(photoId, btn) {
   if (!confirm('Remove this photo?')) return;
   const token = localStorage.getItem(TOKEN_KEY);
   try {
-    const res = await fetch(AUTH_URL + '/booth/' + photoId, {
-      method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (res.ok) {
-      btn.closest('.booth-photo-item').remove();
-      showToast('Photo removed');
-    } else { showToast('Could not remove photo'); }
+    const res = await fetch(AUTH_URL + '/booth/' + photoId, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+    if (res.ok) { btn.closest('.booth-photo-item').remove(); showToast('Photo removed'); }
+    else { showToast('Could not remove photo'); }
   } catch { showToast('Could not connect'); }
 }
 
@@ -13133,6 +13267,15 @@ function boothZoom(url) {
   el.onclick = function() { document.body.removeChild(el); };
   document.body.appendChild(el);
 }
+
+// Close tag dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const drop = document.getElementById('boothTagDropdown');
+  const inp  = document.getElementById('boothTagInput');
+  if (drop && inp && !inp.contains(e.target) && !drop.contains(e.target)) {
+    drop.style.display = 'none';
+  }
+});
 
 
 
