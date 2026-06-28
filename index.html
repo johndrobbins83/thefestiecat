@@ -432,7 +432,7 @@ body{
 /* ══════════════════════════════════════════════════
    SCHEDULE PAGE
 ══════════════════════════════════════════════════ */
-.controls-bar{display:flex;flex-direction:column;gap:0;margin-bottom:16px;
+.controls-bar{display:flex;flex-direction:column;gap:10px;margin-bottom:0;
   position:sticky;top:0;z-index:100;background:#000000;
   padding:12px 0 8px;
   border-bottom:1px solid rgba(245,200,66,0.1);}
@@ -448,6 +448,8 @@ body{
   .sched-pdf-btn{display:none !important;}
 }
 @media(min-width:768px){
+     .list-view-wrap, .block-view-wrap, #mySchedPage { padding-top:16px; }
+}
   .sched-search-row{display:flex !important;}
   #calExportSection .cal-btn[onclick="downloadSchedulePDF()"]{display:none !important;}
 }
@@ -492,6 +494,9 @@ body{
 .schedule-day{display:none;}.schedule-day.active{display:block;}
 .list-view-wrap{}.list-view-wrap.hidden{display:none;}
 .block-view-wrap{display:none;}.block-view-wrap.visible{display:block;}
+@media(min-width:768px){
+  .list-view-wrap, .block-view-wrap { margin-top: -8px; }
+}
 .stage-section{margin-bottom:16px;}
 .stage-section-header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:0;
   font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
