@@ -10138,6 +10138,14 @@ async function openDMThread(friendId, handle, color) {
   }
 
   currentDMFriendHandle = handle || 'User';
+
+  // Clear messages and cacheKey so we always get a fresh load
+  const msgs = document.getElementById('dmThreadMessages');
+  if (msgs) {
+    msgs.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</div>';
+    delete msgs.dataset.cacheKey;
+  }
+
   loadDMThread(friendId);
   startThreadPolling();
 }
@@ -10157,74 +10165,112 @@ async function loadDMThread(friendId) {
   const token = localStorage.getItem('ss_auth_token');
   try {
     const res  = await fetch(AUTH_URL+'/dm/'+friendId, { headers:{'Authorization':'Bearer '+token} });
-    if (!res.ok) { msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>'; return; }
+    if (!res.ok) {
+      // Only show error if no messages have ever loaded (don't wipe existing messages on network blip)
+      if (!msgs.dataset.cacheKey) msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>';
+      return;
+    }
     const data = await res.json();
     const messages = data.messages || [];
-    // Dedup: skip re-render if nothing changed (compare last msg id + count)
+
+    // Dedup: skip re-render if message count and last msg timestamp unchanged
     const lastMsg  = messages[messages.length - 1];
-    const cacheKey = messages.length + '|' + (lastMsg ? lastMsg.id||lastMsg.createdAt : '');
+    const cacheKey = messages.length + '|' + (lastMsg ? lastMsg.id || lastMsg.createdAt : '');
+    const isFirstLoad = !msgs.dataset.cacheKey;
     if (msgs.dataset.cacheKey === cacheKey) return; // nothing new
     msgs.dataset.cacheKey = cacheKey;
-    renderDMMessages(messages);
-    // Mark as read
+
+    renderDMMessages(messages, isFirstLoad);
+
+    // Mark as read (fire-and-forget)
     fetch(AUTH_URL+'/dm/'+friendId+'/read', { method:'POST', headers:{'Authorization':'Bearer '+token} }).catch(()=>{});
-    // Update unread badge
     pollDMUnread();
   } catch {
-    if (!msgs.dataset.cacheKey) msgs.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load messages</div>';
+    // Network error — preserve existing messages, don't wipe
   }
 }
 
-function renderDMMessages(messages) {
+function renderDMMessages(messages, isFirstLoad) {
   const msgs = document.getElementById('dmThreadMessages');
   if (!msgs) return;
-  if (!messages.length) {
+
+  if (!messages || !messages.length) {
     msgs.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet. Say hi! 👋</div>';
     return;
   }
-  // Only auto-scroll if user is already near the bottom (within 80px)
-  const atBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 80;
-  msgs.innerHTML = messages.map(m => {
-    const mine = m.fromId === currentUser?.id;
-    return `<div class="dm-msg ${mine?'mine':'theirs'}">
-      ${escapeHTML(m.text)}
-      <div class="dm-msg-time">${getTimeAgo(m.createdAt)}</div>
-    </div>`;
+
+  // Measure scroll position BEFORE replacing innerHTML
+  const atBottom = isFirstLoad || (msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 100);
+
+  msgs.innerHTML = messages.map(function(m) {
+    const mine = m.fromId === (currentUser && currentUser.id);
+    return '<div class="dm-msg ' + (mine ? 'mine' : 'theirs') + '">' +
+      escapeHTML(m.text || '') +
+      '<div class="dm-msg-time">' + getTimeAgo(m.createdAt) + '</div>' +
+    '</div>';
   }).join('');
+
+  // Scroll to bottom only if user was already there, or on first load
   if (atBottom) msgs.scrollTop = msgs.scrollHeight;
 }
 
-async function sendDM() {
-  const input = document.getElementById('dmThreadInput');
-  const text  = (input?.value||'').trim();
-  if (!text || !currentDMFriendId) return;
-  input.value = '';
+// Guard against double-sends
+let _dmSending = false;
 
-  // Optimistic render — show message immediately
+async function sendDM() {
+  if (_dmSending) return;
+  const input = document.getElementById('dmThreadInput');
+  const text  = (input ? input.value : '').trim();
+  if (!text || !currentDMFriendId) return;
+
+  _dmSending = true;
+  input.value = '';
+  input.disabled = true;
+
+  // Optimistic render — show message immediately in the UI
   const msgs = document.getElementById('dmThreadMessages');
   if (msgs) {
-    const noMsg = msgs.querySelector('[style*="No messages"]');
-    if (noMsg) noMsg.remove();
+    // Remove "No messages" placeholder if present
+    const placeholder = msgs.querySelector('div[style*="padding:32px"]');
+    if (placeholder) placeholder.remove();
+
     const bubble = document.createElement('div');
     bubble.className = 'dm-msg mine';
-    bubble.dataset.optimistic = '1';
-    bubble.innerHTML = escapeHTML(text) + '<div class="dm-msg-time">sending…</div>';
+    bubble.setAttribute('data-optimistic', '1');
+    bubble.innerHTML = escapeHTML(text) + '<div class="dm-msg-time" style="opacity:0.5;">sending…</div>';
     msgs.appendChild(bubble);
     msgs.scrollTop = msgs.scrollHeight;
-    // Clear dedup cache so next poll re-renders with real data
-    if (msgs.dataset.cacheKey) delete msgs.dataset.cacheKey;
+
+    // Clear dedup cache so next poll always re-renders with real server data
+    delete msgs.dataset.cacheKey;
   }
 
   const token = localStorage.getItem('ss_auth_token');
   try {
     const res = await fetch(AUTH_URL+'/dm/'+currentDMFriendId, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
       body: JSON.stringify({ text })
     });
-    if (res.ok) loadDMThread(currentDMFriendId);
-    else showToast('Could not send message');
-  } catch { showToast('Could not send message'); }
+    if (res.ok) {
+      // Small delay so the server has written before we fetch
+      setTimeout(function() { loadDMThread(currentDMFriendId); }, 150);
+    } else {
+      showToast('Could not send message');
+      // Restore text so user doesn't lose it
+      if (input) input.value = text;
+      // Remove optimistic bubble
+      if (msgs) { const ob = msgs.querySelector('[data-optimistic]'); if (ob) ob.remove(); }
+    }
+  } catch {
+    showToast('Could not send message');
+    if (input) input.value = text;
+    if (msgs) { const ob = msgs.querySelector('[data-optimistic]'); if (ob) ob.remove(); }
+  } finally {
+    _dmSending = false;
+    if (input) input.disabled = false;
+    if (input) input.focus();
+  }
 }
 
 // (declared at top of script)
