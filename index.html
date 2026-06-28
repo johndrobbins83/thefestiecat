@@ -2489,12 +2489,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           </div>
         </div>
         <div class="section-header" style="margin-top:20px;">
-          <div class="section-title">🎤 Featured Today</div>
+          <div class="section-title"> Featured Today</div>
           <span class="section-see-all" onclick="navigate('artists')">All artists →</span>
         </div>
         <div id="featuredArtists"></div>
         <div class="section-header" style="margin-top:20px;">
-          <div class="section-title">📍 Venue</div>
+          <div class="section-title"> Venue</div>
           <span class="section-see-all" onclick="navigate('map')">Full map →</span>
         </div>
         <div class="venue-card">
@@ -2604,7 +2604,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <!-- Share Schedule -->
     <div class="cal-export-section" id="shareSchedSection" style="display:none;">
-      <div class="cal-export-title">📤 Share My Lineup</div>
+      <div class="cal-export-title"> Share My Lineup</div>
       <div id="shareSchedFriendList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;max-height:180px;overflow-y:auto;"></div>
       <div style="display:flex;gap:8px;">
         <button class="cal-btn gcal" style="flex:1;" onclick="sendScheduleToFriend()">Send to Selected ✉</button>
@@ -2627,7 +2627,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="artist-controls" id="artistControls">
       <!-- Search + Sort -->
       <div style="display:flex;gap:8px;padding:8px 16px 4px;align-items:center;">
-        <div class="search-wrap" style="flex:1;"><span class="search-icon">🔍</span><input type="text" class="search-input" id="artistSearchInput" placeholder="Search artists…" oninput="renderArtists()"></div>
+        <div class="search-wrap" style="flex:1;"><span class="search-icon"></span><input type="text" class="search-input" id="artistSearchInput" placeholder="Search artists…" oninput="renderArtists()"></div>
         <select id="artistSortSelect" onchange="renderArtists()" style="flex-shrink:0;width:80px;padding:8px 6px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
           <option value="alpha">A–Z</option>
           <option value="za">Z–A</option>
@@ -2646,7 +2646,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <option value="all">All Days</option>
           <option value="fri">Fri 7/17</option>
           <option value="sat">Sat 7/18</option>
-          <option value="saved">⭐ Saved</option>
+          <option value="saved"> Saved</option>
         </select>
       </div>
     </div>
@@ -2671,7 +2671,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2962.7!2d-72.0898!3d42.1167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e6a3a322e1a0c1%3A0xe6fcfc2b19cf0fd6!2sSturbridge%20Host%20Hotel%20%26%20Conference%20Center!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Sturbridge Host Hotel location map"></iframe>
       <a class="map-open-btn" href="https://maps.google.com/?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA+01566" target="_blank" rel="noopener">↗ Open in Maps</a>
     </div>
-    <div class="map-section-title">🧭 Get Directions</div>
+    <div class="map-section-title"> Get Directions</div>
     <div class="directions-grid">
       <a class="dir-btn google" id="mapDirGoogle" href="#" target="_blank" rel="noopener">
         <div class="dir-icon"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M24 4C16.27 4 10 10.27 10 18c0 10.5 14 26 14 26s14-15.5 14-26c0-7.73-6.27-14-14-14z" fill="url(#gPin2)"/><defs><linearGradient id="gPin2" x1="10" y1="4" x2="38" y2="44" gradientUnits="userSpaceOnUse"><stop stop-color="#4285F4"/><stop offset="1" stop-color="#34A853"/></linearGradient></defs><circle cx="24" cy="18" r="5" fill="white"/></svg></div>
@@ -2690,7 +2690,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div><div class="dir-label">Uber</div><div class="dir-sub">Request a ride</div></div>
       </a>
     </div>
-    <div class="map-section-title">🏨 Amenities</div>
+    <div class="map-section-title"> Amenities</div>
     <div class="hotel-chips">
       <div class="info-chip">Indoor Pool</div>
       <div class="info-chip">Hot Tub</div>
@@ -2703,7 +2703,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <div class="hotel-map-wrap">
       <div class="hotel-map-header">
-        <div><div class="hotel-map-title">🏨 Hotel Grounds</div><div class="hotel-map-sub" style="font-size:12px;color:var(--text-muted);" id="hotelMapSub">Tap a pin to see details</div></div>
+        <div><div class="hotel-map-title"> Hotel Grounds</div><div class="hotel-map-sub" style="font-size:12px;color:var(--text-muted);" id="hotelMapSub">Tap a pin to see details</div></div>
         <div id="hotelMapAdminBtn" style="display:none;">
           <input type="file" id="hotelMapFileInput" accept="image/*,application/pdf" style="display:none;" onchange="uploadHotelMap(this)">
           <button class="dash-btn" onclick="document.getElementById('hotelMapFileInput').click()" style="font-size:11px;padding:6px 10px;">📎 Upload Map</button>
@@ -2768,15 +2768,15 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <circle cx="190" cy="80" r="9" fill="#e8941a"/>
             <text x="190" y="84" font-size="8" fill="#020b1a" text-anchor="middle" font-weight="900">OAS</text>
           </g>
-          <g class="map-pin" data-name="🏊 Indoor Pool & Hot Tub" data-sub="Heated pool · Open daily" style="cursor:pointer" onclick="showMapTooltip(this,event)">
+          <g class="map-pin" data-name=" Indoor Pool & Hot Tub" data-sub="Heated pool · Open daily" style="cursor:pointer" onclick="showMapTooltip(this,event)">
             <circle cx="125" cy="345" r="9" fill="#00d4c8"/>
             <text x="125" y="349" font-size="9" fill="#020b1a" text-anchor="middle" font-weight="900">P</text>
           </g>
-          <g class="map-pin" data-name="🍽️ Greenhouse Restaurant" data-sub="Full service · Open all weekend" style="cursor:pointer" onclick="showMapTooltip(this,event)">
+          <g class="map-pin" data-name=" Greenhouse Restaurant" data-sub="Full service · Open all weekend" style="cursor:pointer" onclick="showMapTooltip(this,event)">
             <circle cx="340" cy="65" r="9" fill="#ff4d8d"/>
             <text x="340" y="69" font-size="9" fill="#fff" text-anchor="middle" font-weight="900">R</text>
           </g>
-          <g class="map-pin" data-name="🍺 Oxhead Tavern" data-sub="Bar & casual food · Late night" style="cursor:pointer" onclick="showMapTooltip(this,event)">
+          <g class="map-pin" data-name=" Oxhead Tavern" data-sub="Bar & casual food · Late night" style="cursor:pointer" onclick="showMapTooltip(this,event)">
             <circle cx="340" cy="145" r="9" fill="#ff6b1a"/>
             <text x="340" y="149" font-size="9" fill="#fff" text-anchor="middle" font-weight="900">B</text>
           </g>
@@ -2889,8 +2889,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           Behind the Dream is a short documentary that explores the energy, history, and community behind Mutiny Events rave Tropical Dreams, at the Sturbridge Host Hotel in Massachusetts. Inspired by the spirit of the late-90s and early-2000s rave era, Tropical Dreams is where music, creativity, and connection come together, creating a world where people can express themselves and dance to amazing music. Through interviews, event footage, and personal stories, Behind the Dream captures the heart of the thriving New England underground dance community and the passion that keeps it alive.
         </div>
         <div style="margin-top:14px;font-size:12px;color:rgba(122,184,224,0.55);line-height:2;">
-          🎥 Filmed and Edited by: Jonathan Santarelli<br>
-          🎬 Produced by: Three 4ths Media<br>
+           Filmed and Edited by: Jonathan Santarelli<br>
+           Produced by: Three 4ths Media<br>
           <br>
           <span style="color:rgba(122,184,224,0.35);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Cameras</span><br>
           Sony FX6 &nbsp;·&nbsp; A7Siii<br>
@@ -3018,7 +3018,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div id="adminTab-staffedit" style="display:none;">
       <div class="dash-section">
         <div class="dash-section-header">
-          <div class="dash-section-title">👷 Staff Dashboard Editor</div>
+          <div class="dash-section-title"> Staff Dashboard Editor</div>
           <button class="dash-btn primary" onclick="saveStaffContent()">💾 Save All</button>
         </div>
         <div class="dash-section-body" style="padding:0;">
@@ -3026,8 +3026,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <div style="display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.07);flex-wrap:wrap;">
             <button class="dash-btn active" id="staffEditTabAnn"   onclick="switchStaffEditTab('announcements',this)">📢 Announcements</button>
             <button class="dash-btn"        id="staffEditTabCon"   onclick="switchStaffEditTab('contacts',this)">📞 Contacts</button>
-            <button class="dash-btn"        id="staffEditTabTasks" onclick="switchStaffEditTab('tasks',this)">✅ Role Tasks</button>
-            <button class="dash-btn"        id="staffEditTabShifts" onclick="switchStaffEditTab('shifts',this)">🕐 Role Shifts</button>
+            <button class="dash-btn"        id="staffEditTabTasks" onclick="switchStaffEditTab('tasks',this)"> Role Tasks</button>
+            <button class="dash-btn"        id="staffEditTabShifts" onclick="switchStaffEditTab('shifts',this)"> Role Shifts</button>
           </div>
           <div id="staffEditBody" style="padding:14px;"></div>
         </div>
@@ -3190,14 +3190,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
     <!-- Tabs -->
     <select class="dash-tab-select" onchange="switchStaffTab(this.value, null); this.blur();">
-      <option value="tasks">✅ My Tasks</option>
-      <option value="schedule">🕐 Shift Schedule</option>
+      <option value="tasks"> My Tasks</option>
+      <option value="schedule"> Shift Schedule</option>
       <option value="announcements">📢 Announcements</option>
       <option value="contacts">📞 Contacts</option>
     </select>
     <div class="dash-tabs">
-      <button class="dash-tab active" onclick="switchStaffTab('tasks',this)">✅ My Tasks</button>
-      <button class="dash-tab" onclick="switchStaffTab('schedule',this)">🕐 Shift Schedule</button>
+      <button class="dash-tab active" onclick="switchStaffTab('tasks',this)"> My Tasks</button>
+      <button class="dash-tab" onclick="switchStaffTab('schedule',this)"> Shift Schedule</button>
       <button class="dash-tab" onclick="switchStaffTab('announcements',this)">📢 Announcements</button>
       <button class="dash-tab" onclick="switchStaffTab('contacts',this)">📞 Contacts</button>
     </div>
@@ -3272,11 +3272,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <option value="">Select location…</option>
         <option value="DNB Stage (BP²)">DNB Stage (BP²)</option>
         <option value="Oasis Stage">Oasis Stage</option>
-        <option value="Pool">🏊 Pool</option>
-        <option value="Beach">🏖️ Beach</option>
-        <option value="Hotel Lobby">🏨 Hotel Lobby</option>
-        <option value="Greenhouse Restaurant">🍽️ Greenhouse Restaurant</option>
-        <option value="Oxhead Tavern">🍺 Oxhead Tavern</option>
+        <option value="Pool"> Pool</option>
+        <option value="Beach"> Beach</option>
+        <option value="Hotel Lobby"> Hotel Lobby</option>
+        <option value="Greenhouse Restaurant"> Greenhouse Restaurant</option>
+        <option value="Oxhead Tavern"> Oxhead Tavern</option>
         <option value="Parking Lot">🅿️ Parking Lot</option>
       </select>
       <div id="feedPhotoPreviewWrap" style="display:none;margin-top:10px;position:relative;">
@@ -3312,13 +3312,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <!-- Friends -->
     <div id="friendsSection" style="margin-bottom:20px;">
-      <div class="section-header"><div class="section-title">🤝 My Crew</div></div>
+      <div class="section-header"><div class="section-title"> My Crew</div></div>
       <div id="friendsList"></div>
     </div>
     <!-- Search -->
-    <div class="section-title" style="margin-bottom:10px;">🔍 Find Festies</div>
+    <div class="section-title" style="margin-bottom:10px;"> Find Festies</div>
     <div class="people-search-wrap">
-      <span class="people-search-icon">🔍</span>
+      <span class="people-search-icon"></span>
       <input type="text" class="people-search-input" id="peopleSearchInput"
         placeholder="Search by @handle or email…" oninput="searchPeople(this.value)" autocomplete="off">
     </div>
@@ -3335,7 +3335,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <div class="inbox-wrap">
         <!-- Staff Contacts (employees/admin only) -->
         <div id="staffContactsSection" style="display:none;">
-          <div class="staff-section-label">👷 Staff</div>
+          <div class="staff-section-label"> Staff</div>
           <div id="staffContactsList"></div>
         </div>
         <!-- DM Conversations -->
@@ -3438,13 +3438,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <option value="">— Select location —</option>
           <option value="DNB Stage (BP²)">DNB Stage (BP²)</option>
           <option value="Oasis Stage">Oasis Stage</option>
-          <option value="Hotel Lobby">🏨 Hotel Lobby</option>
-          <option value="Poolside">🏊 Poolside / Beach</option>
+          <option value="Hotel Lobby"> Hotel Lobby</option>
+          <option value="Poolside"> Poolside / Beach</option>
           <option value="Parking Lot">🅿️ Parking Lot</option>
-          <option value="Hotel Room">🛏️ Hotel Room</option>
-          <option value="Corridor / Hallway">🚪 Corridor / Hallway</option>
-          <option value="Outside / Grounds">🌿 Outside / Grounds</option>
-          <option value="Other">📌 Other</option>
+          <option value="Hotel Room"> Hotel Room</option>
+          <option value="Corridor / Hallway"> Corridor / Hallway</option>
+          <option value="Outside / Grounds"> Outside / Grounds</option>
+          <option value="Other"> Other</option>
         </select>
       </div>
 
@@ -3520,7 +3520,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <div class="modal-divider"></div>
     <div class="modal-section" id="modalStreamingSection">
-      <div class="modal-section-title">🎵 Listen</div>
+      <div class="modal-section-title"> Listen</div>
       <div class="social-row" id="modalStreamingLinks"></div>
     </div>
     <div class="modal-divider"></div>
@@ -3969,7 +3969,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
               text-transform:uppercase;letter-spacing:0.5px;transition:all .15s;"
               id="editPhotoLabel" onmouseover="this.style.background='rgba(245,200,66,0.05)'"
               onmouseout="this.style.background='transparent'">
-              📷 Choose Photo
+               Choose Photo
               <input type="file" id="editPhotoFile" accept="image/*"
                 style="display:none;" onchange="previewArtistPhoto(this)">
             </label>
