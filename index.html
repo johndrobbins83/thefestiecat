@@ -2547,7 +2547,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="stats-row">
           <div class="stat-card"><div class="stat-num">47+</div><div class="stat-label">Artists</div></div>
           <div class="stat-card"><div class="stat-num">3</div><div class="stat-label">Days</div></div>
-          <div class="stat-card"><div class="stat-num">4</div><div class="stat-label">Stages</div></div>
+          <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">Stages</div></div>
         </div>
         <div class="section-header">
           <div class="section-title">My Schedule</div>
@@ -8184,7 +8184,7 @@ function buildUserTableHTML(users) {
     var roleColor = u.role==='admin' ? 'var(--gold-bright)' : u.role==='employee' ? '#c084fc' : 'var(--teal-glow)';
     var roleLabel = u.role==='admin' ? 'Admin' : u.role==='employee' ? 'Staff' : 'Festie';
     var initials  = (u.name||u.handle||'?').charAt(0).toUpperCase();
-    var avatarBg  = u.avatarColor || '#9b3dff';
+    var avatarBg  = u.profilePic ? 'transparent' : (u.avatarColor || '#9b3dff');
 
     var roleSelect = u.isMaster
       ? '<div style="padding:7px 10px;background:rgba(154,163,176,0.06);border:1px solid rgba(154,163,176,0.2);color:#9aa3b0;font-size:12px;font-weight:700;flex:1;display:flex;align-items:center;gap:6px;">👑 Master Admin <span style="font-size:9px;opacity:0.5;margin-left:auto;">LOCKED</span></div>'
@@ -9990,7 +9990,7 @@ async function doSearchPeople(query) {
   results.innerHTML = data.users.map(u =>
     `<div class="person-card">
       <div style="position:relative;flex-shrink:0;">
-        <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
+        <div class="person-avatar" style="background:${u.profilePic?'transparent':u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
         ${roleDot(u.role)}
       </div>
       <div class="person-info">
@@ -10032,7 +10032,7 @@ async function loadFriendRequests() {
     updateDMBadge(requests.length);
     listEl.innerHTML = requests.map(u =>
       `<div class="request-card">
-        <div class="person-avatar" style="background:${u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
+        <div class="person-avatar" style="background:${u.profilePic?'transparent':u.avatarColor||'#9b3dff'};">${u.profilePic?'<img src="'+u.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">':((u.handle?.[0]||'?').toUpperCase())}</div>
         <div class="person-info" style="flex:1;">
           <div class="person-handle">@${u.handle}</div>
           <div class="person-bio">Wants to connect with you</div>
@@ -10579,7 +10579,7 @@ function updateNavAvatar() {
   if (!avatar || !currentUser) return;
   if (currentUser.profilePic) {
     avatar.innerHTML = '<img src="' + currentUser.profilePic + '?v=' + Date.now() + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.remove()">';
-    avatar.style.background = currentUser.avatarColor || '#9b3dff';
+    avatar.style.background = 'transparent'; // let PNG transparency show
   } else {
     avatar.innerHTML = (currentUser.handle?.[0] || currentUser.name?.[0] || '?').toUpperCase();
     avatar.style.background = currentUser.avatarColor || '#9b3dff';
@@ -10672,7 +10672,7 @@ async function initProfile() {
     '<div id="editProfileStatus" style="font-size:12px;margin-top:8px;color:var(--text-muted);"></div></div></div>' : '';
   wrap.innerHTML =
     '<div class="profile-hero"><div class="profile-hero-banner">'+(user.bannerPic?'<img src="'+user.bannerPic+'?v='+Date.now()+'" onerror="this.style.display=\'none\'">':'')+'<div class="profile-hero-banner-pattern"></div></div>' +
-    '<div class="profile-avatar-large" style="background:'+(user.avatarColor||'#9b3dff')+';"'+(isOwnProfile?' onclick="openProfilePicChange()" title="Change photo"':'')+'>'+avatarHTML+(isOwnProfile?'<div class="profile-avatar-edit-hint">&#x270F;</div>':'')+' </div></div>' +
+    '<div class="profile-avatar-large" style="background:'+(user.profilePic?'transparent':user.avatarColor||'#9b3dff')+';"'+(isOwnProfile?' onclick="openProfilePicChange()" title="Change photo"':'')+'>'+avatarHTML+(isOwnProfile?'<div class="profile-avatar-edit-hint">&#x270F;</div>':'')+' </div></div>' +
     '<div class="profile-info"><div class="profile-handle">@'+(user.handle||'unknown')+'</div>' +
     (user.hometown?'<div class="profile-hometown">&#x1F4CD; '+escapeHTML(user.hometown)+'</div>':'')+
     (user.bio?'<div class="profile-bio">'+escapeHTML(user.bio)+'</div>':(isOwnProfile?'<div class="profile-bio" style="opacity:0.4;font-style:italic;">No bio yet</div>':''))+
