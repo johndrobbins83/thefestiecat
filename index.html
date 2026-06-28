@@ -2172,7 +2172,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .more-overlay.open .more-backdrop { opacity:1; }
 .more-panel { position:absolute; background:linear-gradient(160deg,#0a2540 0%,#020b1a 100%); border:1px solid rgba(245,200,66,0.25); border-radius:18px; padding:16px; width:280px; transform:translateY(-8px); opacity:0; transition:transform 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease; box-shadow:0 16px 48px rgba(0,0,0,0.6); z-index:1; }
 .more-overlay.open .more-panel { transform:translateY(0); opacity:1; }
-@media(max-width:767px) { .more-panel { position:fixed; bottom:80px; left:12px; right:12px; width:auto; border-radius:18px; transform:translateY(20px); } .more-overlay.open .more-panel { transform:translateY(0); } }
+@media(max-width:767px) { .more-panel { position:fixed; top:50%; left:12px; right:12px; width:auto; border-radius:18px; transform:translateY(calc(-50% + 20px)); max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px); overflow-y:auto; } .more-overlay.open .more-panel { transform:translateY(-50%); } }
 .more-panel-header { font-size:11px; font-weight:800; color:var(--text-muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.07); }
 .more-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .more-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:16px 10px; border-radius:14px; cursor:pointer; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); transition:all 0.15s; text-decoration:none; }
@@ -2415,7 +2415,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigate('schedule');setTimeout(()=>{const btn=document.getElementById('mySchedTab');if(btn)switchDay('mine',btn);},150);">📅 My Schedule</button>
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigate('people');">👥 People &amp; Feed</button>
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigateToProfile(null);">👤 My Profile</button>
-        <button class="user-menu-item" id="menuEnablePush" style="display:none;color:var(--teal-glow);" onclick="event.stopPropagation();closeUserMenu();enablePushFromMenu();">🔔 Enable Push Notifications</button>
         <button class="user-menu-item nav-admin-only" style="color:#f5c842;display:none;" onclick="event.stopPropagation();closeUserMenu();navigate('admin');">⚙ Admin Dashboard</button>
         <button class="user-menu-item nav-staff-only" style="color:#c084fc;display:none;" onclick="event.stopPropagation();closeUserMenu();navigate('staff');">📋 Staff Dashboard</button>
         <button class="user-menu-item logout" onclick="event.stopPropagation();closeUserMenu();authLogout();">Sign out</button>
@@ -2629,7 +2628,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <!-- Search + Sort -->
       <div style="display:flex;gap:8px;padding:8px 16px 4px;align-items:center;">
         <div class="search-wrap" style="flex:1;"><span class="search-icon"></span><input type="text" class="search-input" id="artistSearchInput" placeholder="Search artists…" oninput="renderArtists()"></div>
-        <select id="artistSortSelect" onchange="renderArtists()" style="flex-shrink:0;width:80px;padding:8px 6px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+        <select id="artistSortSelect" onchange="renderArtists()" style="flex-shrink:0;width:80px;padding:10px 6px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;height:42px;box-sizing:border-box;">
           <option value="alpha">A–Z</option>
           <option value="za">Z–A</option>
         </select>
@@ -4601,13 +4600,16 @@ function navigate(page) {
   if (authOverlay && authOverlay.classList.contains('open')) {
     closeAuth();
   }
-  // Close all popouts when nav is tapped
+  // Close all popouts when nav is tapped (before early return so games always close)
   closeAllPopouts();
   // Always re-render featured artists when going home so they refresh
   if (page === 'home' && typeof renderFeaturedArtists === 'function') {
     setTimeout(renderFeaturedArtists, 50);
   }
-  if (currentPage === page) return;
+  if (currentPage === page) {
+    // Even on same page, ensure overlays are closed
+    return;
+  }
   const prev = document.getElementById('page-' + currentPage);
   const next = document.getElementById('page-' + page);
   if (!next) return;
@@ -6088,26 +6090,6 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
 
-function updatePushMenuButton() {
-  const btn = document.getElementById('menuEnablePush');
-  if (!btn) return;
-  const supported = ('serviceWorker' in navigator) && ('PushManager' in window);
-  if (!supported || Notification.permission === 'granted') {
-    btn.style.display = 'none';
-  } else {
-    btn.style.display = '';
-  }
-}
-
-async function enablePushFromMenu() {
-  if (!('Notification' in window)) return;
-  const perm = await Notification.requestPermission();
-  if (perm === 'granted') {
-    await subscribeToPush();
-  }
-  updatePushMenuButton();
-}
-
 async function subscribeToPush() {
   try {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
@@ -6670,7 +6652,6 @@ function authLogout() {
 
 // ── User menu ──────────────────────────────────────────────
 function toggleUserMenu(e) {
-  updatePushMenuButton();
   if (e) e.stopPropagation();
   document.getElementById('userMenu').classList.toggle('open');
 }
