@@ -2413,7 +2413,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
     <div style="position:relative;" id="bellWrap" class="nav-signed-in-only">
       <div class="nav-bell" id="navBell" onclick="toggleNotifDrawer()" style="cursor:pointer;">
-        <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg>
+        <svg viewBox="0 0 16 16" width="20" height="20" fill="var(--gold-bright)" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg>
         <div class="notif-dot" id="notifDot" style="position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;display:none;"></div>
         <div class="notif-badge" id="notifCount" style="display:none;position:absolute;top:-4px;right:-4px;"></div>
         <div class="notif-count" id="notifCount">0</div>
@@ -5372,7 +5372,7 @@ async function toggleReminder(key) {
       var remindAt=new Date(dateStr+'T'+String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0')+':00-04:00').getTime()-10*60*1000;
       if (remindAt < Date.now()) { showToast('⏰ That set has already passed!'); delete reminders[key]; saveReminders(reminders); return; }
     }
-    showToast('<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Reminder set — you\'ll be notified 10 min before ' + key + '!');
+    showToast('Reminder set — you\'ll be notified 10 min before ' + key + '!');
   }
   // Refresh all bell buttons in DOM
   document.querySelectorAll('[data-rkey="' + key + '"]').forEach(function(btn) {
