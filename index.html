@@ -1843,10 +1843,9 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 /* DM thread */
 .dm-thread-overlay{position:fixed;inset:0;z-index:15000;background:#0a0a0a;
-  display:none;flex-direction:column;
-  /* Use dvh so the overlay shrinks when the mobile keyboard opens */
+  display:none;}
+.dm-thread-overlay.open{display:flex;flex-direction:column;
   height:100dvh;overflow:hidden;}
-.dm-thread-overlay.open{display:flex;}
 @media(min-width:768px){
   .dm-thread-overlay.open{
     inset:auto;bottom:0;right:24px;width:360px;height:520px;
