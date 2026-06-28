@@ -4511,8 +4511,8 @@ let lastAlertId = null;
 let alertPollInterval = null;
 let cachedTasks = [];
 let cachedShifts = [];
-const STAFF_ROLES = ['security','stage-crew','ticketing','engineers','management'];
-const STAFF_ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management' };
+const STAFF_ROLES = ['security','stage-crew','ticketing','engineers','management','transportation'];
+const STAFF_ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management', transportation:'Transportation' };
 const STAFF_TASK_KEY = 'ss_staff_tasks_done';
 let staffDoneTasks = new Set();
 let staffEditSubTab = 'announcements';
@@ -4529,11 +4529,11 @@ let masterTypeFilter = 'all';
 const ALERT_DISMISSED_KEY = 'ss_dismissed_alerts';
 const ALERT_ICONS = { warning:'⚠️', emergency:'🚨', info:'ℹ️' };
 const PERSONAL_BLOCKS_KEY = 'ss_personal_blocks_v1';
-const ROLES = ['security','stage-crew','ticketing','engineers','management'];
-const ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management' };
+const ROLES = ['security','stage-crew','ticketing','engineers','management','transportation'];
+const ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management', transportation:'Transportation' };
 const DAYS = ['Fri','Sat','Sun'];
 const DAY_LABELS = {'Fri':'Friday Jul 17','Sat':'Saturday Jul 18','Sun':'Sunday Jul 19'};
-const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Oasis Stage Stage','Oasis Stage Backstage','Beach Stage','Beach Backstage',"Davey Jones Locker",'Locals Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Parking Lot','Medical Station','General Grounds'];
+const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Oasis Stage Stage','Oasis Stage Backstage','Beach Stage','Beach Backstage',"Davey Jones Locker",'Locals Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Hotel','Airport','Parking Lot','Medical Station','General Grounds'];
 let taskAssignMode = 'role';
 let AVATAR_COLORS = [];
 let selectedAvatarColor = '#9b3dff';
@@ -9054,9 +9054,9 @@ function buildCreateShiftForm(containerId) {
     // Start/End time row
     '<div class="form-row">' +
       '<div class="form-field"><label class="form-label">Start Time</label>' +
-        '<input class="form-input" id="'+containerId+'-shiftStart" type="time" value="18:00"></div>' +
+        '<select class="form-select" id="'+containerId+'-shiftStart"><option value=\"08:00\">8:00 AM</option><option value=\"08:30\">8:30 AM</option><option value=\"09:00\">9:00 AM</option><option value=\"09:30\">9:30 AM</option><option value=\"10:00\">10:00 AM</option><option value=\"10:30\">10:30 AM</option><option value=\"11:00\">11:00 AM</option><option value=\"11:30\">11:30 AM</option><option value=\"12:00\">12:00 PM</option><option value=\"12:30\">12:30 PM</option><option value=\"13:00\">1:00 PM</option><option value=\"13:30\">1:30 PM</option><option value=\"14:00\">2:00 PM</option><option value=\"14:30\">2:30 PM</option><option value=\"15:00\">3:00 PM</option><option value=\"15:30\">3:30 PM</option><option value=\"16:00\">4:00 PM</option><option value=\"16:30\">4:30 PM</option><option value=\"17:00\">5:00 PM</option><option value=\"17:30\">5:30 PM</option><option value=\"18:00\">6:00 PM</option><option value=\"18:30\">6:30 PM</option><option value=\"19:00\">7:00 PM</option><option value=\"19:30\">7:30 PM</option><option value=\"20:00\">8:00 PM</option><option value=\"20:30\">8:30 PM</option><option value=\"21:00\">9:00 PM</option><option value=\"21:30\">9:30 PM</option><option value=\"22:00\">10:00 PM</option><option value=\"22:30\">10:30 PM</option><option value=\"23:00\">11:00 PM</option><option value=\"23:30\">11:30 PM</option><option value=\"00:00\">12:00 AM</option><option value=\"00:30\">12:30 AM</option><option value=\"01:00\">1:00 AM</option><option value=\"01:30\">1:30 AM</option><option value=\"02:00\">2:00 AM</option><option value=\"02:30\">2:30 AM</option><option value=\"03:00\">3:00 AM</option><option value=\"03:30\">3:30 AM</option><option value=\"04:00\">4:00 AM</option><option value=\"04:30\">4:30 AM</option><option value=\"05:00\">5:00 AM</option><option value=\"05:30\">5:30 AM</option><option value=\"06:00\">6:00 AM</option><option value=\"06:30\">6:30 AM</option><option value=\"07:00\">7:00 AM</option><option value=\"07:30\">7:30 AM</option></select></div>' +
       '<div class="form-field"><label class="form-label">End Time</label>' +
-        '<input class="form-input" id="'+containerId+'-shiftEnd" type="time" value="02:00"></div>' +
+        '<select class="form-select" id="'+containerId+'-shiftEnd"><option value=\"08:00\">8:00 AM</option><option value=\"08:30\">8:30 AM</option><option value=\"09:00\">9:00 AM</option><option value=\"09:30\">9:30 AM</option><option value=\"10:00\">10:00 AM</option><option value=\"10:30\">10:30 AM</option><option value=\"11:00\">11:00 AM</option><option value=\"11:30\">11:30 AM</option><option value=\"12:00\">12:00 PM</option><option value=\"12:30\">12:30 PM</option><option value=\"13:00\">1:00 PM</option><option value=\"13:30\">1:30 PM</option><option value=\"14:00\">2:00 PM</option><option value=\"14:30\">2:30 PM</option><option value=\"15:00\">3:00 PM</option><option value=\"15:30\">3:30 PM</option><option value=\"16:00\">4:00 PM</option><option value=\"16:30\">4:30 PM</option><option value=\"17:00\">5:00 PM</option><option value=\"17:30\">5:30 PM</option><option value=\"18:00\">6:00 PM</option><option value=\"18:30\">6:30 PM</option><option value=\"19:00\">7:00 PM</option><option value=\"19:30\">7:30 PM</option><option value=\"20:00\">8:00 PM</option><option value=\"20:30\">8:30 PM</option><option value=\"21:00\">9:00 PM</option><option value=\"21:30\">9:30 PM</option><option value=\"22:00\">10:00 PM</option><option value=\"22:30\">10:30 PM</option><option value=\"23:00\">11:00 PM</option><option value=\"23:30\">11:30 PM</option><option value=\"00:00\">12:00 AM</option><option value=\"00:30\">12:30 AM</option><option value=\"01:00\">1:00 AM</option><option value=\"01:30\">1:30 AM</option><option value=\"02:00\">2:00 AM</option><option value=\"02:30\">2:30 AM</option><option value=\"03:00\">3:00 AM</option><option value=\"03:30\">3:30 AM</option><option value=\"04:00\">4:00 AM</option><option value=\"04:30\">4:30 AM</option><option value=\"05:00\">5:00 AM</option><option value=\"05:30\">5:30 AM</option><option value=\"06:00\">6:00 AM</option><option value=\"06:30\">6:30 AM</option><option value=\"07:00\">7:00 AM</option><option value=\"07:30\">7:30 AM</option></select></div>' +
     '</div>' +
     // Location + Role row
     '<div class="form-row">' +
@@ -9083,7 +9083,14 @@ function buildCreateShiftForm(containerId) {
 
 function showCreateShift(containerId) {
   const f = document.getElementById(containerId+'-shiftform');
-  if (f) { f.style.display='block'; f.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+  if (!f) return;
+  // Set sensible defaults each time the form is opened
+  const startSel = document.getElementById(containerId+'-shiftStart');
+  const endSel   = document.getElementById(containerId+'-shiftEnd');
+  if (startSel) startSel.value = '18:00';
+  if (endSel)   endSel.value   = '02:00';
+  f.style.display = 'block';
+  f.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 function hideShiftForm(containerId) {
   const f = document.getElementById(containerId+'-shiftform');
@@ -9128,19 +9135,72 @@ async function submitCreateShift(containerId) {
 }
 
 async function editShift(shiftId, containerId) {
-  // Find the shift in cachedShifts
   const shift = (cachedShifts || []).find(s => s.id === shiftId);
   if (!shift) { showToast('Shift not found'); return; }
 
-  // Build a simple edit modal using prompt-style inputs
-  const title     = prompt('Shift title:', shift.title || '');
-  if (title === null) return; // cancelled
-  const startTime = prompt('Start time (HH:MM):', shift.startTime || '');
-  if (startTime === null) return;
-  const endTime   = prompt('End time (HH:MM):', shift.endTime || '');
-  if (endTime === null) return;
-  const notes     = prompt('Notes:', shift.notes || '');
-  if (notes === null) return;
+  // Build time options
+  const timeVals = [];
+  for (let h = 8; h < 32; h++) {
+    for (const m of [0, 30]) {
+      const hh = h % 24;
+      const val = String(hh).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+      const h12 = hh % 12 || 12;
+      const ampm = hh < 12 ? 'AM' : 'PM';
+      timeVals.push({ val, label: h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm });
+    }
+  }
+  const timeOptHtml = timeVals.map(t => `<option value="${t.val}">${t.label}</option>`).join('');
+
+  // Inject a modal overlay
+  const existing = document.getElementById('editShiftModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'editShiftModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="background:#0d1b2a;border:1px solid rgba(245,200,66,0.25);border-radius:12px;padding:20px;width:100%;max-width:440px;">
+      <div style="font-size:13px;font-weight:800;color:var(--gold-bright);letter-spacing:1px;margin-bottom:14px;">EDIT SHIFT</div>
+      <div class="form-field" style="margin-bottom:10px;">
+        <label class="form-label">Title</label>
+        <input class="form-input" id="esTitle" value="${(shift.title||'').replace(/"/g,'&quot;')}">
+      </div>
+      <div class="form-row" style="margin-bottom:10px;">
+        <div class="form-field">
+          <label class="form-label">Start Time</label>
+          <select class="form-select" id="esStart">${timeOptHtml}</select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">End Time</label>
+          <select class="form-select" id="esEnd">${timeOptHtml}</select>
+        </div>
+      </div>
+      <div class="form-field" style="margin-bottom:14px;">
+        <label class="form-label">Notes</label>
+        <input class="form-input" id="esNotes" value="${(shift.notes||'').replace(/"/g,'&quot;')}">
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="dash-btn primary" style="flex:1;" onclick="submitEditShift('${shiftId}','${containerId}')">Save Changes</button>
+        <button class="dash-btn" onclick="document.getElementById('editShiftModal').remove()">Cancel</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  // Set selected times
+  const startSel = document.getElementById('esStart');
+  const endSel   = document.getElementById('esEnd');
+  if (startSel && shift.startTime) startSel.value = shift.startTime;
+  if (endSel   && shift.endTime)   endSel.value   = shift.endTime;
+  // Close on backdrop click
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+}
+
+async function submitEditShift(shiftId, containerId) {
+  const title     = document.getElementById('esTitle')?.value.trim();
+  const startTime = document.getElementById('esStart')?.value;
+  const endTime   = document.getElementById('esEnd')?.value;
+  const notes     = document.getElementById('esNotes')?.value.trim();
+  const shift     = (cachedShifts || []).find(s => s.id === shiftId);
+  if (!shift) return;
+  document.getElementById('editShiftModal')?.remove();
 
   const token = localStorage.getItem('ss_auth_token');
   try {
@@ -10575,8 +10635,11 @@ async function loadMyShifts() {
           (s.location?'<div style="font-size:12px;color:var(--text-muted);">'+s.location+'</div>':'') +
           (s.notes?'<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">'+s.notes+'</div>':'') +
         '</div>' +
-        (myShift && !confirmed ? '<button class="shift-confirm-btn" onclick="confirmShift(\''+s.id+'\',this)">Confirm</button>' : '') +
-        (confirmed ? '<div class="shift-confirmed-badge">&#x2713; Confirmed</div>' : '') +
+        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto;">' +
+          (myShift && !confirmed ? '<button class="shift-confirm-btn" onclick="confirmShift(\''+s.id+'\',this)">Confirm</button>' : '') +
+          (confirmed ? '<div class="shift-confirmed-badge">&#x2713; Confirmed</div>' : '') +
+          '<button onclick="removeShift(\''+s.id+'\')" style="padding:4px 10px;background:transparent;border:1px solid rgba(255,77,141,0.4);color:var(--pink-coral);font-family:\'Poppins\',sans-serif;font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">✕ Remove</button>' +
+        '</div>' +
       '</div>';
     }).join('');
   } catch(e) {
@@ -10592,12 +10655,29 @@ async function confirmShift(shiftId, btn) {
       method:'POST', headers:{'Authorization':'Bearer '+token}
     });
     if (res.ok) {
-      btn.parentElement.innerHTML = btn.parentElement.innerHTML.replace(btn.outerHTML, '<div class="shift-confirmed-badge">&#x2713; Confirmed</div>');
-      btn.parentElement.classList.remove('unconfirmed');
-      btn.parentElement.classList.add('confirmed');
+      btn.closest('.shift-card').classList.remove('unconfirmed');
+      btn.closest('.shift-card').classList.add('confirmed');
+      btn.remove();
       showToast('Shift confirmed!');
+      loadMyShifts();
     }
   } catch {}
+}
+
+async function removeShift(shiftId) {
+  const token = localStorage.getItem('ss_auth_token');
+  try {
+    const res = await fetch(AUTH_URL+'/shifts/'+shiftId, {
+      method:'DELETE', headers:{'Authorization':'Bearer '+token}
+    });
+    if (res.ok) {
+      showToast('Shift removed.');
+      loadMyShifts();
+    } else {
+      const d = await res.json().catch(()=>({}));
+      showToast('Could not remove: '+(d.error||'Failed'));
+    }
+  } catch { showToast('Could not connect'); }
 }
 
 /* ════════════════════════════════════════
