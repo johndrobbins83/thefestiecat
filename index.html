@@ -5156,7 +5156,7 @@ function renderSchedule() {
   if (schedView === 'list') {
     listWrap.style.display = 'block';
     let html = '';
-    ['dnb','oasis','beach','locals'].forEach(stage => {
+    ['dnb','oasis','beach','locals','deepsea'].forEach(stage => {
       if (!shouldShowStage(stage)) return;
       const items = (data[stage]||[])
         .filter(item => matchArtist(item.artist))
@@ -5165,7 +5165,7 @@ function renderSchedule() {
       const stageNames = {dnb:'DNB Stage',oasis:'Oasis Stage',beach:'Beach Stage',locals:"Davey Jones Locker",deepsea:'Deep Sea'};
       const stageName = stageNames[stage] || stage;
       html += `<div class="stage-section"><div class="stage-section-header ${stage}">`+
-        `<div class="stage-dot" style="background:${{dnb:'#9b3dff',oasis:'#f59e0b',beach:'#06b6d4',locals:'#84cc16'}[stage]||'#888'};"></div>${stageName}</div>`+
+        `<div class="stage-dot" style="background:${{dnb:'#9b3dff',oasis:'#f59e0b',beach:'#06b6d4',locals:'#84cc16',deepsea:'#0ea5e9'}[stage]||'#888'};"></div>${stageName}</div>`+
         `<div class="sched-list">`;
       items.forEach(item => {
         const a = artists[item.artist]||{};
