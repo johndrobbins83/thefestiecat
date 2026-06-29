@@ -2431,7 +2431,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <span class="desktop-nav-link"        data-page="schedule" onclick="navigate('schedule')"><span style="color:var(--gold-bright);margin-right:4px;">◈</span>Schedule</span>
     <span class="desktop-nav-link"        data-page="artists"  onclick="navigate('artists')"><span style="color:var(--gold-bright);margin-right:4px;">♪</span>Artists</span>
     <span class="desktop-nav-link"        data-page="map"      onclick="navigate('map')"><span style="color:var(--gold-bright);margin-right:4px;">⊕</span>Map</span>
-    <span class="desktop-nav-link"        data-page="checklist" onclick="navigate('checklist')"><span style="color:var(--gold-bright);margin-right:4px;">☑</span>List</span>
     <span class="desktop-nav-link" data-page="people" onclick="navigate('people')">👥 People</span>
     <span class="desktop-nav-link more-trigger" onclick="if(document.getElementById('dmThreadOverlay')&&document.getElementById('dmThreadOverlay').classList.contains('open')){closeDMThread();}toggleMore(this)">⋯ More</span>
   </nav>
@@ -3487,7 +3486,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <span class="nav-item"        data-page="schedule"  onclick="navigate('schedule')"><div class="nav-icon-wrap">◈</div><span class="nav-label">Schedule</span></span>
   <span class="nav-item"        data-page="artists"   onclick="navigate('artists')"><div class="nav-icon-wrap">♪</div><span class="nav-label">Artists</span></span>
   <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">⊕</div><span class="nav-label">Map</span></span>
-  <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">☑</div><span class="nav-label">List</span></span>
   <span class="nav-item" data-page="people" onclick="navigate('people')"><div class="nav-icon-wrap">👥</div><span class="nav-label">People</span></span>
   <span class="nav-item more-trigger" onclick="if(document.getElementById('dmThreadOverlay')&&document.getElementById('dmThreadOverlay').classList.contains('open')){closeDMThread();}toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
 </nav>
@@ -3505,6 +3503,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="more-btn-icon" style="background:rgba(255,105,180,0.2);color:#ff69b4;">📸</div>
         <div class="more-btn-label">Photo Booth</div>
         <div class="more-btn-sub">Share your moments</div>
+      </span>
+      <span class="more-btn" onclick="navigate('checklist');closeMore()" style="border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.05);">
+        <div class="more-btn-icon" style="background:rgba(245,200,66,0.15);color:var(--gold-bright);">☑</div>
+        <div class="more-btn-label">My List</div>
+        <div class="more-btn-sub">Festival checklist</div>
       </span>
       <span class="more-btn games" onclick="navigate('games');closeMore()">
         <div class="more-btn-icon">🎮</div>
