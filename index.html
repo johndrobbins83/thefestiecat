@@ -11577,6 +11577,26 @@ function renderNotifications(notifs) {
       '</div>';
     }
 
+    if (n.type === 'booth_report') {
+      var pid  = escapeHTML(n.photoId    || '');
+      var purl = escapeHTML(n.photoUrl   || '');
+      var uid  = escapeHTML(n.uploaderId || '');
+      var upl  = escapeHTML(n.uploader   || '');
+      return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" id="notif-'+nid+'">' +
+        '<div class="notif-dot red"></div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="notif-text">' + escapeHTML(n.message||'') + '</div>' +
+          '<div class="notif-time">' + timeAgo + '</div>' +
+          '<div class="notif-actions" style="margin-top:8px;">' +
+            '<button class="notif-accept-btn" style="background:rgba(255,77,141,0.15);border-color:rgba(255,77,141,0.5);color:var(--pink-coral);" ' +
+              'onclick="event.stopPropagation();openBoothReview(\''+pid+'\',\''+upl+'\',\''+uid+'\',\''+purl+'\',\''+nid+'\')">' +
+              '\ud83d\udd0d Review Image' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
     return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" style="cursor:pointer;" onclick="handleNotifClick(\''+nid+'\',\''+(n.type||'')+'\',\''+fromId+'\')">' +
       '<div class="notif-dot ' + (n.category||'blue') + '"></div>' +
       '<div style="flex:1;">' +
@@ -13943,11 +13963,11 @@ async function submitBoothReport() {
     });
 
     if (res.ok || !token) { // graceful even if not logged in
-      // If explicit/violent — remove the photo completely from the grid
+      // If explicit/violent — hide the photo pending admin review
       if (reason === 'explicit') {
         const item = document.getElementById('booth-item-' + _boothReportPhotoId);
-        if (item) item.remove();
-        if (status) { status.style.color='#4ade80'; status.textContent='✓ Image removed and reported to admin.'; }
+        if (item) { item.style.display = 'none'; }
+        if (status) { status.style.color='#4ade80'; status.textContent='✓ Image hidden pending admin review.'; }
       } else {
         if (status) { status.style.color='#4ade80'; status.textContent='✓ Report sent to admin for review.'; }
       }
