@@ -13705,7 +13705,8 @@ async function loadBoothPhotos() {
       const zCaption = encodeURIComponent(p.caption||'');
       const zTags    = encodeURIComponent(tags);
       const zUploader= encodeURIComponent('@'+(p.uploadedBy||'festie'));
-      return '<div class="booth-photo-item" id="booth-item-' + p.id + '"' + (p.flagged ? ' style="opacity:0.15;pointer-events:none;" title="Hidden pending admin review"' : '') + '>' +
+      if (p.flagged) return ''; // Hide flagged photos completely
+      return '<div class="booth-photo-item" id="booth-item-' + p.id + '">' +
         '<img src="' + p.url + '" loading="lazy" onclick="boothZoom(\'' + p.url + '\',\'' + zCaption + '\',\'' + zTags + '\',\'' + zUploader + '\')" onerror="this.closest(\'.booth-photo-item\').style.display=\'none\'">' +
         '<div class="booth-photo-meta">@' + (p.uploadedBy || 'festie') + caption + tagLine + '</div>' +
         // Report button — always visible, bottom-left
@@ -13822,6 +13823,29 @@ document.addEventListener('click', function(e) {
   </div>
 </div>
 
+
+<!-- ══ BOOTH REVIEW MODAL (admin) ══ -->
+<div id="boothReviewModal" style="display:none;position:fixed;inset:0;z-index:90000;background:rgba(0,0,0,0.96);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#0e0e0e;border:1px solid rgba(255,77,141,0.4);width:100%;max-width:480px;display:flex;flex-direction:column;max-height:90vh;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--pink-coral);letter-spacing:1px;">🔍 REVIEW FLAGGED IMAGE</span>
+      <button onclick="closeBoothReview()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+    </div>
+    <!-- Image -->
+    <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <img id="boothReviewImg" src="" style="max-width:100%;max-height:360px;object-fit:contain;display:block;border:1px solid rgba(255,255,255,0.1);" onerror="this.style.display='none'">
+      <div id="boothReviewMeta" style="font-size:12px;color:var(--text-muted);text-align:center;"></div>
+      <div id="boothReviewStatus" style="font-size:12px;min-height:16px;text-align:center;"></div>
+    </div>
+    <!-- Action buttons -->
+    <div style="display:flex;gap:8px;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0;flex-wrap:wrap;">
+      <button onclick="boothReviewAction('reinstate')" style="flex:1;min-width:100px;padding:10px 8px;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.4);color:#4ade80;font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">✓ Reinstate</button>
+      <button onclick="boothReviewAction('delete')" style="flex:1;min-width:100px;padding:10px 8px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">🗑 Delete</button>
+      <button onclick="boothReviewAction('ban')" style="flex:1;min-width:140px;padding:10px 8px;background:rgba(255,77,141,0.15);border:1px solid rgba(255,77,141,0.5);color:var(--pink-coral);font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">⛔ Delete &amp; Ban User</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ TASK COMMENTS MODAL ══ -->
 <style>
 .task-comment-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
@@ -13919,15 +13943,11 @@ async function submitBoothReport() {
     });
 
     if (res.ok || !token) { // graceful even if not logged in
-      // If explicit/violent — hide the photo immediately on this client
+      // If explicit/violent — remove the photo completely from the grid
       if (reason === 'explicit') {
         const item = document.getElementById('booth-item-' + _boothReportPhotoId);
-        if (item) {
-          item.style.opacity = '0.15';
-          item.style.pointerEvents = 'none';
-          item.title = 'Hidden pending review';
-        }
-        if (status) { status.style.color='#4ade80'; status.textContent='✓ Image hidden and reported to admin.'; }
+        if (item) item.remove();
+        if (status) { status.style.color='#4ade80'; status.textContent='✓ Image removed and reported to admin.'; }
       } else {
         if (status) { status.style.color='#4ade80'; status.textContent='✓ Report sent to admin for review.'; }
       }
@@ -13940,6 +13960,77 @@ async function submitBoothReport() {
   } catch {
     if (btn) { btn.disabled = false; btn.textContent = 'Submit Report'; }
     if (status) { status.style.color='var(--pink-coral)'; status.textContent='Could not connect.'; }
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   BOOTH REVIEW MODAL — admin moderation
+════════════════════════════════════════════════════════════ */
+var _boothReview = { photoId: null, uploaderId: null, uploader: null, notifId: null };
+
+function openBoothReview(photoId, uploader, uploaderId, photoUrl, notifId) {
+  _boothReview = { photoId, uploader, uploaderId, notifId };
+  const modal  = document.getElementById('boothReviewModal');
+  const img    = document.getElementById('boothReviewImg');
+  const meta   = document.getElementById('boothReviewMeta');
+  const status = document.getElementById('boothReviewStatus');
+  if (img)    { img.src = photoUrl || ''; img.style.display = photoUrl ? 'block' : 'none'; }
+  if (meta)   meta.textContent = 'Uploaded by @' + (uploader || 'unknown');
+  if (status) status.textContent = '';
+  if (modal)  modal.style.display = 'flex';
+}
+
+function closeBoothReview() {
+  const modal = document.getElementById('boothReviewModal');
+  if (modal) modal.style.display = 'none';
+  _boothReview = { photoId: null, uploaderId: null, uploader: null, notifId: null };
+}
+
+async function boothReviewAction(action) {
+  const { photoId, uploaderId, notifId } = _boothReview;
+  if (!photoId) return;
+  const token  = localStorage.getItem(TOKEN_KEY);
+  const status = document.getElementById('boothReviewStatus');
+  if (status) { status.style.color = 'var(--text-muted)'; status.textContent = 'Working…'; }
+
+  try {
+    let res;
+    if (action === 'reinstate') {
+      res = await fetch(AUTH_URL + '/booth/' + photoId + '/reinstate', {
+        method: 'POST', headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } else if (action === 'delete') {
+      res = await fetch(AUTH_URL + '/booth/' + photoId + '/flagged', {
+        method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } else if (action === 'ban') {
+      if (!confirm('This will permanently delete the photo AND the user account, and ban their email from re-registering. Are you sure?')) {
+        if (status) status.textContent = '';
+        return;
+      }
+      res = await fetch(AUTH_URL + '/booth/' + photoId + '/ban', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ uploaderId: uploaderId || '' })
+      });
+    }
+
+    if (res && res.ok) {
+      const labels = { reinstate: '✓ Photo reinstated', delete: '✓ Photo deleted', ban: '✓ Photo deleted and user banned' };
+      if (status) { status.style.color = '#4ade80'; status.textContent = labels[action] || '✓ Done'; }
+      // Remove the notification item from the list
+      if (notifId) {
+        const el = document.getElementById('notif-' + notifId);
+        if (el) el.remove();
+      }
+      setTimeout(closeBoothReview, 1200);
+      loadBoothPhotos && loadBoothPhotos();
+    } else {
+      if (status) { status.style.color = 'var(--pink-coral)'; status.textContent = 'Action failed — try again.'; }
+    }
+  } catch {
+    if (status) { status.style.color = 'var(--pink-coral)'; status.textContent = 'Could not connect.'; }
   }
 }
 
