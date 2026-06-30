@@ -12213,28 +12213,53 @@ async function submitBugReport() {
   if (status) { status.style.color='var(--text-muted)'; status.textContent=''; }
 
   const user = currentUser || {};
+
+  // If a screenshot was attached and the user is logged in, upload it to R2 first
+  // and send a link instead of the raw file (Formspree's free plan rejects file uploads).
+  let screenshotUrl = '';
+  if (fileInput && fileInput.files.length) {
+    const file = fileInput.files[0];
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token) {
+      if (status) { status.style.color='var(--text-muted)'; status.textContent='Uploading screenshot…'; }
+      try {
+        const artistKey = 'bug_' + Date.now();
+        const upRes = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(artistKey), {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': file.type
+          },
+          body: file
+        });
+        const upData = await upRes.json().catch(() => ({}));
+        if (upRes.ok && upData.url) {
+          screenshotUrl = upData.url;
+        }
+      } catch (e) {
+        // If the screenshot upload fails, continue and send the report without it
+      }
+    }
+    if (status) { status.style.color='var(--text-muted)'; status.textContent='Sending…'; }
+  }
+
   const reportBody = (user.handle ? '[' + user.handle + '] ' : '')
     + (user.email ? '(' + user.email + ') ' : '')
-    + text;
+    + text
+    + (screenshotUrl ? '\n\nScreenshot: ' + screenshotUrl
+      : (fileInput && fileInput.files.length && !localStorage.getItem(TOKEN_KEY) ? '\n\n(Screenshot not attached — log in to attach screenshots)' : ''));
 
-  // Use FormData so we can attach screenshots
   const formData = new FormData();
   formData.append('message', reportBody);
   formData.append('_subject', '🐛 Bug Report — The Mutiny 2026');
   if (user.email) formData.append('email', user.email);
   if (user.handle) formData.append('user', user.handle);
-
-  // Attach screenshots (Formspree supports up to 5 files)
-  if (fileInput && fileInput.files.length) {
-    Array.from(fileInput.files).slice(0, 5).forEach(function(file, i) {
-      formData.append('screenshot_' + (i + 1), file, file.name);
-    });
-  }
+  if (screenshotUrl) formData.append('screenshot_url', screenshotUrl);
 
   try {
     const res = await fetch('https://formspree.io/f/' + FORMSPREE_ID, {
       method: 'POST',
-      headers: { 'Accept': 'application/json' }, // no Content-Type — let browser set multipart boundary
+      headers: { 'Accept': 'application/json' },
       body: formData
     });
     if (res.ok) {
