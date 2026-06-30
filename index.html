@@ -9426,9 +9426,16 @@ function buildCreateTaskForm(containerId) {
               <input class="form-input" type="date" id="${containerId}-taskDay" min="2026-07-01" style="color-scheme:dark;">
             </div>
             <div class="form-field">
-              <label class="form-label">Due Time</label>
-              <input class="form-input" id="${containerId}-taskTime" type="time">
+              <label class="form-label">Time In</label>
+              <select class="form-select" id="${containerId}-taskTimeIn">${TIME_OPTIONS_HTML}</select>
             </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Time Out</label>
+              <select class="form-select" id="${containerId}-taskTimeOut">${TIME_OPTIONS_HTML}</select>
+            </div>
+            <div class="form-field"></div>
           </div>
           <div style="margin-top:4px;">
             <button class="dash-btn primary" style="width:100%;padding:12px;"
@@ -9516,7 +9523,8 @@ async function submitCreateTask(containerId) {
   const desc     = document.getElementById(containerId + '-taskDesc')?.value.trim();
   const priority = document.getElementById(containerId + '-taskPriority')?.value;
   const day      = document.getElementById(containerId + '-taskDay')?.value;
-  const time     = document.getElementById(containerId + '-taskTime')?.value;
+  const timeIn   = (document.getElementById(containerId + '-taskTimeIn')?.value || '').trim();
+  const timeOut  = (document.getElementById(containerId + '-taskTimeOut')?.value || '').trim();
   const status   = document.getElementById(containerId + '-taskCreateStatus');
 
   if (!title) { if(status){status.textContent='⚠ Title required';status.style.color='var(--pink-coral)';} return; }
@@ -9532,13 +9540,18 @@ async function submitCreateTask(containerId) {
   const token = localStorage.getItem('ss_auth_token');
   if (status) { status.textContent='Creating…';status.style.color='var(--text-muted)'; }
 
+  const inSet  = timeIn  && timeIn  !== 'TBA';
+  const outSet = timeOut && timeOut !== 'TBA';
+  const timeRange = inSet ? (timeIn + (outSet ? ' – ' + timeOut : '')) : '';
+
   try {
     const res = await fetch(AUTH_URL + '/tasks', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
       body: JSON.stringify({
         title, description:desc, priority,
-        dueDate: day ? day + (time?' '+time:'') : '',
+        dueDate: day ? day + (timeRange?' '+timeRange:'') : '',
+        dueTimeIn: inSet ? timeIn : '', dueTimeOut: outSet ? timeOut : '',
         assignedTo, assignedRole
       })
     });
