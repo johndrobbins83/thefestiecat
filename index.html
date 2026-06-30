@@ -4264,7 +4264,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
       <div class="edit-field">
         <label class="edit-label">Time</label>
-        <input class="edit-input" id="editActivityTime" placeholder="e.g. 9:00 AM (or leave as TBA)">
+        <select class="edit-select" id="editActivityTime"></select>
       </div>
       <div class="edit-field">
         <label class="edit-label">Description</label>
@@ -7438,7 +7438,8 @@ function adminNewActivity() {
   document.getElementById('editActivityName').value = '';
   document.getElementById('editActivityLocation').value = '';
   document.getElementById('editActivityDay').value = 'TBA';
-  document.getElementById('editActivityTime').value = '';
+  const timeSel = document.getElementById('editActivityTime');
+  if (timeSel) { timeSel.innerHTML = TIME_OPTIONS_HTML; timeSel.value = 'TBA'; }
   document.getElementById('editActivityDescription').value = '';
   document.getElementById('activityEditModal').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -7452,7 +7453,8 @@ function adminEditActivity(id) {
   document.getElementById('editActivityName').value = act.name || '';
   document.getElementById('editActivityLocation').value = act.location || '';
   document.getElementById('editActivityDay').value = act.day || 'TBA';
-  document.getElementById('editActivityTime').value = act.time || '';
+  const timeSel = document.getElementById('editActivityTime');
+  if (timeSel) { timeSel.innerHTML = TIME_OPTIONS_HTML; timeSel.value = act.time || 'TBA'; }
   document.getElementById('editActivityDescription').value = act.description || '';
   document.getElementById('activityEditModal').classList.add('open');
   document.body.style.overflow = 'hidden';
