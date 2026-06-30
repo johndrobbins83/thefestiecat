@@ -3261,6 +3261,20 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </div>
       </div>
 
+      <!-- Maintenance Section -->
+      <div class="dash-section" style="margin-top:16px;">
+        <div class="dash-section-header">
+          <div class="dash-section-title">🛠 Maintenance</div>
+        </div>
+        <div class="dash-section-body" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:12px;color:var(--text-muted);">
+            New accounts automatically get a default profile picture. This one-time action applies it to any existing accounts that don't have a profile picture yet — it won't touch anyone who's already uploaded their own.
+          </div>
+          <button class="dash-btn" onclick="backfillDefaultAvatars()">🖼 Apply Default Avatar to Existing Users</button>
+          <div id="backfillAvatarStatus" style="font-size:12px;color:var(--text-muted);"></div>
+        </div>
+      </div>
+
       <!-- Email List Section -->
       <div class="dash-section" style="margin-top:16px;">
         <div class="dash-section-header">
@@ -8839,6 +8853,27 @@ async function testMyPush() {
     }
   } catch(e) {
     if (status) { status.style.color='var(--pink-coral)'; status.textContent = 'Error: ' + e.message; }
+  }
+}
+
+async function backfillDefaultAvatars() {
+  const status = document.getElementById('backfillAvatarStatus');
+  if (!confirm('Apply the default profile picture to every existing user who doesn\'t already have one? This will not affect anyone who has already uploaded their own photo.')) return;
+  if (status) { status.style.color = 'var(--text-muted)'; status.textContent = 'Working…'; }
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/admin/backfill-default-avatar', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const d = await res.json().catch(() => ({}));
+    if (res.ok) {
+      if (status) { status.style.color = '#4ade80'; status.textContent = '✓ Updated ' + d.updated + ' user(s) — ' + d.skipped + ' already had a photo.'; }
+    } else {
+      if (status) { status.style.color = 'var(--pink-coral)'; status.textContent = '✗ ' + (d.error || 'Failed'); }
+    }
+  } catch(e) {
+    if (status) { status.style.color = 'var(--pink-coral)'; status.textContent = '✗ Could not connect'; }
   }
 }
 
