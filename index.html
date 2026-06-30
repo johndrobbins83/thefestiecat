@@ -10697,9 +10697,10 @@ function closeDMThread() {
   loadDMList(); // refresh unread counts
 }
 
-async function loadDMThread(friendId, expectMinCount) {
+async function loadDMThread(friendId, expectMinCount, attempt) {
   const msgs = document.getElementById('dmThreadMessages');
   if (!msgs) return;
+  attempt = attempt || 0;
   const token = localStorage.getItem('ss_auth_token');
   try {
     const res  = await fetch(AUTH_URL+'/dm/'+friendId, { headers:{'Authorization':'Bearer '+token} });
@@ -10710,10 +10711,24 @@ async function loadDMThread(friendId, expectMinCount) {
     const data = await res.json();
     const messages = data.messages || [];
 
-    // If we're expecting a new message (post-send) and server doesn't have it yet,
-    // retry once after a short delay rather than wiping the optimistic bubble
+    // If we're expecting a new message (post-send) and the server (KV is
+    // eventually-consistent) doesn't have it yet, retry with backoff —
+    // up to 5 attempts (~3s total) — instead of giving up after one try.
     if (expectMinCount && messages.length < expectMinCount) {
-      setTimeout(function() { loadDMThread(friendId); }, 400);
+      if (attempt < 5) {
+        const delay = 300 + attempt * 300;
+        setTimeout(function() { loadDMThread(friendId, expectMinCount, attempt + 1); }, delay);
+        return;
+      }
+      // Exhausted retries — fall through and render what we have rather
+      // than leaving the thread stuck on a stale "Loading…" state.
+    }
+
+    // Never let a read that's behind (fewer messages than we already
+    // know exist) wipe messages already on screen — KV can briefly
+    // return a stale snapshot right after a write.
+    const knownCount = parseInt((msgs.dataset.cacheKey || '0').split('|')[0]) || 0;
+    if (messages.length < knownCount && messages.length < (expectMinCount || 0)) {
       return;
     }
 
@@ -10827,6 +10842,10 @@ async function sendDM() {
 
   // Optimistic bubble
   const msgs = document.getElementById('dmThreadMessages');
+  // Snapshot how many messages we know about before sending, so the
+  // post-send resync can confirm the server has caught up before
+  // replacing the optimistic bubble with the canonical list.
+  const preSendCount = parseInt(((msgs && msgs.dataset.cacheKey) || '0').split('|')[0]) || 0;
   let optimisticBubble = null;
   if (msgs) {
     const placeholder = msgs.querySelector('.dm-empty, [data-placeholder]');
@@ -10866,9 +10885,20 @@ async function sendDM() {
       body: JSON.stringify({ text, imageUrl })
     });
     if (res.ok) {
-      const ck = msgs ? (msgs.dataset.cacheKey || '0') : '0';
-      const currentCount = parseInt(ck.split('|')[0]) || 0;
-      setTimeout(function() { loadDMThread(currentDMFriendId, currentCount + 1); }, 200);
+      const data = await res.json().catch(() => ({}));
+      // Use the message the server just confirmed it saved, rather than
+      // racing a re-fetch against KV's eventual-consistency delay.
+      if (data && data.message && optimisticBubble) {
+        optimisticBubble.removeAttribute('data-optimistic');
+        const timeEl = optimisticBubble.querySelector('.dm-msg-time');
+        if (timeEl) timeEl.textContent = getTimeAgo(data.message.createdAt);
+        optimisticBubble.dataset.msgId = data.message.id;
+      }
+      // Resync from the server shortly after, so the thread converges with
+      // the canonical message list. expectMinCount + the retry/backoff in
+      // loadDMThread means this won't wipe the bubble we just confirmed
+      // even if KV is still lagging behind the write.
+      setTimeout(function() { loadDMThread(currentDMFriendId, preSendCount + 1); }, 600);
     } else {
       showToast('Could not send message');
       if (input) input.value = text;
@@ -14814,10 +14844,11 @@ function stopGroupPolling() {
   if (_groupPollTimer) { clearTimeout(_groupPollTimer); _groupPollTimer = null; }
 }
 
-async function loadGroupThread() {
+async function loadGroupThread(expectMinCount, attempt) {
   if (!_currentGroupId) return;
   var msgs  = document.getElementById('dmThreadMessages');
   if (!msgs) return;
+  attempt = attempt || 0;
   var token = localStorage.getItem(TOKEN_KEY);
   try {
     var res = await fetch(AUTH_URL+'/groups/'+_currentGroupId, { headers:{'Authorization':'Bearer '+token} });
@@ -14826,6 +14857,24 @@ async function loadGroupThread() {
     if (!ct.includes('json')) return;
     var d = await res.json();
     var messages = d.messages||[];
+
+    // If we're expecting a new message (post-send) and the server (KV is
+    // eventually-consistent) doesn't have it yet, retry with backoff —
+    // up to 5 attempts (~3s total) — instead of giving up after one try.
+    if (expectMinCount && messages.length < expectMinCount) {
+      if (attempt < 5) {
+        var delay = 300 + attempt * 300;
+        setTimeout(function() { loadGroupThread(expectMinCount, attempt + 1); }, delay);
+        return;
+      }
+    }
+
+    // Never let a read that's behind wipe messages already on screen.
+    var knownCount = parseInt((msgs.dataset.cacheKey || '0').split('|')[0]) || 0;
+    if (messages.length < knownCount && messages.length < (expectMinCount || 0)) {
+      return;
+    }
+
     var lastMsg  = messages[messages.length-1];
     var cacheKey = messages.length+'|'+(lastMsg ? lastMsg.id||lastMsg.createdAt : '');
     var isFirst  = !msgs.dataset.cacheKey;
@@ -14858,11 +14907,13 @@ async function sendGroupMessage() {
   var btn = document.getElementById('dmSendBtn');
   if (btn) { btn.style.opacity='0.5'; btn.style.pointerEvents='none'; }
   var msgs = document.getElementById('dmThreadMessages');
+  var preSendCount = parseInt(((msgs && msgs.dataset.cacheKey) || '0').split('|')[0]) || 0;
   var bubble = null;
   if (msgs) {
     delete msgs.dataset.cacheKey;
     bubble = document.createElement('div');
     bubble.className = 'dm-msg mine';
+    bubble.setAttribute('data-optimistic', '1');
     bubble.innerHTML = (text?escapeHTML(text):'') + '<div class="dm-msg-time" style="opacity:0.4;">sending…</div>';
     msgs.appendChild(bubble);
     msgs.scrollTop = msgs.scrollHeight;
@@ -14882,7 +14933,18 @@ async function sendGroupMessage() {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
       body: JSON.stringify({text:text, imageUrl:imageUrl})
     });
-    if (res.ok) { setTimeout(function(){loadGroupThread();},200); }
+    if (res.ok) {
+      var data = await res.json().catch(function(){ return {}; });
+      // Use the message the server just confirmed it saved, rather than
+      // racing a re-fetch against KV's eventual-consistency delay.
+      if (data && data.message && bubble) {
+        bubble.removeAttribute('data-optimistic');
+        var timeEl = bubble.querySelector('.dm-msg-time');
+        if (timeEl) timeEl.textContent = getTimeAgo(data.message.createdAt);
+        bubble.dataset.msgId = data.message.id;
+      }
+      setTimeout(function(){ loadGroupThread(preSendCount + 1); }, 600);
+    }
     else { showToast('Could not send'); if(bubble)bubble.remove(); if(input)input.value=text; }
   } catch { showToast('Could not send'); if(bubble)bubble.remove(); if(input)input.value=text; }
   finally { _dmSending=false; if(btn){btn.style.opacity='';btn.style.pointerEvents='';} }
