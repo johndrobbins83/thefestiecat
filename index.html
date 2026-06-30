@@ -3018,6 +3018,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <select class="dash-tab-select" onchange="switchAdminTab(this.value, null); this.blur();">
       <option value="artists">♪ Artists</option>
       <option value="schedule">◈ Schedule</option>
+      <option value="activities">✦ Activities</option>
       <option value="master">📋 Master</option>
       <option value="staffedit">👷 Staff</option>
       <option value="tasks">✅ Tasks</option>
@@ -3028,6 +3029,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="dash-tabs">
       <button class="dash-tab active" onclick="switchAdminTab('artists',this)"><span style="color:var(--gold-bright);margin-right:4px;">♪</span>Artists</button>
       <button class="dash-tab" onclick="switchAdminTab('schedule',this)"><span style="color:var(--gold-bright);margin-right:4px;">◈</span>Schedule</button>
+      <button class="dash-tab" onclick="switchAdminTab('activities',this)"><span style="color:#ec4899;margin-right:4px;">✦</span>Activities</button>
       <button class="dash-tab" onclick="switchAdminTab('master',this)">📋 Master</button>
       <button class="dash-tab" onclick="switchAdminTab('staffedit',this)">👷 Staff</button>
       <button class="dash-tab" onclick="switchAdminTab('tasks',this)">✅ Tasks</button>
@@ -3086,6 +3088,19 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <button class="dash-btn" onclick="setAdminSchedDay('sun',this)">Sun 7/19</button>
           </div>
           <div id="adminSchedList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activities Tab -->
+    <div id="adminTab-activities" style="display:none;">
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <div class="dash-section-title"><span style="color:#ec4899;margin-right:4px;">✦</span>Activities <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(yoga, workshops, non-music events)</span></div>
+          <button class="dash-btn primary" onclick="adminNewActivity()">+ Add Activity</button>
+        </div>
+        <div class="dash-section-body">
+          <div id="adminActivitiesList"></div>
         </div>
       </div>
     </div>
@@ -4217,6 +4232,48 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="edit-modal-footer">
       <button class="dash-btn" onclick="closeArtistEdit()">Cancel</button>
       <button class="dash-btn primary" onclick="saveArtistEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ACTIVITY EDIT MODAL ══ -->
+<div class="edit-modal-overlay" id="activityEditModal">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div class="edit-modal-title" id="activityEditModalTitle">Edit Activity</div>
+      <button class="edit-modal-close" onclick="closeActivityEdit()">✕</button>
+    </div>
+    <div class="edit-modal-body">
+      <input type="hidden" id="editActivityId">
+      <div class="edit-field">
+        <label class="edit-label">Activity Name</label>
+        <input class="edit-input" id="editActivityName" placeholder="e.g. Sunrise Yoga">
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Location</label>
+        <input class="edit-input" id="editActivityLocation" placeholder="e.g. Lakeside Lawn">
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Day</label>
+        <select class="edit-select" id="editActivityDay">
+          <option value="TBA">TBA</option>
+          <option value="Fri">Friday 7/17</option>
+          <option value="Sat">Saturday 7/18</option>
+          <option value="Sun">Sunday 7/19</option>
+        </select>
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Time</label>
+        <input class="edit-input" id="editActivityTime" placeholder="e.g. 9:00 AM (or leave as TBA)">
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Description</label>
+        <textarea class="edit-textarea" id="editActivityDescription" rows="4" placeholder="What's this activity about?"></textarea>
+      </div>
+    </div>
+    <div class="edit-modal-footer">
+      <button class="dash-btn" onclick="closeActivityEdit()">Cancel</button>
+      <button class="dash-btn primary" onclick="saveActivityEdit()">Save Activity</button>
     </div>
   </div>
 </div>
@@ -7321,7 +7378,7 @@ async function loadUsersForAssign() {
 
 // ── Tab switching ──────────────────────────────────────────
 function switchAdminTab(tab, btn) {
-  ['artists','schedule','master','staffedit','tasks','shifts','users','settings'].forEach(t => {
+  ['artists','schedule','activities','master','staffedit','tasks','shifts','users','settings'].forEach(t => {
     const el = document.getElementById('adminTab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
@@ -7332,11 +7389,139 @@ function switchAdminTab(tab, btn) {
   if (sel) sel.value = tab;
   if (tab === 'artists')  renderAdminArtistGrid();
   if (tab === 'schedule') renderAdminSchedule();
+  if (tab === 'activities') renderAdminActivitiesList();
   if (tab === 'master')    renderMasterSchedule();
   if (tab === 'staffedit') initStaffEditor();
   if (tab === 'tasks')     renderTaskManager('sharedTaskManager');
   if (tab === 'shifts')   { if (!window._allUsers || !window._allUsers.length) loadUsersForAssign(); renderShiftManager('sharedShiftManager'); }
   if (tab === 'users')    adminLoadUsers();
+}
+
+// ── Activities Admin (6th "stage" — non-music events) ──────
+async function renderAdminActivitiesList() {
+  const wrap = document.getElementById('adminActivitiesList');
+  if (!wrap) return;
+  wrap.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>';
+  try {
+    const res = await fetch(AUTH_URL + '/activities');
+    const d = await res.json().catch(() => ({}));
+    ACTIVITIES = Array.isArray(d.activities) ? d.activities : [];
+  } catch(e) {
+    wrap.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load activities.</div>';
+    return;
+  }
+  if (!ACTIVITIES.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">No activities yet — tap "+ Add Activity" to create one.</div>';
+    return;
+  }
+  const dayOrder = { Fri:0, Sat:1, Sun:2, TBA:3 };
+  const sorted = [...ACTIVITIES].sort((a,b) => (dayOrder[a.day]??9) - (dayOrder[b.day]??9) || timeToSort(a.time||'TBA') - timeToSort(b.time||'TBA'));
+  const dayLabels = { Fri:'Friday 7/17', Sat:'Saturday 7/18', Sun:'Sunday 7/19', TBA:'TBA' };
+  wrap.innerHTML = sorted.map(act => `
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);">
+      <div style="width:8px;height:8px;border-radius:50%;background:#ec4899;flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:13px;color:var(--text-light);">${esc(act.name)}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
+          ${dayLabels[act.day] || esc(act.day)} · ${esc(act.time||'TBA')}${act.location ? ' · ' + esc(act.location) : ''}
+        </div>
+      </div>
+      <button class="dash-btn" onclick="adminEditActivity('${esc(act.id)}')" style="padding:6px 10px;font-size:11px;">✏ Edit</button>
+      <button class="dash-btn" onclick="adminDeleteActivity('${esc(act.id)}')" style="padding:6px 10px;font-size:11px;color:var(--pink-coral);border-color:rgba(255,77,141,0.3);">🗑</button>
+    </div>
+  `).join('');
+}
+
+function adminNewActivity() {
+  document.getElementById('activityEditModalTitle').textContent = 'Add New Activity';
+  document.getElementById('editActivityId').value = '';
+  document.getElementById('editActivityName').value = '';
+  document.getElementById('editActivityLocation').value = '';
+  document.getElementById('editActivityDay').value = 'TBA';
+  document.getElementById('editActivityTime').value = '';
+  document.getElementById('editActivityDescription').value = '';
+  document.getElementById('activityEditModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function adminEditActivity(id) {
+  const act = (ACTIVITIES || []).find(a => a.id === id);
+  if (!act) return;
+  document.getElementById('activityEditModalTitle').textContent = 'Edit · ' + act.name;
+  document.getElementById('editActivityId').value = act.id;
+  document.getElementById('editActivityName').value = act.name || '';
+  document.getElementById('editActivityLocation').value = act.location || '';
+  document.getElementById('editActivityDay').value = act.day || 'TBA';
+  document.getElementById('editActivityTime').value = act.time || '';
+  document.getElementById('editActivityDescription').value = act.description || '';
+  document.getElementById('activityEditModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeActivityEdit() {
+  document.getElementById('activityEditModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function saveActivityEdit() {
+  const id   = document.getElementById('editActivityId').value;
+  const name = document.getElementById('editActivityName').value.trim();
+  const location    = document.getElementById('editActivityLocation').value.trim();
+  const day         = document.getElementById('editActivityDay').value;
+  const time        = document.getElementById('editActivityTime').value.trim() || 'TBA';
+  const description = document.getElementById('editActivityDescription').value.trim();
+
+  if (!name) { showToast('Activity name is required.'); return; }
+
+  const token = localStorage.getItem(TOKEN_KEY);
+  const saveBtn = document.querySelector('#activityEditModal .edit-modal-footer .dash-btn.primary');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+
+  try {
+    const payload = { name, location, day, time, description };
+    const res = id
+      ? await fetch(AUTH_URL + '/activities/' + encodeURIComponent(id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(payload)
+        })
+      : await fetch(AUTH_URL + '/activities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(payload)
+        });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || 'Server error');
+    }
+    showToast('✓ ' + name + (id ? ' updated' : ' added'));
+    closeActivityEdit();
+    await renderAdminActivitiesList();
+    if (typeof renderSchedule === 'function' && currentPage === 'schedule') renderSchedule();
+  } catch(e) {
+    showToast('Failed to save activity — please try again.');
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Activity'; }
+  }
+}
+
+async function adminDeleteActivity(id) {
+  const act = (ACTIVITIES || []).find(a => a.id === id);
+  if (!act) return;
+  if (!confirm('Delete "' + act.name + '"? This cannot be undone.')) return;
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/activities/' + encodeURIComponent(id), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error('Server error');
+    showToast('✓ ' + act.name + ' deleted');
+    await renderAdminActivitiesList();
+    if (typeof renderSchedule === 'function' && currentPage === 'schedule') renderSchedule();
+  } catch(e) {
+    showToast('Failed to delete — please try again.');
+  }
 }
 
 // ── Master Block Schedule ──────────────────────────────────
