@@ -507,6 +507,7 @@ body{
 .stage-pill.beach {color:rgba(6,182,212,0.45);   border-color:rgba(6,182,212,0.15);}
 .stage-pill.locals{color:rgba(132,204,22,0.45);  border-color:rgba(132,204,22,0.15);}
 .stage-pill.deepsea{color:rgba(14,165,233,0.45); border-color:rgba(14,165,233,0.15);}
+.stage-pill.activities{color:rgba(236,72,153,0.45); border-color:rgba(236,72,153,0.15);}
 .stage-pill.oasis {color:rgba(0,212,200,0.45);   border-color:rgba(0,212,200,0.15);}
 .stage-pill.on.all   {background:rgba(245,200,66,0.15); border-color:rgba(245,200,66,0.5);  color:var(--gold-bright);}
 .stage-pill.on.dnb   {background:rgba(192,132,252,0.15);border-color:rgba(192,132,252,0.5); color:#c084fc;}
@@ -514,6 +515,7 @@ body{
 .stage-pill.on.beach {background:rgba(6,182,212,0.15);  border-color:rgba(6,182,212,0.5);   color:#06b6d4;}
 .stage-pill.on.locals{background:rgba(132,204,22,0.15); border-color:rgba(132,204,22,0.5);  color:#84cc16;}
 .stage-pill.on.deepsea{background:rgba(14,165,233,0.15);border-color:rgba(14,165,233,0.5);   color:#0ea5e9;}
+.stage-pill.on.activities{background:rgba(236,72,153,0.15);border-color:rgba(236,72,153,0.5);   color:#ec4899;}
 .stage-pill.on.oasis {background:rgba(0,212,200,0.15);  border-color:rgba(0,212,200,0.5);   color:var(--teal-glow);}
 .view-toggle{display:flex;gap:4px;margin-left:auto;}
 .view-btn{width:32px;height:32px;border-radius:0;border:1px solid rgba(255,255,255,0.1);
@@ -532,6 +534,7 @@ body{
 .stage-section-header.beach{background:rgba(6,182,212,0.1);color:#06b6d4;border:1px solid rgba(6,182,212,0.2);}
 .stage-section-header.locals{background:rgba(132,204,22,0.1);color:#84cc16;border:1px solid rgba(132,204,22,0.2);}
 .stage-section-header.deepsea{background:rgba(14,165,233,0.1);color:#0ea5e9;border:1px solid rgba(14,165,233,0.2);}
+.stage-section-header.activities{background:rgba(236,72,153,0.1);color:#ec4899;border:1px solid rgba(236,72,153,0.2);}
 .stage-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .sched-list{display:flex;flex-direction:column;}
 .sched-event-row{display:flex;align-items:center;gap:10px;padding:8px 0;
@@ -596,6 +599,7 @@ body{
 .tg-block.beach-block{background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.25);}
 .tg-block.locals-block{background:rgba(132,204,22,0.12);border:1px solid rgba(132,204,22,0.25);}
 .tg-block.deepsea-block{background:rgba(14,165,233,0.12);border:1px solid rgba(14,165,233,0.25);}
+.tg-block.activities-block{background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.25);}
 .tg-block.headliner-block{border-width:2px;}
 .tg-block-time{font-size:10px;font-weight:700;color:var(--text-muted);font-family:'Orbitron',sans-serif;line-height:1;}
 .tg-block-name{font-size:12px;font-weight:800;color:var(--text-light);line-height:1.2;
@@ -2670,6 +2674,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
           <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locker</button>
           <button class="stage-pill deepsea" data-stage="deepsea" onclick="filterStage('deepsea',this)">Deep Sea</button>
+          <button class="stage-pill activities" data-stage="activities" onclick="filterStage('activities',this)">Activities</button>
           <div class="view-toggle">
             <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
             <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
@@ -4688,6 +4693,19 @@ async function loadArtistOverrides() {
 }
 loadArtistOverrides();
 
+// ── Activities (6th "stage" — non-music events) ──────────────
+async function loadActivities() {
+  try {
+    const res = await fetch(AUTH_URL + '/activities');
+    if (!res.ok) return;
+    const d = await res.json();
+    ACTIVITIES = Array.isArray(d.activities) ? d.activities : [];
+    // Re-render pages that show activities (added in later steps)
+    if (typeof renderSchedule === 'function') renderSchedule();
+  } catch(e) { /* Activities unavailable - schedule will just omit the column */ }
+}
+loadActivities();
+
 async function saveArtistOverride(key, data) {
   // Merge into full overrides object and push to worker
   const getRes = await fetch(AUTH_URL + '/artists');
@@ -4802,6 +4820,7 @@ let INFO_CONTENT = {};
 let DJ_BINGO_TRACKS = [];
 let STAGES = [];
 let PRESETS = {};
+let ACTIVITIES = [];
 
 function getMySchedule() {
   try { return JSON.parse(localStorage.getItem(MY_SCHED_KEY)) || []; } catch(e) { return []; }
@@ -4828,6 +4847,127 @@ function toggleSaved(key) {
     const mineTab = document.getElementById('mySchedTab');
     if (mineTab && mineTab.classList.contains('active')) renderMySchedPage();
   }
+}
+
+// ── Activities scheduling (fully separate from artist scheduling) ──
+const MY_ACTIVITIES_KEY = 'ss_my_activities_v1';
+function getMyActivities() {
+  try { return JSON.parse(localStorage.getItem(MY_ACTIVITIES_KEY)) || []; } catch(e) { return []; }
+}
+function saveMyActivities(arr) {
+  localStorage.setItem(MY_ACTIVITIES_KEY, JSON.stringify(arr));
+}
+function refreshAllActivityAddBtns() {
+  const mine = getMyActivities();
+  document.querySelectorAll('[data-akey]').forEach(btn=>{
+    const id = btn.dataset.akey;
+    const saved = mine.includes(id);
+    btn.classList.toggle('added', saved);
+    btn.textContent = saved ? '✓' : '+';
+  });
+}
+function toggleSavedActivity(id) {
+  const act = (ACTIVITIES || []).find(a => a.id === id);
+  const label = act ? act.name : 'Activity';
+  let mine = getMyActivities();
+  const idx = mine.indexOf(id);
+  if (idx === -1) { mine.push(id); showToast('⭐ ' + label + ' added to your schedule'); }
+  else { mine.splice(idx, 1); showToast('Removed ' + label + ' from your schedule'); }
+  saveMyActivities(mine);
+  refreshAllActivityAddBtns();
+  if (currentPage === 'schedule') {
+    const mineTab = document.getElementById('mySchedTab');
+    if (mineTab && mineTab.classList.contains('active')) renderMySchedPage();
+  }
+}
+
+function getActivityReminders() {
+  try { return JSON.parse(localStorage.getItem('ss_activity_reminders_v1')) || {}; } catch(e) { return {}; }
+}
+function saveActivityReminders(obj) {
+  localStorage.setItem('ss_activity_reminders_v1', JSON.stringify(obj));
+}
+function getActivityReminderOn(id) {
+  return !!getActivityReminders()[id];
+}
+const _activityReminderTimers = {};
+function _scheduleActivityReminderTimer(id) {
+  const act = (ACTIVITIES || []).find(a => a.id === id);
+  if (!act || !act.time || act.time === 'TBA') return;
+  const dayDates = { Fri:'2026-07-17', Sat:'2026-07-18' };
+  if (!dayDates[act.day]) return;
+  const m = act.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return;
+  let h = parseInt(m[1]), mn = parseInt(m[2]);
+  const pm = m[3].toUpperCase() === 'PM';
+  if (pm && h !== 12) h += 12;
+  if (!pm && h === 12) h = 0;
+  let dateStr = dayDates[act.day];
+  if (h < 8) {
+    const d = new Date(dateStr + 'T00:00:00-04:00');
+    d.setDate(d.getDate() + 1);
+    dateStr = d.toISOString().slice(0, 10);
+  }
+  const setTime = new Date(dateStr + 'T' + String(h).padStart(2,'0') + ':' + String(mn).padStart(2,'0') + ':00-04:00').getTime();
+  const remindAt = setTime - 10 * 60 * 1000;
+  const msUntil = remindAt - Date.now();
+  if (msUntil < 0) return;
+  if (_activityReminderTimers[id]) clearTimeout(_activityReminderTimers[id]);
+  _activityReminderTimers[id] = setTimeout(function() {
+    try {
+      new Notification('✦ ' + act.name + ' in 10 minutes!', {
+        body: (act.location || '') + (act.time ? ' · ' + act.time : ''),
+        icon: '/icon192.png',
+        tag: 'activity-reminder-' + id
+      });
+    } catch(e) {}
+    const r = getActivityReminders(); delete r[id]; saveActivityReminders(r);
+  }, msUntil);
+}
+async function toggleActivityReminder(id) {
+  const act = (ACTIVITIES || []).find(a => a.id === id);
+  if (!act || !act.time || act.time === 'TBA') { showToast('No time set for this activity yet.'); return; }
+
+  if (!('Notification' in window)) { showToast('Notifications not supported on this browser.'); return; }
+  if (Notification.permission === 'denied') { showToast('⚠ Notifications blocked — enable in browser settings.'); return; }
+  if (Notification.permission !== 'granted') {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { showToast('Permission denied.'); return; }
+  }
+
+  const reminders = getActivityReminders();
+  if (reminders[id]) {
+    delete reminders[id];
+    saveActivityReminders(reminders);
+    if (_activityReminderTimers[id]) { clearTimeout(_activityReminderTimers[id]); delete _activityReminderTimers[id]; }
+    showToast('Reminder off for ' + act.name);
+  } else {
+    reminders[id] = true;
+    saveActivityReminders(reminders);
+    _scheduleActivityReminderTimer(id);
+    const dayDates = { Fri:'2026-07-17', Sat:'2026-07-18' };
+    const m = act.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (m && dayDates[act.day]) {
+      let h=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';
+      if(pm&&h!==12)h+=12; if(!pm&&h===12)h=0;
+      let dateStr=dayDates[act.day];
+      if(h<8){const d=new Date(dateStr+'T00:00:00-04:00');d.setDate(d.getDate()+1);dateStr=d.toISOString().slice(0,10);}
+      const remindAt=new Date(dateStr+'T'+String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0')+':00-04:00').getTime()-10*60*1000;
+      if (remindAt < Date.now()) { showToast('⏰ That activity has already passed!'); delete reminders[id]; saveActivityReminders(reminders); return; }
+    }
+    showToast('Reminder set — you\'ll be notified 10 min before ' + act.name + '!');
+  }
+  document.querySelectorAll('[data-arkey="' + id + '"]').forEach(function(btn) {
+    btn.classList.toggle('on', !!getActivityReminders()[id]);
+  });
+  if (currentPage === 'schedule') renderSchedule();
+}
+
+function openActivity(id) {
+  const act = (ACTIVITIES || []).find(a => a.id === id);
+  if (!act) return;
+  showToast(esc(act.name) + (act.location ? ' · ' + esc(act.location) : ''));
+  // Full detail modal will be wired up in a later step
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -5153,6 +5293,14 @@ function renderSchedule() {
     return schedStageFilter === stage;
   }
 
+  // ── Activities for the current day ────────────────────────
+  const DAY_LABEL = { fri:'Fri', sat:'Sat', sun:'Sun' };
+  const dayActivities = (ACTIVITIES || [])
+    .filter(act => act.day === DAY_LABEL[day])
+    .filter(act => !q || (act.name+' '+(act.location||'')+' '+(act.description||'')).toLowerCase().includes(q))
+    .sort((a, b) => timeToSort(a.time) - timeToSort(b.time));
+  const ACTIVITIES_COLOR = '#ec4899';
+
   if (schedView === 'list') {
     listWrap.style.display = 'block';
     let html = '';
@@ -5186,6 +5334,26 @@ function renderSchedule() {
       });
       html += '</div></div>';
     });
+    if (shouldShowStage('activities') && dayActivities.length) {
+      html += `<div class="stage-section"><div class="stage-section-header activities">`+
+        `<div class="stage-dot" style="background:${ACTIVITIES_COLOR};"></div>Activities</div>`+
+        `<div class="sched-list">`;
+      dayActivities.forEach(act => {
+        const saved = getMyActivities().includes(act.id);
+        html += `<div class="sched-item" onclick="openActivity('${esc(act.id)}')">`+
+          `<div class="item-time">${(act.time||'TBA').replace(' PM','<div class="ampm">PM</div>').replace(' AM','<div class="ampm">AM</div>')}</div>`+
+          `<div class="item-avatar" style="background:${ACTIVITIES_COLOR};overflow:hidden;position:relative;">`+
+            `<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;">✦</span>`+
+            `</div>`+
+          `<div class="item-info"><div class="item-name">${esc(act.name)}</div>`+
+          `<div class="item-meta">${esc(act.location||'')}</div></div>`+
+          `<div class="item-actions"><span class="item-arrow">›</span>`+
+          `<button class="add-btn ${saved?'added':''}" data-akey="${esc(act.id)}" onclick="event.stopPropagation();toggleSavedActivity('${esc(act.id)}')">${saved?'✓':'+'}</button>`+
+          (saved && act.time && act.time!=='TBA' ? `<button class="reminder-bell ${getActivityReminderOn(act.id)?'on':''}" data-arkey="${esc(act.id)}" onclick="event.stopPropagation();toggleActivityReminder('${esc(act.id)}')"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg></button>` : '')+
+          `</div></div>`;
+      });
+      html += '</div></div>';
+    }
     document.getElementById('schedListContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon"></div>No artists match your search.</div>';
   } else {
     gridWrap.style.display = 'block';
@@ -5195,7 +5363,9 @@ function renderSchedule() {
     if (shouldShowStage('beach'))  stages.push({key:'beach',  name:'Beach Stage',                     color:'#06b6d4'});
     if (shouldShowStage('locals'))  stages.push({key:'locals',  name:"Davey Jones Locker", color:'#84cc16'});
     if (shouldShowStage('deepsea')) stages.push({key:'deepsea', name:'Deep Sea',             color:'#0ea5e9'});
-    let html = `<div class="tg-grid-wrap"><div class="tg-grid" style="grid-template-columns:repeat(${stages.length},minmax(140px,1fr));">`;
+    const showActivitiesCol = shouldShowStage('activities');
+    const colCount = stages.length + (showActivitiesCol ? 1 : 0);
+    let html = `<div class="tg-grid-wrap"><div class="tg-grid" style="grid-template-columns:repeat(${colCount},minmax(140px,1fr));">`;
     stages.forEach(st => {
       html += `<div><div class="tg-col-header" style="color:${st.color};">${st.name}</div>`;
       const items = (data[st.key]||[])
@@ -5214,6 +5384,20 @@ function renderSchedule() {
       });
       html += '</div>';
     });
+    if (showActivitiesCol) {
+      html += `<div><div class="tg-col-header" style="color:${ACTIVITIES_COLOR};">Activities</div>`;
+      dayActivities.filter(act => act.time && act.time !== 'TBA').forEach(act => {
+        const saved = getMyActivities().includes(act.id);
+        html += `<div class="tg-block activities-block" onclick="openActivity('${esc(act.id)}')">`+
+          `<div class="tg-block-time">${esc(act.time)}</div>`+
+          `<div class="tg-block-name">${esc(act.name)}</div>`+
+          `<div class="tg-block-genre">${esc(act.location||'')}</div>`+
+          `<button class="tg-block-add ${saved?'added':''}" data-akey="${esc(act.id)}" onclick="event.stopPropagation();toggleSavedActivity('${esc(act.id)}')">${saved?'✓':'+'}</button>`+
+          (saved && act.time && act.time!=='TBA' ? `<button class="tg-bell ${getActivityReminderOn(act.id)?'on':''}" data-arkey="${esc(act.id)}" onclick="event.stopPropagation();toggleActivityReminder('${esc(act.id)}')"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg></button>` : '')+
+          `</div>`;
+      });
+      html += '</div>';
+    }
     html += '</div></div>';
     document.getElementById('schedGridContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon"></div>No artists match your search.</div>';
   }
