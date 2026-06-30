@@ -2651,6 +2651,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <option value="beach">Beach Stage</option>
           <option value="locals">Davey Jones Locker</option>
           <option value="deepsea">Deep Sea</option>
+          <option value="activities">Activities</option>
         </select>
         <div class="view-toggle">
           <button class="view-btn" id="viewListBtnM" onclick="setView('list')" title="List view">☰</button>
@@ -10677,7 +10678,9 @@ async function openDMThread(friendId, handle, color) {
 
   currentDMFriendHandle = handle || 'User';
 
-  // Clear messages and cacheKey so we always get a fresh load
+  // Clear messages, cacheKey, and the confirmed-sends tracker so we always
+  // get a fresh load scoped to this conversation.
+  _dmConfirmedMessages = [];
   const msgs = document.getElementById('dmThreadMessages');
   if (msgs) {
     msgs.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</div>';
@@ -10709,27 +10712,34 @@ async function loadDMThread(friendId, expectMinCount, attempt) {
       return;
     }
     const data = await res.json();
-    const messages = data.messages || [];
+    let messages = data.messages || [];
 
     // If we're expecting a new message (post-send) and the server (KV is
     // eventually-consistent) doesn't have it yet, retry with backoff —
-    // up to 5 attempts (~3s total) — instead of giving up after one try.
-    if (expectMinCount && messages.length < expectMinCount) {
-      if (attempt < 5) {
-        const delay = 300 + attempt * 300;
-        setTimeout(function() { loadDMThread(friendId, expectMinCount, attempt + 1); }, delay);
-        return;
-      }
-      // Exhausted retries — fall through and render what we have rather
-      // than leaving the thread stuck on a stale "Loading…" state.
+    // up to 4 attempts (~1.5s total) — giving the write time to propagate
+    // before falling back to the merge guarantee below.
+    if (expectMinCount && messages.length < expectMinCount && attempt < 4) {
+      const delay = 250 + attempt * 250;
+      setTimeout(function() { loadDMThread(friendId, expectMinCount, attempt + 1); }, delay);
+      return;
     }
 
-    // Never let a read that's behind (fewer messages than we already
-    // know exist) wipe messages already on screen — KV can briefly
-    // return a stale snapshot right after a write.
-    const knownCount = parseInt((msgs.dataset.cacheKey || '0').split('|')[0]) || 0;
-    if (messages.length < knownCount && messages.length < (expectMinCount || 0)) {
-      return;
+    // Guarantee: any message this client has personally sent and gotten a
+    // server confirmation for must always be present, even if this
+    // particular read is a stale/lagging snapshot that doesn't include it
+    // yet. This is what keeps messages from "disappearing" when several
+    // are sent in quick succession and their writes/reads race each other.
+    if (_dmConfirmedMessages.length) {
+      const seen = new Set(messages.map(m => m.id));
+      _dmConfirmedMessages.forEach(function(cm) {
+        if (!seen.has(cm.id)) { messages.push(cm); seen.add(cm.id); }
+      });
+      messages.sort(function(a, b) { return (a.createdAt||'').localeCompare(b.createdAt||''); });
+      // Once the server's own list has caught up to a confirmed message,
+      // stop carrying it forward manually.
+      _dmConfirmedMessages = _dmConfirmedMessages.filter(function(cm) {
+        return !(data.messages || []).some(function(m) { return m.id === cm.id; });
+      });
     }
 
     const lastMsg  = messages[messages.length - 1];
@@ -10775,6 +10785,13 @@ function renderDMMessages(messages, isFirstLoad) {
 // Guard against double-sends
 let _dmSending = false;
 let _dmPendingPhoto = null; // { file, dataUrl }
+// Messages this client has personally sent and received server confirmation
+// for, scoped to the open conversation. Used to guarantee a sent message can
+// never disappear from view, even if a GET request (against eventually-
+// consistent KV storage) returns a stale snapshot that doesn't include it
+// yet — which is what happens when multiple messages are sent in quick
+// succession and their writes/reads race each other.
+let _dmConfirmedMessages = [];
 
 function handleDMPhoto(input) {
   const file = input.files[0];
@@ -10842,10 +10859,6 @@ async function sendDM() {
 
   // Optimistic bubble
   const msgs = document.getElementById('dmThreadMessages');
-  // Snapshot how many messages we know about before sending, so the
-  // post-send resync can confirm the server has caught up before
-  // replacing the optimistic bubble with the canonical list.
-  const preSendCount = parseInt(((msgs && msgs.dataset.cacheKey) || '0').split('|')[0]) || 0;
   let optimisticBubble = null;
   if (msgs) {
     const placeholder = msgs.querySelector('.dm-empty, [data-placeholder]');
@@ -10859,7 +10872,6 @@ async function sendDM() {
       '<div class="dm-msg-time" style="opacity:0.4;">sending…</div>';
     msgs.appendChild(optimisticBubble);
     msgs.scrollTop = msgs.scrollHeight;
-    delete msgs.dataset.cacheKey;
   }
 
   // Upload photo if present
@@ -10877,6 +10889,7 @@ async function sendDM() {
     }
   }
 
+  const threadAtSendTime = currentDMFriendId;
   const token = localStorage.getItem('ss_auth_token');
   try {
     const res = await fetch(AUTH_URL + '/dm/' + currentDMFriendId, {
@@ -10894,11 +10907,18 @@ async function sendDM() {
         if (timeEl) timeEl.textContent = getTimeAgo(data.message.createdAt);
         optimisticBubble.dataset.msgId = data.message.id;
       }
+      // Remember this confirmed message so it can never be dropped by a
+      // later read that hasn't caught up yet — this is what keeps several
+      // quickly-sent messages from disappearing when their server-side
+      // writes/reads race each other.
+      if (data && data.message && threadAtSendTime === currentDMFriendId) {
+        _dmConfirmedMessages.push(data.message);
+        if (_dmConfirmedMessages.length > 50) _dmConfirmedMessages.splice(0, _dmConfirmedMessages.length - 50);
+      }
       // Resync from the server shortly after, so the thread converges with
-      // the canonical message list. expectMinCount + the retry/backoff in
-      // loadDMThread means this won't wipe the bubble we just confirmed
-      // even if KV is still lagging behind the write.
-      setTimeout(function() { loadDMThread(currentDMFriendId, preSendCount + 1); }, 600);
+      // the canonical message list (the merge above guarantees this
+      // message stays visible even if this particular read is still stale).
+      setTimeout(function() { loadDMThread(currentDMFriendId, 1); }, 600);
     } else {
       showToast('Could not send message');
       if (input) input.value = text;
@@ -14668,6 +14688,8 @@ async function deleteTaskComment(taskId, commentId) {
    GROUP CHATS (Personal + Staff)
 ════════════════════════════════════════════════════════════ */
 var _currentGroupId    = null;
+// Mirrors _dmConfirmedMessages for group chat — see that variable's comment.
+var _groupConfirmedMessages = [];
 var _groupPollTimer    = null;
 var _newGroupIsStaff   = false;
 var _currentChatTab    = 'personal';
@@ -14823,6 +14845,7 @@ async function openGroupThread(groupId, groupName, memberCount, isStaffGroup) {
   }
 
   var msgs = document.getElementById('dmThreadMessages');
+  _groupConfirmedMessages = [];
   if (msgs) { msgs.innerHTML='<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</div>'; delete msgs.dataset.cacheKey; }
 
   await loadGroupThread();
@@ -14860,19 +14883,28 @@ async function loadGroupThread(expectMinCount, attempt) {
 
     // If we're expecting a new message (post-send) and the server (KV is
     // eventually-consistent) doesn't have it yet, retry with backoff —
-    // up to 5 attempts (~3s total) — instead of giving up after one try.
-    if (expectMinCount && messages.length < expectMinCount) {
-      if (attempt < 5) {
-        var delay = 300 + attempt * 300;
-        setTimeout(function() { loadGroupThread(expectMinCount, attempt + 1); }, delay);
-        return;
-      }
+    // up to 4 attempts (~1.5s total) — giving the write time to propagate
+    // before falling back to the merge guarantee below.
+    if (expectMinCount && messages.length < expectMinCount && attempt < 4) {
+      var delay = 250 + attempt * 250;
+      setTimeout(function() { loadGroupThread(expectMinCount, attempt + 1); }, delay);
+      return;
     }
 
-    // Never let a read that's behind wipe messages already on screen.
-    var knownCount = parseInt((msgs.dataset.cacheKey || '0').split('|')[0]) || 0;
-    if (messages.length < knownCount && messages.length < (expectMinCount || 0)) {
-      return;
+    // Guarantee: any message this client has personally sent and gotten a
+    // server confirmation for must always be present, even if this read
+    // is a stale/lagging snapshot — what keeps messages from disappearing
+    // when several are sent in quick succession. See _dmConfirmedMessages.
+    if (_groupConfirmedMessages.length) {
+      var seen = {};
+      messages.forEach(function(m){ seen[m.id] = true; });
+      _groupConfirmedMessages.forEach(function(cm) {
+        if (!seen[cm.id]) { messages.push(cm); seen[cm.id] = true; }
+      });
+      messages.sort(function(a, b) { return (a.createdAt||'').localeCompare(b.createdAt||''); });
+      var serverIds = {};
+      (d.messages||[]).forEach(function(m){ serverIds[m.id] = true; });
+      _groupConfirmedMessages = _groupConfirmedMessages.filter(function(cm) { return !serverIds[cm.id]; });
     }
 
     var lastMsg  = messages[messages.length-1];
@@ -14907,10 +14939,8 @@ async function sendGroupMessage() {
   var btn = document.getElementById('dmSendBtn');
   if (btn) { btn.style.opacity='0.5'; btn.style.pointerEvents='none'; }
   var msgs = document.getElementById('dmThreadMessages');
-  var preSendCount = parseInt(((msgs && msgs.dataset.cacheKey) || '0').split('|')[0]) || 0;
   var bubble = null;
   if (msgs) {
-    delete msgs.dataset.cacheKey;
     bubble = document.createElement('div');
     bubble.className = 'dm-msg mine';
     bubble.setAttribute('data-optimistic', '1');
@@ -14927,6 +14957,7 @@ async function sendGroupMessage() {
       if (ur.ok){ var ud=await ur.json(); imageUrl=ud.url||''; }
     } catch{}
   }
+  var groupAtSendTime = _currentGroupId;
   var token = localStorage.getItem(TOKEN_KEY);
   try {
     var res = await fetch(AUTH_URL+'/groups/'+_currentGroupId, {
@@ -14943,7 +14974,11 @@ async function sendGroupMessage() {
         if (timeEl) timeEl.textContent = getTimeAgo(data.message.createdAt);
         bubble.dataset.msgId = data.message.id;
       }
-      setTimeout(function(){ loadGroupThread(preSendCount + 1); }, 600);
+      if (data && data.message && groupAtSendTime === _currentGroupId) {
+        _groupConfirmedMessages.push(data.message);
+        if (_groupConfirmedMessages.length > 50) _groupConfirmedMessages.splice(0, _groupConfirmedMessages.length - 50);
+      }
+      setTimeout(function(){ loadGroupThread(1); }, 600);
     }
     else { showToast('Could not send'); if(bubble)bubble.remove(); if(input)input.value=text; }
   } catch { showToast('Could not send'); if(bubble)bubble.remove(); if(input)input.value=text; }
