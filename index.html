@@ -245,17 +245,27 @@ body{
 .page > *{max-width:1280px;margin-left:auto;margin-right:auto;}
 /* Powered by footer on all pages */
 .page-footer{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  row-gap:4px;
+  column-gap:6px;
   text-align:center;
   font-size:10px;
   color:rgba(122,184,224,0.25);
   letter-spacing:1px;
-  padding:20px 0 12px;
+  padding:20px 16px 12px;
   font-family:'Poppins',sans-serif;
 }
 .page-footer a{
   color:rgba(122,184,224,0.45);
   text-decoration:underline;
   cursor:pointer;
+  white-space:nowrap;
+}
+.page-footer .footer-sep{
+  opacity:0.6;
 }
 /* Nav inner content also capped */
 .top-nav > *{flex-shrink:0;}
@@ -6801,19 +6811,33 @@ renderChecklist();
   document.querySelectorAll('.page').forEach(function(p) {
     const div = document.createElement('div');
     div.className = 'page-footer';
-    div.innerHTML = 'Powered by The Festie Cat 2026 &nbsp;&middot;&nbsp; ';
+
+    const powered = document.createElement('span');
+    powered.textContent = 'Powered by The Festie Cat 2026';
+    div.appendChild(powered);
+
+    const sep1 = document.createElement('span');
+    sep1.className = 'footer-sep';
+    sep1.textContent = '·';
+    div.appendChild(sep1);
+
     const tos = document.createElement('a');
     tos.textContent = 'Terms of Service';
     tos.style.cursor = 'pointer';
     tos.addEventListener('click', function() { openTermsModal(); });
-    const sep = document.createTextNode(' · ');
+    div.appendChild(tos);
+
+    const sep2 = document.createElement('span');
+    sep2.className = 'footer-sep';
+    sep2.textContent = '·';
+    div.appendChild(sep2);
+
     const bug = document.createElement('a');
     bug.textContent = 'Report a Bug';
     bug.style.cursor = 'pointer';
     bug.addEventListener('click', function() { openBugReportModal(); });
-    div.appendChild(tos);
-    div.appendChild(sep);
     div.appendChild(bug);
+
     p.appendChild(div);
   });
 })();
