@@ -11585,6 +11585,21 @@ function renderNotifications(notifs) {
       '</div>';
     }
 
+    if (n.type === 'booth_report') {
+      const photoId    = n.photoId || '';
+      const photoUrl   = n.photoUrl || '';
+      const uploader   = n.uploader || 'unknown';
+      const uploaderId = n.uploaderId || '';
+      return '<div class="notif-item ' + (n.read ? '' : 'unread') + '">' +
+        '<div class="notif-dot red"></div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="notif-text" style="color:#ff4d64;">' + escapeHTML(n.message||'Photo reported') + '</div>' +
+          '<div class="notif-time">' + timeAgo + '</div>' +
+          (photoId ? '<button onclick="event.stopPropagation();handleNotifClick(\''+nid+'\',\'booth_report\',\'\');adminReviewBoothPhoto(\''+escapeHTML(photoId)+'\',\''+escapeHTML(photoUrl)+'\',\''+escapeHTML(uploader)+'\',\''+escapeHTML(uploaderId)+'\')" style="margin-top:6px;padding:5px 12px;background:rgba(255,77,100,0.2);border:1px solid rgba(255,77,100,0.5);color:#ff4d64;font-size:11px;font-weight:800;cursor:pointer;width:100%;">⚑ Review Image</button>' : '') +
+        '</div>' +
+      '</div>';
+    }
+
     return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" style="cursor:pointer;" onclick="handleNotifClick(\''+nid+'\',\''+(n.type||'')+'\',\''+fromId+'\')">' +
       '<div class="notif-dot ' + (n.category||'blue') + '"></div>' +
       '<div style="flex:1;">' +
@@ -13705,20 +13720,28 @@ async function loadBoothPhotos() {
     }
     const isAdmin = currentUser && (currentUser.role === 'admin');
     grid.innerHTML = photos.map(function(p) {
+      // Admins see flagged photos dimmed with a Review button; everyone else sees nothing
+      if (p.flagged && !isAdmin) return '';
+
       const canDel   = isAdmin || (currentUser && p.uploadedById === currentUser.id);
       const tags     = (p.taggedUsers || []).map(function(t){return '@'+t.handle;}).join(' ');
       const caption  = p.caption ? '<div style="font-size:11px;color:rgba(255,255,255,0.8);margin-top:3px;line-height:1.3;">'+p.caption+'</div>' : '';
       const tagLine  = tags ? '<div style="font-size:10px;color:#c084fc;margin-top:2px;">'+tags+'</div>' : '';
-      // Encode caption/tags for onclick attribute
       const zCaption = encodeURIComponent(p.caption||'');
       const zTags    = encodeURIComponent(tags);
       const zUploader= encodeURIComponent('@'+(p.uploadedBy||'festie'));
-      return '<div class="booth-photo-item" id="booth-item-' + p.id + '"' + (p.flagged ? ' style="opacity:0.15;pointer-events:none;" title="Hidden pending admin review"' : '') + '>' +
+
+      const flaggedStyle = p.flagged ? ' style="opacity:0.2;outline:2px solid rgba(255,77,100,0.5);"' : '';
+      const reviewBtn    = (p.flagged && isAdmin)
+        ? '<button class="booth-photo-report" style="background:rgba(255,77,100,0.8);color:#fff;font-size:9px;font-weight:800;width:auto;padding:2px 5px;border-radius:3px;" onclick="adminReviewBoothPhoto(\''+p.id+'\',\''+p.url+'\',\''+p.uploadedBy+'\',\''+p.uploadedById+'\')">⚑ REVIEW</button>'
+        : '';
+
+      return '<div class="booth-photo-item" id="booth-item-' + p.id + '"' + flaggedStyle + '>' +
         '<img src="' + p.url + '" loading="lazy" onclick="boothZoom(\'' + p.url + '\',\'' + zCaption + '\',\'' + zTags + '\',\'' + zUploader + '\')" onerror="this.closest(\'.booth-photo-item\').style.display=\'none\'">' +
         '<div class="booth-photo-meta">@' + (p.uploadedBy || 'festie') + caption + tagLine + '</div>' +
-        // Report button — always visible, bottom-left
-        (!canDel && currentUser ? '<button class="booth-photo-report" onclick="openBoothReport(\'' + p.id + '\',\'' + p.uploadedBy + '\')" title="Report this photo">⚑</button>' : '') +
-        (canDel ? '<button class="booth-photo-del" onclick="deleteBoothPhoto(\'' + p.id + '\',this)" title="Delete">✕</button>' : '') +
+        reviewBtn +
+        (!canDel && !p.flagged && currentUser ? '<button class="booth-photo-report" onclick="openBoothReport(\'' + p.id + '\',\'' + p.uploadedBy + '\')" title="Report this photo">⚑</button>' : '') +
+        (canDel && !p.flagged ? '<button class="booth-photo-del" onclick="deleteBoothPhoto(\'' + p.id + '\',this)" title="Delete">✕</button>' : '') +
       '</div>';
     }).join('');
   } catch {
@@ -13926,16 +13949,12 @@ async function submitBoothReport() {
       })
     });
 
-    if (res.ok || !token) { // graceful even if not logged in
-      // If explicit/violent — hide the photo immediately on this client
+    if (res.ok || !token) {
       if (reason === 'explicit') {
+        // Remove entirely from the grid — don't just dim
         const item = document.getElementById('booth-item-' + _boothReportPhotoId);
-        if (item) {
-          item.style.opacity = '0.15';
-          item.style.pointerEvents = 'none';
-          item.title = 'Hidden pending review';
-        }
-        if (status) { status.style.color='#4ade80'; status.textContent='✓ Image hidden and reported to admin.'; }
+        if (item) item.remove();
+        if (status) { status.style.color='#4ade80'; status.textContent='✓ Image removed and reported to admin.'; }
       } else {
         if (status) { status.style.color='#4ade80'; status.textContent='✓ Report sent to admin for review.'; }
       }
@@ -14458,6 +14477,134 @@ window.initPeople = function() {
   var createBtn = document.getElementById('createStaffGroupBtn');
   if (createBtn) createBtn.style.display = isAdminOrMgmt() ? 'block' : 'none';
 };
+</script>
+
+<!-- ══ ADMIN PHOTO REVIEW MODAL ══ -->
+<div id="adminBoothReviewModal" style="display:none;position:fixed;inset:0;z-index:90000;background:rgba(0,0,0,0.96);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:16px;">
+  <div style="width:100%;max-width:520px;background:#0e0e0e;border:2px solid rgba(255,77,100,0.5);display:flex;flex-direction:column;max-height:90vh;">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#ff4d64;letter-spacing:1px;">⚑ FLAGGED PHOTO — ADMIN REVIEW</span>
+      <button onclick="closeAdminBoothReview()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+    </div>
+    <!-- Image -->
+    <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+      <img id="adminReviewImg" src="" style="max-width:100%;max-height:400px;object-fit:contain;border:1px solid rgba(255,77,100,0.3);">
+      <div id="adminReviewMeta" style="font-size:12px;color:var(--text-muted);text-align:center;line-height:1.6;"></div>
+      <div id="adminReviewStatus" style="font-size:12px;min-height:16px;text-align:center;"></div>
+    </div>
+    <!-- Action buttons -->
+    <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
+      <button onclick="adminBoothReinstate()" style="width:100%;padding:11px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);color:#4ade80;font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">
+        ✓ Reinstate — Image is OK, restore to booth
+      </button>
+      <button onclick="adminBoothDelete()" style="width:100%;padding:11px;background:rgba(255,77,100,0.12);border:1px solid rgba(255,77,100,0.35);color:#ff4d64;font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">
+        🗑 Delete Image
+      </button>
+      <button onclick="adminBoothDeleteAndBan()" style="width:100%;padding:11px;background:rgba(255,30,30,0.2);border:2px solid rgba(255,30,30,0.6);color:#ff2222;font-family:'Poppins',sans-serif;font-size:13px;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;">
+        ☠ Delete Image + Ban User
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   ADMIN PHOTO BOOTH REVIEW
+════════════════════════════════════════════════════════════ */
+var _adminReviewPhotoId    = null;
+var _adminReviewUploader   = null;
+var _adminReviewUploaderId = null;
+var _adminReviewPhotoUrl   = null;
+
+function adminReviewBoothPhoto(photoId, photoUrl, uploaderHandle, uploaderId) {
+  _adminReviewPhotoId    = photoId;
+  _adminReviewPhotoUrl   = photoUrl;
+  _adminReviewUploader   = uploaderHandle;
+  _adminReviewUploaderId = uploaderId;
+
+  var modal   = document.getElementById('adminBoothReviewModal');
+  var img     = document.getElementById('adminReviewImg');
+  var meta    = document.getElementById('adminReviewMeta');
+  var statusEl= document.getElementById('adminReviewStatus');
+  if (img)     img.src = photoUrl;
+  if (meta)    meta.innerHTML = 'Uploaded by <strong style="color:var(--text-light);">@'+escapeHTML(uploaderHandle||'unknown')+'</strong><br>Flagged as Sexually Explicit or Violent';
+  if (statusEl) statusEl.textContent = '';
+  if (modal)   modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAdminBoothReview() {
+  var modal = document.getElementById('adminBoothReviewModal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+  _adminReviewPhotoId = _adminReviewUploader = _adminReviewUploaderId = _adminReviewPhotoUrl = null;
+}
+
+async function adminBoothReinstate() {
+  if (!_adminReviewPhotoId) return;
+  var token = localStorage.getItem(TOKEN_KEY);
+  var statusEl = document.getElementById('adminReviewStatus');
+  try {
+    var res = await fetch(AUTH_URL + '/booth/' + _adminReviewPhotoId + '/reinstate', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      showToast('✓ Photo reinstated');
+      closeAdminBoothReview();
+      loadBoothPhotos();
+    } else { if (statusEl) { statusEl.style.color='var(--pink-coral)'; statusEl.textContent='Could not reinstate.'; } }
+  } catch { if (statusEl) { statusEl.style.color='var(--pink-coral)'; statusEl.textContent='Could not connect.'; } }
+}
+
+async function adminBoothDelete() {
+  if (!_adminReviewPhotoId || !confirm('Permanently delete this photo?')) return;
+  var token = localStorage.getItem(TOKEN_KEY);
+  var statusEl = document.getElementById('adminReviewStatus');
+  try {
+    var res = await fetch(AUTH_URL + '/booth/' + _adminReviewPhotoId, {
+      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      showToast('🗑 Photo deleted');
+      // Remove from grid
+      var item = document.getElementById('booth-item-' + _adminReviewPhotoId);
+      if (item) item.remove();
+      closeAdminBoothReview();
+    } else { if (statusEl) { statusEl.style.color='var(--pink-coral)'; statusEl.textContent='Could not delete.'; } }
+  } catch { if (statusEl) { statusEl.style.color='var(--pink-coral)'; statusEl.textContent='Could not connect.'; } }
+}
+
+async function adminBoothDeleteAndBan() {
+  if (!_adminReviewPhotoId || !_adminReviewUploaderId) return;
+  if (!confirm('DELETE photo AND permanently ban @' + (_adminReviewUploader||'this user') + '? This cannot be undone.')) return;
+  var token = localStorage.getItem(TOKEN_KEY);
+  var statusEl = document.getElementById('adminReviewStatus');
+  if (statusEl) { statusEl.style.color='var(--text-muted)'; statusEl.textContent='Processing…'; }
+
+  try {
+    // 1. Delete the photo
+    await fetch(AUTH_URL + '/booth/' + _adminReviewPhotoId, {
+      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    // 2. Ban and delete the user account
+    var res = await fetch(AUTH_URL + '/auth/users/' + _adminReviewUploaderId + '/ban', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    if (res.ok) {
+      showToast('☠ Photo deleted & user banned');
+      var item = document.getElementById('booth-item-' + _adminReviewPhotoId);
+      if (item) item.remove();
+      closeAdminBoothReview();
+      loadBoothPhotos();
+    } else {
+      var d = await res.json().catch(function(){ return {}; });
+      if (statusEl) { statusEl.style.color='var(--pink-coral)'; statusEl.textContent = d.error || 'Could not ban user.'; }
+    }
+  } catch { if (statusEl) { statusEl.style.color='var(--pink-coral)'; statusEl.textContent='Could not connect.'; } }
+}
 </script>
 </body>
 </html>
