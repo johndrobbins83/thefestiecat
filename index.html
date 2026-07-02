@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7117,7 +7117,7 @@ async function loadAdminUsers() {
       // Update user count in header
       const statEl = document.getElementById('statUsers');
       if (statEl) statEl.textContent = window._allUsers.length;
-      renderAdminUsersTab();
+      renderAdminArtistGrid();
       updateConnectButtonStates(); // call immediately (async, non-blocking)
     }
   } catch(e) { console.warn('loadAdminUsers failed:', e); }
@@ -8070,6 +8070,7 @@ async function adminLoadUsers() {
         banner.style.display = (me && !me.isMaster) ? 'flex' : 'none';
       }
       applyUserSort();
+      updateConnectButtonStates(); // re-check after DOM is updated
     } else {
       list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">' + (data.error||'Failed to load') + '</div>';
     }
@@ -8113,6 +8114,7 @@ function applyUserSort() {
 
   if (badge) badge.textContent = users.length + ' of ' + window._cachedUsers.length + ' users';
   list.innerHTML = buildUserTableHTML(users);
+  updateConnectButtonStates();
 }
 
 function downloadUsersPDF() {
@@ -10149,12 +10151,41 @@ async function loadFriends() {
           '<div class="person-bio">'+(f.bio||f.name||'')+'</div>'+
         '</div>'+
         '<button class="person-follow-btn friends" onclick="event.stopPropagation();navigate(\'people\');setTimeout(function(){switchPeopleTab(\'messages\');openDMThread(\''+f.id+'\',\''+(f.handle||'user')+'\',\''+(f.avatarColor||'#9b3dff')+'\');},200);">&#x1F4AC; DM</button>'+
+        '<button onclick="event.stopPropagation();disconnectUser(\''+f.id+'\',\''+(f.handle||'user')+'\',this)" style="background:none;border:1px solid rgba(255,77,100,0.25);color:rgba(255,77,100,0.6);font-size:10px;font-weight:700;padding:5px 8px;cursor:pointer;margin-left:4px;transition:all .15s;" onmouseover="this.style.borderColor=\'rgba(255,77,100,0.6)\';this.style.color=\'#ff4d64\'" onmouseout="this.style.borderColor=\'rgba(255,77,100,0.25)\';this.style.color=\'rgba(255,77,100,0.6)\'">✕</button>'+
       '</div>';
     }).join('');
   } catch {}
 }
 
-// (declared at top of script)
+async function disconnectUser(userId, handle, btn) {
+  if (!confirm('Disconnect from @' + handle + '? You can reconnect later.')) return;
+  const token = localStorage.getItem('ss_auth_token');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  try {
+    const res = await fetch(AUTH_URL + '/friends/' + userId, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      showToast('Disconnected from @' + handle);
+      // Remove the card from the DOM immediately
+      const card = btn.closest('.person-card');
+      if (card) card.remove();
+      // Refresh cached friends
+      if (window._cachedFriends) {
+        window._cachedFriends = window._cachedFriends.filter(function(f){ return f.id !== userId; });
+      }
+    } else {
+      const d = await res.json().catch(function(){ return {}; });
+      showToast(d.error || 'Could not disconnect');
+      if (btn) { btn.disabled = false; btn.textContent = '✕'; }
+    }
+  } catch {
+    showToast('Could not connect to server');
+    if (btn) { btn.disabled = false; btn.textContent = '✕'; }
+  }
+}
+
 function searchPeople(q) {
   clearTimeout(searchPeopleTimer);
   const resultsEl = document.getElementById('peopleResults');
