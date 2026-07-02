@@ -15,9 +15,8 @@
 
 
 <meta name="apple-mobile-web-app-title" content="Sunken Suite">
-<link rel="apple-touch-icon" href="/icon192.png">
+<link rel="apple-touch-icon" href="/icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/icon512.png">
 <link rel="shortcut icon" href="/icon192.png">
 
 <!-- Fonts -->
@@ -245,27 +244,17 @@ body{
 .page > *{max-width:1280px;margin-left:auto;margin-right:auto;}
 /* Powered by footer on all pages */
 .page-footer{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  justify-content:center;
-  row-gap:4px;
-  column-gap:6px;
   text-align:center;
   font-size:10px;
   color:rgba(122,184,224,0.25);
   letter-spacing:1px;
-  padding:20px 16px 12px;
+  padding:20px 0 12px;
   font-family:'Poppins',sans-serif;
 }
 .page-footer a{
   color:rgba(122,184,224,0.45);
   text-decoration:underline;
   cursor:pointer;
-  white-space:nowrap;
-}
-.page-footer .footer-sep{
-  opacity:0.6;
 }
 /* Nav inner content also capped */
 .top-nav > *{flex-shrink:0;}
@@ -518,7 +507,6 @@ body{
 .stage-pill.beach {color:rgba(6,182,212,0.45);   border-color:rgba(6,182,212,0.15);}
 .stage-pill.locals{color:rgba(132,204,22,0.45);  border-color:rgba(132,204,22,0.15);}
 .stage-pill.deepsea{color:rgba(14,165,233,0.45); border-color:rgba(14,165,233,0.15);}
-.stage-pill.activities{color:rgba(236,72,153,0.45); border-color:rgba(236,72,153,0.15);}
 .stage-pill.oasis {color:rgba(0,212,200,0.45);   border-color:rgba(0,212,200,0.15);}
 .stage-pill.on.all   {background:rgba(245,200,66,0.15); border-color:rgba(245,200,66,0.5);  color:var(--gold-bright);}
 .stage-pill.on.dnb   {background:rgba(192,132,252,0.15);border-color:rgba(192,132,252,0.5); color:#c084fc;}
@@ -526,7 +514,6 @@ body{
 .stage-pill.on.beach {background:rgba(6,182,212,0.15);  border-color:rgba(6,182,212,0.5);   color:#06b6d4;}
 .stage-pill.on.locals{background:rgba(132,204,22,0.15); border-color:rgba(132,204,22,0.5);  color:#84cc16;}
 .stage-pill.on.deepsea{background:rgba(14,165,233,0.15);border-color:rgba(14,165,233,0.5);   color:#0ea5e9;}
-.stage-pill.on.activities{background:rgba(236,72,153,0.15);border-color:rgba(236,72,153,0.5);   color:#ec4899;}
 .stage-pill.on.oasis {background:rgba(0,212,200,0.15);  border-color:rgba(0,212,200,0.5);   color:var(--teal-glow);}
 .view-toggle{display:flex;gap:4px;margin-left:auto;}
 .view-btn{width:32px;height:32px;border-radius:0;border:1px solid rgba(255,255,255,0.1);
@@ -545,7 +532,6 @@ body{
 .stage-section-header.beach{background:rgba(6,182,212,0.1);color:#06b6d4;border:1px solid rgba(6,182,212,0.2);}
 .stage-section-header.locals{background:rgba(132,204,22,0.1);color:#84cc16;border:1px solid rgba(132,204,22,0.2);}
 .stage-section-header.deepsea{background:rgba(14,165,233,0.1);color:#0ea5e9;border:1px solid rgba(14,165,233,0.2);}
-.stage-section-header.activities{background:rgba(236,72,153,0.1);color:#ec4899;border:1px solid rgba(236,72,153,0.2);}
 .stage-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .sched-list{display:flex;flex-direction:column;}
 .sched-event-row{display:flex;align-items:center;gap:10px;padding:8px 0;
@@ -610,7 +596,6 @@ body{
 .tg-block.beach-block{background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.25);}
 .tg-block.locals-block{background:rgba(132,204,22,0.12);border:1px solid rgba(132,204,22,0.25);}
 .tg-block.deepsea-block{background:rgba(14,165,233,0.12);border:1px solid rgba(14,165,233,0.25);}
-.tg-block.activities-block{background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.25);}
 .tg-block.headliner-block{border-width:2px;}
 .tg-block-time{font-size:10px;font-weight:700;color:var(--text-muted);font-family:'Orbitron',sans-serif;line-height:1;}
 .tg-block-name{font-size:12px;font-weight:800;color:var(--text-light);line-height:1.2;
@@ -1503,6 +1488,7 @@ body{
   padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:16px;}
 .staff-role-badge.security  {background:rgba(255,77,141,0.15);color:var(--pink-coral);border:1px solid rgba(255,77,141,0.3);}
 .staff-role-badge.stage-crew{background:rgba(155,61,255,0.15);color:#c084fc;border:1px solid rgba(155,61,255,0.3);}
+.staff-role-badge.dj{background:rgba(0,212,200,0.15);color:var(--teal-glow);border:1px solid rgba(0,212,200,0.3);}
 .staff-role-badge.ticketing {background:rgba(0,212,200,0.15);color:var(--teal-glow);border:1px solid rgba(0,212,200,0.3);}
 .staff-role-badge.engineers {background:rgba(245,200,66,0.15);color:var(--gold-bright);border:1px solid rgba(245,200,66,0.3);}
 .staff-role-badge.management{background:rgba(255,107,26,0.15);color:var(--gold-sunset);border:1px solid rgba(255,107,26,0.3);}
@@ -1857,16 +1843,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   justify-content:center;flex-shrink:0;padding:0 4px;}
 
 /* DM thread */
-.dm-thread-overlay{position:fixed;z-index:100000;background:#0a0a0a;
-  display:none;}
-.dm-thread-overlay.open{display:flex;flex-direction:column;overflow:hidden;
-  /* Mobile: sit above the bottom nav (72px + safe area) */
-  top:0;left:0;right:0;
-  bottom:calc(72px + env(safe-area-inset-bottom, 0px));}
+.dm-thread-overlay{position:fixed;inset:0;z-index:15000;background:#0a0a0a;
+  display:none;flex-direction:column;
+  /* Use dvh so the overlay shrinks when the mobile keyboard opens */
+  height:100dvh;}
+.dm-thread-overlay.open{display:flex;}
 @media(min-width:768px){
   .dm-thread-overlay.open{
-    top:auto;left:auto;
-    bottom:0;right:24px;width:360px;height:520px;
+    inset:auto;bottom:0;right:24px;width:360px;height:520px;
     border:1px solid rgba(245,200,66,0.2);border-bottom:none;
     border-radius:12px 12px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,0.6);
   }
@@ -1885,7 +1869,8 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .dm-msg-time{font-size:10px;opacity:0.45;margin-top:3px;}
 .dm-thread-input-row{display:flex;gap:8px;padding:10px 14px;
   background:#0a0a0a;border-top:1px solid rgba(255,255,255,0.07);
-  padding-bottom:max(10px, env(safe-area-inset-bottom));flex-shrink:0;}
+  padding-bottom:max(10px, env(safe-area-inset-bottom));flex-shrink:0;
+  position:sticky;bottom:0;z-index:10;}
 @media(max-width:767px){
   .dm-thread-input-row{
     padding:10px 12px;
@@ -2446,6 +2431,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <span class="desktop-nav-link"        data-page="schedule" onclick="navigate('schedule')"><span style="color:var(--gold-bright);margin-right:4px;">◈</span>Schedule</span>
     <span class="desktop-nav-link"        data-page="artists"  onclick="navigate('artists')"><span style="color:var(--gold-bright);margin-right:4px;">♪</span>Artists</span>
     <span class="desktop-nav-link"        data-page="map"      onclick="navigate('map')"><span style="color:var(--gold-bright);margin-right:4px;">⊕</span>Map</span>
+    <span class="desktop-nav-link"        data-page="checklist" onclick="navigate('checklist')"><span style="color:var(--gold-bright);margin-right:4px;">☑</span>List</span>
     <span class="desktop-nav-link" data-page="people" onclick="navigate('people')">👥 People</span>
     <span class="desktop-nav-link more-trigger" onclick="if(document.getElementById('dmThreadOverlay')&&document.getElementById('dmThreadOverlay').classList.contains('open')){closeDMThread();}toggleMore(this)">⋯ More</span>
   </nav>
@@ -2662,7 +2648,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <option value="beach">Beach Stage</option>
           <option value="locals">Davey Jones Locker</option>
           <option value="deepsea">Deep Sea</option>
-          <option value="activities">Activities</option>
         </select>
         <div class="view-toggle">
           <button class="view-btn" id="viewListBtnM" onclick="setView('list')" title="List view">☰</button>
@@ -2686,7 +2671,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
           <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locker</button>
           <button class="stage-pill deepsea" data-stage="deepsea" onclick="filterStage('deepsea',this)">Deep Sea</button>
-          <button class="stage-pill activities" data-stage="activities" onclick="filterStage('activities',this)">Activities</button>
           <div class="view-toggle">
             <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
             <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
@@ -3030,7 +3014,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <select class="dash-tab-select" onchange="switchAdminTab(this.value, null); this.blur();">
       <option value="artists">♪ Artists</option>
       <option value="schedule">◈ Schedule</option>
-      <option value="activities">✦ Activities</option>
       <option value="master">📋 Master</option>
       <option value="staffedit">👷 Staff</option>
       <option value="tasks">✅ Tasks</option>
@@ -3041,7 +3024,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="dash-tabs">
       <button class="dash-tab active" onclick="switchAdminTab('artists',this)"><span style="color:var(--gold-bright);margin-right:4px;">♪</span>Artists</button>
       <button class="dash-tab" onclick="switchAdminTab('schedule',this)"><span style="color:var(--gold-bright);margin-right:4px;">◈</span>Schedule</button>
-      <button class="dash-tab" onclick="switchAdminTab('activities',this)"><span style="color:#ec4899;margin-right:4px;">✦</span>Activities</button>
       <button class="dash-tab" onclick="switchAdminTab('master',this)">📋 Master</button>
       <button class="dash-tab" onclick="switchAdminTab('staffedit',this)">👷 Staff</button>
       <button class="dash-tab" onclick="switchAdminTab('tasks',this)">✅ Tasks</button>
@@ -3100,19 +3082,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <button class="dash-btn" onclick="setAdminSchedDay('sun',this)">Sun 7/19</button>
           </div>
           <div id="adminSchedList"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Activities Tab -->
-    <div id="adminTab-activities" style="display:none;">
-      <div class="dash-section">
-        <div class="dash-section-header">
-          <div class="dash-section-title"><span style="color:#ec4899;margin-right:4px;">✦</span>Activities <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(yoga, workshops, non-music events)</span></div>
-          <button class="dash-btn primary" onclick="adminNewActivity()">+ Add Activity</button>
-        </div>
-        <div class="dash-section-body">
-          <div id="adminActivitiesList"></div>
         </div>
       </div>
     </div>
@@ -3268,20 +3237,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <button class="dash-btn" onclick="testMyPush()" style="font-size:11px;"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg> Test Push to Me</button>
             <div id="pushTestStatus" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
           </div>
-        </div>
-      </div>
-
-      <!-- Maintenance Section -->
-      <div class="dash-section" style="margin-top:16px;">
-        <div class="dash-section-header">
-          <div class="dash-section-title">🛠 Maintenance</div>
-        </div>
-        <div class="dash-section-body" style="display:flex;flex-direction:column;gap:10px;">
-          <div style="font-size:12px;color:var(--text-muted);">
-            New accounts automatically get a default profile picture. This one-time action applies it to any existing accounts that don't have a profile picture yet — it won't touch anyone who's already uploaded their own.
-          </div>
-          <button class="dash-btn" onclick="backfillDefaultAvatars()">🖼 Apply Default Avatar to Existing Users</button>
-          <div id="backfillAvatarStatus" style="font-size:12px;color:var(--text-muted);"></div>
         </div>
       </div>
 
@@ -3532,6 +3487,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <span class="nav-item"        data-page="schedule"  onclick="navigate('schedule')"><div class="nav-icon-wrap">◈</div><span class="nav-label">Schedule</span></span>
   <span class="nav-item"        data-page="artists"   onclick="navigate('artists')"><div class="nav-icon-wrap">♪</div><span class="nav-label">Artists</span></span>
   <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">⊕</div><span class="nav-label">Map</span></span>
+  <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">☑</div><span class="nav-label">List</span></span>
   <span class="nav-item" data-page="people" onclick="navigate('people')"><div class="nav-icon-wrap">👥</div><span class="nav-label">People</span></span>
   <span class="nav-item more-trigger" onclick="if(document.getElementById('dmThreadOverlay')&&document.getElementById('dmThreadOverlay').classList.contains('open')){closeDMThread();}toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
 </nav>
@@ -3549,11 +3505,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="more-btn-icon" style="background:rgba(255,105,180,0.2);color:#ff69b4;">📸</div>
         <div class="more-btn-label">Photo Booth</div>
         <div class="more-btn-sub">Share your moments</div>
-      </span>
-      <span class="more-btn" onclick="navigate('checklist');closeMore()" style="border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.05);">
-        <div class="more-btn-icon" style="background:rgba(245,200,66,0.15);color:var(--gold-bright);">☑</div>
-        <div class="more-btn-label">My List</div>
-        <div class="more-btn-sub">Festival checklist</div>
       </span>
       <span class="more-btn games" onclick="navigate('games');closeMore()">
         <div class="more-btn-icon">🎮</div>
@@ -4262,48 +4213,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   </div>
 </div>
 
-<!-- ══ ACTIVITY EDIT MODAL ══ -->
-<div class="edit-modal-overlay" id="activityEditModal">
-  <div class="edit-modal">
-    <div class="edit-modal-header">
-      <div class="edit-modal-title" id="activityEditModalTitle">Edit Activity</div>
-      <button class="edit-modal-close" onclick="closeActivityEdit()">✕</button>
-    </div>
-    <div class="edit-modal-body">
-      <input type="hidden" id="editActivityId">
-      <div class="edit-field">
-        <label class="edit-label">Activity Name</label>
-        <input class="edit-input" id="editActivityName" placeholder="e.g. Sunrise Yoga">
-      </div>
-      <div class="edit-field">
-        <label class="edit-label">Location</label>
-        <input class="edit-input" id="editActivityLocation" placeholder="e.g. Lakeside Lawn">
-      </div>
-      <div class="edit-field">
-        <label class="edit-label">Day</label>
-        <select class="edit-select" id="editActivityDay">
-          <option value="TBA">TBA</option>
-          <option value="Fri">Friday 7/17</option>
-          <option value="Sat">Saturday 7/18</option>
-          <option value="Sun">Sunday 7/19</option>
-        </select>
-      </div>
-      <div class="edit-field">
-        <label class="edit-label">Time</label>
-        <select class="edit-select" id="editActivityTime"></select>
-      </div>
-      <div class="edit-field">
-        <label class="edit-label">Description</label>
-        <textarea class="edit-textarea" id="editActivityDescription" rows="4" placeholder="What's this activity about?"></textarea>
-      </div>
-    </div>
-    <div class="edit-modal-footer">
-      <button class="dash-btn" onclick="closeActivityEdit()">Cancel</button>
-      <button class="dash-btn primary" onclick="saveActivityEdit()">Save Activity</button>
-    </div>
-  </div>
-</div>
-
 
 <!-- ══ SITE ALERT OVERLAY ══ -->
 <div class="site-alert-overlay" id="siteAlertOverlay">
@@ -4776,19 +4685,6 @@ async function loadArtistOverrides() {
 }
 loadArtistOverrides();
 
-// ── Activities (6th "stage" — non-music events) ──────────────
-async function loadActivities() {
-  try {
-    const res = await fetch(AUTH_URL + '/activities');
-    if (!res.ok) return;
-    const d = await res.json();
-    ACTIVITIES = Array.isArray(d.activities) ? d.activities : [];
-    // Re-render pages that show activities (added in later steps)
-    if (typeof renderSchedule === 'function') renderSchedule();
-  } catch(e) { /* Activities unavailable - schedule will just omit the column */ }
-}
-loadActivities();
-
 async function saveArtistOverride(key, data) {
   // Merge into full overrides object and push to worker
   const getRes = await fetch(AUTH_URL + '/artists');
@@ -4859,8 +4755,8 @@ let lastAlertId = null;
 let alertPollInterval = null;
 let cachedTasks = [];
 let cachedShifts = [];
-const STAFF_ROLES = ['security','stage-crew','ticketing','engineers','management','transportation'];
-const STAFF_ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management', transportation:'Transportation' };
+const STAFF_ROLES = ['security','stage-crew','ticketing','engineers','dj','management','transportation'];
+const STAFF_ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', dj:'DJ', management:'Management', transportation:'Transportation' };
 const STAFF_TASK_KEY = 'ss_staff_tasks_done';
 let staffDoneTasks = new Set();
 let staffEditSubTab = 'announcements';
@@ -4877,8 +4773,8 @@ let masterTypeFilter = 'all';
 const ALERT_DISMISSED_KEY = 'ss_dismissed_alerts';
 const ALERT_ICONS = { warning:'⚠️', emergency:'🚨', info:'ℹ️' };
 const PERSONAL_BLOCKS_KEY = 'ss_personal_blocks_v1';
-const ROLES = ['security','stage-crew','ticketing','engineers','management','transportation'];
-const ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', management:'Management', transportation:'Transportation' };
+const ROLES = ['security','stage-crew','ticketing','engineers','dj','management','transportation'];
+const ROLE_LABELS = { security:'Security', 'stage-crew':'Stage Crew', ticketing:'Ticketing/Front', engineers:'Engineers', dj:'DJ', management:'Management', transportation:'Transportation' };
 const DAYS = ['Fri','Sat','Sun'];
 const DAY_LABELS = {'Fri':'Friday Jul 17','Sat':'Saturday Jul 18','Sun':'Sunday Jul 19'};
 const SHIFT_LOCATIONS = ['DNB Stage','DNB Backstage','Oasis Stage Stage','Oasis Stage Backstage','Beach Stage','Beach Backstage',"Davey Jones Locker",'Locals Backstage','Main Entrance / Gate','Box Office / Ticketing','Pool Area','Hotel Lobby','Hotel','Airport','Parking Lot','Medical Station','General Grounds'];
@@ -4903,7 +4799,6 @@ let INFO_CONTENT = {};
 let DJ_BINGO_TRACKS = [];
 let STAGES = [];
 let PRESETS = {};
-let ACTIVITIES = [];
 
 function getMySchedule() {
   try { return JSON.parse(localStorage.getItem(MY_SCHED_KEY)) || []; } catch(e) { return []; }
@@ -4930,127 +4825,6 @@ function toggleSaved(key) {
     const mineTab = document.getElementById('mySchedTab');
     if (mineTab && mineTab.classList.contains('active')) renderMySchedPage();
   }
-}
-
-// ── Activities scheduling (fully separate from artist scheduling) ──
-const MY_ACTIVITIES_KEY = 'ss_my_activities_v1';
-function getMyActivities() {
-  try { return JSON.parse(localStorage.getItem(MY_ACTIVITIES_KEY)) || []; } catch(e) { return []; }
-}
-function saveMyActivities(arr) {
-  localStorage.setItem(MY_ACTIVITIES_KEY, JSON.stringify(arr));
-}
-function refreshAllActivityAddBtns() {
-  const mine = getMyActivities();
-  document.querySelectorAll('[data-akey]').forEach(btn=>{
-    const id = btn.dataset.akey;
-    const saved = mine.includes(id);
-    btn.classList.toggle('added', saved);
-    btn.textContent = saved ? '✓' : '+';
-  });
-}
-function toggleSavedActivity(id) {
-  const act = (ACTIVITIES || []).find(a => a.id === id);
-  const label = act ? act.name : 'Activity';
-  let mine = getMyActivities();
-  const idx = mine.indexOf(id);
-  if (idx === -1) { mine.push(id); showToast('⭐ ' + label + ' added to your schedule'); }
-  else { mine.splice(idx, 1); showToast('Removed ' + label + ' from your schedule'); }
-  saveMyActivities(mine);
-  refreshAllActivityAddBtns();
-  if (currentPage === 'schedule') {
-    const mineTab = document.getElementById('mySchedTab');
-    if (mineTab && mineTab.classList.contains('active')) renderMySchedPage();
-  }
-}
-
-function getActivityReminders() {
-  try { return JSON.parse(localStorage.getItem('ss_activity_reminders_v1')) || {}; } catch(e) { return {}; }
-}
-function saveActivityReminders(obj) {
-  localStorage.setItem('ss_activity_reminders_v1', JSON.stringify(obj));
-}
-function getActivityReminderOn(id) {
-  return !!getActivityReminders()[id];
-}
-const _activityReminderTimers = {};
-function _scheduleActivityReminderTimer(id) {
-  const act = (ACTIVITIES || []).find(a => a.id === id);
-  if (!act || !act.time || act.time === 'TBA') return;
-  const dayDates = { Fri:'2026-07-17', Sat:'2026-07-18' };
-  if (!dayDates[act.day]) return;
-  const m = act.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-  if (!m) return;
-  let h = parseInt(m[1]), mn = parseInt(m[2]);
-  const pm = m[3].toUpperCase() === 'PM';
-  if (pm && h !== 12) h += 12;
-  if (!pm && h === 12) h = 0;
-  let dateStr = dayDates[act.day];
-  if (h < 8) {
-    const d = new Date(dateStr + 'T00:00:00-04:00');
-    d.setDate(d.getDate() + 1);
-    dateStr = d.toISOString().slice(0, 10);
-  }
-  const setTime = new Date(dateStr + 'T' + String(h).padStart(2,'0') + ':' + String(mn).padStart(2,'0') + ':00-04:00').getTime();
-  const remindAt = setTime - 10 * 60 * 1000;
-  const msUntil = remindAt - Date.now();
-  if (msUntil < 0) return;
-  if (_activityReminderTimers[id]) clearTimeout(_activityReminderTimers[id]);
-  _activityReminderTimers[id] = setTimeout(function() {
-    try {
-      new Notification('✦ ' + act.name + ' in 10 minutes!', {
-        body: (act.location || '') + (act.time ? ' · ' + act.time : ''),
-        icon: '/icon192.png',
-        tag: 'activity-reminder-' + id
-      });
-    } catch(e) {}
-    const r = getActivityReminders(); delete r[id]; saveActivityReminders(r);
-  }, msUntil);
-}
-async function toggleActivityReminder(id) {
-  const act = (ACTIVITIES || []).find(a => a.id === id);
-  if (!act || !act.time || act.time === 'TBA') { showToast('No time set for this activity yet.'); return; }
-
-  if (!('Notification' in window)) { showToast('Notifications not supported on this browser.'); return; }
-  if (Notification.permission === 'denied') { showToast('⚠ Notifications blocked — enable in browser settings.'); return; }
-  if (Notification.permission !== 'granted') {
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') { showToast('Permission denied.'); return; }
-  }
-
-  const reminders = getActivityReminders();
-  if (reminders[id]) {
-    delete reminders[id];
-    saveActivityReminders(reminders);
-    if (_activityReminderTimers[id]) { clearTimeout(_activityReminderTimers[id]); delete _activityReminderTimers[id]; }
-    showToast('Reminder off for ' + act.name);
-  } else {
-    reminders[id] = true;
-    saveActivityReminders(reminders);
-    _scheduleActivityReminderTimer(id);
-    const dayDates = { Fri:'2026-07-17', Sat:'2026-07-18' };
-    const m = act.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-    if (m && dayDates[act.day]) {
-      let h=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';
-      if(pm&&h!==12)h+=12; if(!pm&&h===12)h=0;
-      let dateStr=dayDates[act.day];
-      if(h<8){const d=new Date(dateStr+'T00:00:00-04:00');d.setDate(d.getDate()+1);dateStr=d.toISOString().slice(0,10);}
-      const remindAt=new Date(dateStr+'T'+String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0')+':00-04:00').getTime()-10*60*1000;
-      if (remindAt < Date.now()) { showToast('⏰ That activity has already passed!'); delete reminders[id]; saveActivityReminders(reminders); return; }
-    }
-    showToast('Reminder set — you\'ll be notified 10 min before ' + act.name + '!');
-  }
-  document.querySelectorAll('[data-arkey="' + id + '"]').forEach(function(btn) {
-    btn.classList.toggle('on', !!getActivityReminders()[id]);
-  });
-  if (currentPage === 'schedule') renderSchedule();
-}
-
-function openActivity(id) {
-  const act = (ACTIVITIES || []).find(a => a.id === id);
-  if (!act) return;
-  showToast(esc(act.name) + (act.location ? ' · ' + esc(act.location) : ''));
-  // Full detail modal will be wired up in a later step
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -5376,18 +5150,10 @@ function renderSchedule() {
     return schedStageFilter === stage;
   }
 
-  // ── Activities for the current day ────────────────────────
-  const DAY_LABEL = { fri:'Fri', sat:'Sat', sun:'Sun' };
-  const dayActivities = (ACTIVITIES || [])
-    .filter(act => act.day === DAY_LABEL[day])
-    .filter(act => !q || (act.name+' '+(act.location||'')+' '+(act.description||'')).toLowerCase().includes(q))
-    .sort((a, b) => timeToSort(a.time) - timeToSort(b.time));
-  const ACTIVITIES_COLOR = '#ec4899';
-
   if (schedView === 'list') {
     listWrap.style.display = 'block';
     let html = '';
-    ['dnb','oasis','beach','locals','deepsea'].forEach(stage => {
+    ['dnb','oasis','beach','locals'].forEach(stage => {
       if (!shouldShowStage(stage)) return;
       const items = (data[stage]||[])
         .filter(item => matchArtist(item.artist))
@@ -5396,7 +5162,7 @@ function renderSchedule() {
       const stageNames = {dnb:'DNB Stage',oasis:'Oasis Stage',beach:'Beach Stage',locals:"Davey Jones Locker",deepsea:'Deep Sea'};
       const stageName = stageNames[stage] || stage;
       html += `<div class="stage-section"><div class="stage-section-header ${stage}">`+
-        `<div class="stage-dot" style="background:${{dnb:'#9b3dff',oasis:'#f59e0b',beach:'#06b6d4',locals:'#84cc16',deepsea:'#0ea5e9'}[stage]||'#888'};"></div>${stageName}</div>`+
+        `<div class="stage-dot" style="background:${{dnb:'#9b3dff',oasis:'#f59e0b',beach:'#06b6d4',locals:'#84cc16'}[stage]||'#888'};"></div>${stageName}</div>`+
         `<div class="sched-list">`;
       items.forEach(item => {
         const a = artists[item.artist]||{};
@@ -5417,26 +5183,6 @@ function renderSchedule() {
       });
       html += '</div></div>';
     });
-    if (shouldShowStage('activities') && dayActivities.length) {
-      html += `<div class="stage-section"><div class="stage-section-header activities">`+
-        `<div class="stage-dot" style="background:${ACTIVITIES_COLOR};"></div>Activities</div>`+
-        `<div class="sched-list">`;
-      dayActivities.forEach(act => {
-        const saved = getMyActivities().includes(act.id);
-        html += `<div class="sched-item" onclick="openActivity('${esc(act.id)}')">`+
-          `<div class="item-time">${(act.time||'TBA').replace(' PM','<div class="ampm">PM</div>').replace(' AM','<div class="ampm">AM</div>')}</div>`+
-          `<div class="item-avatar" style="background:${ACTIVITIES_COLOR};overflow:hidden;position:relative;">`+
-            `<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;">✦</span>`+
-            `</div>`+
-          `<div class="item-info"><div class="item-name">${esc(act.name)}</div>`+
-          `<div class="item-meta">${esc(act.location||'')}</div></div>`+
-          `<div class="item-actions"><span class="item-arrow">›</span>`+
-          `<button class="add-btn ${saved?'added':''}" data-akey="${esc(act.id)}" onclick="event.stopPropagation();toggleSavedActivity('${esc(act.id)}')">${saved?'✓':'+'}</button>`+
-          (saved && act.time && act.time!=='TBA' ? `<button class="reminder-bell ${getActivityReminderOn(act.id)?'on':''}" data-arkey="${esc(act.id)}" onclick="event.stopPropagation();toggleActivityReminder('${esc(act.id)}')"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg></button>` : '')+
-          `</div></div>`;
-      });
-      html += '</div></div>';
-    }
     document.getElementById('schedListContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon"></div>No artists match your search.</div>';
   } else {
     gridWrap.style.display = 'block';
@@ -5446,9 +5192,7 @@ function renderSchedule() {
     if (shouldShowStage('beach'))  stages.push({key:'beach',  name:'Beach Stage',                     color:'#06b6d4'});
     if (shouldShowStage('locals'))  stages.push({key:'locals',  name:"Davey Jones Locker", color:'#84cc16'});
     if (shouldShowStage('deepsea')) stages.push({key:'deepsea', name:'Deep Sea',             color:'#0ea5e9'});
-    const showActivitiesCol = shouldShowStage('activities');
-    const colCount = stages.length + (showActivitiesCol ? 1 : 0);
-    let html = `<div class="tg-grid-wrap"><div class="tg-grid" style="grid-template-columns:repeat(${colCount},minmax(140px,1fr));">`;
+    let html = `<div class="tg-grid-wrap"><div class="tg-grid" style="grid-template-columns:repeat(${stages.length},minmax(140px,1fr));">`;
     stages.forEach(st => {
       html += `<div><div class="tg-col-header" style="color:${st.color};">${st.name}</div>`;
       const items = (data[st.key]||[])
@@ -5467,20 +5211,6 @@ function renderSchedule() {
       });
       html += '</div>';
     });
-    if (showActivitiesCol) {
-      html += `<div><div class="tg-col-header" style="color:${ACTIVITIES_COLOR};">Activities</div>`;
-      dayActivities.filter(act => act.time && act.time !== 'TBA').forEach(act => {
-        const saved = getMyActivities().includes(act.id);
-        html += `<div class="tg-block activities-block" onclick="openActivity('${esc(act.id)}')">`+
-          `<div class="tg-block-time">${esc(act.time)}</div>`+
-          `<div class="tg-block-name">${esc(act.name)}</div>`+
-          `<div class="tg-block-genre">${esc(act.location||'')}</div>`+
-          `<button class="tg-block-add ${saved?'added':''}" data-akey="${esc(act.id)}" onclick="event.stopPropagation();toggleSavedActivity('${esc(act.id)}')">${saved?'✓':'+'}</button>`+
-          (saved && act.time && act.time!=='TBA' ? `<button class="tg-bell ${getActivityReminderOn(act.id)?'on':''}" data-arkey="${esc(act.id)}" onclick="event.stopPropagation();toggleActivityReminder('${esc(act.id)}')"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 1a1 1 0 0 1 1 1v.5A4.5 4.5 0 0 1 12.5 7v2.5l1 1.5H2.5L3.5 9.5V7A4.5 4.5 0 0 1 7 2.5V2a1 1 0 0 1 1-1zm-1.5 11.5a1.5 1.5 0 0 0 3 0h-3z"/></svg></button>` : '')+
-          `</div>`;
-      });
-      html += '</div>';
-    }
     html += '</div></div>';
     document.getElementById('schedGridContent').innerHTML = html || '<div class="no-results"><div class="no-results-icon"></div>No artists match your search.</div>';
   }
@@ -6811,33 +6541,19 @@ renderChecklist();
   document.querySelectorAll('.page').forEach(function(p) {
     const div = document.createElement('div');
     div.className = 'page-footer';
-
-    const powered = document.createElement('span');
-    powered.textContent = 'Powered by The Festie Cat 2026';
-    div.appendChild(powered);
-
-    const sep1 = document.createElement('span');
-    sep1.className = 'footer-sep';
-    sep1.textContent = '·';
-    div.appendChild(sep1);
-
+    div.innerHTML = 'Powered by The Festie Cat 2026 &nbsp;&middot;&nbsp; ';
     const tos = document.createElement('a');
     tos.textContent = 'Terms of Service';
     tos.style.cursor = 'pointer';
     tos.addEventListener('click', function() { openTermsModal(); });
-    div.appendChild(tos);
-
-    const sep2 = document.createElement('span');
-    sep2.className = 'footer-sep';
-    sep2.textContent = '·';
-    div.appendChild(sep2);
-
+    const sep = document.createTextNode(' · ');
     const bug = document.createElement('a');
     bug.textContent = 'Report a Bug';
     bug.style.cursor = 'pointer';
     bug.addEventListener('click', function() { openBugReportModal(); });
+    div.appendChild(tos);
+    div.appendChild(sep);
     div.appendChild(bug);
-
     p.appendChild(div);
   });
 })();
@@ -7402,7 +7118,7 @@ async function loadAdminUsers() {
       const statEl = document.getElementById('statUsers');
       if (statEl) statEl.textContent = window._allUsers.length;
       renderAdminUsersTab();
-      setTimeout(updateConnectButtonStates, 300);
+      updateConnectButtonStates(); // call immediately (async, non-blocking)
     }
   } catch(e) { console.warn('loadAdminUsers failed:', e); }
 }
@@ -7418,7 +7134,7 @@ async function loadUsersForAssign() {
 
 // ── Tab switching ──────────────────────────────────────────
 function switchAdminTab(tab, btn) {
-  ['artists','schedule','activities','master','staffedit','tasks','shifts','users','settings'].forEach(t => {
+  ['artists','schedule','master','staffedit','tasks','shifts','users','settings'].forEach(t => {
     const el = document.getElementById('adminTab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
@@ -7429,141 +7145,11 @@ function switchAdminTab(tab, btn) {
   if (sel) sel.value = tab;
   if (tab === 'artists')  renderAdminArtistGrid();
   if (tab === 'schedule') renderAdminSchedule();
-  if (tab === 'activities') renderAdminActivitiesList();
   if (tab === 'master')    renderMasterSchedule();
   if (tab === 'staffedit') initStaffEditor();
   if (tab === 'tasks')     renderTaskManager('sharedTaskManager');
   if (tab === 'shifts')   { if (!window._allUsers || !window._allUsers.length) loadUsersForAssign(); renderShiftManager('sharedShiftManager'); }
   if (tab === 'users')    adminLoadUsers();
-}
-
-// ── Activities Admin (6th "stage" — non-music events) ──────
-async function renderAdminActivitiesList() {
-  const wrap = document.getElementById('adminActivitiesList');
-  if (!wrap) return;
-  wrap.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>';
-  try {
-    const res = await fetch(AUTH_URL + '/activities');
-    const d = await res.json().catch(() => ({}));
-    ACTIVITIES = Array.isArray(d.activities) ? d.activities : [];
-  } catch(e) {
-    wrap.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Could not load activities.</div>';
-    return;
-  }
-  if (!ACTIVITIES.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">No activities yet — tap "+ Add Activity" to create one.</div>';
-    return;
-  }
-  const dayOrder = { Fri:0, Sat:1, Sun:2, TBA:3 };
-  const sorted = [...ACTIVITIES].sort((a,b) => (dayOrder[a.day]??9) - (dayOrder[b.day]??9) || timeToSort(a.time||'TBA') - timeToSort(b.time||'TBA'));
-  const dayLabels = { Fri:'Friday 7/17', Sat:'Saturday 7/18', Sun:'Sunday 7/19', TBA:'TBA' };
-  wrap.innerHTML = sorted.map(act => `
-    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);">
-      <div style="width:8px;height:8px;border-radius:50%;background:#ec4899;flex-shrink:0;"></div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:700;font-size:13px;color:var(--text-light);">${esc(act.name)}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
-          ${dayLabels[act.day] || esc(act.day)} · ${esc(act.time||'TBA')}${act.location ? ' · ' + esc(act.location) : ''}
-        </div>
-      </div>
-      <button class="dash-btn" onclick="adminEditActivity('${esc(act.id)}')" style="padding:6px 10px;font-size:11px;">✏ Edit</button>
-      <button class="dash-btn" onclick="adminDeleteActivity('${esc(act.id)}')" style="padding:6px 10px;font-size:11px;color:var(--pink-coral);border-color:rgba(255,77,141,0.3);">🗑</button>
-    </div>
-  `).join('');
-}
-
-function adminNewActivity() {
-  document.getElementById('activityEditModalTitle').textContent = 'Add New Activity';
-  document.getElementById('editActivityId').value = '';
-  document.getElementById('editActivityName').value = '';
-  document.getElementById('editActivityLocation').value = '';
-  document.getElementById('editActivityDay').value = 'TBA';
-  const timeSel = document.getElementById('editActivityTime');
-  if (timeSel) { timeSel.innerHTML = TIME_OPTIONS_HTML; timeSel.value = 'TBA'; }
-  document.getElementById('editActivityDescription').value = '';
-  document.getElementById('activityEditModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function adminEditActivity(id) {
-  const act = (ACTIVITIES || []).find(a => a.id === id);
-  if (!act) return;
-  document.getElementById('activityEditModalTitle').textContent = 'Edit · ' + act.name;
-  document.getElementById('editActivityId').value = act.id;
-  document.getElementById('editActivityName').value = act.name || '';
-  document.getElementById('editActivityLocation').value = act.location || '';
-  document.getElementById('editActivityDay').value = act.day || 'TBA';
-  const timeSel = document.getElementById('editActivityTime');
-  if (timeSel) { timeSel.innerHTML = TIME_OPTIONS_HTML; timeSel.value = act.time || 'TBA'; }
-  document.getElementById('editActivityDescription').value = act.description || '';
-  document.getElementById('activityEditModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeActivityEdit() {
-  document.getElementById('activityEditModal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-async function saveActivityEdit() {
-  const id   = document.getElementById('editActivityId').value;
-  const name = document.getElementById('editActivityName').value.trim();
-  const location    = document.getElementById('editActivityLocation').value.trim();
-  const day         = document.getElementById('editActivityDay').value;
-  const time        = document.getElementById('editActivityTime').value.trim() || 'TBA';
-  const description = document.getElementById('editActivityDescription').value.trim();
-
-  if (!name) { showToast('Activity name is required.'); return; }
-
-  const token = localStorage.getItem(TOKEN_KEY);
-  const saveBtn = document.querySelector('#activityEditModal .edit-modal-footer .dash-btn.primary');
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
-
-  try {
-    const payload = { name, location, day, time, description };
-    const res = id
-      ? await fetch(AUTH_URL + '/activities/' + encodeURIComponent(id), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify(payload)
-        })
-      : await fetch(AUTH_URL + '/activities', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify(payload)
-        });
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      throw new Error(d.error || 'Server error');
-    }
-    showToast('✓ ' + name + (id ? ' updated' : ' added'));
-    closeActivityEdit();
-    await renderAdminActivitiesList();
-    if (typeof renderSchedule === 'function' && currentPage === 'schedule') renderSchedule();
-  } catch(e) {
-    showToast('Failed to save activity — please try again.');
-  } finally {
-    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Activity'; }
-  }
-}
-
-async function adminDeleteActivity(id) {
-  const act = (ACTIVITIES || []).find(a => a.id === id);
-  if (!act) return;
-  if (!confirm('Delete "' + act.name + '"? This cannot be undone.')) return;
-  const token = localStorage.getItem(TOKEN_KEY);
-  try {
-    const res = await fetch(AUTH_URL + '/activities/' + encodeURIComponent(id), {
-      method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!res.ok) throw new Error('Server error');
-    showToast('✓ ' + act.name + ' deleted');
-    await renderAdminActivitiesList();
-    if (typeof renderSchedule === 'function' && currentPage === 'schedule') renderSchedule();
-  } catch(e) {
-    showToast('Failed to delete — please try again.');
-  }
 }
 
 // ── Master Block Schedule ──────────────────────────────────
@@ -8506,7 +8092,7 @@ function applyUserSort() {
   const filter = document.getElementById('userFilterSelect')?.value || 'all';
 
   const ROLE_ORDER  = { admin:0, employee:1, festie:2 };
-  const STAFF_ORDER = { management:0, engineers:1, 'stage-crew':2, security:3, ticketing:4, '':5 };
+  const STAFF_ORDER = { management:0, engineers:1, 'stage-crew':2, security:3, ticketing:4, dj:5, '':6 };
 
   let users = window._cachedUsers.filter(u => {
     if (filter === 'admin')      return u.role === 'admin';
@@ -8670,6 +8256,7 @@ function buildUserTableHTML(users) {
         '<option '+(u.staffRole==='stage-crew' ?'selected':'')+' value="stage-crew">Stage Crew</option>' +
         '<option '+(u.staffRole==='ticketing'  ?'selected':'')+' value="ticketing">Ticketing</option>' +
         '<option '+(u.staffRole==='engineers'  ?'selected':'')+' value="engineers">Engineers</option>' +
+        '<option '+(u.staffRole==='dj'         ?'selected':'')+' value="dj">🎧 DJ</option>' +
         '<option '+(u.staffRole==='management' ?'selected':'')+' value="management">★ Management</option>' +
         '</select>';
 
@@ -8766,15 +8353,21 @@ async function updateConnectButtonStates() {
     });
     if (!res.ok) return;
     const d = await res.json();
-    const following = d.following || [];
-    const followers = d.followers || [];
+    const following = new Set(d.following || []);
+    const followers = new Set(d.followers || []);
     document.querySelectorAll('[id^="connectBtn_"]').forEach(function(btn) {
       const uid = btn.id.replace('connectBtn_','');
       if (uid === currentUser.id) { btn.style.display='none'; return; }
-      const isConnected = following.includes(uid) && followers.includes(uid);
+      // Admin: show Connected if following (don't require mutual)
+      const isAdmin = currentUser.role === 'admin';
+      const isConnected = isAdmin ? following.has(uid) : (following.has(uid) && followers.has(uid));
       if (isConnected) {
-        btn.textContent = '✓ Connected'; btn.dataset.state = 'connected';
-        btn.style.color = '#4ade80'; btn.style.borderColor = 'rgba(74,222,128,0.4)';
+        btn.textContent = '✓ Connected';
+        btn.dataset.state = 'connected';
+        btn.style.color = '#4ade80';
+        btn.style.borderColor = 'rgba(74,222,128,0.4)';
+        btn.style.background = 'rgba(74,222,128,0.08)';
+        btn.onclick = null; // already connected, clicking does nothing
       }
     });
   } catch(e) {}
@@ -8877,27 +8470,6 @@ async function testMyPush() {
     }
   } catch(e) {
     if (status) { status.style.color='var(--pink-coral)'; status.textContent = 'Error: ' + e.message; }
-  }
-}
-
-async function backfillDefaultAvatars() {
-  const status = document.getElementById('backfillAvatarStatus');
-  if (!confirm('Apply the default profile picture to every existing user who doesn\'t already have one? This will not affect anyone who has already uploaded their own photo.')) return;
-  if (status) { status.style.color = 'var(--text-muted)'; status.textContent = 'Working…'; }
-  const token = localStorage.getItem(TOKEN_KEY);
-  try {
-    const res = await fetch(AUTH_URL + '/admin/backfill-default-avatar', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const d = await res.json().catch(() => ({}));
-    if (res.ok) {
-      if (status) { status.style.color = '#4ade80'; status.textContent = '✓ Updated ' + d.updated + ' user(s) — ' + d.skipped + ' already had a photo.'; }
-    } else {
-      if (status) { status.style.color = 'var(--pink-coral)'; status.textContent = '✗ ' + (d.error || 'Failed'); }
-    }
-  } catch(e) {
-    if (status) { status.style.color = 'var(--pink-coral)'; status.textContent = '✗ Could not connect'; }
   }
 }
 
@@ -9005,7 +8577,7 @@ STAFF_SHIFTS = {
 function initStaffDashboard() {
   loadMyShifts();
   const role = currentUser?.staffRole || 'management';
-  const roleLabels = { security:'🔴 Security', 'stage-crew':'🟣 Stage Crew', ticketing:'🟦 Ticketing/Front', engineers:'🟡 Engineers', management:'🟠 Management' };
+  const roleLabels = { security:'🔴 Security', 'stage-crew':'🟣 Stage Crew', ticketing:'🟦 Ticketing/Front', engineers:'🟡 Engineers', dj:'🎧 DJ', management:'🟠 Management' };
   const el = document.getElementById('staffRoleDisplay');
   if (el) el.textContent = roleLabels[role] || 'Staff · Sunken Suite 2026';
   // Render shared task manager (default tab)
@@ -9422,6 +8994,7 @@ async function renderTaskManager(containerId) {
           <button class="dash-btn" onclick="filterTasks('role:stage-crew','${containerId}',this)">Stage Crew</button>
           <button class="dash-btn" onclick="filterTasks('role:ticketing','${containerId}',this)">Ticketing</button>
           <button class="dash-btn" onclick="filterTasks('role:engineers','${containerId}',this)">Engineers</button>
+          <button class="dash-btn" onclick="filterTasks('role:dj','${containerId}',this)">🎧 DJ</button>
           <button class="dash-btn" onclick="filterTasks('role:management','${containerId}',this)">Management</button>
           ` : ''}
         </div>
@@ -9489,16 +9062,9 @@ function buildCreateTaskForm(containerId) {
               <input class="form-input" type="date" id="${containerId}-taskDay" min="2026-07-01" style="color-scheme:dark;">
             </div>
             <div class="form-field">
-              <label class="form-label">Time In</label>
-              <select class="form-select" id="${containerId}-taskTimeIn">${TIME_OPTIONS_HTML}</select>
+              <label class="form-label">Due Time</label>
+              <input class="form-input" id="${containerId}-taskTime" type="time">
             </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Time Out</label>
-              <select class="form-select" id="${containerId}-taskTimeOut">${TIME_OPTIONS_HTML}</select>
-            </div>
-            <div class="form-field"></div>
           </div>
           <div style="margin-top:4px;">
             <button class="dash-btn primary" style="width:100%;padding:12px;"
@@ -9586,8 +9152,7 @@ async function submitCreateTask(containerId) {
   const desc     = document.getElementById(containerId + '-taskDesc')?.value.trim();
   const priority = document.getElementById(containerId + '-taskPriority')?.value;
   const day      = document.getElementById(containerId + '-taskDay')?.value;
-  const timeIn   = (document.getElementById(containerId + '-taskTimeIn')?.value || '').trim();
-  const timeOut  = (document.getElementById(containerId + '-taskTimeOut')?.value || '').trim();
+  const time     = document.getElementById(containerId + '-taskTime')?.value;
   const status   = document.getElementById(containerId + '-taskCreateStatus');
 
   if (!title) { if(status){status.textContent='⚠ Title required';status.style.color='var(--pink-coral)';} return; }
@@ -9603,18 +9168,13 @@ async function submitCreateTask(containerId) {
   const token = localStorage.getItem('ss_auth_token');
   if (status) { status.textContent='Creating…';status.style.color='var(--text-muted)'; }
 
-  const inSet  = timeIn  && timeIn  !== 'TBA';
-  const outSet = timeOut && timeOut !== 'TBA';
-  const timeRange = inSet ? (timeIn + (outSet ? ' – ' + timeOut : '')) : '';
-
   try {
     const res = await fetch(AUTH_URL + '/tasks', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
       body: JSON.stringify({
         title, description:desc, priority,
-        dueDate: day ? day + (timeRange?' '+timeRange:'') : '',
-        dueTimeIn: inSet ? timeIn : '', dueTimeOut: outSet ? timeOut : '',
+        dueDate: day ? day + (time?' '+time:'') : '',
         assignedTo, assignedRole
       })
     });
@@ -10738,9 +10298,7 @@ async function openDMThread(friendId, handle, color) {
 
   currentDMFriendHandle = handle || 'User';
 
-  // Clear messages, cacheKey, and the confirmed-sends tracker so we always
-  // get a fresh load scoped to this conversation.
-  _dmConfirmedMessages = [];
+  // Clear messages and cacheKey so we always get a fresh load
   const msgs = document.getElementById('dmThreadMessages');
   if (msgs) {
     msgs.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</div>';
@@ -10760,10 +10318,9 @@ function closeDMThread() {
   loadDMList(); // refresh unread counts
 }
 
-async function loadDMThread(friendId, expectMinCount, attempt) {
+async function loadDMThread(friendId, expectMinCount) {
   const msgs = document.getElementById('dmThreadMessages');
   if (!msgs) return;
-  attempt = attempt || 0;
   const token = localStorage.getItem('ss_auth_token');
   try {
     const res  = await fetch(AUTH_URL+'/dm/'+friendId, { headers:{'Authorization':'Bearer '+token} });
@@ -10772,34 +10329,13 @@ async function loadDMThread(friendId, expectMinCount, attempt) {
       return;
     }
     const data = await res.json();
-    let messages = data.messages || [];
+    const messages = data.messages || [];
 
-    // If we're expecting a new message (post-send) and the server (KV is
-    // eventually-consistent) doesn't have it yet, retry with backoff —
-    // up to 4 attempts (~1.5s total) — giving the write time to propagate
-    // before falling back to the merge guarantee below.
-    if (expectMinCount && messages.length < expectMinCount && attempt < 4) {
-      const delay = 250 + attempt * 250;
-      setTimeout(function() { loadDMThread(friendId, expectMinCount, attempt + 1); }, delay);
+    // If we're expecting a new message (post-send) and server doesn't have it yet,
+    // retry once after a short delay rather than wiping the optimistic bubble
+    if (expectMinCount && messages.length < expectMinCount) {
+      setTimeout(function() { loadDMThread(friendId); }, 400);
       return;
-    }
-
-    // Guarantee: any message this client has personally sent and gotten a
-    // server confirmation for must always be present, even if this
-    // particular read is a stale/lagging snapshot that doesn't include it
-    // yet. This is what keeps messages from "disappearing" when several
-    // are sent in quick succession and their writes/reads race each other.
-    if (_dmConfirmedMessages.length) {
-      const seen = new Set(messages.map(m => m.id));
-      _dmConfirmedMessages.forEach(function(cm) {
-        if (!seen.has(cm.id)) { messages.push(cm); seen.add(cm.id); }
-      });
-      messages.sort(function(a, b) { return (a.createdAt||'').localeCompare(b.createdAt||''); });
-      // Once the server's own list has caught up to a confirmed message,
-      // stop carrying it forward manually.
-      _dmConfirmedMessages = _dmConfirmedMessages.filter(function(cm) {
-        return !(data.messages || []).some(function(m) { return m.id === cm.id; });
-      });
     }
 
     const lastMsg  = messages[messages.length - 1];
@@ -10845,13 +10381,6 @@ function renderDMMessages(messages, isFirstLoad) {
 // Guard against double-sends
 let _dmSending = false;
 let _dmPendingPhoto = null; // { file, dataUrl }
-// Messages this client has personally sent and received server confirmation
-// for, scoped to the open conversation. Used to guarantee a sent message can
-// never disappear from view, even if a GET request (against eventually-
-// consistent KV storage) returns a stale snapshot that doesn't include it
-// yet — which is what happens when multiple messages are sent in quick
-// succession and their writes/reads race each other.
-let _dmConfirmedMessages = [];
 
 function handleDMPhoto(input) {
   const file = input.files[0];
@@ -10932,6 +10461,7 @@ async function sendDM() {
       '<div class="dm-msg-time" style="opacity:0.4;">sending…</div>';
     msgs.appendChild(optimisticBubble);
     msgs.scrollTop = msgs.scrollHeight;
+    delete msgs.dataset.cacheKey;
   }
 
   // Upload photo if present
@@ -10949,7 +10479,6 @@ async function sendDM() {
     }
   }
 
-  const threadAtSendTime = currentDMFriendId;
   const token = localStorage.getItem('ss_auth_token');
   try {
     const res = await fetch(AUTH_URL + '/dm/' + currentDMFriendId, {
@@ -10958,27 +10487,9 @@ async function sendDM() {
       body: JSON.stringify({ text, imageUrl })
     });
     if (res.ok) {
-      const data = await res.json().catch(() => ({}));
-      // Use the message the server just confirmed it saved, rather than
-      // racing a re-fetch against KV's eventual-consistency delay.
-      if (data && data.message && optimisticBubble) {
-        optimisticBubble.removeAttribute('data-optimistic');
-        const timeEl = optimisticBubble.querySelector('.dm-msg-time');
-        if (timeEl) timeEl.textContent = getTimeAgo(data.message.createdAt);
-        optimisticBubble.dataset.msgId = data.message.id;
-      }
-      // Remember this confirmed message so it can never be dropped by a
-      // later read that hasn't caught up yet — this is what keeps several
-      // quickly-sent messages from disappearing when their server-side
-      // writes/reads race each other.
-      if (data && data.message && threadAtSendTime === currentDMFriendId) {
-        _dmConfirmedMessages.push(data.message);
-        if (_dmConfirmedMessages.length > 50) _dmConfirmedMessages.splice(0, _dmConfirmedMessages.length - 50);
-      }
-      // Resync from the server shortly after, so the thread converges with
-      // the canonical message list (the merge above guarantees this
-      // message stays visible even if this particular read is still stale).
-      setTimeout(function() { loadDMThread(currentDMFriendId, 1); }, 600);
+      const ck = msgs ? (msgs.dataset.cacheKey || '0') : '0';
+      const currentCount = parseInt(ck.split('|')[0]) || 0;
+      setTimeout(function() { loadDMThread(currentDMFriendId, currentCount + 1); }, 200);
     } else {
       showToast('Could not send message');
       if (input) input.value = text;
@@ -12074,26 +11585,6 @@ function renderNotifications(notifs) {
       '</div>';
     }
 
-    if (n.type === 'booth_report') {
-      var pid  = escapeHTML(n.photoId    || '');
-      var purl = escapeHTML(n.photoUrl   || '');
-      var uid  = escapeHTML(n.uploaderId || '');
-      var upl  = escapeHTML(n.uploader   || '');
-      return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" id="notif-'+nid+'">' +
-        '<div class="notif-dot red"></div>' +
-        '<div style="flex:1;min-width:0;">' +
-          '<div class="notif-text">' + escapeHTML(n.message||'') + '</div>' +
-          '<div class="notif-time">' + timeAgo + '</div>' +
-          '<div class="notif-actions" style="margin-top:8px;">' +
-            '<button class="notif-accept-btn" style="background:rgba(255,77,141,0.15);border-color:rgba(255,77,141,0.5);color:var(--pink-coral);" ' +
-              'onclick="event.stopPropagation();openBoothReview(\''+pid+'\',\''+upl+'\',\''+uid+'\',\''+purl+'\',\''+nid+'\')">' +
-              '\ud83d\udd0d Review Image' +
-            '</button>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
-    }
-
     return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" style="cursor:pointer;" onclick="handleNotifClick(\''+nid+'\',\''+(n.type||'')+'\',\''+fromId+'\')">' +
       '<div class="notif-dot ' + (n.category||'blue') + '"></div>' +
       '<div style="flex:1;">' +
@@ -12707,53 +12198,28 @@ async function submitBugReport() {
   if (status) { status.style.color='var(--text-muted)'; status.textContent=''; }
 
   const user = currentUser || {};
-
-  // If a screenshot was attached and the user is logged in, upload it to R2 first
-  // and send a link instead of the raw file (Formspree's free plan rejects file uploads).
-  let screenshotUrl = '';
-  if (fileInput && fileInput.files.length) {
-    const file = fileInput.files[0];
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token) {
-      if (status) { status.style.color='var(--text-muted)'; status.textContent='Uploading screenshot…'; }
-      try {
-        const artistKey = 'bug_' + Date.now();
-        const upRes = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(artistKey), {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': file.type
-          },
-          body: file
-        });
-        const upData = await upRes.json().catch(() => ({}));
-        if (upRes.ok && upData.url) {
-          screenshotUrl = upData.url;
-        }
-      } catch (e) {
-        // If the screenshot upload fails, continue and send the report without it
-      }
-    }
-    if (status) { status.style.color='var(--text-muted)'; status.textContent='Sending…'; }
-  }
-
   const reportBody = (user.handle ? '[' + user.handle + '] ' : '')
     + (user.email ? '(' + user.email + ') ' : '')
-    + text
-    + (screenshotUrl ? '\n\nScreenshot: ' + screenshotUrl
-      : (fileInput && fileInput.files.length && !localStorage.getItem(TOKEN_KEY) ? '\n\n(Screenshot not attached — log in to attach screenshots)' : ''));
+    + text;
 
+  // Use FormData so we can attach screenshots
   const formData = new FormData();
   formData.append('message', reportBody);
   formData.append('_subject', '🐛 Bug Report — The Mutiny 2026');
   if (user.email) formData.append('email', user.email);
   if (user.handle) formData.append('user', user.handle);
-  if (screenshotUrl) formData.append('screenshot_url', screenshotUrl);
+
+  // Attach screenshots (Formspree supports up to 5 files)
+  if (fileInput && fileInput.files.length) {
+    Array.from(fileInput.files).slice(0, 5).forEach(function(file, i) {
+      formData.append('screenshot_' + (i + 1), file, file.name);
+    });
+  }
 
   try {
     const res = await fetch('https://formspree.io/f/' + FORMSPREE_ID, {
       method: 'POST',
-      headers: { 'Accept': 'application/json' },
+      headers: { 'Accept': 'application/json' }, // no Content-Type — let browser set multipart boundary
       body: formData
     });
     if (res.ok) {
@@ -14247,8 +13713,7 @@ async function loadBoothPhotos() {
       const zCaption = encodeURIComponent(p.caption||'');
       const zTags    = encodeURIComponent(tags);
       const zUploader= encodeURIComponent('@'+(p.uploadedBy||'festie'));
-      if (p.flagged) return ''; // Hide flagged photos completely
-      return '<div class="booth-photo-item" id="booth-item-' + p.id + '">' +
+      return '<div class="booth-photo-item" id="booth-item-' + p.id + '"' + (p.flagged ? ' style="opacity:0.15;pointer-events:none;" title="Hidden pending admin review"' : '') + '>' +
         '<img src="' + p.url + '" loading="lazy" onclick="boothZoom(\'' + p.url + '\',\'' + zCaption + '\',\'' + zTags + '\',\'' + zUploader + '\')" onerror="this.closest(\'.booth-photo-item\').style.display=\'none\'">' +
         '<div class="booth-photo-meta">@' + (p.uploadedBy || 'festie') + caption + tagLine + '</div>' +
         // Report button — always visible, bottom-left
@@ -14365,29 +13830,6 @@ document.addEventListener('click', function(e) {
   </div>
 </div>
 
-
-<!-- ══ BOOTH REVIEW MODAL (admin) ══ -->
-<div id="boothReviewModal" style="display:none;position:fixed;inset:0;z-index:90000;background:rgba(0,0,0,0.96);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px;">
-  <div style="background:#0e0e0e;border:1px solid rgba(255,77,141,0.4);width:100%;max-width:480px;display:flex;flex-direction:column;max-height:90vh;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
-      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--pink-coral);letter-spacing:1px;">🔍 REVIEW FLAGGED IMAGE</span>
-      <button onclick="closeBoothReview()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
-    </div>
-    <!-- Image -->
-    <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
-      <img id="boothReviewImg" src="" style="max-width:100%;max-height:360px;object-fit:contain;display:block;border:1px solid rgba(255,255,255,0.1);" onerror="this.style.display='none'">
-      <div id="boothReviewMeta" style="font-size:12px;color:var(--text-muted);text-align:center;"></div>
-      <div id="boothReviewStatus" style="font-size:12px;min-height:16px;text-align:center;"></div>
-    </div>
-    <!-- Action buttons -->
-    <div style="display:flex;gap:8px;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0;flex-wrap:wrap;">
-      <button onclick="boothReviewAction('reinstate')" style="flex:1;min-width:100px;padding:10px 8px;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.4);color:#4ade80;font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">✓ Reinstate</button>
-      <button onclick="boothReviewAction('delete')" style="flex:1;min-width:100px;padding:10px 8px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">🗑 Delete</button>
-      <button onclick="boothReviewAction('ban')" style="flex:1;min-width:140px;padding:10px 8px;background:rgba(255,77,141,0.15);border:1px solid rgba(255,77,141,0.5);color:var(--pink-coral);font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">⛔ Delete &amp; Ban User</button>
-    </div>
-  </div>
-</div>
-
 <!-- ══ TASK COMMENTS MODAL ══ -->
 <style>
 .task-comment-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
@@ -14485,11 +13927,15 @@ async function submitBoothReport() {
     });
 
     if (res.ok || !token) { // graceful even if not logged in
-      // If explicit/violent — hide the photo pending admin review
+      // If explicit/violent — hide the photo immediately on this client
       if (reason === 'explicit') {
         const item = document.getElementById('booth-item-' + _boothReportPhotoId);
-        if (item) { item.style.display = 'none'; }
-        if (status) { status.style.color='#4ade80'; status.textContent='✓ Image hidden pending admin review.'; }
+        if (item) {
+          item.style.opacity = '0.15';
+          item.style.pointerEvents = 'none';
+          item.title = 'Hidden pending review';
+        }
+        if (status) { status.style.color='#4ade80'; status.textContent='✓ Image hidden and reported to admin.'; }
       } else {
         if (status) { status.style.color='#4ade80'; status.textContent='✓ Report sent to admin for review.'; }
       }
@@ -14502,77 +13948,6 @@ async function submitBoothReport() {
   } catch {
     if (btn) { btn.disabled = false; btn.textContent = 'Submit Report'; }
     if (status) { status.style.color='var(--pink-coral)'; status.textContent='Could not connect.'; }
-  }
-}
-
-
-/* ════════════════════════════════════════════════════════════
-   BOOTH REVIEW MODAL — admin moderation
-════════════════════════════════════════════════════════════ */
-var _boothReview = { photoId: null, uploaderId: null, uploader: null, notifId: null };
-
-function openBoothReview(photoId, uploader, uploaderId, photoUrl, notifId) {
-  _boothReview = { photoId, uploader, uploaderId, notifId };
-  const modal  = document.getElementById('boothReviewModal');
-  const img    = document.getElementById('boothReviewImg');
-  const meta   = document.getElementById('boothReviewMeta');
-  const status = document.getElementById('boothReviewStatus');
-  if (img)    { img.src = photoUrl || ''; img.style.display = photoUrl ? 'block' : 'none'; }
-  if (meta)   meta.textContent = 'Uploaded by @' + (uploader || 'unknown');
-  if (status) status.textContent = '';
-  if (modal)  modal.style.display = 'flex';
-}
-
-function closeBoothReview() {
-  const modal = document.getElementById('boothReviewModal');
-  if (modal) modal.style.display = 'none';
-  _boothReview = { photoId: null, uploaderId: null, uploader: null, notifId: null };
-}
-
-async function boothReviewAction(action) {
-  const { photoId, uploaderId, notifId } = _boothReview;
-  if (!photoId) return;
-  const token  = localStorage.getItem(TOKEN_KEY);
-  const status = document.getElementById('boothReviewStatus');
-  if (status) { status.style.color = 'var(--text-muted)'; status.textContent = 'Working…'; }
-
-  try {
-    let res;
-    if (action === 'reinstate') {
-      res = await fetch(AUTH_URL + '/booth/' + photoId + '/reinstate', {
-        method: 'POST', headers: { 'Authorization': 'Bearer ' + token }
-      });
-    } else if (action === 'delete') {
-      res = await fetch(AUTH_URL + '/booth/' + photoId + '/flagged', {
-        method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
-      });
-    } else if (action === 'ban') {
-      if (!confirm('This will permanently delete the photo AND the user account, and ban their email from re-registering. Are you sure?')) {
-        if (status) status.textContent = '';
-        return;
-      }
-      res = await fetch(AUTH_URL + '/booth/' + photoId + '/ban', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ uploaderId: uploaderId || '' })
-      });
-    }
-
-    if (res && res.ok) {
-      const labels = { reinstate: '✓ Photo reinstated', delete: '✓ Photo deleted', ban: '✓ Photo deleted and user banned' };
-      if (status) { status.style.color = '#4ade80'; status.textContent = labels[action] || '✓ Done'; }
-      // Remove the notification item from the list
-      if (notifId) {
-        const el = document.getElementById('notif-' + notifId);
-        if (el) el.remove();
-      }
-      setTimeout(closeBoothReview, 1200);
-      loadBoothPhotos && loadBoothPhotos();
-    } else {
-      if (status) { status.style.color = 'var(--pink-coral)'; status.textContent = 'Action failed — try again.'; }
-    }
-  } catch {
-    if (status) { status.style.color = 'var(--pink-coral)'; status.textContent = 'Could not connect.'; }
   }
 }
 
@@ -14748,8 +14123,6 @@ async function deleteTaskComment(taskId, commentId) {
    GROUP CHATS (Personal + Staff)
 ════════════════════════════════════════════════════════════ */
 var _currentGroupId    = null;
-// Mirrors _dmConfirmedMessages for group chat — see that variable's comment.
-var _groupConfirmedMessages = [];
 var _groupPollTimer    = null;
 var _newGroupIsStaff   = false;
 var _currentChatTab    = 'personal';
@@ -14905,7 +14278,6 @@ async function openGroupThread(groupId, groupName, memberCount, isStaffGroup) {
   }
 
   var msgs = document.getElementById('dmThreadMessages');
-  _groupConfirmedMessages = [];
   if (msgs) { msgs.innerHTML='<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</div>'; delete msgs.dataset.cacheKey; }
 
   await loadGroupThread();
@@ -14927,11 +14299,10 @@ function stopGroupPolling() {
   if (_groupPollTimer) { clearTimeout(_groupPollTimer); _groupPollTimer = null; }
 }
 
-async function loadGroupThread(expectMinCount, attempt) {
+async function loadGroupThread() {
   if (!_currentGroupId) return;
   var msgs  = document.getElementById('dmThreadMessages');
   if (!msgs) return;
-  attempt = attempt || 0;
   var token = localStorage.getItem(TOKEN_KEY);
   try {
     var res = await fetch(AUTH_URL+'/groups/'+_currentGroupId, { headers:{'Authorization':'Bearer '+token} });
@@ -14940,33 +14311,6 @@ async function loadGroupThread(expectMinCount, attempt) {
     if (!ct.includes('json')) return;
     var d = await res.json();
     var messages = d.messages||[];
-
-    // If we're expecting a new message (post-send) and the server (KV is
-    // eventually-consistent) doesn't have it yet, retry with backoff —
-    // up to 4 attempts (~1.5s total) — giving the write time to propagate
-    // before falling back to the merge guarantee below.
-    if (expectMinCount && messages.length < expectMinCount && attempt < 4) {
-      var delay = 250 + attempt * 250;
-      setTimeout(function() { loadGroupThread(expectMinCount, attempt + 1); }, delay);
-      return;
-    }
-
-    // Guarantee: any message this client has personally sent and gotten a
-    // server confirmation for must always be present, even if this read
-    // is a stale/lagging snapshot — what keeps messages from disappearing
-    // when several are sent in quick succession. See _dmConfirmedMessages.
-    if (_groupConfirmedMessages.length) {
-      var seen = {};
-      messages.forEach(function(m){ seen[m.id] = true; });
-      _groupConfirmedMessages.forEach(function(cm) {
-        if (!seen[cm.id]) { messages.push(cm); seen[cm.id] = true; }
-      });
-      messages.sort(function(a, b) { return (a.createdAt||'').localeCompare(b.createdAt||''); });
-      var serverIds = {};
-      (d.messages||[]).forEach(function(m){ serverIds[m.id] = true; });
-      _groupConfirmedMessages = _groupConfirmedMessages.filter(function(cm) { return !serverIds[cm.id]; });
-    }
-
     var lastMsg  = messages[messages.length-1];
     var cacheKey = messages.length+'|'+(lastMsg ? lastMsg.id||lastMsg.createdAt : '');
     var isFirst  = !msgs.dataset.cacheKey;
@@ -15001,9 +14345,9 @@ async function sendGroupMessage() {
   var msgs = document.getElementById('dmThreadMessages');
   var bubble = null;
   if (msgs) {
+    delete msgs.dataset.cacheKey;
     bubble = document.createElement('div');
     bubble.className = 'dm-msg mine';
-    bubble.setAttribute('data-optimistic', '1');
     bubble.innerHTML = (text?escapeHTML(text):'') + '<div class="dm-msg-time" style="opacity:0.4;">sending…</div>';
     msgs.appendChild(bubble);
     msgs.scrollTop = msgs.scrollHeight;
@@ -15017,29 +14361,13 @@ async function sendGroupMessage() {
       if (ur.ok){ var ud=await ur.json(); imageUrl=ud.url||''; }
     } catch{}
   }
-  var groupAtSendTime = _currentGroupId;
   var token = localStorage.getItem(TOKEN_KEY);
   try {
     var res = await fetch(AUTH_URL+'/groups/'+_currentGroupId, {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
       body: JSON.stringify({text:text, imageUrl:imageUrl})
     });
-    if (res.ok) {
-      var data = await res.json().catch(function(){ return {}; });
-      // Use the message the server just confirmed it saved, rather than
-      // racing a re-fetch against KV's eventual-consistency delay.
-      if (data && data.message && bubble) {
-        bubble.removeAttribute('data-optimistic');
-        var timeEl = bubble.querySelector('.dm-msg-time');
-        if (timeEl) timeEl.textContent = getTimeAgo(data.message.createdAt);
-        bubble.dataset.msgId = data.message.id;
-      }
-      if (data && data.message && groupAtSendTime === _currentGroupId) {
-        _groupConfirmedMessages.push(data.message);
-        if (_groupConfirmedMessages.length > 50) _groupConfirmedMessages.splice(0, _groupConfirmedMessages.length - 50);
-      }
-      setTimeout(function(){ loadGroupThread(1); }, 600);
-    }
+    if (res.ok) { setTimeout(function(){loadGroupThread();},200); }
     else { showToast('Could not send'); if(bubble)bubble.remove(); if(input)input.value=text; }
   } catch { showToast('Could not send'); if(bubble)bubble.remove(); if(input)input.value=text; }
   finally { _dmSending=false; if(btn){btn.style.opacity='';btn.style.pointerEvents='';} }
