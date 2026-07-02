@@ -3019,6 +3019,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <option value="tasks">✅ Tasks</option>
       <option value="shifts">🕐 Shifts</option>
       <option value="users">👥 Users</option>
+      <option value="flagged">⚑ Flagged</option>
       <option value="settings">⚙ Settings</option>
     </select>
     <div class="dash-tabs">
@@ -3029,6 +3030,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <button class="dash-tab" onclick="switchAdminTab('tasks',this)">✅ Tasks</button>
       <button class="dash-tab" onclick="switchAdminTab('shifts',this)">🕐 Shifts</button>
       <button class="dash-tab" onclick="switchAdminTab('users',this)">👥 Users</button>
+      <button class="dash-tab" id="adminTabFlaggedBtn" onclick="switchAdminTab('flagged',this)" style="color:#ff4d64;">⚑ Flagged <span id="flaggedBadge" style="display:none;background:#ff4d64;color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:4px;margin-left:3px;">0</span></button>
       <button class="dash-tab" onclick="switchAdminTab('settings',this)">⚙ Settings</button>
     </div>
 
@@ -3181,6 +3183,21 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <div style="text-align:center;padding:32px;color:var(--text-muted);">
               Click Refresh to load users
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flagged Photos Tab -->
+    <div id="adminTab-flagged" style="display:none;">
+      <div class="dash-section" style="border-color:rgba(255,77,100,0.3);">
+        <div class="dash-section-header">
+          <div class="dash-section-title" style="color:#ff4d64;">⚑ Flagged Photos — Pending Review</div>
+          <button class="dash-btn" onclick="loadFlaggedPhotos()">↻ Refresh</button>
+        </div>
+        <div class="dash-section-body" style="padding:0;">
+          <div id="flaggedPhotosList" style="padding:16px;">
+            <div style="text-align:center;padding:24px;color:var(--text-muted);">Click Refresh to load flagged photos</div>
           </div>
         </div>
       </div>
@@ -7100,8 +7117,21 @@ function initAdminDashboard() {
   renderAdminArtistGrid();
   renderAdminSchedule();
   loadUsersForAssign();
-  // Always reload users list fresh
   loadAdminUsers();
+  // Check for flagged photos and show badge
+  checkFlaggedBadge();
+}
+
+async function checkFlaggedBadge() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/booth', { headers: token ? {'Authorization':'Bearer '+token} : {} });
+    if (!res.ok) return;
+    const d = await res.json();
+    const count = (d.photos || []).filter(function(p){ return p.flagged; }).length;
+    const badge = document.getElementById('flaggedBadge');
+    if (badge) { badge.textContent = count; badge.style.display = count ? 'inline' : 'none'; }
+  } catch {}
 }
 
 async function loadAdminUsers() {
@@ -7134,13 +7164,12 @@ async function loadUsersForAssign() {
 
 // ── Tab switching ──────────────────────────────────────────
 function switchAdminTab(tab, btn) {
-  ['artists','schedule','master','staffedit','tasks','shifts','users','settings'].forEach(t => {
+  ['artists','schedule','master','staffedit','tasks','shifts','users','flagged','settings'].forEach(t => {
     const el = document.getElementById('adminTab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
   document.querySelectorAll('#page-admin .dash-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  // Sync mobile select
   const sel = document.querySelector('#page-admin .dash-tab-select');
   if (sel) sel.value = tab;
   if (tab === 'artists')  renderAdminArtistGrid();
@@ -7150,6 +7179,7 @@ function switchAdminTab(tab, btn) {
   if (tab === 'tasks')     renderTaskManager('sharedTaskManager');
   if (tab === 'shifts')   { if (!window._allUsers || !window._allUsers.length) loadUsersForAssign(); renderShiftManager('sharedShiftManager'); }
   if (tab === 'users')    adminLoadUsers();
+  if (tab === 'flagged')  loadFlaggedPhotos();
 }
 
 // ── Master Block Schedule ──────────────────────────────────
@@ -8052,6 +8082,72 @@ function updateSchedDay(day, stage, idx, val) {
 }
 
 // ── User management ────────────────────────────────────────
+async function loadFlaggedPhotos() {
+  const list = document.getElementById('flaggedPhotosList');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>';
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/booth', { headers: token ? {'Authorization':'Bearer '+token} : {} });
+    if (!res.ok) { list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">Could not load photos</div>'; return; }
+    const d = await res.json();
+    const flagged = (d.photos || []).filter(function(p){ return p.flagged; });
+
+    // Update badge count
+    const badge = document.getElementById('flaggedBadge');
+    if (badge) { badge.textContent = flagged.length; badge.style.display = flagged.length ? 'inline' : 'none'; }
+
+    if (!flagged.length) {
+      list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">✓ No flagged photos — all clear!</div>';
+      return;
+    }
+
+    list.innerHTML = flagged.map(function(p) {
+      return '<div style="display:flex;gap:14px;align-items:flex-start;padding:14px;border:1px solid rgba(255,77,100,0.25);background:rgba(255,77,100,0.04);margin-bottom:10px;">' +
+        // Thumbnail
+        '<img src="'+p.url+'" style="width:80px;height:80px;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,77,100,0.3);cursor:pointer;" onclick="adminReviewBoothPhoto(\''+p.id+'\',\''+p.url+'\',\''+(p.uploadedBy||'unknown')+'\',\''+(p.uploadedById||'')+'\')">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:12px;font-weight:700;color:#ff4d64;margin-bottom:4px;">⚑ Flagged: '+escapeHTML(p.flaggedReason||'explicit')+'</div>' +
+          '<div style="font-size:12px;color:var(--text-muted);">Uploaded by <strong style="color:var(--text-light);">@'+escapeHTML(p.uploadedBy||'unknown')+'</strong></div>' +
+          '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">'+getTimeAgo(p.createdAt)+'</div>' +
+          '<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">' +
+            '<button onclick="adminReviewBoothPhoto(\''+p.id+'\',\''+p.url+'\',\''+(p.uploadedBy||'unknown')+'\',\''+(p.uploadedById||'')+'\')" style="padding:6px 12px;background:rgba(255,77,100,0.15);border:1px solid rgba(255,77,100,0.4);color:#ff4d64;font-size:11px;font-weight:800;cursor:pointer;">⚑ Full Review</button>' +
+            '<button onclick="quickReinstate(\''+p.id+'\',this)" style="padding:6px 12px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;font-size:11px;font-weight:800;cursor:pointer;">✓ Reinstate</button>' +
+            '<button onclick="quickDelete(\''+p.id+'\',this)" style="padding:6px 12px;background:rgba(255,77,100,0.08);border:1px solid rgba(255,77,100,0.25);color:#ff4d64;font-size:11px;font-weight:700;cursor:pointer;">🗑 Delete</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="padding:16px;color:var(--pink-coral);">Could not connect to server</div>';
+  }
+}
+
+async function quickReinstate(photoId, btn) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  try {
+    const res = await fetch(AUTH_URL + '/booth/' + photoId + '/reinstate', {
+      method: 'POST', headers: {'Authorization':'Bearer '+token}
+    });
+    if (res.ok) { showToast('✓ Photo reinstated'); loadFlaggedPhotos(); }
+    else { showToast('Could not reinstate'); if(btn){btn.disabled=false;btn.textContent='✓ Reinstate';} }
+  } catch { showToast('Could not connect'); if(btn){btn.disabled=false;btn.textContent='✓ Reinstate';} }
+}
+
+async function quickDelete(photoId, btn) {
+  if (!confirm('Permanently delete this photo?')) return;
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  try {
+    const res = await fetch(AUTH_URL + '/booth/' + photoId, {
+      method: 'DELETE', headers: {'Authorization':'Bearer '+token}
+    });
+    if (res.ok) { showToast('🗑 Photo deleted'); loadFlaggedPhotos(); }
+    else { showToast('Could not delete'); if(btn){btn.disabled=false;btn.textContent='🗑 Delete';} }
+  } catch { showToast('Could not connect'); if(btn){btn.disabled=false;btn.textContent='🗑 Delete';} }
+}
+
 async function adminLoadUsers() {
   const list = document.getElementById('adminUsersList');
   if (!list) return;
