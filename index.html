@@ -3250,7 +3250,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           </div>
           <!-- Add/Edit activity form (hidden by default) -->
           <div id="activityForm" style="display:none;margin-top:14px;padding:16px;border:1px solid rgba(245,200,66,0.25);background:rgba(245,200,66,0.03);">
-            <div style="font-size:12px;font-weight:800;color:var(--gold-bright);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">New Activity</div>
+            <div id="activityFormTitle" style="font-size:12px;font-weight:800;color:var(--gold-bright);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">New Activity</div>
             <div class="form-row">
               <div class="form-field">
                 <label class="form-label">Activity Name</label>
@@ -15842,26 +15842,52 @@ function renderAdminActivities() {
         '<div style="font-size:13px;font-weight:700;color:var(--text-light);">'+escapeHTML(a.name)+'</div>'+
         '<div style="font-size:11px;color:var(--text-muted);">'+(a.day||'')+(a.startTime?' · '+a.startTime:'')+(a.location?' · '+a.location:'')+'</div>'+
       '</div>'+
+      '<button onclick="openEditActivityForm(\''+a.id+'\')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:var(--text-muted);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;">✎</button>'+
       '<button onclick="deleteActivity(\''+a.id+'\')" style="background:rgba(255,77,100,0.12);border:1px solid rgba(255,77,100,0.3);color:#ff4d64;font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;">✕</button>'+
     '</div>';
   }).join('');
 }
 
+var _editingActivityId = null;
+
 function openAddActivityForm() {
+  _editingActivityId = null;
   _activityPendingImage = null;
   ['activityName','activityLocation','activityDesc','activityDescLong'].forEach(function(id){ var el=document.getElementById(id); if(el)el.value=''; });
   document.getElementById('activityDay').value  = '2026-07-17';
   document.getElementById('activityStart').value = '12:00';
   document.getElementById('activityEnd').value   = '13:00';
+  document.getElementById('activityFormTitle').textContent = 'New Activity';
   document.getElementById('activityFormStatus').textContent = '';
   var prev=document.getElementById('activityImagePreview'); var clr=document.getElementById('activityImageClear');
   if(prev){prev.style.display='none';prev.src='';}  if(clr)clr.style.display='none';
   var form=document.getElementById('activityForm'); if(form){form.style.display='block';form.scrollIntoView({behavior:'smooth',block:'nearest'});}
 }
 
+function openEditActivityForm(actId) {
+  var a = _allActivities.find(function(x){ return x.id === actId; });
+  if (!a) return;
+  _editingActivityId = actId;
+  _activityPendingImage = null;
+  document.getElementById('activityName').value      = a.name || '';
+  document.getElementById('activityLocation').value  = a.location || '';
+  document.getElementById('activityDesc').value      = a.desc || '';
+  document.getElementById('activityDescLong').value  = a.descLong || '';
+  document.getElementById('activityDay').value        = a.day || '2026-07-17';
+  document.getElementById('activityStart').value      = a.startTime || '12:00';
+  document.getElementById('activityEnd').value        = a.endTime || '13:00';
+  document.getElementById('activityFormTitle').textContent = 'Edit Activity';
+  document.getElementById('activityFormStatus').textContent = '';
+  var prev=document.getElementById('activityImagePreview'); var clr=document.getElementById('activityImageClear');
+  if (a.imageUrl) { if(prev){prev.src=a.imageUrl;prev.style.display='block';} if(clr)clr.style.display='inline'; }
+  else { if(prev){prev.style.display='none';prev.src='';} if(clr)clr.style.display='none'; }
+  var form=document.getElementById('activityForm'); if(form){form.style.display='block';form.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+
 function cancelActivityForm() {
   var form=document.getElementById('activityForm'); if(form)form.style.display='none';
   _activityPendingImage=null;
+  _editingActivityId=null;
 }
 
 function previewActivityImage(input) {
@@ -15894,20 +15920,24 @@ async function saveActivity() {
   if(!day){status.style.color='var(--pink-coral)';status.textContent='Date required';return;}
   status.style.color='var(--text-muted)';status.textContent='Saving…';
   var token=localStorage.getItem(TOKEN_KEY);
-  var imageUrl='';
+  var imageUrl = _editingActivityId ? undefined : ''; // undefined = leave existing image untouched on edit unless a new one is picked
   if(_activityPendingImage){
     status.textContent='Uploading image…';
     try{
-      var slug='activity_'+Date.now();
+      var slug='activity_'+(_editingActivityId||Date.now());
       var ur=await fetch(AUTH_URL+'/media/upload?artist='+encodeURIComponent(slug),{method:'POST',headers:{'Content-Type':_activityPendingImage.type,'Authorization':'Bearer '+token},body:_activityPendingImage});
       if(ur.ok){var ud=await ur.json();imageUrl=ud.url||'';}
       else{status.style.color='var(--pink-coral)';status.textContent='Image upload failed';return;}
     }catch{status.style.color='var(--pink-coral)';status.textContent='Image upload failed';return;}
   }
+  var payload = {name,day,startTime:start,endTime:end,location:loc,desc,descLong};
+  if (imageUrl !== undefined) payload.imageUrl = imageUrl;
   try{
-    var res=await fetch(AUTH_URL+'/activities',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({name,day,startTime:start,endTime:end,location:loc,desc,descLong,imageUrl})});
+    var url    = _editingActivityId ? (AUTH_URL+'/activities/'+_editingActivityId) : (AUTH_URL+'/activities');
+    var method = _editingActivityId ? 'PUT' : 'POST';
+    var res=await fetch(url,{method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(payload)});
     var d=await res.json();
-    if(res.ok){showToast('✓ Activity added!');cancelActivityForm();await loadAdminActivities();}
+    if(res.ok){showToast(_editingActivityId?'✓ Activity updated!':'✓ Activity added!');cancelActivityForm();await loadAdminActivities();}
     else{status.style.color='var(--pink-coral)';status.textContent=d.error||'Could not save';}
   }catch{status.style.color='var(--pink-coral)';status.textContent='Could not connect';}
 }
