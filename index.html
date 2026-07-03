@@ -2846,7 +2846,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
           <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locker</button>
           <button class="stage-pill deepsea" data-stage="deepsea" onclick="filterStage('deepsea',this)">Deep Sea</button>
-          <button class="stage-pill activities" data-stage="activities" onclick="filterStage('activities',this)">🎯 Activities</button>
+          <button class="stage-pill activities" data-stage="activities" onclick="filterStage('activities',this)">Activities</button>
           <div class="view-toggle">
             <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
             <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
@@ -5575,7 +5575,7 @@ function renderSchedule() {
         .filter(item => matchArtist(item.artist))
         .sort((a, b) => timeToSort(a.time) - timeToSort(b.time));
       if (!items.length) return;
-      const stageNames = {dnb:'DNB Stage',oasis:'Oasis Stage',beach:'Beach Stage',locals:"Davey Jones Locker",deepsea:'Deep Sea',activities:'🎯 Activities'};
+      const stageNames = {dnb:'DNB Stage',oasis:'Oasis Stage',beach:'Beach Stage',locals:"Davey Jones Locker",deepsea:'Deep Sea',activities:'Activities'};
       const stageName = stageNames[stage] || stage;
       html += `<div class="stage-section"><div class="stage-section-header ${stage}">`+
         `<div class="stage-dot" style="background:${{dnb:'#9b3dff',oasis:'#f59e0b',beach:'#06b6d4',locals:'#84cc16',deepsea:'#0ea5e9',activities:'#ff4d8d'}[stage]||'#888'};"></div>${stageName}</div>`+
@@ -5608,7 +5608,7 @@ function renderSchedule() {
     if (shouldShowStage('beach'))  stages.push({key:'beach',  name:'Beach Stage',                     color:'#06b6d4'});
     if (shouldShowStage('locals'))  stages.push({key:'locals',  name:"Davey Jones Locker", color:'#84cc16'});
     if (shouldShowStage('deepsea')) stages.push({key:'deepsea', name:'Deep Sea',             color:'#0ea5e9'});
-    if (shouldShowStage('activities')) stages.push({key:'activities', name:'🎯 Activities',   color:'#ff4d8d'});
+    if (shouldShowStage('activities')) stages.push({key:'activities', name:'Activities',   color:'#ff4d8d'});
     let html = `<div class="tg-grid-wrap"><div class="tg-grid" style="grid-template-columns:repeat(${stages.length},minmax(140px,1fr));">`;
     stages.forEach(st => {
       html += `<div><div class="tg-col-header" style="color:${st.color};">${st.name}</div>`;
