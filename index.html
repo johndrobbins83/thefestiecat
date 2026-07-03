@@ -3158,6 +3158,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <select class="dash-tab-select" onchange="switchAdminTab(this.value, null); this.blur();">
       <option value="artists">♪ Artists</option>
       <option value="schedule">◈ Schedule</option>
+      <option value="activities">🎯 Activities</option>
       <option value="vendors">🛍️ Vendors</option>
       <option value="master">📋 Master</option>
       <option value="staffedit">👷 Staff</option>
@@ -3170,6 +3171,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="dash-tabs">
       <button class="dash-tab active" onclick="switchAdminTab('artists',this)"><span style="color:var(--gold-bright);margin-right:4px;">♪</span>Artists</button>
       <button class="dash-tab" onclick="switchAdminTab('schedule',this)"><span style="color:var(--gold-bright);margin-right:4px;">◈</span>Schedule</button>
+      <button class="dash-tab" onclick="switchAdminTab('activities',this)">🎯 Activities</button>
       <button class="dash-tab" onclick="switchAdminTab('vendors',this)">🛍️ Vendors</button>
       <button class="dash-tab" onclick="switchAdminTab('master',this)">📋 Master</button>
       <button class="dash-tab" onclick="switchAdminTab('staffedit',this)">👷 Staff</button>
@@ -3232,9 +3234,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <div id="adminSchedList"></div>
         </div>
       </div>
+    </div>
 
+    <!-- Activities Admin Tab -->
+    <div id="adminTab-activities" style="display:none;">
       <!-- Activities Admin Section -->
-      <div class="dash-section" style="border-color:rgba(245,200,66,0.3);margin-top:16px;">
+      <div class="dash-section" style="border-color:rgba(245,200,66,0.3);">
         <div class="dash-section-header">
           <div class="dash-section-title">🎯 Activities Manager</div>
           <button class="dash-btn primary" onclick="openAddActivityForm()">+ Add Activity</button>
@@ -7483,7 +7488,7 @@ async function loadUsersForAssign() {
 
 // ── Tab switching ──────────────────────────────────────────
 function switchAdminTab(tab, btn) {
-  ['artists','schedule','vendors','master','staffedit','tasks','shifts','users','flagged','settings'].forEach(t => {
+  ['artists','schedule','activities','vendors','master','staffedit','tasks','shifts','users','flagged','settings'].forEach(t => {
     const el = document.getElementById('adminTab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
@@ -15918,7 +15923,7 @@ async function deleteActivity(actId) {
 
 // Hook into admin tab switch
 var _origSAT2=window.switchAdminTab;
-window.switchAdminTab=function(tab,btn){if(_origSAT2)_origSAT2(tab,btn);if(tab==='schedule')loadAdminActivities();if(tab==='vendors')loadAdminVendors();};
+window.switchAdminTab=function(tab,btn){if(_origSAT2)_origSAT2(tab,btn);if(tab==='activities')loadAdminActivities();if(tab==='vendors')loadAdminVendors();};
 
 // Hook into navigate for activities page
 var _origNav2=window.navigate;
