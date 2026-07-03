@@ -2884,17 +2884,16 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
   <!-- ── ARTISTS PAGE ── -->
   <div class="page" id="page-artists">
+    <div class="page-header" style="margin-bottom:4px;padding-bottom:4px;"><div class="page-title">Artists</div><div class="page-sub">Tap any artist to view profile · tap + to save to your lineup</div></div>
     <div class="artist-controls" id="artistControls">
-      <!-- Search + Sort -->
-      <div style="display:flex;gap:8px;padding:8px 16px 4px;align-items:center;">
-        <div class="search-wrap" style="flex:1;"><span class="search-icon"></span><input type="text" class="search-input" id="artistSearchInput" placeholder="Search artists…" oninput="renderArtists()"></div>
-        <select id="artistSortSelect" onchange="renderArtists()" style="flex-shrink:0;width:80px;padding:10px 6px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;height:42px;box-sizing:border-box;">
+      <!-- Search + Sort + Stage + Day — single row, full grid width -->
+      <div class="artist-filters" id="artistFilters" style="display:flex;gap:8px;padding:0;align-items:center;flex-wrap:wrap;">
+        <div class="search-wrap" style="flex:2 1 140px;min-width:0;"><span class="search-icon"></span><input type="text" class="search-input" id="artistSearchInput" placeholder="Search artists…" oninput="renderArtists()"></div>
+        <select id="artistSortSelect" onchange="renderArtists()" style="flex:0 0 auto;width:80px;padding:10px 6px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;height:42px;box-sizing:border-box;">
           <option value="alpha">A–Z</option>
           <option value="za">Z–A</option>
         </select>
-      </div>
-      <div class="artist-filters" id="artistFilters" style="display:flex;gap:8px;padding:4px 16px 8px;">
-        <select id="artistStageSelect" onchange="setArtistFilterMobile(this)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+        <select id="artistStageSelect" onchange="setArtistFilterMobile(this)" style="flex:1 1 110px;min-width:0;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;height:42px;box-sizing:border-box;">
           <option value="all">All Stages</option>
           <option value="dnb">DNB Stage</option>
           <option value="oasis">Oasis Stage</option>
@@ -2902,7 +2901,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <option value="djl">Davey Jones Locker</option>
           <option value="deepsea">Deep Sea</option>
         </select>
-        <select id="artistDaySelect" onchange="setArtistFilterMobile(this)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+        <select id="artistDaySelect" onchange="setArtistFilterMobile(this)" style="flex:1 1 110px;min-width:0;padding:8px 10px;background:#111;border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;height:42px;box-sizing:border-box;">
           <option value="all">All Days</option>
           <option value="fri">Fri 7/17</option>
           <option value="sat">Sat 7/18</option>
@@ -3793,11 +3792,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <input type="text" class="people-search-input" id="peopleSearchInput"
               placeholder="Search by @handle or email…" oninput="searchPeople(this.value)" autocomplete="off">
           </div>
-          <div class="people-results" id="peopleResults">
-            <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">
-              Type a handle to search for Festies
-            </div>
-          </div>
+          <div class="people-results" id="peopleResults"></div>
 
           <div class="section-header" style="margin:18px 0 10px;"><div class="section-title">My Crew</div></div>
           <div id="friendsList"></div>
@@ -10700,7 +10695,7 @@ function searchPeople(q) {
   clearTimeout(searchPeopleTimer);
   const resultsEl = document.getElementById('peopleResults');
   if (!q || q.trim().length < 2) {
-    resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">Type a handle or email to find Festies</div>';
+    resultsEl.innerHTML = '';
     return;
   }
   resultsEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px);">Searching…</div>';
