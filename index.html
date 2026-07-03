@@ -2590,7 +2590,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </div>
         <div class="venue-card">
           <div class="venue-map-wrap">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2962.7!2d-72.0898!3d42.1167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e6a3a322e1a0c1%3A0xe6fcfc2b19cf0fd6!2sSturbridge%20Host%20Hotel%20%26%20Conference%20Center!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Sturbridge Host Hotel"></iframe>
+            <iframe id="mapHomeIframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2962.7!2d-72.0898!3d42.1167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e6a3a322e1a0c1%3A0xe6fcfc2b19cf0fd6!2sSturbridge%20Host%20Hotel%20%26%20Conference%20Center!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Sturbridge Host Hotel"></iframe>
             <a class="venue-map-open" href="https://maps.google.com/?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA" target="_blank" rel="noopener">↗ Open</a>
           </div>
           <div class="venue-info">
@@ -2751,9 +2751,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <button class="address-copy-btn" onclick="copyAddress()">📋 Copy</button>
     </div>
     <div class="map-section-title">📍 Location</div>
-    <div class="map-embed-wrap">
-      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2962.7!2d-72.0898!3d42.1167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e6a3a322e1a0c1%3A0xe6fcfc2b19cf0fd6!2sSturbridge%20Host%20Hotel%20%26%20Conference%20Center!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Sturbridge Host Hotel location map"></iframe>
+    <div class="map-embed-wrap" style="position:relative;">
+      <iframe id="mapMainIframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2962.7!2d-72.0898!3d42.1167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e6a3a322e1a0c1%3A0xe6fcfc2b19cf0fd6!2sSturbridge%20Host%20Hotel%20%26%20Conference%20Center!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Sturbridge Host Hotel location map"></iframe>
       <a class="map-open-btn" href="https://maps.google.com/?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA+01566" target="_blank" rel="noopener">↗ Open in Maps</a>
+      <button id="mapEditBtn" onclick="openMapEditModal()" style="display:none;position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.75);border:1px solid rgba(245,200,66,0.5);color:var(--gold-bright);font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;z-index:10;">✏ Edit Map</button>
     </div>
     <div class="map-section-title"> Get Directions</div>
     <div class="directions-grid">
@@ -10676,25 +10677,35 @@ async function pollDMUnread() {
   const token = localStorage.getItem('ss_auth_token');
   if (!token || !currentUser) return;
   try {
-    // Try /dm/unread first
-    const res = await fetch(AUTH_URL + '/dm/unread', {
-      headers: {'Authorization': 'Bearer ' + token}
-    });
     let total = 0;
-    if (res.ok) {
-      const d = await res.json();
-      total = d.total || 0;
-    }
-    // If 0, also check /dm list for unread (catches pre-indexed conversations)
+
+    // 1. Count unread 1:1 DMs
+    const res = await fetch(AUTH_URL + '/dm/unread', { headers: {'Authorization': 'Bearer ' + token} });
+    if (res.ok) { const d = await res.json(); total += d.total || 0; }
+
+    // Fallback: check DM list directly
     if (total === 0) {
-      const res2 = await fetch(AUTH_URL + '/dm', {
-        headers: {'Authorization': 'Bearer ' + token}
-      });
+      const res2 = await fetch(AUTH_URL + '/dm', { headers: {'Authorization': 'Bearer ' + token} });
       if (res2.ok) {
         const d2 = await res2.json();
-        total = (d2.conversations || []).reduce(function(sum, c) { return sum + (c.unread || 0); }, 0);
+        total += (d2.conversations || []).reduce(function(sum, c) { return sum + (c.unread || 0); }, 0);
       }
     }
+
+    // 2. Count unread group messages from the notifications list
+    // (groups don't have a separate unread endpoint — we check notifs for type group_msg / staff_group)
+    const nRes = await fetch(AUTH_URL + '/notifications', { headers: {'Authorization': 'Bearer ' + token} });
+    if (nRes.ok) {
+      const ct = nRes.headers.get('content-type') || '';
+      if (ct.includes('json')) {
+        const nd = await nRes.json();
+        const groupUnread = (nd.notifications || []).filter(function(n) {
+          return !n.read && (n.type === 'group_msg' || n.type === 'staff_group_msg' || n.type === 'group_invite' || n.type === 'staff_group_invite');
+        }).length;
+        total += groupUnread;
+      }
+    }
+
     const badge = document.getElementById('inboxNavBadge');
     if (badge) {
       if (total > 0) {
@@ -11709,6 +11720,22 @@ function renderNotifications(notifs) {
           '<div class="notif-time">' + timeAgo + '</div>' +
         '</div>' +
         thumbHtml +
+      '</div>';
+    }
+
+    if (n.type === 'group_msg' || n.type === 'group_invite' || n.type === 'staff_group_msg' || n.type === 'staff_group_invite') {
+      const isStaff  = n.type === 'staff_group_msg' || n.type === 'staff_group_invite' || (n.category === 'yellow');
+      const color    = isStaff ? 'var(--gold-bright)' : '#c084fc';
+      const icon     = isStaff ? '📢' : '👥';
+      const groupId  = n.groupId || '';
+      const groupName= escapeHTML(n.groupName || 'Group Chat');
+      return '<div class="notif-item ' + (n.read ? '' : 'unread') + '">' +
+        '<div class="notif-dot ' + (isStaff ? 'yellow' : 'purple') + '"></div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="notif-text">' + escapeHTML(n.message || '') + '</div>' +
+          '<div class="notif-time">' + timeAgo + '</div>' +
+          (groupId ? '<button onclick="event.stopPropagation();handleNotifClick(\''+nid+'\',\''+n.type+'\',\'\');navigate(\'people\');setTimeout(function(){switchChatTab(\''+(isStaff?'staff':'personal')+'\');openGroupThread(\''+groupId+'\',\''+groupName+'\',0,'+(isStaff?'true':'false')+');},300);" style="margin-top:5px;padding:4px 10px;background:rgba(155,61,255,0.15);border:1px solid rgba(155,61,255,0.3);color:'+color+';font-size:11px;font-weight:800;cursor:pointer;display:block;width:100%;">'+icon+' Open '+groupName+'</button>' : '') +
+        '</div>' +
       '</div>';
     }
 
@@ -14076,9 +14103,8 @@ async function submitBoothReport() {
       })
     });
 
-    if (res.ok || !token) {
+    if (res.ok) {
       if (reason === 'explicit') {
-        // Remove entirely from the grid — don't just dim
         const item = document.getElementById('booth-item-' + _boothReportPhotoId);
         if (item) item.remove();
         if (status) { status.style.color='#4ade80'; status.textContent='✓ Image removed and reported to admin.'; }
@@ -14088,8 +14114,9 @@ async function submitBoothReport() {
       if (btn) btn.textContent = '✓ Reported';
       setTimeout(closeBoothReport, 1800);
     } else {
+      const d = await res.json().catch(function(){ return {}; });
       if (btn) { btn.disabled = false; btn.textContent = 'Submit Report'; }
-      if (status) { status.style.color='var(--pink-coral)'; status.textContent='Could not send report — try again.'; }
+      if (status) { status.style.color='var(--pink-coral)'; status.textContent = d.error || 'Could not send report ('+res.status+')'; }
     }
   } catch {
     if (btn) { btn.disabled = false; btn.textContent = 'Submit Report'; }
@@ -14732,6 +14759,121 @@ async function adminBoothDeleteAndBan() {
     }
   } catch { if (statusEl) { statusEl.style.color='var(--pink-coral)'; statusEl.textContent='Could not connect.'; } }
 }
+</script>
+
+<!-- ══ MAP EDIT MODAL (Admin only) ══ -->
+<div id="mapEditModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:520px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">✏ EDIT MAP EMBED</span>
+      <button onclick="closeMapEditModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+    </div>
+    <div style="padding:18px;">
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;line-height:1.6;">
+        Paste a Google Maps embed URL or full <code style="color:#c084fc;">&lt;iframe&gt;</code> code below. The map will update on all pages instantly.
+      </p>
+      <p style="font-size:11px;color:var(--text-muted);margin:0 0 14px;">
+        To get the embed URL: Google Maps → Share → Embed a map → copy the <code style="color:#c084fc;">src="..."</code> URL.
+      </p>
+      <label style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;">Embed URL or iframe code</label>
+      <textarea id="mapEditInput" rows="5" placeholder="https://www.google.com/maps/embed?pb=..."
+        style="width:100%;padding:10px 12px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;outline:none;resize:vertical;box-sizing:border-box;"></textarea>
+      <div id="mapEditStatus" style="font-size:12px;margin-top:8px;min-height:16px;"></div>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;">
+      <button onclick="closeMapEditModal()" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button onclick="saveMapEmbed()" style="flex:1;padding:10px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save Map</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   MAP EMBED — Admin edit
+════════════════════════════════════════════════════════════ */
+var DEFAULT_MAP_SRC = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2962.7!2d-72.0898!3d42.1167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e6a3a322e1a0c1%3A0xe6fcfc2b19cf0fd6!2sSturbridge%20Host%20Hotel%20%26%20Conference%20Center!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus';
+
+function applyMapSrc(src) {
+  // Update all map iframes on the page
+  ['mapMainIframe','mapHomeIframe'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.src = src;
+  });
+}
+
+async function loadMapEmbed() {
+  var token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return;
+  try {
+    var res = await fetch(AUTH_URL + '/settings/map-embed', { headers: {'Authorization':'Bearer '+token} });
+    var ct  = res.headers.get('content-type') || '';
+    if (res.ok && ct.includes('json')) {
+      var d = await res.json();
+      if (d.src) applyMapSrc(d.src);
+    }
+  } catch {}
+  // Show edit button for admins
+  var btn = document.getElementById('mapEditBtn');
+  if (btn && currentUser && currentUser.role === 'admin') btn.style.display = 'block';
+}
+
+function openMapEditModal() {
+  var modal  = document.getElementById('mapEditModal');
+  var input  = document.getElementById('mapEditInput');
+  var status = document.getElementById('mapEditStatus');
+  if (status) status.textContent = '';
+  // Pre-fill with current src
+  var current = document.getElementById('mapMainIframe');
+  if (input && current) input.value = current.src;
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeMapEditModal() {
+  var modal = document.getElementById('mapEditModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveMapEmbed() {
+  var input  = document.getElementById('mapEditInput');
+  var status = document.getElementById('mapEditStatus');
+  var raw    = (input ? input.value : '').trim();
+  if (!raw) { if (status) { status.style.color='var(--pink-coral)'; status.textContent='Please enter a URL or iframe code.'; } return; }
+
+  // Extract src URL if full iframe code was pasted
+  var src = raw;
+  var srcMatch = raw.match(/src=["']([^"']+)["']/);
+  if (srcMatch) src = srcMatch[1];
+
+  // Basic validation
+  if (!src.startsWith('https://www.google.com/maps/embed')) {
+    if (status) { status.style.color='var(--pink-coral)'; status.textContent='Must be a Google Maps embed URL (starts with https://www.google.com/maps/embed).'; }
+    return;
+  }
+
+  var token = localStorage.getItem(TOKEN_KEY);
+  try {
+    var res = await fetch(AUTH_URL + '/settings/map-embed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ src: src })
+    });
+    if (res.ok) {
+      applyMapSrc(src);
+      showToast('✓ Map updated!');
+      closeMapEditModal();
+    } else {
+      var d = await res.json().catch(function(){ return {}; });
+      if (status) { status.style.color='var(--pink-coral)'; status.textContent = d.error || 'Could not save.'; }
+    }
+  } catch { if (status) { status.style.color='var(--pink-coral)'; status.textContent='Could not connect.'; } }
+}
+
+// Load saved map on page init (after user is set)
+var _origSetCurrentUser = window.setCurrentUser;
+window.setCurrentUser = function(user, token) {
+  if (_origSetCurrentUser) _origSetCurrentUser(user, token);
+  loadMapEmbed();
+};
 </script>
 </body>
 </html>
