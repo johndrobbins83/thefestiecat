@@ -586,6 +586,34 @@ body{
 .tg-col-header{font-size:11px;font-weight:800;color:var(--gold-bright);letter-spacing:1.5px;
   text-transform:uppercase;padding:8px 4px 6px;border-bottom:1px solid rgba(245,200,66,0.15);
   white-space:normal;word-break:break-word;line-height:1.3;}
+
+/* ── Activities page ── */
+.activities-grid{display:flex;flex-direction:column;gap:16px;}
+.activity-card{border:1px solid rgba(245,200,66,0.2);background:rgba(0,0,0,0.4);
+  display:flex;gap:14px;padding:14px;align-items:flex-start;}
+.activity-thumb{width:92px;height:92px;flex-shrink:0;overflow:hidden;}
+.activity-thumb img,.activity-thumb-placeholder{width:100%;height:100%;object-fit:cover;display:block;}
+.activity-thumb-placeholder{display:flex;align-items:center;justify-content:center;font-size:28px;background:rgba(245,200,66,0.08);}
+.activity-info{flex:1;min-width:0;}
+.activity-name{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;}
+.activity-badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;}
+.activity-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:2px 7px;}
+.activity-badge svg{width:11px;height:11px;flex-shrink:0;}
+.activity-badge.time{background:rgba(0,212,200,0.1);color:var(--teal-glow);}
+.activity-desc{font-size:13px;color:var(--text-light);font-weight:600;margin-bottom:6px;}
+.activity-desc-long{font-size:12px;color:var(--text-muted);line-height:1.65;}
+@media(min-width:768px){
+  .activities-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  .activity-card{padding:22px;gap:20px;}
+  .activity-thumb{width:180px;height:180px;}
+  .activity-thumb-placeholder{font-size:48px;}
+  .activity-name{font-size:22px;margin-bottom:10px;}
+  .activity-badges{gap:8px;margin-bottom:14px;}
+  .activity-badge{font-size:12px;padding:4px 10px;}
+  .activity-badge svg{width:13px;height:13px;}
+  .activity-desc{font-size:16px;margin-bottom:10px;}
+  .activity-desc-long{font-size:14px;line-height:1.75;}
+}
 .tg-block{position:relative;border-radius:0;padding:8px;cursor:pointer;
   display:flex;flex-direction:column;justify-content:space-between;
   overflow:hidden;transition:all .15s;}
@@ -3127,11 +3155,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <!-- ── ACTIVITIES PAGE ── -->
   <div class="page" id="page-activities">
     <div class="page-header">
-      <div class="page-title">🎯 Activities</div>
+      <div class="page-title">Activities</div>
       <div class="page-sub">Things to do at The Mutiny</div>
     </div>
-    <div id="activitiesGrid" style="display:flex;flex-direction:column;gap:16px;">
-      <div style="text-align:center;padding:48px 24px;color:var(--text-muted);">Loading activities…</div>
+    <div id="activitiesGrid" class="activities-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:var(--text-muted);">Loading activities…</div>
     </div>
   </div><!-- /page-activities -->
 
@@ -15806,25 +15834,25 @@ async function initActivities() {
 function renderActivitiesPage(activities) {
   var grid = document.getElementById('activitiesGrid');
   if (!grid) return;
-  if (!activities.length) { grid.innerHTML='<div style="text-align:center;padding:48px;color:var(--text-muted);">No activities scheduled yet — check back soon!</div>'; return; }
+  if (!activities.length) { grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-muted);">No activities scheduled yet — check back soon!</div>'; return; }
   grid.innerHTML = activities.map(function(a) {
     var dayLabel='';
     try { var dd=new Date(a.day+'T12:00:00'); dayLabel=dd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); } catch{ dayLabel=a.day||''; }
     var timeStr = (a.startTime||'TBA')+(a.endTime?' – '+a.endTime:'');
     var thumb = a.imageUrl
-      ? '<img src="'+escapeHTML(a.imageUrl)+'" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy">'
-      : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;background:rgba(245,200,66,0.08);">🎯</div>';
-    return '<div style="border:1px solid rgba(245,200,66,0.2);background:rgba(0,0,0,0.4);display:flex;gap:14px;padding:14px;align-items:flex-start;">' +
-      '<div style="width:92px;height:92px;flex-shrink:0;overflow:hidden;">'+thumb+'</div>' +
-      '<div style="flex:1;min-width:0;">' +
-        '<div style="font-family:\'Orbitron\',sans-serif;font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">'+escapeHTML(a.name)+'</div>' +
-        '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;">' +
-          (dayLabel?'<span style="font-size:10px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:2px 7px;">📅 '+escapeHTML(dayLabel)+'</span>':'')+
-          '<span style="font-size:10px;font-weight:700;background:rgba(0,212,200,0.1);color:var(--teal-glow);padding:2px 7px;">⏰ '+escapeHTML(timeStr)+'</span>'+
-          (a.location?'<span style="font-size:10px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:2px 7px;">📍 '+escapeHTML(a.location)+'</span>':'')+
+      ? '<img src="'+escapeHTML(a.imageUrl)+'" loading="lazy">'
+      : '<div class="activity-thumb-placeholder">🎯</div>';
+    return '<div class="activity-card">' +
+      '<div class="activity-thumb">'+thumb+'</div>' +
+      '<div class="activity-info">' +
+        '<div class="activity-name">'+escapeHTML(a.name)+'</div>' +
+        '<div class="activity-badges">' +
+          (dayLabel?'<span class="activity-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> '+escapeHTML(dayLabel)+'</span>':'')+
+          '<span class="activity-badge time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> '+escapeHTML(timeStr)+'</span>'+
+          (a.location?'<span class="activity-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> '+escapeHTML(a.location)+'</span>':'')+
         '</div>'+
-        (a.desc?'<div style="font-size:13px;color:var(--text-light);font-weight:600;margin-bottom:6px;">'+escapeHTML(a.desc)+'</div>':'')+
-        (a.descLong?'<div style="font-size:12px;color:var(--text-muted);line-height:1.65;">'+escapeHTML(a.descLong).replace(/\n/g,'<br>')+'</div>':'')+
+        (a.desc?'<div class="activity-desc">'+escapeHTML(a.desc)+'</div>':'')+
+        (a.descLong?'<div class="activity-desc-long">'+escapeHTML(a.descLong).replace(/\n/g,'<br>')+'</div>':'')+
       '</div>'+
     '</div>';
   }).join('');
