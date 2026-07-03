@@ -3122,6 +3122,17 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
   </div><!-- /page-activities -->
 
+  <!-- ── VENDORS PAGE ── -->
+  <div class="page" id="page-vendors">
+    <div class="page-header">
+      <div class="page-title">🛍️ Vendors</div>
+      <div class="page-sub">Who's set up at The Mutiny</div>
+    </div>
+    <div id="vendorsGrid" style="display:flex;flex-direction:column;gap:16px;">
+      <div style="text-align:center;padding:48px 24px;color:var(--text-muted);">Loading vendors…</div>
+    </div>
+  </div><!-- /page-vendors -->
+
   <!-- ── ADMIN DASHBOARD ── -->
   <div class="page" id="page-admin">
     <div class="dash-header">
@@ -3139,6 +3150,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <select class="dash-tab-select" onchange="switchAdminTab(this.value, null); this.blur();">
       <option value="artists">♪ Artists</option>
       <option value="schedule">◈ Schedule</option>
+      <option value="vendors">🛍️ Vendors</option>
       <option value="master">📋 Master</option>
       <option value="staffedit">👷 Staff</option>
       <option value="tasks">✅ Tasks</option>
@@ -3150,6 +3162,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="dash-tabs">
       <button class="dash-tab active" onclick="switchAdminTab('artists',this)"><span style="color:var(--gold-bright);margin-right:4px;">♪</span>Artists</button>
       <button class="dash-tab" onclick="switchAdminTab('schedule',this)"><span style="color:var(--gold-bright);margin-right:4px;">◈</span>Schedule</button>
+      <button class="dash-tab" onclick="switchAdminTab('vendors',this)">🛍️ Vendors</button>
       <button class="dash-tab" onclick="switchAdminTab('master',this)">📋 Master</button>
       <button class="dash-tab" onclick="switchAdminTab('staffedit',this)">👷 Staff</button>
       <button class="dash-tab" onclick="switchAdminTab('tasks',this)">✅ Tasks</button>
@@ -3272,6 +3285,59 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <div style="display:flex;gap:8px;">
               <button onclick="cancelActivityForm()" style="flex:1;padding:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;cursor:pointer;">Cancel</button>
               <button onclick="saveActivity()" style="flex:2;padding:9px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save Activity</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vendors Admin Tab -->
+    <div id="adminTab-vendors" style="display:none;">
+      <div class="dash-section" style="border-color:rgba(0,212,200,0.3);">
+        <div class="dash-section-header">
+          <div class="dash-section-title">🛍️ Vendors Manager</div>
+          <button class="dash-btn primary" onclick="openAddVendorForm()">+ Add Vendor</button>
+        </div>
+        <div class="dash-section-body">
+          <div id="vendorsAdminList" style="display:flex;flex-direction:column;gap:8px;">
+            <div style="text-align:center;padding:24px;color:var(--text-muted);">No vendors yet.</div>
+          </div>
+          <!-- Add/Edit vendor form (hidden by default) -->
+          <div id="vendorForm" style="display:none;margin-top:14px;padding:16px;border:1px solid rgba(0,212,200,0.25);background:rgba(0,212,200,0.03);">
+            <div id="vendorFormTitle" style="font-size:12px;font-weight:800;color:var(--teal-glow);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">New Vendor</div>
+            <div class="form-row">
+              <div class="form-field">
+                <label class="form-label">Vendor Name</label>
+                <input class="form-input" id="vendorName" placeholder="e.g. Salty Dog Tiki Bar">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Phone</label>
+                <input class="form-input" id="vendorPhone" type="tel" placeholder="(555) 555-5555">
+              </div>
+            </div>
+            <div class="form-field" style="margin-bottom:10px;">
+              <label class="form-label">Website</label>
+              <input class="form-input" id="vendorWebsite" type="url" placeholder="https://…">
+            </div>
+            <div class="form-field" style="margin-bottom:10px;">
+              <label class="form-label">Description</label>
+              <textarea class="form-input" id="vendorDescription" rows="4" placeholder="What they offer, where to find them…" style="resize:vertical;"></textarea>
+            </div>
+            <div class="form-field" style="margin-bottom:14px;">
+              <label class="form-label">Logo / Photo</label>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <label style="padding:8px 14px;background:rgba(255,255,255,0.06);border:1px dashed rgba(255,255,255,0.15);cursor:pointer;font-size:12px;font-weight:700;color:var(--text-muted);">
+                  📷 Choose Image
+                  <input type="file" accept="image/*" id="vendorImageInput" style="display:none;" onchange="previewVendorImage(this)">
+                </label>
+                <img id="vendorImagePreview" style="display:none;height:60px;width:60px;object-fit:cover;border-radius:50%;border:1px solid rgba(255,255,255,0.1);">
+                <button id="vendorImageClear" onclick="clearVendorImage()" style="display:none;background:none;border:none;color:var(--pink-coral);cursor:pointer;font-size:11px;">✕ Remove</button>
+              </div>
+            </div>
+            <div id="vendorFormStatus" style="font-size:12px;min-height:16px;margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="cancelVendorForm()" style="flex:1;padding:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;cursor:pointer;">Cancel</button>
+              <button onclick="saveVendor()" style="flex:2;padding:9px;background:rgba(0,212,200,0.15);border:1px solid rgba(0,212,200,0.4);color:var(--teal-glow);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save Vendor</button>
             </div>
           </div>
         </div>
@@ -3712,6 +3778,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="more-btn-icon" style="background:rgba(245,200,66,0.2);color:var(--gold-bright);">🎯</div>
         <div class="more-btn-label">Activities</div>
         <div class="more-btn-sub">What's happening</div>
+      </span>
+      <span class="more-btn" onclick="navigate('vendors');closeMore()" style="border-color:rgba(0,212,200,0.3);background:rgba(0,212,200,0.05);">
+        <div class="more-btn-icon" style="background:rgba(0,212,200,0.2);color:var(--teal-glow);">🛍️</div>
+        <div class="more-btn-label">Vendors</div>
+        <div class="more-btn-sub">Shops &amp; services</div>
       </span>
       <span class="more-btn" onclick="openPhotoBooth();closeMore()" style="border-color:rgba(255,105,180,0.3);background:rgba(255,105,180,0.05);">
         <div class="more-btn-icon" style="background:rgba(255,105,180,0.2);color:#ff69b4;">📸</div>
@@ -7067,7 +7138,7 @@ function setCurrentUser(user, token) {
   if (window.location.hash.startsWith('#reset?')) { handleResetTokenFromHash(); return; }
   if (_hash === 'verified') { handleVerifiedHash(); }
 
-  const _validPages = ['home','schedule','artists','map','list','people','profile','checklist','games','admin','staff','doc','activities'];
+  const _validPages = ['home','schedule','artists','map','list','people','profile','checklist','games','admin','staff','doc','activities','vendors'];
   const _targetPage = (_hash && _validPages.includes(_hash)) ? _hash : 'home';
   currentPage = '';
   navigate(_targetPage);
@@ -15611,11 +15682,199 @@ async function deleteActivity(actId) {
 
 // Hook into admin tab switch
 var _origSAT2=window.switchAdminTab;
-window.switchAdminTab=function(tab,btn){if(_origSAT2)_origSAT2(tab,btn);if(tab==='schedule')loadAdminActivities();};
+window.switchAdminTab=function(tab,btn){if(_origSAT2)_origSAT2(tab,btn);if(tab==='schedule')loadAdminActivities();if(tab==='vendors')loadAdminVendors();};
 
 // Hook into navigate for activities page
 var _origNav2=window.navigate;
-window.navigate=function(page){if(_origNav2)_origNav2(page);if(page==='activities')initActivities();};
+window.navigate=function(page){if(_origNav2)_origNav2(page);if(page==='activities')initActivities();if(page==='vendors')initVendors();};
+
+/* ════════════════════════════════════════════════════════════
+   VENDORS
+════════════════════════════════════════════════════════════ */
+var _vendorPendingImage = null;
+var _allVendors = [];
+var _editingVendorId = null;
+
+async function initVendors() {
+  var grid = document.getElementById('vendorsGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Loading…</div>';
+  try {
+    var res = await fetch(AUTH_URL + '/vendors');
+    var ct  = res.headers.get('content-type')||'';
+    if (!res.ok || !ct.includes('json')) { grid.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-muted);">No vendors yet — check back soon!</div>'; return; }
+    var d = await res.json();
+    _allVendors = d.vendors || [];
+    renderVendorsPage(_allVendors);
+  } catch { grid.innerHTML='<div style="padding:24px;color:var(--pink-coral);">Could not load vendors.</div>'; }
+}
+
+function renderVendorsPage(vendors) {
+  var grid = document.getElementById('vendorsGrid');
+  if (!grid) return;
+  if (!vendors.length) { grid.innerHTML='<div style="text-align:center;padding:48px;color:var(--text-muted);">No vendors listed yet — check back soon!</div>'; return; }
+  var isAdmin = currentUser && currentUser.role === 'admin';
+  grid.innerHTML = vendors.map(function(v) {
+    var avatar = v.imageUrl
+      ? '<img src="'+escapeHTML(v.imageUrl)+'" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;" loading="lazy">'
+      : '<div style="width:56px;height:56px;border-radius:50%;background:rgba(0,212,200,0.1);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;">🛍️</div>';
+    var links = '';
+    if (v.website) links += '<a href="'+escapeHTML(v.website)+'" target="_blank" rel="noopener" style="font-size:11px;font-weight:700;background:rgba(0,212,200,0.1);color:var(--teal-glow);padding:3px 8px;text-decoration:none;">🌐 Website</a>';
+    if (v.phone)   links += '<a href="tel:'+escapeHTML(v.phone.replace(/[^\d+]/g,''))+'" style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:3px 8px;text-decoration:none;">📞 '+escapeHTML(v.phone)+'</a>';
+    return '<div style="border:1px solid rgba(0,212,200,0.2);background:rgba(0,0,0,0.4);padding:16px;">' +
+      '<div style="display:flex;align-items:flex-start;gap:12px;">' +
+        avatar +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+            '<div style="font-family:\'Orbitron\',sans-serif;font-size:15px;font-weight:800;color:var(--gold-bright);">'+escapeHTML(v.name)+'</div>' +
+            (isAdmin ? '<button onclick="editVendorFromPublic(\''+v.id+'\')" style="flex-shrink:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:var(--text-muted);font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;">✎ Edit</button>' : '') +
+          '</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;">' + links + '</div>' +
+          (v.description ? '<div style="font-size:13px;color:var(--text-muted);line-height:1.7;">'+escapeHTML(v.description).replace(/\n/g,'<br>')+'</div>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function loadAdminVendors() {
+  try {
+    var res = await fetch(AUTH_URL+'/vendors');
+    var ct  = res.headers.get('content-type')||'';
+    if (!res.ok||!ct.includes('json')) return;
+    var d = await res.json();
+    _allVendors = d.vendors||[];
+    renderAdminVendors();
+  } catch {}
+}
+
+function renderAdminVendors() {
+  var list = document.getElementById('vendorsAdminList');
+  if (!list) return;
+  if (!_allVendors.length) { list.innerHTML='<div style="padding:16px;color:var(--text-muted);">No vendors yet.</div>'; return; }
+  list.innerHTML = _allVendors.map(function(v) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,0.07);">'+
+      (v.imageUrl?'<img src="'+escapeHTML(v.imageUrl)+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;">':'<div style="width:48px;height:48px;border-radius:50%;background:rgba(0,212,200,0.08);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;">🛍️</div>')+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:13px;font-weight:700;color:var(--text-light);">'+escapeHTML(v.name)+'</div>'+
+        '<div style="font-size:11px;color:var(--text-muted);">'+(v.phone||'')+(v.website?' · '+v.website:'')+'</div>'+
+      '</div>'+
+      '<button onclick="openEditVendorForm(\''+v.id+'\')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:var(--text-muted);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;">✎</button>'+
+      '<button onclick="deleteVendor(\''+v.id+'\')" style="background:rgba(255,77,100,0.12);border:1px solid rgba(255,77,100,0.3);color:#ff4d64;font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;">✕</button>'+
+    '</div>';
+  }).join('');
+}
+
+function openAddVendorForm() {
+  _editingVendorId = null;
+  _vendorPendingImage = null;
+  ['vendorName','vendorPhone','vendorWebsite','vendorDescription'].forEach(function(id){ var el=document.getElementById(id); if(el)el.value=''; });
+  document.getElementById('vendorFormTitle').textContent = 'New Vendor';
+  document.getElementById('vendorFormStatus').textContent = '';
+  var prev=document.getElementById('vendorImagePreview'); var clr=document.getElementById('vendorImageClear');
+  if(prev){prev.style.display='none';prev.src='';} if(clr)clr.style.display='none';
+  var form=document.getElementById('vendorForm'); if(form){form.style.display='block';form.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+
+function openEditVendorForm(vendorId) {
+  var v = _allVendors.find(function(x){ return x.id === vendorId; });
+  if (!v) return;
+  _editingVendorId = vendorId;
+  _vendorPendingImage = null;
+  document.getElementById('vendorName').value        = v.name || '';
+  document.getElementById('vendorPhone').value        = v.phone || '';
+  document.getElementById('vendorWebsite').value      = v.website || '';
+  document.getElementById('vendorDescription').value  = v.description || '';
+  document.getElementById('vendorFormTitle').textContent = 'Edit Vendor';
+  document.getElementById('vendorFormStatus').textContent = '';
+  var prev=document.getElementById('vendorImagePreview'); var clr=document.getElementById('vendorImageClear');
+  if (v.imageUrl) { if(prev){prev.src=v.imageUrl;prev.style.display='block';} if(clr)clr.style.display='inline'; }
+  else { if(prev){prev.style.display='none';prev.src='';} if(clr)clr.style.display='none'; }
+  var form=document.getElementById('vendorForm'); if(form){form.style.display='block';form.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+
+// Jump here from the public Vendors page's Edit button
+function editVendorFromPublic(vendorId) {
+  navigate('admin');
+  setTimeout(function() {
+    switchAdminTab('vendors', null);
+    loadAdminVendors().then(function() { openEditVendorForm(vendorId); });
+  }, 300);
+}
+
+function cancelVendorForm() {
+  var form=document.getElementById('vendorForm'); if(form)form.style.display='none';
+  _vendorPendingImage=null;
+  _editingVendorId=null;
+}
+
+function previewVendorImage(input) {
+  var file=input.files[0]; if(!file)return;
+  _vendorPendingImage=file;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var prev=document.getElementById('vendorImagePreview'); var clr=document.getElementById('vendorImageClear');
+    if(prev){prev.src=e.target.result;prev.style.display='block';} if(clr)clr.style.display='inline';
+  };
+  reader.readAsDataURL(file); input.value='';
+}
+
+function clearVendorImage() {
+  _vendorPendingImage=null;
+  var prev=document.getElementById('vendorImagePreview'); var clr=document.getElementById('vendorImageClear');
+  if(prev){prev.style.display='none';prev.src='';} if(clr)clr.style.display='none';
+}
+
+async function saveVendor() {
+  var name        = (document.getElementById('vendorName').value||'').trim();
+  var phone       = (document.getElementById('vendorPhone').value||'').trim();
+  var website     = (document.getElementById('vendorWebsite').value||'').trim();
+  var description = (document.getElementById('vendorDescription').value||'').trim();
+  var status      = document.getElementById('vendorFormStatus');
+  if (!name) { status.style.color='var(--pink-coral)'; status.textContent='Vendor name required'; return; }
+  if (website && !/^https?:\/\//i.test(website)) website = 'https://' + website;
+  status.style.color='var(--text-muted)'; status.textContent='Saving…';
+  var token = localStorage.getItem(TOKEN_KEY);
+  var imageUrl = _editingVendorId ? undefined : ''; // undefined = leave existing image untouched on edit unless a new one is picked
+
+  if (_vendorPendingImage) {
+    status.textContent = 'Uploading image…';
+    try {
+      var slug = 'vendor_' + (_editingVendorId || Date.now());
+      var ur = await fetch(AUTH_URL+'/media/upload?artist='+encodeURIComponent(slug), {
+        method:'POST', headers:{'Content-Type':_vendorPendingImage.type,'Authorization':'Bearer '+token}, body:_vendorPendingImage
+      });
+      if (ur.ok) { var ud = await ur.json(); imageUrl = ud.url || ''; }
+      else { status.style.color='var(--pink-coral)'; status.textContent='Image upload failed'; return; }
+    } catch { status.style.color='var(--pink-coral)'; status.textContent='Image upload failed'; return; }
+  }
+
+  var payload = { name: name, phone: phone, website: website, description: description };
+  if (imageUrl !== undefined) payload.imageUrl = imageUrl;
+
+  try {
+    var url    = _editingVendorId ? (AUTH_URL+'/vendors/'+_editingVendorId) : (AUTH_URL+'/vendors');
+    var method = _editingVendorId ? 'PUT' : 'POST';
+    var res = await fetch(url, { method: method, headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body: JSON.stringify(payload) });
+    var d = await res.json();
+    if (res.ok) {
+      showToast(_editingVendorId ? '✓ Vendor updated!' : '✓ Vendor added!');
+      cancelVendorForm();
+      await loadAdminVendors();
+    } else {
+      status.style.color='var(--pink-coral)'; status.textContent = d.error || 'Could not save';
+    }
+  } catch { status.style.color='var(--pink-coral)'; status.textContent='Could not connect'; }
+}
+
+async function deleteVendor(vendorId) {
+  if (!confirm('Delete this vendor?')) return;
+  var token = localStorage.getItem(TOKEN_KEY);
+  try {
+    var res = await fetch(AUTH_URL+'/vendors/'+vendorId, { method:'DELETE', headers:{'Authorization':'Bearer '+token} });
+    if (res.ok) { showToast('Deleted'); await loadAdminVendors(); } else showToast('Could not delete');
+  } catch { showToast('Could not connect'); }
+}
 </script>
 </body>
 </html>
