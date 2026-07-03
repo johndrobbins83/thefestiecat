@@ -10760,47 +10760,6 @@ function initDMs() {
   startDMPolling();
 }
 
-async function loadDMList() {
-  const token = localStorage.getItem('ss_auth_token');
-  try {
-    const res  = await fetch(AUTH_URL+'/dm', { headers:{'Authorization':'Bearer '+token} });
-    const data = await res.json();
-    const listEl = document.getElementById('dmList');
-    if (!listEl) return;
-    const convos = data.conversations||[];
-    if (!convos.length) {
-      listEl.innerHTML = '<div class="dm-empty"><div style="font-size:36px;margin-bottom:10px;">💬</div>No messages yet.<br><small style="font-size:12px;">Connect with people to start chatting!</small></div>';
-      return;
-    }
-    // Update unread badge
-    const totalUnread = convos.reduce((sum,c)=>sum+(c.unread||0),0);
-    updateDMBadge(totalUnread);
-    listEl.innerHTML = convos.map(c =>
-      `<div class="dm-convo-card ${c.unread?'unread':''}"
-        onclick="openDMThread('${c.friendId}','${esc(c.handle)}','${c.avatarColor||'#9b3dff'}')">
-        <div style="position:relative;flex-shrink:0;">
-          <div class="dm-avatar" style="background:${c.avatarColor||'#9b3dff'};">${(c.handle?.[0]||'?').toUpperCase()}</div>
-          ${roleDot(c.role)}
-        </div>
-        <div class="dm-convo-info">
-          <div class="dm-convo-handle">@${c.handle}</div>
-          <div class="dm-convo-preview">${c.lastMessage||'No messages yet'}</div>
-        </div>
-        ${c.unread?`<div class="dm-unread-badge">${c.unread}</div>`:''}
-      </div>`
-    ).join('');
-  } catch {}
-}
-
-function updateDMBadge(count) {
-  ['dmBadgeDesktop','dmBadgeMobile'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (count > 0) { el.style.display='flex'; el.textContent=count; }
-    else           { el.style.display='none'; }
-  });
-}
-
 async function openDMThread(friendId, handle, color) {
   currentDMFriendId = friendId;
   const overlay  = document.getElementById('dmThreadOverlay');
@@ -13904,14 +13863,6 @@ function installApp() {
   } else {
     // Fallback instructions
     showInstallIOSModal();
-  }
-}
-
-function showInstallIOSModal() {
-  const tip = document.getElementById('iosInstallTip');
-  if (tip) {
-    tip.style.display = 'flex';
-    return;
   }
 }
 
