@@ -1305,6 +1305,14 @@ body{
 .nav-role-badge.admin.master{background:#6b7685;}
 .role-pill.admin.master{background:rgba(154,163,176,0.12);color:#9aa3b0;border-color:rgba(154,163,176,0.3);}
 .role-dot.admin.master{background:#6b7685;}
+/* Online presence dot — bottom-left, opposite the role dot */
+.online-dot{
+  position:absolute;bottom:0;left:0;
+  width:10px;height:10px;border-radius:50%;
+  border:2px solid #0a0a0a;
+  background:#2ecc71;
+  box-shadow:0 0 4px rgba(46,204,113,0.6);
+}
 .user-menu-item{
   display:flex;align-items:center;gap:10px;padding:11px 16px;
   font-size:13px;font-weight:600;color:var(--text-muted);
@@ -6718,6 +6726,11 @@ function roleDot(role) {
   return `<span class="role-dot ${role}" title="${role === 'admin' ? 'Admin' : 'Staff'}"></span>`;
 }
 
+function onlineDot(online) {
+  if (!online) return '';
+  return `<span class="online-dot" title="Online now"></span>`;
+}
+
 function refreshAllAddBtns() {
   const mine = getMySchedule();
   document.querySelectorAll('[data-key]').forEach(btn=>{
@@ -7466,7 +7479,7 @@ async function loadUsersForAssign() {
 
 // ── Tab switching ──────────────────────────────────────────
 function switchAdminTab(tab, btn) {
-  ['artists','schedule','master','staffedit','tasks','shifts','users','flagged','settings'].forEach(t => {
+  ['artists','schedule','vendors','master','staffedit','tasks','shifts','users','flagged','settings'].forEach(t => {
     const el = document.getElementById('adminTab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
@@ -10543,7 +10556,7 @@ async function loadFriends() {
       var roleLabel = f.role==='admin'?'Admin':f.role==='employee'?'Staff':'Festie';
       var roleColor = f.role==='admin'?'var(--gold-bright)':f.role==='employee'?'var(--teal-glow)':'#c084fc';
       return '<div class="person-card" onclick="navigateToProfile(\''+f.id+'\')">'+
-        '<div style="position:relative;flex-shrink:0;"><div class="person-avatar" style="background:'+(f.avatarColor||'#9b3dff')+';overflow:hidden;">'+avatarHtml+'</div>'+roleDot(f.role)+'</div>'+
+        '<div style="position:relative;flex-shrink:0;"><div class="person-avatar" style="background:'+(f.avatarColor||'#9b3dff')+';overflow:hidden;">'+avatarHtml+'</div>'+roleDot(f.role)+onlineDot(f.online)+'</div>'+
         '<div class="person-info">'+
           '<div class="person-handle">@'+(f.handle||'unknown')+' <span style="font-size:10px;font-weight:700;color:'+roleColor+';">['+roleLabel+']</span></div>'+
           '<div class="person-bio">'+(f.bio||f.name||'')+'</div>'+
@@ -10969,8 +10982,12 @@ function startDMPolling() {
   pollDMUnread();
   dmPollTimer = setInterval(function() {
     pollDMUnread();
-    // Always refresh DM list when on people page (tabs are merged)
-    if (document.getElementById('page-people') && document.getElementById('page-people').classList.contains('active')) loadDMList();
+    // Always refresh DM list + crew list when on people page (tabs are merged) —
+    // also keeps online dots current without needing a page reload
+    if (document.getElementById('page-people') && document.getElementById('page-people').classList.contains('active')) {
+      loadDMList();
+      loadFriends();
+    }
   }, 8000);
 }
 
@@ -12344,6 +12361,7 @@ async function loadDMList() {
         '<div style="position:relative;flex-shrink:0;">'+
           '<div class="inbox-contact-avatar" style="background:'+(c.avatarColor||'#9b3dff')+';">'+av+'</div>'+
           (unread ? '<div style="position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:#ff4d8d;border:2px solid #0a0a0a;"></div>' : '')+
+          onlineDot(c.online)+
         '</div>'+
         '<div style="flex:1;min-width:0;">'+
           '<div class="inbox-contact-name" style="'+(unread?'color:#fff;font-weight:800;':'')+'">'+(c.handle||c.name||'User')+'</div>'+
