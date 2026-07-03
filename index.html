@@ -2692,6 +2692,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigate('schedule');setTimeout(()=>{const btn=document.getElementById('mySchedTab');if(btn)switchDay('mine',btn);},150);">📅 My Schedule</button>
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigate('people');">👥 People &amp; Feed</button>
         <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();navigateToProfile(null);">👤 My Profile</button>
+        <button class="user-menu-item" onclick="event.stopPropagation();closeUserMenu();openChangePasswordModal();">🔒 Change Password</button>
         <button class="user-menu-item nav-admin-only" style="color:#f5c842;display:none;" onclick="event.stopPropagation();closeUserMenu();navigate('admin');">⚙ Admin Dashboard</button>
         <button class="user-menu-item nav-staff-only" style="color:#c084fc;display:none;" onclick="event.stopPropagation();closeUserMenu();navigate('staff');">📋 Staff Dashboard</button>
         <button class="user-menu-item logout" onclick="event.stopPropagation();closeUserMenu();authLogout();">Sign out</button>
@@ -4811,6 +4812,91 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
   </div>
 </div>
+
+<!-- ══ CHANGE PASSWORD MODAL ══ -->
+<div id="changePasswordModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:420px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">🔒 CHANGE PASSWORD</span>
+      <button onclick="closeChangePasswordModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+    </div>
+    <div style="padding:18px;">
+      <div class="auth-field"><label class="auth-label">Current Password</label>
+        <input class="auth-input" id="cpCurrentPassword" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <div class="auth-field"><label class="auth-label">New Password</label>
+        <input class="auth-input" id="cpNewPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
+      <div class="auth-field"><label class="auth-label">Confirm New Password</label>
+        <input class="auth-input" id="cpConfirmPassword" type="password" autocomplete="new-password" placeholder="Re-enter new password"></div>
+      <div id="changePasswordStatus" style="font-size:12px;margin-top:4px;min-height:16px;"></div>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;">
+      <button onclick="closeChangePasswordModal()" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button id="changePasswordSaveBtn" onclick="submitChangePassword()" style="flex:1;padding:10px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   CHANGE PASSWORD — self-service, requires current password
+════════════════════════════════════════════════════════════ */
+function openChangePasswordModal() {
+  ['cpCurrentPassword','cpNewPassword','cpConfirmPassword'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  var status = document.getElementById('changePasswordStatus');
+  if (status) { status.textContent = ''; status.style.color = ''; }
+  var modal = document.getElementById('changePasswordModal');
+  if (modal) modal.style.display = 'flex';
+}
+function closeChangePasswordModal() {
+  var modal = document.getElementById('changePasswordModal');
+  if (modal) modal.style.display = 'none';
+}
+async function submitChangePassword() {
+  var status  = document.getElementById('changePasswordStatus');
+  var saveBtn = document.getElementById('changePasswordSaveBtn');
+  var current = document.getElementById('cpCurrentPassword').value;
+  var next    = document.getElementById('cpNewPassword').value;
+  var confirm = document.getElementById('cpConfirmPassword').value;
+
+  if (!current || !next || !confirm) {
+    status.style.color = 'var(--pink-coral)'; status.textContent = 'Please fill in all fields.'; return;
+  }
+  if (next.length < 8) {
+    status.style.color = 'var(--pink-coral)'; status.textContent = 'New password must be at least 8 characters.'; return;
+  }
+  if (next !== confirm) {
+    status.style.color = 'var(--pink-coral)'; status.textContent = 'New passwords don\'t match.'; return;
+  }
+  if (next === current) {
+    status.style.color = 'var(--pink-coral)'; status.textContent = 'New password must be different from your current password.'; return;
+  }
+
+  status.style.color = 'var(--text-muted)'; status.textContent = 'Updating…';
+  saveBtn.disabled = true; saveBtn.style.opacity = '0.6';
+  var token = localStorage.getItem(TOKEN_KEY);
+  try {
+    var res = await fetch(AUTH_URL + '/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ currentPassword: current, newPassword: next })
+    });
+    var d = await res.json().catch(function(){ return {}; });
+    if (res.ok) {
+      status.style.color = '#4ade80'; status.textContent = '✓ Password updated!';
+      showToast('✓ Password updated');
+      setTimeout(closeChangePasswordModal, 900);
+    } else {
+      status.style.color = 'var(--pink-coral)'; status.textContent = d.error || 'Could not update password.';
+    }
+  } catch(e) {
+    status.style.color = 'var(--pink-coral)'; status.textContent = 'Error: ' + e.message;
+  } finally {
+    saveBtn.disabled = false; saveBtn.style.opacity = '1';
+  }
+}
+</script>
 
 
 <!-- ══ INFO OVERLAY ══ -->
