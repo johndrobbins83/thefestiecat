@@ -10852,7 +10852,7 @@ async function pollDMUnread() {
       if (ct.includes('json')) {
         const nd = await nRes.json();
         const groupUnread = (nd.notifications || []).filter(function(n) {
-          return !n.read && (n.type === 'group_msg' || n.type === 'staff_group_msg' || n.type === 'group_invite' || n.type === 'staff_group_invite');
+          return !n.read && (n.type === 'group_msg' || n.type === 'staff_group_msg' || n.type === 'group_invite' || n.type === 'staff_group_invite' || n.type === 'group_mention');
         }).length;
         total += groupUnread;
       }
@@ -11872,6 +11872,21 @@ function renderNotifications(notifs) {
           '<div class="notif-time">' + timeAgo + '</div>' +
         '</div>' +
         thumbHtml +
+      '</div>';
+    }
+
+    if (n.type === 'group_mention') {
+      const groupId   = n.groupId || '';
+      const groupName = escapeHTML(n.groupName || 'Group Chat');
+      const isStaff   = n.category === 'yellow';
+      return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" style="border-left:2px solid #ff69b4;">' +
+        '<div class="notif-dot pink"></div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="notif-text" style="color:#ff69b4;font-weight:700;">🔔 You were mentioned</div>' +
+          '<div class="notif-text" style="font-size:12px;margin-top:2px;">' + escapeHTML(n.message.replace('🔔 ','') || '') + '</div>' +
+          '<div class="notif-time">' + timeAgo + '</div>' +
+          (groupId ? '<button onclick="event.stopPropagation();handleNotifClick(\''+nid+'\',\'group_mention\',\'\');navigate(\'people\');setTimeout(function(){switchChatTab(\''+(isStaff?'staff':'personal')+'\');openGroupThread(\''+groupId+'\',\''+groupName+'\',0,'+(isStaff?'true':'false')+');},300);" style="margin-top:5px;padding:4px 10px;background:rgba(255,105,180,0.15);border:1px solid rgba(255,105,180,0.4);color:#ff69b4;font-size:11px;font-weight:800;cursor:pointer;display:block;width:100%;">💬 Open '+groupName+'</button>' : '') +
+        '</div>' +
       '</div>';
     }
 
@@ -14636,6 +14651,11 @@ async function loadGroupThread() {
     if (!ct.includes('json')) return;
     var d = await res.json();
     var messages = d.messages||[];
+    // Store group member list for @ autocomplete
+    if (d.group && d.group.members) {
+      window._currentGroupMembers = d.group.memberHandles || [];
+      // If memberHandles not returned, we'll use cached users
+    }
     var lastMsg  = messages[messages.length-1];
     var cacheKey = messages.length+'|'+(lastMsg ? lastMsg.id||lastMsg.createdAt : '');
     var isFirst  = !msgs.dataset.cacheKey;
@@ -14644,10 +14664,12 @@ async function loadGroupThread() {
     var atBottom = isFirst || (msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 100);
     msgs.innerHTML = messages.length ? messages.map(function(m) {
       var mine = m.fromId === (currentUser&&currentUser.id);
+      // Highlight @mentions in text
+      var textHtml = m.text ? highlightMentions(escapeHTML(m.text)) : '';
       return '<div class="dm-msg '+(mine?'mine':'theirs')+'">' +
         (!mine ? '<div style="font-size:10px;font-weight:700;color:#c084fc;margin-bottom:3px;">@'+escapeHTML(m.fromHandle||'user')+'</div>' : '') +
         (m.imageUrl ? '<img src="'+escapeHTML(m.imageUrl)+'" style="max-width:200px;max-height:200px;display:block;object-fit:cover;border-radius:4px;cursor:pointer;'+(m.text?'margin-bottom:4px;':'')+'" onclick="dmZoomPhoto(\''+escapeHTML(m.imageUrl)+'\')" onerror="this.style.display=\'none\'">' : '') +
-        (m.text ? escapeHTML(m.text) : '') +
+        textHtml +
         '<div class="dm-msg-time">'+getTimeAgo(m.createdAt)+'</div>' +
       '</div>';
     }).join('') : '<div style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet — say hi! 👋</div>';
@@ -15025,6 +15047,187 @@ var _origSetCurrentUser = window.setCurrentUser;
 window.setCurrentUser = function(user, token) {
   if (_origSetCurrentUser) _origSetCurrentUser(user, token);
   loadMapEmbed();
+};
+</script>
+
+<style>
+/* @ mention autocomplete dropdown */
+.at-mention-dropdown {
+  position:absolute;
+  bottom:100%;left:0;right:0;
+  background:#111;
+  border:1px solid rgba(155,61,255,0.4);
+  border-bottom:none;
+  max-height:180px;
+  overflow-y:auto;
+  z-index:20;
+  display:none;
+}
+.at-mention-item {
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;
+  cursor:pointer;
+  font-size:13px;
+  color:var(--text-light);
+  transition:background .1s;
+}
+.at-mention-item:hover, .at-mention-item.active {
+  background:rgba(155,61,255,0.15);
+}
+.at-mention-item .at-handle { font-weight:700; color:#c084fc; }
+/* Highlighted @mention in messages */
+.msg-mention {
+  background:rgba(255,105,180,0.18);
+  color:#ff69b4;
+  font-weight:700;
+  border-radius:3px;
+  padding:0 2px;
+}
+.msg-mention.mine {
+  background:rgba(255,255,255,0.2);
+  color:#fff;
+}
+</style>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   @ MENTION AUTOCOMPLETE
+════════════════════════════════════════════════════════════ */
+var _atMentionActive = false;
+var _atMentionIdx    = 0;
+var _atMentionStart  = -1;
+
+// Highlight @mentions in rendered message text
+function highlightMentions(escapedText) {
+  // Replace @handle with a span — only alpha/numeric/underscore handles
+  return escapedText.replace(/@([a-zA-Z0-9_]+)/g, '<span class="msg-mention">@$1</span>');
+}
+
+// Init @ autocomplete on the DM input
+// Called when a group thread opens (so we have the right member list)
+function initAtMention() {
+  var input = document.getElementById('dmThreadInput');
+  if (!input || input._atMentionBound) return;
+  input._atMentionBound = true;
+
+  // Create dropdown
+  var dropdown = document.createElement('div');
+  dropdown.className = 'at-mention-dropdown';
+  dropdown.id = 'atMentionDropdown';
+  var row = input.closest('.dm-thread-input-row');
+  if (row) {
+    row.style.position = 'relative';
+    row.insertBefore(dropdown, row.firstChild);
+  }
+
+  input.addEventListener('input', function() {
+    handleAtMentionInput(input, dropdown);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (dropdown.style.display !== 'block') return;
+    var items = dropdown.querySelectorAll('.at-mention-item');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); _atMentionIdx = Math.min(_atMentionIdx+1, items.length-1); highlightAtItem(items); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); _atMentionIdx = Math.max(_atMentionIdx-1, 0); highlightAtItem(items); }
+    else if (e.key === 'Tab' || e.key === 'Enter') {
+      var active = items[_atMentionIdx];
+      if (active) { e.preventDefault(); e.stopPropagation(); selectAtMention(input, dropdown, active.dataset.handle); }
+    }
+    else if (e.key === 'Escape') { closeAtDropdown(dropdown); }
+  });
+
+  // Close on outside click
+  document.addEventListener('click', function(e) {
+    if (!dropdown.contains(e.target) && e.target !== input) closeAtDropdown(dropdown);
+  });
+}
+
+function highlightAtItem(items) {
+  items.forEach(function(it, i) { it.classList.toggle('active', i === _atMentionIdx); });
+}
+
+function handleAtMentionInput(input, dropdown) {
+  var val   = input.value;
+  var pos   = input.selectionStart;
+  // Find the @ before cursor
+  var atIdx = -1;
+  for (var i = pos - 1; i >= 0; i--) {
+    if (val[i] === '@') { atIdx = i; break; }
+    if (val[i] === ' ') break;
+  }
+  if (atIdx < 0) { closeAtDropdown(dropdown); return; }
+  var query = val.slice(atIdx + 1, pos).toLowerCase();
+  _atMentionStart = atIdx;
+
+  // Get member list — prefer group members, fall back to cached users
+  var members = getAtMentionCandidates();
+  var filtered = members.filter(function(m) {
+    return m.handle && m.handle.toLowerCase().startsWith(query) &&
+      m.id !== (currentUser && currentUser.id);
+  }).slice(0, 6);
+
+  if (!filtered.length) { closeAtDropdown(dropdown); return; }
+
+  _atMentionIdx = 0;
+  dropdown.innerHTML = filtered.map(function(m, i) {
+    var initials = (m.handle||'?')[0].toUpperCase();
+    return '<div class="at-mention-item'+(i===0?' active':'')+'" data-handle="'+escapeHTML(m.handle)+'" onclick="selectAtMention(document.getElementById(\'dmThreadInput\'),document.getElementById(\'atMentionDropdown\'),\''+escapeHTML(m.handle)+'\')">' +
+      '<div style="width:24px;height:24px;border-radius:50%;background:'+(m.avatarColor||'#9b3dff')+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;">'+(m.profilePic?'<img src="'+m.profilePic+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">':initials)+'</div>' +
+      '<span class="at-handle">@'+escapeHTML(m.handle)+'</span>' +
+    '</div>';
+  }).join('');
+  dropdown.style.display = 'block';
+}
+
+function getAtMentionCandidates() {
+  // Use cached group members if available, else fall back to all cached users
+  if (window._currentGroupMemberObjects && window._currentGroupMemberObjects.length) return window._currentGroupMemberObjects;
+  return window._cachedUsers || window._cachedFriends || [];
+}
+
+function selectAtMention(input, dropdown, handle) {
+  var val = input.value;
+  var pos = input.selectionStart;
+  // Replace from @ to cursor with @handle + space
+  var before = val.slice(0, _atMentionStart);
+  var after  = val.slice(pos);
+  input.value = before + '@' + handle + ' ' + after;
+  var newPos = before.length + handle.length + 2;
+  input.setSelectionRange(newPos, newPos);
+  closeAtDropdown(dropdown);
+  input.focus();
+}
+
+function closeAtDropdown(dropdown) {
+  if (dropdown) dropdown.style.display = 'none';
+  _atMentionStart = -1;
+}
+
+// Patch openGroupThread to init @ mention and load member handles
+var _origOpenGroupThread = window.openGroupThread;
+window.openGroupThread = async function(groupId, groupName, memberCount, isStaffGroup) {
+  window._currentGroupMemberObjects = [];
+  if (_origOpenGroupThread) await _origOpenGroupThread(groupId, groupName, memberCount, isStaffGroup);
+  // Load group members for @ autocomplete
+  var token = localStorage.getItem(TOKEN_KEY);
+  try {
+    var res = await fetch(AUTH_URL+'/groups/'+groupId, { headers:{'Authorization':'Bearer '+token} });
+    var ct  = (res.headers.get('content-type')||'');
+    if (res.ok && ct.includes('json')) {
+      var d = await res.json();
+      // Build member objects from cached user data
+      var memberIds = (d.group && d.group.members) || [];
+      var allUsers  = window._cachedUsers || [];
+      var friends   = window._cachedFriends || [];
+      var pool      = allUsers.length ? allUsers : friends;
+      window._currentGroupMemberObjects = memberIds.map(function(id) {
+        return pool.find(function(u){ return u.id === id; }) || { id:id };
+      }).filter(function(u){ return u.handle; });
+    }
+  } catch {}
+  // Init @ autocomplete on the input
+  setTimeout(initAtMention, 100);
 };
 </script>
 </body>
