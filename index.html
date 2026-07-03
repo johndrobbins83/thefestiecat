@@ -6764,7 +6764,11 @@ function refreshAllAddBtns() {
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  if (!localStorage.getItem(PWA_DISMISSED_KEY)) {
+  // Don't interrupt the sign-up/login flow — only auto-show the install
+  // banner once someone is actually signed in. If they're not signed in
+  // yet, the prompt is still saved (deferredInstallPrompt) and will be
+  // shown right after they finish signing up instead (see setCurrentUser hook below).
+  if (currentUser && !localStorage.getItem(PWA_DISMISSED_KEY)) {
     setTimeout(()=>{
       document.getElementById('pwaInstallBanner').classList.add('show');
       document.getElementById('pwaInstallBackdrop').style.display='block';
@@ -15325,6 +15329,16 @@ window.setCurrentUser = function(user, token) {
   }).then(function(d) {
     if (d && d.activities) injectActivitiesIntoSchedule(d.activities);
   }).catch(function(){});
+  // Now that sign-up/login is done, it's safe to show the install prompt
+  // if the browser already offered one and the person hasn't dismissed it before
+  if (deferredInstallPrompt && !localStorage.getItem(PWA_DISMISSED_KEY)) {
+    setTimeout(function(){
+      var banner = document.getElementById('pwaInstallBanner');
+      var backdrop = document.getElementById('pwaInstallBackdrop');
+      if (banner) banner.classList.add('show');
+      if (backdrop) backdrop.style.display = 'block';
+    }, 3000);
+  }
 };
 </script>
 
