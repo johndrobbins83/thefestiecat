@@ -4428,6 +4428,29 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <div class="dm-thread-name" id="dmThreadName"></div>
       <div id="dmThreadSubtitle" style="font-size:10px;color:var(--text-muted);display:none;margin-top:1px;"></div>
     </div>
+    <!-- 3-dot menu — only shown in group chats -->
+    <div style="position:relative;" id="chatMenuWrap">
+      <button id="chatMenuBtn" onclick="toggleChatMenu()" style="display:none;background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;padding:4px 8px;line-height:1;letter-spacing:1px;" title="Options">⋯</button>
+      <div id="chatMenuDropdown" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:#111;border:1px solid rgba(255,255,255,0.1);min-width:200px;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.6);">
+        <!-- Leave group (hidden for staff groups if not admin) -->
+        <button id="chatMenuLeave" onclick="leaveGroupChat()" style="width:100%;padding:11px 16px;background:none;border:none;border-bottom:1px solid rgba(255,255,255,0.06);color:var(--pink-coral);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;text-align:left;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='rgba(255,77,100,0.08)'" onmouseout="this.style.background='none'">
+          🚪 Leave Group
+        </button>
+        <!-- Text size -->
+        <div style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <div style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Text Size</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="setChatFontSize('small')" id="chatFontSmall" style="flex:1;padding:5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-size:11px;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">A</button>
+            <button onclick="setChatFontSize('medium')" id="chatFontMedium" style="flex:1;padding:5px;background:rgba(155,61,255,0.2);border:1px solid rgba(155,61,255,0.4);color:#c084fc;font-size:14px;cursor:pointer;">A</button>
+            <button onclick="setChatFontSize('large')" id="chatFontLarge" style="flex:1;padding:5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-size:18px;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">A</button>
+          </div>
+        </div>
+        <!-- Notification mute -->
+        <button id="chatMenuMute" onclick="toggleGroupMute()" style="width:100%;padding:11px 16px;background:none;border:none;color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;text-align:left;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='none'">
+          🔔 Mute Notifications
+        </button>
+      </div>
+    </div>
   </div>
   <div class="dm-thread-messages" id="dmThreadMessages"></div>
   <!-- Photo preview strip (hidden until photo selected) -->
@@ -15208,7 +15231,24 @@ function closeAtDropdown(dropdown) {
 var _origOpenGroupThread = window.openGroupThread;
 window.openGroupThread = async function(groupId, groupName, memberCount, isStaffGroup) {
   window._currentGroupMemberObjects = [];
+  window._currentGroupIsStaff = !!isStaffGroup;
   if (_origOpenGroupThread) await _origOpenGroupThread(groupId, groupName, memberCount, isStaffGroup);
+
+  // Show 3-dot menu for group chats
+  var menuBtn   = document.getElementById('chatMenuBtn');
+  var menuLeave = document.getElementById('chatMenuLeave');
+  var mutedKey  = 'group_muted_' + groupId;
+  var isMuted   = localStorage.getItem(mutedKey) === '1';
+  var muteBtn   = document.getElementById('chatMenuMute');
+  if (menuBtn) menuBtn.style.display = 'block';
+  // For staff groups, check if user is admin/management — non-admins can't leave
+  if (menuLeave) {
+    var canLeave = !isStaffGroup || isAdminOrMgmt();
+    menuLeave.style.display = canLeave ? 'flex' : 'none';
+  }
+  if (muteBtn) muteBtn.innerHTML = (isMuted ? '🔕 Unmute Notifications' : '🔔 Mute Notifications');
+  closeChatMenu();
+
   // Load group members for @ autocomplete
   var token = localStorage.getItem(TOKEN_KEY);
   try {
@@ -15216,7 +15256,6 @@ window.openGroupThread = async function(groupId, groupName, memberCount, isStaff
     var ct  = (res.headers.get('content-type')||'');
     if (res.ok && ct.includes('json')) {
       var d = await res.json();
-      // Build member objects from cached user data
       var memberIds = (d.group && d.group.members) || [];
       var allUsers  = window._cachedUsers || [];
       var friends   = window._cachedFriends || [];
@@ -15226,9 +15265,100 @@ window.openGroupThread = async function(groupId, groupName, memberCount, isStaff
       }).filter(function(u){ return u.handle; });
     }
   } catch {}
-  // Init @ autocomplete on the input
   setTimeout(initAtMention, 100);
 };
+
+// ── Chat Menu ────────────────────────────────────────────
+function toggleChatMenu() {
+  var drop = document.getElementById('chatMenuDropdown');
+  if (!drop) return;
+  var open = drop.style.display === 'block';
+  drop.style.display = open ? 'none' : 'block';
+}
+
+function closeChatMenu() {
+  var drop = document.getElementById('chatMenuDropdown');
+  if (drop) drop.style.display = 'none';
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('chatMenuWrap');
+  if (wrap && !wrap.contains(e.target)) closeChatMenu();
+});
+
+// Also hide the menu button when the thread closes
+var _origCloseDMForMenu = window.closeDMThread;
+window.closeDMThread = function() {
+  var menuBtn = document.getElementById('chatMenuBtn');
+  if (menuBtn) menuBtn.style.display = 'none';
+  closeChatMenu();
+  if (_origCloseDMForMenu) _origCloseDMForMenu();
+};
+
+async function leaveGroupChat() {
+  if (!_currentGroupId) return;
+  closeChatMenu();
+  var groupName = document.getElementById('dmThreadName') ? document.getElementById('dmThreadName').textContent : 'this group';
+  if (!confirm('Leave "' + groupName + '"? You won\'t be able to rejoin unless added back.')) return;
+  var token = localStorage.getItem(TOKEN_KEY);
+  try {
+    var res = await fetch(AUTH_URL + '/groups/' + _currentGroupId, {
+      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await res.json().catch(function(){ return {}; });
+    if (res.ok) {
+      showToast('Left "' + groupName + '"');
+      closeDMThread();
+      loadGroupList();
+    } else {
+      showToast(d.error || 'Could not leave group');
+    }
+  } catch { showToast('Could not connect'); }
+}
+
+function setChatFontSize(size) {
+  var msgs = document.getElementById('dmThreadMessages');
+  if (!msgs) return;
+  var sizes = { small:'12px', medium:'14px', large:'17px' };
+  msgs.style.fontSize = sizes[size] || '14px';
+  localStorage.setItem('chat_font_size', size);
+  // Update button highlights
+  ['small','medium','large'].forEach(function(s) {
+    var btn = document.getElementById('chatFont' + s.charAt(0).toUpperCase() + s.slice(1));
+    if (!btn) return;
+    if (s === size) {
+      btn.style.background = 'rgba(155,61,255,0.2)';
+      btn.style.borderColor = 'rgba(155,61,255,0.4)';
+      btn.style.color = '#c084fc';
+    } else {
+      btn.style.background = 'rgba(255,255,255,0.06)';
+      btn.style.borderColor = 'rgba(255,255,255,0.1)';
+      btn.style.color = 'var(--text-muted)';
+    }
+  });
+}
+
+// Restore saved font size when opening a thread
+(function() {
+  var saved = localStorage.getItem('chat_font_size');
+  if (saved) {
+    var msgs = document.getElementById('dmThreadMessages');
+    if (msgs) { var sz={small:'12px',medium:'14px',large:'17px'}; msgs.style.fontSize=sz[saved]||'14px'; }
+  }
+})();
+
+function toggleGroupMute() {
+  if (!_currentGroupId) return;
+  var key    = 'group_muted_' + _currentGroupId;
+  var muted  = localStorage.getItem(key) === '1';
+  var newVal = muted ? '0' : '1';
+  localStorage.setItem(key, newVal);
+  var btn = document.getElementById('chatMenuMute');
+  if (btn) btn.innerHTML = (newVal === '1' ? '🔕 Unmute Notifications' : '🔔 Mute Notifications');
+  showToast(newVal === '1' ? '🔕 Notifications muted' : '🔔 Notifications unmuted');
+  closeChatMenu();
+}
 </script>
 </body>
 </html>
