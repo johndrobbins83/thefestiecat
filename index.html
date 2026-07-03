@@ -453,14 +453,14 @@ body{
 .venue-sub{font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:12px;}
 .venue-rows{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
 .venue-row{display:flex;align-items:flex-start;gap:10px;}
-.venue-row-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.venue-row-icon{flex-shrink:0;width:16px;height:16px;margin-top:1px;display:flex;align-items:center;justify-content:center;color:var(--gold-bright);}
 .venue-row-body{flex:1;min-width:0;}
 .venue-row-val{font-size:13px;font-weight:700;color:var(--text-light);line-height:1.3;}
 .venue-row-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
 .venue-link{color:var(--teal-glow);text-decoration:none;}
 .venue-link:hover{text-decoration:underline;}
 .venue-copy-btn{flex-shrink:0;width:28px;height:28px;border-radius:0;border:none;cursor:pointer;
-  background:rgba(245,200,66,0.1);color:var(--gold-bright);font-size:13px;
+  background:rgba(245,200,66,0.1);color:var(--gold-bright);
   display:flex;align-items:center;justify-content:center;transition:background .15s;}
 .venue-copy-btn:hover{background:rgba(245,200,66,0.22);}
 .venue-dir-row{display:flex;gap:6px;}
@@ -2773,16 +2773,16 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <div class="venue-sub">& Conference Center · On Cedar Lake</div>
             <div class="venue-rows">
               <div class="venue-row">
-                <span class="venue-row-icon">📍</span>
+                <span class="venue-row-icon"><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg></span>
                 <div class="venue-row-body"><div class="venue-row-val">366 Main St, Sturbridge, MA 01566</div><div class="venue-row-sub">Exit 3B off I-90 · 1 hr west of Boston</div></div>
-                <button class="venue-copy-btn" onclick="copyAddress()">📋</button>
+                <button class="venue-copy-btn" onclick="copyAddress()"><svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg></button>
               </div>
               <div class="venue-row">
-                <span class="venue-row-icon">📞</span>
+                <span class="venue-row-icon"><svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-.833.832c-.74.74-1.837 1.066-2.877.831a17.535 17.535 0 0 1-6.588-3.115 17.427 17.427 0 0 1-3.723-3.72 17.536 17.536 0 0 1-3.116-6.59c-.235-1.04.09-2.136.83-2.877l.833-.832z"/></svg></span>
                 <div class="venue-row-body"><a class="venue-row-val venue-link" href="tel:+15083477393">(508) 347-7393</a><div class="venue-row-sub">Front desk · 24 hrs</div></div>
               </div>
               <div class="venue-row">
-                <span class="venue-row-icon">🗓️</span>
+                <span class="venue-row-icon"><svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg></span>
                 <div class="venue-row-body"><div class="venue-row-val">July 17 – 19, 2026</div><div class="venue-row-sub">Friday · Saturday · Sunday</div></div>
               </div>
             </div>
