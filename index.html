@@ -1844,22 +1844,23 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 /* DM thread */
 .dm-thread-overlay{
-  position:fixed;inset:0;z-index:15000;
+  position:fixed;left:0;right:0;top:0;z-index:15000;
   background:#0a0a0a;
   display:none;flex-direction:column;
-  /* dvh shrinks when mobile keyboard opens, keeping input visible */
-  height:100dvh;
-  /* Fallback for browsers without dvh */
-  height:100vh;
-  height:100dvh;
+  /* Stop above the bottom nav on mobile */
+  bottom:calc(72px + env(safe-area-inset-bottom, 0px));
 }
 .dm-thread-overlay.open{display:flex;}
 
-/* Desktop: float as a panel in the bottom-right corner */
+/* Desktop: float as panel — no bottom nav, use full height */
 @media(min-width:768px){
-  .dm-thread-overlay.open{
+  .dm-thread-overlay{
+    bottom:0;
     inset:auto;
-    bottom:0;right:24px;
+    position:fixed;
+  }
+  .dm-thread-overlay.open{
+    bottom:0;right:24px;top:auto;left:auto;
     width:380px;height:540px;
     border:1px solid rgba(245,200,66,0.2);
     border-bottom:none;
