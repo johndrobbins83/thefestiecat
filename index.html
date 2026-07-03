@@ -3671,7 +3671,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 </div>
 
 <!-- ══ PHOTO BOOTH OVERLAY ══ -->
-<div id="photoBoothOverlay" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.92);backdrop-filter:blur(6px);overflow-y:auto;">
+<div id="photoBoothOverlay" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.92);backdrop-filter:blur(6px);overflow-y:auto;padding-bottom:calc(72px + env(safe-area-inset-bottom, 0px));">
   <div style="max-width:680px;margin:0 auto;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 24px);">
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0 14px;position:sticky;top:0;background:rgba(0,0,0,0.95);z-index:2;border-bottom:1px solid rgba(255,105,180,0.2);margin-bottom:16px;">
@@ -3724,7 +3724,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 </div>
 
 <!-- ══ PHOTO BOOTH — Caption & Tag Modal ══ -->
-<div id="boothUploadModal" style="display:none;position:fixed;inset:0;bottom:0;z-index:9600;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 60px);">
+<div id="boothUploadModal" style="display:none;position:fixed;inset:0;bottom:0;z-index:9600;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 72px);">
   <div style="width:100%;max-width:540px;background:#0e0e0e;border-top:2px solid rgba(255,105,180,0.3);border-radius:0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 80px);max-height:85vh;overflow-y:auto;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-size:14px;font-weight:800;color:#ff69b4;">Add Details</div>
