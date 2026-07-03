@@ -3110,6 +3110,17 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     </div>
   </div><!-- /page-doc -->
 
+  <!-- ── ACTIVITIES PAGE ── -->
+  <div class="page" id="page-activities">
+    <div class="page-header">
+      <div class="page-title">🎯 Activities</div>
+      <div class="page-sub">Things to do at The Mutiny</div>
+    </div>
+    <div id="activitiesGrid" style="display:flex;flex-direction:column;gap:16px;">
+      <div style="text-align:center;padding:48px 24px;color:var(--text-muted);">Loading activities…</div>
+    </div>
+  </div><!-- /page-activities -->
+
   <!-- ── ADMIN DASHBOARD ── -->
   <div class="page" id="page-admin">
     <div class="dash-header">
@@ -3197,6 +3208,71 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
             <button class="dash-btn" onclick="setAdminSchedDay('sun',this)">Sun 7/19</button>
           </div>
           <div id="adminSchedList"></div>
+        </div>
+      </div>
+
+      <!-- Activities Admin Section -->
+      <div class="dash-section" style="border-color:rgba(245,200,66,0.3);margin-top:16px;">
+        <div class="dash-section-header">
+          <div class="dash-section-title">🎯 Activities Manager</div>
+          <button class="dash-btn primary" onclick="openAddActivityForm()">+ Add Activity</button>
+        </div>
+        <div class="dash-section-body">
+          <div id="activitiesAdminList" style="display:flex;flex-direction:column;gap:8px;">
+            <div style="text-align:center;padding:24px;color:var(--text-muted);">No activities yet.</div>
+          </div>
+          <!-- Add/Edit activity form (hidden by default) -->
+          <div id="activityForm" style="display:none;margin-top:14px;padding:16px;border:1px solid rgba(245,200,66,0.25);background:rgba(245,200,66,0.03);">
+            <div style="font-size:12px;font-weight:800;color:var(--gold-bright);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">New Activity</div>
+            <div class="form-row">
+              <div class="form-field">
+                <label class="form-label">Activity Name</label>
+                <input class="form-input" id="activityName" placeholder="e.g. Pool Yoga, Fire Spinning…">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Day</label>
+                <input class="form-input" type="date" id="activityDay" min="2026-07-01" style="color-scheme:dark;">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label class="form-label">Start Time</label>
+                <input class="form-input" type="time" id="activityStart" value="12:00">
+              </div>
+              <div class="form-field">
+                <label class="form-label">End Time</label>
+                <input class="form-input" type="time" id="activityEnd" value="13:00">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Location</label>
+                <input class="form-input" id="activityLocation" placeholder="e.g. Beach, Pool Deck…">
+              </div>
+            </div>
+            <div class="form-field" style="margin-bottom:10px;">
+              <label class="form-label">Short Description (shown on schedule)</label>
+              <input class="form-input" id="activityDesc" placeholder="One-line summary…">
+            </div>
+            <div class="form-field" style="margin-bottom:10px;">
+              <label class="form-label">Extended Description (shown on Activities page)</label>
+              <textarea class="form-input" id="activityDescLong" rows="4" placeholder="Full details about this activity — what to expect, what to bring, who can join…" style="resize:vertical;"></textarea>
+            </div>
+            <div class="form-field" style="margin-bottom:14px;">
+              <label class="form-label">Cover Photo</label>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <label style="padding:8px 14px;background:rgba(255,255,255,0.06);border:1px dashed rgba(255,255,255,0.15);cursor:pointer;font-size:12px;font-weight:700;color:var(--text-muted);">
+                  📷 Choose Image
+                  <input type="file" accept="image/*" id="activityImageInput" style="display:none;" onchange="previewActivityImage(this)">
+                </label>
+                <img id="activityImagePreview" style="display:none;height:60px;width:auto;object-fit:cover;border:1px solid rgba(255,255,255,0.1);">
+                <button id="activityImageClear" onclick="clearActivityImage()" style="display:none;background:none;border:none;color:var(--pink-coral);cursor:pointer;font-size:11px;">✕ Remove</button>
+              </div>
+            </div>
+            <div id="activityFormStatus" style="font-size:12px;min-height:16px;margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="cancelActivityForm()" style="flex:1;padding:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;cursor:pointer;">Cancel</button>
+              <button onclick="saveActivity()" style="flex:2;padding:9px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save Activity</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -3631,6 +3707,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <button onclick="closeMore()" style="background:rgba(255,255,255,0.08);border:none;color:var(--text-muted);width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
     </div>
     <div class="more-grid">
+      <span class="more-btn" onclick="navigate('activities');closeMore()" style="border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.05);">
+        <div class="more-btn-icon" style="background:rgba(245,200,66,0.2);color:var(--gold-bright);">🎯</div>
+        <div class="more-btn-label">Activities</div>
+        <div class="more-btn-sub">What's happening</div>
+      </span>
       <span class="more-btn" onclick="openPhotoBooth();closeMore()" style="border-color:rgba(255,105,180,0.3);background:rgba(255,105,180,0.05);">
         <div class="more-btn-icon" style="background:rgba(255,105,180,0.2);color:#ff69b4;">📸</div>
         <div class="more-btn-label">Photo Booth</div>
@@ -5319,13 +5400,13 @@ function renderSchedule() {
   if (schedView === 'list') {
     listWrap.style.display = 'block';
     let html = '';
-    ['dnb','oasis','beach','locals'].forEach(stage => {
+    ['dnb','oasis','beach','locals','activities'].forEach(stage => {
       if (!shouldShowStage(stage)) return;
       const items = (data[stage]||[])
         .filter(item => matchArtist(item.artist))
         .sort((a, b) => timeToSort(a.time) - timeToSort(b.time));
       if (!items.length) return;
-      const stageNames = {dnb:'DNB Stage',oasis:'Oasis Stage',beach:'Beach Stage',locals:"Davey Jones Locker",deepsea:'Deep Sea'};
+      const stageNames = {dnb:'DNB Stage',oasis:'Oasis Stage',beach:'Beach Stage',locals:"Davey Jones Locker",deepsea:'Deep Sea',activities:'🎯 Activities'};
       const stageName = stageNames[stage] || stage;
       html += `<div class="stage-section"><div class="stage-section-header ${stage}">`+
         `<div class="stage-dot" style="background:${{dnb:'#9b3dff',oasis:'#f59e0b',beach:'#06b6d4',locals:'#84cc16'}[stage]||'#888'};"></div>${stageName}</div>`+
@@ -6985,7 +7066,7 @@ function setCurrentUser(user, token) {
   if (window.location.hash.startsWith('#reset?')) { handleResetTokenFromHash(); return; }
   if (_hash === 'verified') { handleVerifiedHash(); }
 
-  const _validPages = ['home','schedule','artists','map','list','people','profile','checklist','games','admin','staff','doc'];
+  const _validPages = ['home','schedule','artists','map','list','people','profile','checklist','games','admin','staff','doc','activities'];
   const _targetPage = (_hash && _validPages.includes(_hash)) ? _hash : 'home';
   currentPage = '';
   navigate(_targetPage);
@@ -15071,6 +15152,13 @@ var _origSetCurrentUser = window.setCurrentUser;
 window.setCurrentUser = function(user, token) {
   if (_origSetCurrentUser) _origSetCurrentUser(user, token);
   loadMapEmbed();
+  // Load activities into schedule on login
+  fetch(AUTH_URL + '/activities').then(function(r){
+    var ct = r.headers.get('content-type')||'';
+    if (r.ok && ct.includes('json')) return r.json();
+  }).then(function(d) {
+    if (d && d.activities) injectActivitiesIntoSchedule(d.activities);
+  }).catch(function(){});
 };
 </script>
 
@@ -15360,6 +15448,173 @@ function toggleGroupMute() {
   showToast(newVal === '1' ? '🔕 Notifications muted' : '🔔 Notifications unmuted');
   closeChatMenu();
 }
+</script>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   ACTIVITIES
+════════════════════════════════════════════════════════════ */
+var _activityPendingImage = null;
+var _allActivities = [];
+
+async function initActivities() {
+  var grid = document.getElementById('activitiesGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted);">Loading…</div>';
+  try {
+    var res = await fetch(AUTH_URL + '/activities');
+    var ct  = res.headers.get('content-type')||'';
+    if (!res.ok || !ct.includes('json')) { grid.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-muted);">No activities yet — check back soon!</div>'; return; }
+    var d = await res.json();
+    renderActivitiesPage(d.activities||[]);
+  } catch { grid.innerHTML='<div style="padding:24px;color:var(--pink-coral);">Could not load activities.</div>'; }
+}
+
+function renderActivitiesPage(activities) {
+  var grid = document.getElementById('activitiesGrid');
+  if (!grid) return;
+  if (!activities.length) { grid.innerHTML='<div style="text-align:center;padding:48px;color:var(--text-muted);">No activities scheduled yet — check back soon!</div>'; return; }
+  grid.innerHTML = activities.map(function(a) {
+    var dayLabel='';
+    try { var dd=new Date(a.day+'T12:00:00'); dayLabel=dd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); } catch{ dayLabel=a.day||''; }
+    var timeStr = (a.startTime||'TBA')+(a.endTime?' – '+a.endTime:'');
+    return '<div style="border:1px solid rgba(245,200,66,0.2);background:rgba(0,0,0,0.4);overflow:hidden;">' +
+      (a.imageUrl ? '<img src="'+escapeHTML(a.imageUrl)+'" style="width:100%;height:220px;object-fit:cover;display:block;" loading="lazy">' : '') +
+      '<div style="padding:16px;">' +
+        '<div style="font-family:\'Orbitron\',sans-serif;font-size:16px;font-weight:800;color:var(--gold-bright);margin-bottom:8px;">'+escapeHTML(a.name)+'</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">' +
+          (dayLabel?'<span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:3px 8px;">📅 '+escapeHTML(dayLabel)+'</span>':'')+
+          '<span style="font-size:11px;font-weight:700;background:rgba(0,212,200,0.1);color:var(--teal-glow);padding:3px 8px;">⏰ '+escapeHTML(timeStr)+'</span>'+
+          (a.location?'<span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:3px 8px;">📍 '+escapeHTML(a.location)+'</span>':'')+
+        '</div>'+
+        (a.desc?'<div style="font-size:14px;color:var(--text-light);font-weight:600;margin-bottom:10px;">'+escapeHTML(a.desc)+'</div>':'')+
+        (a.descLong?'<div style="font-size:13px;color:var(--text-muted);line-height:1.75;">'+escapeHTML(a.descLong).replace(/\n/g,'<br>')+'</div>':'')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function injectActivitiesIntoSchedule(activities) {
+  if (!window.SCHEDULE_DATA) return;
+  ['fri','sat','sun'].forEach(function(d){ if(SCHEDULE_DATA[d]) SCHEDULE_DATA[d].activities=[]; });
+  var dateToDay = {'2026-07-17':'fri','2026-07-18':'sat','2026-07-19':'sun'};
+  activities.forEach(function(a) {
+    var dk = dateToDay[a.day]||a.day;
+    if (!SCHEDULE_DATA[dk]) return;
+    if (!SCHEDULE_DATA[dk].activities) SCHEDULE_DATA[dk].activities=[];
+    SCHEDULE_DATA[dk].activities.push({artist:a.name,time:a.startTime||'TBA',headliner:false});
+  });
+}
+
+async function loadAdminActivities() {
+  try {
+    var res = await fetch(AUTH_URL+'/activities');
+    var ct  = res.headers.get('content-type')||'';
+    if (!res.ok||!ct.includes('json')) return;
+    var d = await res.json();
+    _allActivities = d.activities||[];
+    renderAdminActivities();
+    injectActivitiesIntoSchedule(_allActivities);
+  } catch {}
+}
+
+function renderAdminActivities() {
+  var list = document.getElementById('activitiesAdminList');
+  if (!list) return;
+  if (!_allActivities.length) { list.innerHTML='<div style="padding:16px;color:var(--text-muted);">No activities yet.</div>'; return; }
+  list.innerHTML = _allActivities.map(function(a) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,0.07);">'+
+      (a.imageUrl?'<img src="'+escapeHTML(a.imageUrl)+'" style="width:48px;height:48px;object-fit:cover;flex-shrink:0;">':'<div style="width:48px;height:48px;background:rgba(245,200,66,0.08);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;">🎯</div>')+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:13px;font-weight:700;color:var(--text-light);">'+escapeHTML(a.name)+'</div>'+
+        '<div style="font-size:11px;color:var(--text-muted);">'+(a.day||'')+(a.startTime?' · '+a.startTime:'')+(a.location?' · '+a.location:'')+'</div>'+
+      '</div>'+
+      '<button onclick="deleteActivity(\''+a.id+'\')" style="background:rgba(255,77,100,0.12);border:1px solid rgba(255,77,100,0.3);color:#ff4d64;font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;">✕</button>'+
+    '</div>';
+  }).join('');
+}
+
+function openAddActivityForm() {
+  _activityPendingImage = null;
+  ['activityName','activityLocation','activityDesc','activityDescLong'].forEach(function(id){ var el=document.getElementById(id); if(el)el.value=''; });
+  document.getElementById('activityDay').value  = '2026-07-17';
+  document.getElementById('activityStart').value = '12:00';
+  document.getElementById('activityEnd').value   = '13:00';
+  document.getElementById('activityFormStatus').textContent = '';
+  var prev=document.getElementById('activityImagePreview'); var clr=document.getElementById('activityImageClear');
+  if(prev){prev.style.display='none';prev.src='';}  if(clr)clr.style.display='none';
+  var form=document.getElementById('activityForm'); if(form){form.style.display='block';form.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+
+function cancelActivityForm() {
+  var form=document.getElementById('activityForm'); if(form)form.style.display='none';
+  _activityPendingImage=null;
+}
+
+function previewActivityImage(input) {
+  var file=input.files[0]; if(!file)return;
+  _activityPendingImage=file;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var prev=document.getElementById('activityImagePreview'); var clr=document.getElementById('activityImageClear');
+    if(prev){prev.src=e.target.result;prev.style.display='block';} if(clr)clr.style.display='inline';
+  };
+  reader.readAsDataURL(file); input.value='';
+}
+
+function clearActivityImage() {
+  _activityPendingImage=null;
+  var prev=document.getElementById('activityImagePreview'); var clr=document.getElementById('activityImageClear');
+  if(prev){prev.style.display='none';prev.src='';} if(clr)clr.style.display='none';
+}
+
+async function saveActivity() {
+  var name=(document.getElementById('activityName').value||'').trim();
+  var day=document.getElementById('activityDay').value;
+  var start=document.getElementById('activityStart').value;
+  var end=document.getElementById('activityEnd').value;
+  var loc=(document.getElementById('activityLocation').value||'').trim();
+  var desc=(document.getElementById('activityDesc').value||'').trim();
+  var descLong=(document.getElementById('activityDescLong').value||'').trim();
+  var status=document.getElementById('activityFormStatus');
+  if(!name){status.style.color='var(--pink-coral)';status.textContent='Name required';return;}
+  if(!day){status.style.color='var(--pink-coral)';status.textContent='Date required';return;}
+  status.style.color='var(--text-muted)';status.textContent='Saving…';
+  var token=localStorage.getItem(TOKEN_KEY);
+  var imageUrl='';
+  if(_activityPendingImage){
+    status.textContent='Uploading image…';
+    try{
+      var slug='activity_'+Date.now();
+      var ur=await fetch(AUTH_URL+'/media/upload?artist='+encodeURIComponent(slug),{method:'POST',headers:{'Content-Type':_activityPendingImage.type,'Authorization':'Bearer '+token},body:_activityPendingImage});
+      if(ur.ok){var ud=await ur.json();imageUrl=ud.url||'';}
+      else{status.style.color='var(--pink-coral)';status.textContent='Image upload failed';return;}
+    }catch{status.style.color='var(--pink-coral)';status.textContent='Image upload failed';return;}
+  }
+  try{
+    var res=await fetch(AUTH_URL+'/activities',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({name,day,startTime:start,endTime:end,location:loc,desc,descLong,imageUrl})});
+    var d=await res.json();
+    if(res.ok){showToast('✓ Activity added!');cancelActivityForm();await loadAdminActivities();}
+    else{status.style.color='var(--pink-coral)';status.textContent=d.error||'Could not save';}
+  }catch{status.style.color='var(--pink-coral)';status.textContent='Could not connect';}
+}
+
+async function deleteActivity(actId) {
+  if(!confirm('Delete this activity?'))return;
+  var token=localStorage.getItem(TOKEN_KEY);
+  try{
+    var res=await fetch(AUTH_URL+'/activities/'+actId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+    if(res.ok){showToast('Deleted');await loadAdminActivities();}else showToast('Could not delete');
+  }catch{showToast('Could not connect');}
+}
+
+// Hook into admin tab switch
+var _origSAT2=window.switchAdminTab;
+window.switchAdminTab=function(tab,btn){if(_origSAT2)_origSAT2(tab,btn);if(tab==='schedule')loadAdminActivities();};
+
+// Hook into navigate for activities page
+var _origNav2=window.navigate;
+window.navigate=function(page){if(_origNav2)_origNav2(page);if(page==='activities')initActivities();};
 </script>
 </body>
 </html>
