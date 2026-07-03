@@ -507,6 +507,7 @@ body{
 .stage-pill.beach {color:rgba(6,182,212,0.45);   border-color:rgba(6,182,212,0.15);}
 .stage-pill.locals{color:rgba(132,204,22,0.45);  border-color:rgba(132,204,22,0.15);}
 .stage-pill.deepsea{color:rgba(14,165,233,0.45); border-color:rgba(14,165,233,0.15);}
+.stage-pill.activities{color:rgba(255,77,141,0.45); border-color:rgba(255,77,141,0.15);}
 .stage-pill.oasis {color:rgba(0,212,200,0.45);   border-color:rgba(0,212,200,0.15);}
 .stage-pill.on.all   {background:rgba(245,200,66,0.15); border-color:rgba(245,200,66,0.5);  color:var(--gold-bright);}
 .stage-pill.on.dnb   {background:rgba(192,132,252,0.15);border-color:rgba(192,132,252,0.5); color:#c084fc;}
@@ -514,6 +515,7 @@ body{
 .stage-pill.on.beach {background:rgba(6,182,212,0.15);  border-color:rgba(6,182,212,0.5);   color:#06b6d4;}
 .stage-pill.on.locals{background:rgba(132,204,22,0.15); border-color:rgba(132,204,22,0.5);  color:#84cc16;}
 .stage-pill.on.deepsea{background:rgba(14,165,233,0.15);border-color:rgba(14,165,233,0.5);   color:#0ea5e9;}
+.stage-pill.on.activities{background:rgba(255,77,141,0.15);border-color:rgba(255,77,141,0.5); color:var(--pink-coral);}
 .stage-pill.on.oasis {background:rgba(0,212,200,0.15);  border-color:rgba(0,212,200,0.5);   color:var(--teal-glow);}
 .view-toggle{display:flex;gap:4px;margin-left:auto;}
 .view-btn{width:32px;height:32px;border-radius:0;border:1px solid rgba(255,255,255,0.1);
@@ -532,6 +534,7 @@ body{
 .stage-section-header.beach{background:rgba(6,182,212,0.1);color:#06b6d4;border:1px solid rgba(6,182,212,0.2);}
 .stage-section-header.locals{background:rgba(132,204,22,0.1);color:#84cc16;border:1px solid rgba(132,204,22,0.2);}
 .stage-section-header.deepsea{background:rgba(14,165,233,0.1);color:#0ea5e9;border:1px solid rgba(14,165,233,0.2);}
+.stage-section-header.activities{background:rgba(255,77,141,0.1);color:var(--pink-coral);border:1px solid rgba(255,77,141,0.25);}
 .stage-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .sched-list{display:flex;flex-direction:column;}
 .sched-event-row{display:flex;align-items:center;gap:10px;padding:8px 0;
@@ -596,6 +599,7 @@ body{
 .tg-block.beach-block{background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.25);}
 .tg-block.locals-block{background:rgba(132,204,22,0.12);border:1px solid rgba(132,204,22,0.25);}
 .tg-block.deepsea-block{background:rgba(14,165,233,0.12);border:1px solid rgba(14,165,233,0.25);}
+.tg-block.activities-block{background:rgba(255,77,141,0.14);border:1px solid rgba(255,77,141,0.3);}
 .tg-block.headliner-block{border-width:2px;}
 .tg-block-time{font-size:10px;font-weight:700;color:var(--text-muted);font-family:'Orbitron',sans-serif;line-height:1;}
 .tg-block-name{font-size:12px;font-weight:800;color:var(--text-light);line-height:1.2;
@@ -2792,6 +2796,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <button class="stage-pill beach"  data-stage="beach"   onclick="filterStage('beach',this)">Beach</button>
           <button class="stage-pill locals" data-stage="locals"  onclick="filterStage('locals',this)">Locker</button>
           <button class="stage-pill deepsea" data-stage="deepsea" onclick="filterStage('deepsea',this)">Deep Sea</button>
+          <button class="stage-pill activities" data-stage="activities" onclick="filterStage('activities',this)">🎯 Activities</button>
           <div class="view-toggle">
             <button class="view-btn" id="viewListBtn" onclick="setView('list')" title="List view">☰</button>
             <button class="view-btn active" id="viewGridBtn" onclick="setView('grid')" title="Block view">⊞</button>
@@ -5489,7 +5494,7 @@ function renderSchedule() {
   if (schedView === 'list') {
     listWrap.style.display = 'block';
     let html = '';
-    ['dnb','oasis','beach','locals','activities'].forEach(stage => {
+    ['dnb','oasis','beach','locals','deepsea','activities'].forEach(stage => {
       if (!shouldShowStage(stage)) return;
       const items = (data[stage]||[])
         .filter(item => matchArtist(item.artist))
@@ -5498,7 +5503,7 @@ function renderSchedule() {
       const stageNames = {dnb:'DNB Stage',oasis:'Oasis Stage',beach:'Beach Stage',locals:"Davey Jones Locker",deepsea:'Deep Sea',activities:'🎯 Activities'};
       const stageName = stageNames[stage] || stage;
       html += `<div class="stage-section"><div class="stage-section-header ${stage}">`+
-        `<div class="stage-dot" style="background:${{dnb:'#9b3dff',oasis:'#f59e0b',beach:'#06b6d4',locals:'#84cc16'}[stage]||'#888'};"></div>${stageName}</div>`+
+        `<div class="stage-dot" style="background:${{dnb:'#9b3dff',oasis:'#f59e0b',beach:'#06b6d4',locals:'#84cc16',deepsea:'#0ea5e9',activities:'#ff4d8d'}[stage]||'#888'};"></div>${stageName}</div>`+
         `<div class="sched-list">`;
       items.forEach(item => {
         const a = artists[item.artist]||{};
@@ -5528,6 +5533,7 @@ function renderSchedule() {
     if (shouldShowStage('beach'))  stages.push({key:'beach',  name:'Beach Stage',                     color:'#06b6d4'});
     if (shouldShowStage('locals'))  stages.push({key:'locals',  name:"Davey Jones Locker", color:'#84cc16'});
     if (shouldShowStage('deepsea')) stages.push({key:'deepsea', name:'Deep Sea',             color:'#0ea5e9'});
+    if (shouldShowStage('activities')) stages.push({key:'activities', name:'🎯 Activities',   color:'#ff4d8d'});
     let html = `<div class="tg-grid-wrap"><div class="tg-grid" style="grid-template-columns:repeat(${stages.length},minmax(140px,1fr));">`;
     stages.forEach(st => {
       html += `<div><div class="tg-col-header" style="color:${st.color};">${st.name}</div>`;
@@ -15791,17 +15797,20 @@ function renderActivitiesPage(activities) {
     var dayLabel='';
     try { var dd=new Date(a.day+'T12:00:00'); dayLabel=dd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); } catch{ dayLabel=a.day||''; }
     var timeStr = (a.startTime||'TBA')+(a.endTime?' – '+a.endTime:'');
-    return '<div style="border:1px solid rgba(245,200,66,0.2);background:rgba(0,0,0,0.4);overflow:hidden;">' +
-      (a.imageUrl ? '<img src="'+escapeHTML(a.imageUrl)+'" style="width:100%;height:220px;object-fit:cover;display:block;" loading="lazy">' : '') +
-      '<div style="padding:16px;">' +
-        '<div style="font-family:\'Orbitron\',sans-serif;font-size:16px;font-weight:800;color:var(--gold-bright);margin-bottom:8px;">'+escapeHTML(a.name)+'</div>' +
-        '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">' +
-          (dayLabel?'<span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:3px 8px;">📅 '+escapeHTML(dayLabel)+'</span>':'')+
-          '<span style="font-size:11px;font-weight:700;background:rgba(0,212,200,0.1);color:var(--teal-glow);padding:3px 8px;">⏰ '+escapeHTML(timeStr)+'</span>'+
-          (a.location?'<span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:3px 8px;">📍 '+escapeHTML(a.location)+'</span>':'')+
+    var thumb = a.imageUrl
+      ? '<img src="'+escapeHTML(a.imageUrl)+'" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy">'
+      : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;background:rgba(245,200,66,0.08);">🎯</div>';
+    return '<div style="border:1px solid rgba(245,200,66,0.2);background:rgba(0,0,0,0.4);display:flex;gap:14px;padding:14px;align-items:flex-start;">' +
+      '<div style="width:92px;height:92px;flex-shrink:0;overflow:hidden;">'+thumb+'</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-family:\'Orbitron\',sans-serif;font-size:15px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;">'+escapeHTML(a.name)+'</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;">' +
+          (dayLabel?'<span style="font-size:10px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:2px 7px;">📅 '+escapeHTML(dayLabel)+'</span>':'')+
+          '<span style="font-size:10px;font-weight:700;background:rgba(0,212,200,0.1);color:var(--teal-glow);padding:2px 7px;">⏰ '+escapeHTML(timeStr)+'</span>'+
+          (a.location?'<span style="font-size:10px;font-weight:700;background:rgba(255,255,255,0.06);color:var(--text-muted);padding:2px 7px;">📍 '+escapeHTML(a.location)+'</span>':'')+
         '</div>'+
-        (a.desc?'<div style="font-size:14px;color:var(--text-light);font-weight:600;margin-bottom:10px;">'+escapeHTML(a.desc)+'</div>':'')+
-        (a.descLong?'<div style="font-size:13px;color:var(--text-muted);line-height:1.75;">'+escapeHTML(a.descLong).replace(/\n/g,'<br>')+'</div>':'')+
+        (a.desc?'<div style="font-size:13px;color:var(--text-light);font-weight:600;margin-bottom:6px;">'+escapeHTML(a.desc)+'</div>':'')+
+        (a.descLong?'<div style="font-size:12px;color:var(--text-muted);line-height:1.65;">'+escapeHTML(a.descLong).replace(/\n/g,'<br>')+'</div>':'')+
       '</div>'+
     '</div>';
   }).join('');
