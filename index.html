@@ -1975,13 +1975,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .dm-photo-btn:hover{border-color:rgba(155,61,255,0.5);color:#c084fc;}
 .dm-emoji-bar{
   display:flex;gap:2px;
-  padding:6px 12px;
-  background:#0a0a0a;
-  border-top:1px solid rgba(255,255,255,0.06);
-  flex-shrink:0;
+  padding:6px 10px;
+  background:#0e0e0e;
+  border:1px solid rgba(255,255,255,0.08);
+  border-bottom:none;
   overflow-x:auto;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
+  z-index:20;
 }
 .dm-emoji-bar::-webkit-scrollbar{display:none;}
 .dm-emoji-bar button{
@@ -4458,27 +4459,26 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <img id="dmPhotoPreviewImg" style="height:52px;width:auto;max-width:90px;object-fit:cover;border:1px solid rgba(155,61,255,0.4);">
     <button onclick="clearDMPhoto()" style="background:rgba(255,77,141,0.2);border:1px solid rgba(255,77,141,0.4);color:var(--pink-coral);font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">✕ Remove</button>
   </div>
-  <!-- Emoji quick-pick bar -->
-  <div class="dm-emoji-bar" id="dmEmojiBar" style="display:none;">
-    <button onclick="dmInsertEmoji('👍')" title="Thumbs Up">👍</button>
-    <button onclick="dmInsertEmoji('👎')" title="Thumbs Down">👎</button>
-    <button onclick="dmInsertEmoji('❤️')" title="Love">❤️</button>
-    <button onclick="dmInsertEmoji('😂')" title="Haha">😂</button>
-    <button onclick="dmInsertEmoji('😮')" title="Wow">😮</button>
-    <button onclick="dmInsertEmoji('😢')" title="Sad">😢</button>
-    <button onclick="dmInsertEmoji('☠️')" title="Skull & Crossbones">☠️</button>
-    <button onclick="dmInsertEmoji('🦜')" title="Parrot">🦜</button>
-    <button onclick="dmInsertEmoji('🔥')" title="Fire">🔥</button>
-    <button onclick="dmInsertEmoji('🎉')" title="Party">🎉</button>
-    <button onclick="dmInsertEmoji('💀')" title="Skull">💀</button>
-    <button onclick="dmInsertEmoji('🏴‍☠️')" title="Pirate">🏴‍☠️</button>
-  </div>
-  <div class="dm-thread-input-row">
+  <div class="dm-thread-input-row" style="position:relative;">
+    <!-- Emoji picker — floats above the input row, no layout impact -->
+    <div class="dm-emoji-bar" id="dmEmojiBar" style="display:none;position:absolute;bottom:100%;left:0;right:0;border-bottom:none;border-radius:0;">
+      <button onclick="dmInsertEmoji('👍')" title="Thumbs Up">👍</button>
+      <button onclick="dmInsertEmoji('👎')" title="Thumbs Down">👎</button>
+      <button onclick="dmInsertEmoji('❤️')" title="Love">❤️</button>
+      <button onclick="dmInsertEmoji('😂')" title="Haha">😂</button>
+      <button onclick="dmInsertEmoji('😮')" title="Wow">😮</button>
+      <button onclick="dmInsertEmoji('😢')" title="Sad">😢</button>
+      <button onclick="dmInsertEmoji('☠️')" title="Skull & Crossbones">☠️</button>
+      <button onclick="dmInsertEmoji('🦜')" title="Parrot">🦜</button>
+      <button onclick="dmInsertEmoji('🔥')" title="Fire">🔥</button>
+      <button onclick="dmInsertEmoji('🎉')" title="Party">🎉</button>
+      <button onclick="dmInsertEmoji('💀')" title="Skull">💀</button>
+      <button onclick="dmInsertEmoji('🏴‍☠️')" title="Pirate">🏴‍☠️</button>
+    </div>
     <label class="dm-photo-btn" title="Send photo">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
       <input type="file" accept="image/*" style="display:none;" onchange="handleDMPhoto(this)">
     </label>
-    <!-- Emoji toggle button -->
     <button onclick="toggleDMEmoji()" id="dmEmojiToggleBtn" class="dm-photo-btn" title="Emoji" style="border:none;background:transparent;font-size:18px;padding:0;width:36px;height:40px;">🙂</button>
     <input class="dm-thread-input" id="dmThreadInput" type="text"
       placeholder="Message…" maxlength="1000" autocomplete="off" autocorrect="on"
