@@ -10991,6 +10991,7 @@ function startDMPolling() {
     if (document.getElementById('page-people') && document.getElementById('page-people').classList.contains('active')) {
       loadDMList();
       loadFriends();
+      if (typeof loadGroupList === 'function') loadGroupList();
     }
   }, 8000);
 }
@@ -11042,19 +11043,9 @@ async function pollDMUnread() {
       }
     }
 
-    // 2. Count unread group messages from the notifications list
-    // (groups don't have a separate unread endpoint — we check notifs for type group_msg / staff_group)
-    const nRes = await fetch(AUTH_URL + '/notifications', { headers: {'Authorization': 'Bearer ' + token} });
-    if (nRes.ok) {
-      const ct = nRes.headers.get('content-type') || '';
-      if (ct.includes('json')) {
-        const nd = await nRes.json();
-        const groupUnread = (nd.notifications || []).filter(function(n) {
-          return !n.read && (n.type === 'group_msg' || n.type === 'staff_group_msg' || n.type === 'group_invite' || n.type === 'staff_group_invite' || n.type === 'group_mention');
-        }).length;
-        total += groupUnread;
-      }
-    }
+    // 2. Count unread group messages (mirrors DM unread — proper per-group tracking)
+    const gRes = await fetch(AUTH_URL + '/groups/unread', { headers: {'Authorization': 'Bearer ' + token} });
+    if (gRes.ok) { const gd = await gRes.json(); total += gd.total || 0; }
 
     const badge = document.getElementById('inboxNavBadge');
     if (badge) {
@@ -12713,7 +12704,18 @@ function previewBugScreenshots(input) {
       const img = document.createElement('img');
       img.src = e.target.result;
       img.style.cssText = 'width:60px;height:60px;object-fit:cover;border:1px solid rgba(255,77,141,0.3);display:block;';
+      img.onerror = function() {
+        // Some formats (e.g. HEIC) can fail to render as a preview even though
+        // they'll upload fine — show a clear fallback instead of a broken icon
+        wrap.innerHTML = '<div style="width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:rgba(255,77,141,0.08);border:1px solid rgba(255,77,141,0.3);font-size:10px;color:var(--pink-coral);text-align:center;padding:2px;box-sizing:border-box;">Preview unavailable</div>';
+      };
       wrap.appendChild(img);
+      previews.appendChild(wrap);
+    };
+    reader.onerror = function() {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:rgba(255,77,141,0.08);border:1px solid rgba(255,77,141,0.3);font-size:10px;color:var(--pink-coral);text-align:center;padding:2px;box-sizing:border-box;';
+      wrap.textContent = 'Could not read file';
       previews.appendChild(wrap);
     };
     reader.readAsDataURL(file);
@@ -12733,24 +12735,45 @@ async function submitBugReport() {
   if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
   if (status) { status.style.color='var(--text-muted)'; status.textContent=''; }
 
-  const user = currentUser || {};
+  const user  = currentUser || {};
+  const token = localStorage.getItem(TOKEN_KEY);
+
+  // Upload screenshots to our own media storage (R2) first, then send only the
+  // resulting links to Formspree as text. Formspree's free plan doesn't support
+  // raw file attachments (that requires a $10+/mo plan) — routing through the
+  // same R2 pipeline the rest of the app already uses avoids that limit entirely
+  // and doesn't cost anything extra.
+  const screenshotUrls = [];
+  if (fileInput && fileInput.files.length) {
+    if (status) status.textContent = 'Uploading screenshots…';
+    const files = Array.from(fileInput.files).slice(0, 5);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const slug = 'bugreport_' + Date.now() + '_' + i;
+        const ur = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
+          method: 'POST',
+          headers: { 'Content-Type': file.type, 'Authorization': 'Bearer ' + token },
+          body: file
+        });
+        if (ur.ok) { const ud = await ur.json(); if (ud.url) screenshotUrls.push(ud.url); }
+      } catch (e) { /* one failed screenshot shouldn't block the whole report */ }
+    }
+  }
+
+  if (status) status.textContent = 'Sending…';
+
   const reportBody = (user.handle ? '[' + user.handle + '] ' : '')
     + (user.email ? '(' + user.email + ') ' : '')
-    + text;
+    + text
+    + (screenshotUrls.length ? '\n\nScreenshot(s):\n' + screenshotUrls.join('\n') : '');
 
-  // Use FormData so we can attach screenshots
   const formData = new FormData();
   formData.append('message', reportBody);
   formData.append('_subject', '🐛 Bug Report — The Mutiny 2026');
   if (user.email) formData.append('email', user.email);
   if (user.handle) formData.append('user', user.handle);
-
-  // Attach screenshots (Formspree supports up to 5 files)
-  if (fileInput && fileInput.files.length) {
-    Array.from(fileInput.files).slice(0, 5).forEach(function(file, i) {
-      formData.append('screenshot_' + (i + 1), file, file.name);
-    });
-  }
+  screenshotUrls.forEach(function(u, i) { formData.append('screenshot_' + (i + 1) + '_url', u); });
 
   try {
     const res = await fetch('https://formspree.io/f/' + FORMSPREE_ID, {
@@ -14889,6 +14912,9 @@ async function loadGroupThread() {
     var isFirst  = !msgs.dataset.cacheKey;
     if (msgs.dataset.cacheKey === cacheKey) return;
     msgs.dataset.cacheKey = cacheKey;
+    // Mark this group as read now that we've actually loaded/viewed its messages
+    fetch(AUTH_URL+'/groups/'+_currentGroupId+'/read', { method:'POST', headers:{'Authorization':'Bearer '+token} }).catch(function(){});
+    if (typeof pollDMUnread === 'function') pollDMUnread();
     var atBottom = isFirst || (msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 100);
     msgs.innerHTML = messages.length ? messages.map(function(m) {
       var mine = m.fromId === (currentUser&&currentUser.id);
@@ -14983,12 +15009,15 @@ async function loadGroupList() {
     var listEl = document.getElementById('groupList');
     if (listEl) {
       listEl.innerHTML = personal.map(function(g) {
-        return '<div class="inbox-contact" style="border-left:3px solid rgba(155,61,255,0.5);cursor:pointer;" onclick="openGroupThread(\''+g.id+'\',\''+escapeHTML(g.name)+'\','+g.members.length+',false)">' +
+        var unread = g.unread || 0;
+        var unreadStyle = unread ? 'border-left:3px solid #ff4d8d;background:rgba(255,77,141,0.06);' : '';
+        return '<div class="inbox-contact" style="border-left:3px solid rgba(155,61,255,0.5);cursor:pointer;'+unreadStyle+'" onclick="openGroupThread(\''+g.id+'\',\''+escapeHTML(g.name)+'\','+g.members.length+',false)">' +
           '<div class="inbox-avatar" style="background:#9b3dff;display:flex;align-items:center;justify-content:center;font-size:18px;">👥</div>' +
           '<div class="inbox-info">' +
-            '<div class="inbox-name">'+escapeHTML(g.name)+' <span style="font-size:10px;color:#c084fc;font-weight:700;">['+g.members.length+' members]</span></div>' +
-            '<div class="inbox-preview">'+escapeHTML(g.lastMessage||'Tap to open chat')+'</div>' +
+            '<div class="inbox-name" style="'+(unread?'color:#fff;font-weight:800;':'')+'">'+escapeHTML(g.name)+' <span style="font-size:10px;color:#c084fc;font-weight:700;">['+g.members.length+' members]</span></div>' +
+            '<div class="inbox-preview" style="'+(unread?'color:rgba(255,255,255,0.7);font-weight:600;':'')+'">'+(unread?'<span style="color:#ff4d8d;font-weight:800;">●</span> ':'')+escapeHTML(g.lastMessage||'Tap to open chat')+'</div>' +
           '</div>' +
+          (unread ? '<div class="inbox-unread-badge">'+unread+'</div>' : '') +
         '</div>';
       }).join('');
     }
@@ -14998,12 +15027,15 @@ async function loadGroupList() {
     var emptyEl   = document.getElementById('staffGroupEmpty');
     if (staffEl) {
       staffEl.innerHTML = staff.map(function(g) {
-        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border:1px solid rgba(245,200,66,0.2);background:rgba(245,200,66,0.04);margin-bottom:6px;transition:background .15s;" onclick="openGroupThread(\''+g.id+'\',\''+escapeHTML(g.name)+'\','+g.members.length+',true)" onmouseover="this.style.background=\'rgba(245,200,66,0.08)\'" onmouseout="this.style.background=\'rgba(245,200,66,0.04)\'">' +
+        var unread = g.unread || 0;
+        var unreadStyle = unread ? 'border-color:#ff4d8d;background:rgba(255,77,141,0.08);' : '';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border:1px solid rgba(245,200,66,0.2);background:rgba(245,200,66,0.04);margin-bottom:6px;transition:background .15s;'+unreadStyle+'" onclick="openGroupThread(\''+g.id+'\',\''+escapeHTML(g.name)+'\','+g.members.length+',true)" onmouseover="this.style.background=\'rgba(245,200,66,0.08)\'" onmouseout="this.style.background=\''+(unread?'rgba(255,77,141,0.08)':'rgba(245,200,66,0.04)')+'\'">' +
           '<div style="width:40px;height:40px;border-radius:50%;background:#f5c842;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📢</div>' +
           '<div style="flex:1;min-width:0;">' +
-            '<div style="font-size:13px;font-weight:700;color:var(--gold-bright);">'+escapeHTML(g.name)+'</div>' +
-            '<div style="font-size:11px;color:var(--text-muted);">'+g.members.length+' members · '+escapeHTML(g.lastMessage||'Tap to open')+'</div>' +
+            '<div style="font-size:13px;font-weight:700;color:'+(unread?'#fff':'var(--gold-bright)')+';">'+escapeHTML(g.name)+'</div>' +
+            '<div style="font-size:11px;color:var(--text-muted);">'+(unread?'<span style="color:#ff4d8d;font-weight:800;">●</span> ':'')+g.members.length+' members · '+escapeHTML(g.lastMessage||'Tap to open')+'</div>' +
           '</div>' +
+          (unread ? '<div class="inbox-unread-badge">'+unread+'</div>' : '') +
           '<div style="font-size:9px;font-weight:800;color:var(--gold-bright);background:rgba(245,200,66,0.15);padding:2px 6px;border:1px solid rgba(245,200,66,0.3);">STAFF</div>' +
         '</div>';
       }).join('');
