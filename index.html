@@ -785,7 +785,7 @@ body{
   text-decoration:none;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);
   transition:all .18s;cursor:pointer;}
 .dir-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.4);}
-.dir-icon{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.dir-icon{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gold-bright);}
 .dir-label{font-size:13px;font-weight:700;color:var(--text-light);}
 .dir-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
 .dir-btn.google{border-color:rgba(66,133,244,0.3);}
@@ -802,10 +802,28 @@ body{
   border-bottom:1px solid rgba(255,255,255,0.07);}
 .hotel-map-title{font-size:15px;font-weight:800;color:var(--text-light);}
 .hotel-map-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
-.map-legend{display:flex;flex-wrap:wrap;gap:12px;padding:8px 16px;
+.map-legend-wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
   border-bottom:1px solid rgba(255,255,255,0.06);}
+.map-legend{display:flex;flex-wrap:wrap;gap:12px;padding:8px 16px;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);font-weight:600;}
 .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.hotel-map-body{display:flex;gap:16px;align-items:flex-start;padding:0 0 16px;}
+.hotel-map-mapcol{flex:1;min-width:0;}
+.hotel-map-keycol{width:240px;flex-shrink:0;margin-top:16px;margin-right:16px;
+  background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);}
+.map-key-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;
+  border-bottom:1px solid rgba(255,255,255,0.07);}
+.map-key-title{font-size:12px;font-weight:800;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;}
+.map-key-list{padding:10px 12px;display:flex;flex-direction:column;gap:8px;max-height:460px;overflow-y:auto;}
+.map-key-empty{font-size:12px;color:var(--text-muted);text-align:center;padding:12px 0;}
+.map-key-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-light);}
+.map-key-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(245,200,66,0.15);
+  border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;}
+@media(max-width:900px){
+  .hotel-map-body{flex-direction:column;}
+  .hotel-map-keycol{width:auto;margin:0 16px 16px;}
+}
 .hotel-svg-wrap{overflow-x:auto;cursor:grab;}
 .hotel-svg-wrap:active{cursor:grabbing;}
 .hotel-svg-wrap svg{display:block;min-width:400px;}
@@ -2933,19 +2951,19 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="map-section-title"> Get Directions</div>
     <div class="directions-grid">
       <a class="dir-btn google" id="mapDirGoogle" href="#" target="_blank" rel="noopener">
-        <div class="dir-icon"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M24 4C16.27 4 10 10.27 10 18c0 10.5 14 26 14 26s14-15.5 14-26c0-7.73-6.27-14-14-14z" fill="url(#gPin2)"/><defs><linearGradient id="gPin2" x1="10" y1="4" x2="38" y2="44" gradientUnits="userSpaceOnUse"><stop stop-color="#4285F4"/><stop offset="1" stop-color="#34A853"/></linearGradient></defs><circle cx="24" cy="18" r="5" fill="white"/></svg></div>
+        <div class="dir-icon"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg></div>
         <div><div class="dir-label">Google Maps</div><div class="dir-sub">Opens app or web</div></div>
       </a>
       <a class="dir-btn apple" id="mapDirApple" href="#" target="_blank" rel="noopener">
-        <div class="dir-icon"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="0" fill="#1C1C1E"/><path d="M24 8C20 8 16 11 16 15.5c0 6.5 8 16.5 8 16.5s8-10 8-16.5C32 11 28 8 24 8z" fill="#34C759"/><circle cx="24" cy="15.5" r="3.5" fill="white"/></svg></div>
+        <div class="dir-icon"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/></svg></div>
         <div><div class="dir-label">Apple Maps</div><div class="dir-sub">iPhone &amp; Mac</div></div>
       </a>
       <a class="dir-btn waze" href="https://waze.com/ul?q=Sturbridge+Host+Hotel+366+Main+St+Sturbridge+MA&navigate=yes" target="_blank" rel="noopener">
-        <div class="dir-icon"><svg width="32" height="32" viewBox="0 0 48 48" fill="none"><ellipse cx="24" cy="26" rx="0" ry="14" fill="#33CCFF"/><circle cx="18" cy="27" r="3" fill="white"/><circle cx="30" cy="27" r="3" fill="white"/><path d="M18 33 Q24 37 30 33" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="24" cy="10" r="5" fill="#FFCC00"/></svg></div>
+        <div class="dir-icon"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .557.103z"/></svg></div>
         <div><div class="dir-label">Waze</div><div class="dir-sub">Live traffic</div></div>
       </a>
       <a class="dir-btn uber" href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=366+Main+St+Sturbridge+MA+01566&dropoff[latitude]=42.1167&dropoff[longitude]=-72.0898" target="_blank" rel="noopener">
-        <div class="dir-icon"><svg width="28" height="28" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="0" fill="#000"/><text x="24" y="32" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="white" text-anchor="middle">U</text></svg></div>
+        <div class="dir-icon"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 9.5c0-.5.3-.9.8-1l1.2-.3 1-1.7c.3-.5.8-.8 1.4-.8h2.2c.6 0 1.1.3 1.4.8l1 1.7 1.2.3c.5.1.8.5.8 1v2h-11v-2z"/><circle cx="4.5" cy="11.5" r="1.3"/><circle cx="11.5" cy="11.5" r="1.3"/></svg></div>
         <div><div class="dir-label">Uber</div><div class="dir-sub">Request a ride</div></div>
       </a>
     </div>
@@ -2969,15 +2987,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <button class="dash-btn" onclick="removeHotelMap()" style="font-size:11px;padding:6px 10px;color:var(--pink-coral);">✕ Remove</button>
         </div>
       </div>
-      <div class="map-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#f5c842;"></div>Event Stages</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#00d4c8;"></div>Pool &amp; Beach</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ff4d8d;"></div>Food &amp; Drink</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#9b3dff;"></div>Hotel Facilities</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#4ade80;"></div>Entry / Parking</div>
+      <div class="map-legend-wrap">
+        <div class="map-legend" id="mapLegendList"></div>
+        <button id="mapLegendEditBtn" onclick="openMapLegendEditor()" style="display:none;flex-shrink:0;margin:6px 16px;font-size:11px;padding:5px 10px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);color:var(--gold-bright);cursor:pointer;">✏ Edit Key Colors</button>
       </div>
-      <!-- Custom uploaded map (shown when available) -->
-      <div id="hotelMapCustom" style="display:none;margin-bottom:12px;">
+      <div class="hotel-map-body">
+        <div class="hotel-map-mapcol">
+          <!-- Custom uploaded map (shown when available) -->
+          <div id="hotelMapCustom" style="display:none;margin-bottom:12px;">
         <img id="hotelMapImg" src="" alt="Hotel Grounds Map" style="width:100%;max-width:800px;display:block;border:1px solid rgba(255,255,255,0.1);">
         <a id="hotelMapPdfLink" href="" target="_blank" rel="noopener" style="display:none;padding:10px 16px;background:rgba(155,61,255,0.1);border:1px solid rgba(155,61,255,0.3);color:#c084fc;font-size:13px;font-weight:700;text-decoration:none;text-align:center;margin-top:8px;display:none;">📄 View Full Map PDF</a>
       </div>
@@ -3054,7 +3071,18 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         </svg>
       </div>
       </div><!-- /hotelSvgWrap -->
-    </div>
+        </div><!-- /hotel-map-mapcol -->
+        <div class="hotel-map-keycol" id="hotelMapKeyCol">
+          <div class="map-key-header">
+            <span class="map-key-title">Map Key</span>
+            <button id="mapKeyEditBtn" onclick="openMapKeyEditor()" style="display:none;font-size:11px;padding:5px 10px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);color:var(--gold-bright);cursor:pointer;">✏ Edit</button>
+          </div>
+          <div id="mapKeyList" class="map-key-list">
+            <div class="map-key-empty" id="mapKeyEmpty">No map key entries yet.</div>
+          </div>
+        </div><!-- /hotel-map-keycol -->
+      </div><!-- /hotel-map-body -->
+    </div><!-- /hotel-map-wrap -->
   </div><!-- /page-map -->
 
   <!-- ── CHECKLIST PAGE ── -->
@@ -6697,12 +6725,24 @@ function closeSOS() { document.getElementById('sosOverlay').classList.remove('op
    MAP TOOLTIP
 ════════════════════════════════════════════════════════════ */
 // ── Hotel Map Upload ───────────────────────────────────────
+var DEFAULT_MAP_LEGEND = [
+  {color:'#f5c842', label:'Event Stages'},
+  {color:'#00d4c8', label:'Pool & Beach'},
+  {color:'#ff4d8d', label:'Food & Drink'},
+  {color:'#9b3dff', label:'Hotel Facilities'},
+  {color:'#4ade80', label:'Entry / Parking'}
+];
+
 async function initHotelMap() {
   const adminBtn = document.getElementById('hotelMapAdminBtn');
   if (adminBtn && currentUser && currentUser.role === 'admin') {
     adminBtn.style.display = 'flex';
     adminBtn.style.gap = '6px';
   }
+  const legendEditBtn = document.getElementById('mapLegendEditBtn');
+  if (legendEditBtn) legendEditBtn.style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none';
+  const keyEditBtn = document.getElementById('mapKeyEditBtn');
+  if (keyEditBtn) keyEditBtn.style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none';
   try {
     const token = localStorage.getItem(TOKEN_KEY);
     const res = await fetch(AUTH_URL + '/site/hotel-map', {
@@ -6713,6 +6753,57 @@ async function initHotelMap() {
       if (d.url) applyHotelMap(d.url);
     }
   } catch(e) {}
+  loadMapLegend();
+  loadMapKey();
+}
+
+async function loadMapLegend() {
+  let legend = DEFAULT_MAP_LEGEND;
+  try {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const res = await fetch(AUTH_URL + '/site/map-legend', { headers: token ? {'Authorization':'Bearer '+token} : {} });
+    if (res.ok) {
+      const d = await res.json();
+      if (Array.isArray(d.legend) && d.legend.length) legend = d.legend;
+    }
+  } catch(e) {}
+  window._mapLegend = legend;
+  renderMapLegend(legend);
+}
+
+function renderMapLegend(legend) {
+  const wrap = document.getElementById('mapLegendList');
+  if (!wrap) return;
+  wrap.innerHTML = legend.map(function(item) {
+    return '<div class="legend-item"><div class="legend-dot" style="background:'+esc(item.color)+';"></div>'+esc(item.label)+'</div>';
+  }).join('');
+}
+
+async function loadMapKey() {
+  let items = [];
+  try {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const res = await fetch(AUTH_URL + '/site/map-key', { headers: token ? {'Authorization':'Bearer '+token} : {} });
+    if (res.ok) {
+      const d = await res.json();
+      if (Array.isArray(d.items)) items = d.items;
+    }
+  } catch(e) {}
+  window._mapKey = items;
+  renderMapKey(items);
+}
+
+function renderMapKey(items) {
+  const wrap  = document.getElementById('mapKeyList');
+  const empty = document.getElementById('mapKeyEmpty');
+  if (!wrap) return;
+  if (!items.length) {
+    wrap.innerHTML = '<div class="map-key-empty" id="mapKeyEmpty">No map key entries yet.</div>';
+    return;
+  }
+  wrap.innerHTML = items.map(function(item) {
+    return '<div class="map-key-item"><div class="map-key-num">'+esc(item.number)+'</div><div>'+esc(item.label)+'</div></div>';
+  }).join('');
 }
 
 function applyHotelMap(url) {
@@ -15236,6 +15327,161 @@ async function adminBoothDeleteAndBan() {
 </script>
 
 <!-- ══ MAP EDIT MODAL (Admin only) ══ -->
+<div id="mapLegendModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">✏ EDIT MAP KEY COLORS</span>
+      <button onclick="closeMapLegendEditor()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+    </div>
+    <div style="padding:18px;overflow-y:auto;flex:1;">
+      <div id="mapLegendRows"></div>
+      <button onclick="addMapLegendRow()" style="width:100%;margin-top:8px;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ Add Category</button>
+      <div id="mapLegendStatus" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;flex-shrink:0;">
+      <button onclick="closeMapLegendEditor()" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button onclick="saveMapLegend()" style="flex:1;padding:10px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="mapKeyModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">✏ EDIT MAP KEY</span>
+      <button onclick="closeMapKeyEditor()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+    </div>
+    <div style="padding:18px;overflow-y:auto;flex:1;">
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.5;">Match each number on the uploaded map to what it points to.</p>
+      <div id="mapKeyRows"></div>
+      <button onclick="addMapKeyRow()" style="width:100%;margin-top:8px;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ Add Entry</button>
+      <div id="mapKeyStatus" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;flex-shrink:0;">
+      <button onclick="closeMapKeyEditor()" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button onclick="saveMapKey()" style="flex:1;padding:10px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   MAP KEY / LEGEND — Admin edit
+════════════════════════════════════════════════════════════ */
+function openMapLegendEditor() {
+  window._mapLegendDraft = JSON.parse(JSON.stringify(window._mapLegend || DEFAULT_MAP_LEGEND));
+  renderMapLegendRows();
+  var status = document.getElementById('mapLegendStatus'); if (status) status.textContent = '';
+  var modal = document.getElementById('mapLegendModal'); if (modal) modal.style.display = 'flex';
+}
+function closeMapLegendEditor() {
+  var modal = document.getElementById('mapLegendModal'); if (modal) modal.style.display = 'none';
+}
+function renderMapLegendRows() {
+  var wrap = document.getElementById('mapLegendRows'); if (!wrap) return;
+  var rows = window._mapLegendDraft || [];
+  wrap.innerHTML = rows.map(function(item, i) {
+    return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">'+
+      '<input type="color" value="'+esc(item.color)+'" onchange="updateMapLegendRow('+i+',\'color\',this.value)" style="width:36px;height:34px;padding:0;border:1px solid rgba(255,255,255,0.15);background:#111;cursor:pointer;flex-shrink:0;">'+
+      '<input type="text" value="'+esc(item.label)+'" oninput="updateMapLegendRow('+i+',\'label\',this.value)" placeholder="Category name" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">'+
+      '<button onclick="removeMapLegendRow('+i+')" style="flex-shrink:0;width:30px;height:30px;background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;">✕</button>'+
+    '</div>';
+  }).join('');
+}
+function updateMapLegendRow(i, key, val) {
+  if (!window._mapLegendDraft || !window._mapLegendDraft[i]) return;
+  window._mapLegendDraft[i][key] = val;
+}
+function addMapLegendRow() {
+  if (!window._mapLegendDraft) window._mapLegendDraft = [];
+  window._mapLegendDraft.push({color:'#f5c842', label:''});
+  renderMapLegendRows();
+}
+function removeMapLegendRow(i) {
+  window._mapLegendDraft.splice(i, 1);
+  renderMapLegendRows();
+}
+async function saveMapLegend() {
+  var status = document.getElementById('mapLegendStatus');
+  var rows = (window._mapLegendDraft || []).filter(function(r){ return r.label && r.label.trim(); });
+  if (!rows.length) { if (status) { status.style.color='var(--pink-coral)'; status.textContent='Add at least one category.'; } return; }
+  var token = localStorage.getItem(TOKEN_KEY);
+  try {
+    var res = await fetch(AUTH_URL + '/site/map-legend', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ legend: rows })
+    });
+    if (res.ok) {
+      window._mapLegend = rows;
+      renderMapLegend(rows);
+      closeMapLegendEditor();
+      showToast('✓ Map key colors updated');
+    } else {
+      if (status) { status.style.color='var(--pink-coral)'; status.textContent='Save failed.'; }
+    }
+  } catch(e) {
+    if (status) { status.style.color='var(--pink-coral)'; status.textContent='Save error: '+e.message; }
+  }
+}
+
+function openMapKeyEditor() {
+  window._mapKeyDraft = JSON.parse(JSON.stringify(window._mapKey || []));
+  renderMapKeyRows();
+  var status = document.getElementById('mapKeyStatus'); if (status) status.textContent = '';
+  var modal = document.getElementById('mapKeyModal'); if (modal) modal.style.display = 'flex';
+}
+function closeMapKeyEditor() {
+  var modal = document.getElementById('mapKeyModal'); if (modal) modal.style.display = 'none';
+}
+function renderMapKeyRows() {
+  var wrap = document.getElementById('mapKeyRows'); if (!wrap) return;
+  var rows = window._mapKeyDraft || [];
+  wrap.innerHTML = rows.map(function(item, i) {
+    return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">'+
+      '<input type="text" value="'+esc(item.number||'')+'" oninput="updateMapKeyRow('+i+',\'number\',this.value)" placeholder="#" style="width:44px;padding:8px 6px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--gold-bright);font-family:\'Poppins\',sans-serif;font-size:12px;font-weight:700;text-align:center;outline:none;flex-shrink:0;">'+
+      '<input type="text" value="'+esc(item.label||'')+'" oninput="updateMapKeyRow('+i+',\'label\',this.value)" placeholder="What this points to" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">'+
+      '<button onclick="removeMapKeyRow('+i+')" style="flex-shrink:0;width:30px;height:30px;background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;">✕</button>'+
+    '</div>';
+  }).join('');
+}
+function updateMapKeyRow(i, key, val) {
+  if (!window._mapKeyDraft || !window._mapKeyDraft[i]) return;
+  window._mapKeyDraft[i][key] = val;
+}
+function addMapKeyRow() {
+  if (!window._mapKeyDraft) window._mapKeyDraft = [];
+  window._mapKeyDraft.push({number:String(window._mapKeyDraft.length+1), label:''});
+  renderMapKeyRows();
+}
+function removeMapKeyRow(i) {
+  window._mapKeyDraft.splice(i, 1);
+  renderMapKeyRows();
+}
+async function saveMapKey() {
+  var status = document.getElementById('mapKeyStatus');
+  var rows = (window._mapKeyDraft || []).filter(function(r){ return r.label && r.label.trim(); });
+  var token = localStorage.getItem(TOKEN_KEY);
+  try {
+    var res = await fetch(AUTH_URL + '/site/map-key', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ items: rows })
+    });
+    if (res.ok) {
+      window._mapKey = rows;
+      renderMapKey(rows);
+      closeMapKeyEditor();
+      showToast('✓ Map key updated');
+    } else {
+      if (status) { status.style.color='var(--pink-coral)'; status.textContent='Save failed.'; }
+    }
+  } catch(e) {
+    if (status) { status.style.color='var(--pink-coral)'; status.textContent='Save error: '+e.message; }
+  }
+}
+</script>
+
 <div id="mapEditModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
   <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:520px;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
