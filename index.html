@@ -11482,7 +11482,7 @@ function renderDMMessages(messages, isFirstLoad) {
   if (!msgs) return;
 
   if (!messages || !messages.length) {
-    msgs.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet. Say hi! 👋</div>';
+    msgs.innerHTML = '<div data-placeholder="1" style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet. Say hi! 👋</div>';
     return;
   }
 
@@ -11659,7 +11659,7 @@ async function sendDM() {
   const msgs = document.getElementById('dmThreadMessages');
   let optimisticBubble = null;
   if (msgs) {
-    const placeholder = msgs.querySelector('.dm-empty, [data-placeholder]');
+    const placeholder = msgs.querySelector('[data-placeholder]');
     if (placeholder) placeholder.remove();
     optimisticBubble = document.createElement('div');
     optimisticBubble.className = 'dm-msg mine' + ((!photo && isEmojiOnlyText(text)) ? ' emoji-only' : '');
@@ -15813,7 +15813,7 @@ async function loadGroupThread() {
         '<div class="dm-msg-time">'+getTimeAgo(m.createdAt)+'</div>' +
         reactBtn + reactionHtml +
       '</div>';
-    }).join('') : '<div style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet — say hi! 👋</div>';
+    }).join('') : '<div data-placeholder="1" style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet — say hi! 👋</div>';
     if (atBottom) msgs.scrollTop = msgs.scrollHeight;
   } catch {}
 }
@@ -15834,6 +15834,8 @@ async function sendGroupMessage() {
   var bubble = null;
   if (msgs) {
     delete msgs.dataset.cacheKey;
+    var placeholder = msgs.querySelector('[data-placeholder]');
+    if (placeholder) placeholder.remove();
     bubble = document.createElement('div');
     bubble.className = 'dm-msg mine' + ((!photo && isEmojiOnlyText(text)) ? ' emoji-only' : '');
     bubble.innerHTML = (text?escapeHTML(text):'') + '<div class="dm-msg-time" style="opacity:0.4;">sending…</div>';
