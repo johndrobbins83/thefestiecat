@@ -205,11 +205,29 @@ body{
 ══════════════════════════════════════════════════ */
 #app{
   position:fixed;inset:0;
-  top:calc(var(--nav-height) + env(safe-area-inset-top, 0px));
+  top:calc(var(--nav-height) + env(safe-area-inset-top, 0px) + var(--radio-bar-height, 0px));
   bottom:calc(72px + env(safe-area-inset-bottom, 0px));
   overflow:hidden;z-index:10;
 }
 @media(min-width:768px){#app{bottom:0;}}
+#radioMiniBar{
+  display:none;position:fixed;left:0;right:0;z-index:190;
+  top:calc(var(--nav-height) + env(safe-area-inset-top, 0px));
+  height:34px;align-items:center;gap:10px;padding:0 16px;
+  background:linear-gradient(90deg,#1c1608,#0a0a0a);
+  border-bottom:1px solid rgba(245,200,66,0.25);
+  cursor:pointer;
+}
+#radioMiniBar .radio-mini-play{
+  flex-shrink:0;width:20px;height:20px;border-radius:50%;
+  background:var(--gold-bright);border:none;color:#1a1200;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+}
+#radioMiniBar .radio-mini-label{
+  flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:0.5px;
+  color:var(--gold-bright);
+}
 /* ensure pages have enough bottom padding on mobile so content isn't hidden under nav */
 .page{
   position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
@@ -2783,6 +2801,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 </nav>
 
 <!-- ══ APP SHELL ══ -->
+<div id="radioMiniBar" onclick="navigate('radio')">
+  <button class="radio-mini-play" id="radioMiniPlayBtn" onclick="event.stopPropagation();radioTogglePlay();" title="Play / Pause">
+    <svg id="radioMiniPlayIcon" viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+  <div class="radio-mini-label" id="radioMiniLabel">SUNKEN RADIO</div>
+</div>
+
 <div id="app">
 
   <!-- ── HOME PAGE ── -->
@@ -6993,6 +7018,25 @@ function radioUpdatePlayUI() {
   if (icon) icon.innerHTML = playing
     ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'
     : '<path d="M8 5v14l11-7z"/>';
+  updateRadioMiniBar();
+}
+
+// Thin transport bar shown site-wide (any page) while the radio is playing
+function updateRadioMiniBar() {
+  const audio = document.getElementById('radioAudioEl');
+  const bar   = document.getElementById('radioMiniBar');
+  const icon  = document.getElementById('radioMiniPlayIcon');
+  if (!audio || !bar) return;
+  const playing = !!(audio.src && !audio.paused);
+  bar.style.display = playing ? 'flex' : 'none';
+  document.documentElement.style.setProperty('--radio-bar-height', playing ? '34px' : '0px');
+  if (icon) icon.innerHTML = playing
+    ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'
+    : '<path d="M8 5v14l11-7z"/>';
+  const labelEl = document.getElementById('radioMiniLabel');
+  if (labelEl && playing) {
+    labelEl.textContent = radioCurrentSegmentLabel(audio.currentTime) || 'SUNKEN RADIO LIVE';
+  }
 }
 
 function radioFormatTime(sec) {
@@ -7024,6 +7068,7 @@ setInterval(function() {
     nowEl.textContent = label || (audio.paused ? '— STANDBY —' : 'SUNKEN RADIO LIVE');
   }
   if (timeEl) timeEl.textContent = radioFormatTime(audio.currentTime) + ' / ' + radioFormatTime(audio.duration);
+  updateRadioMiniBar();
 }, 1000);
 
 function initGames() {
