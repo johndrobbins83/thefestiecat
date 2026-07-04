@@ -5796,8 +5796,36 @@ function renderSchedule() {
   }
 }
 
+// Activities live in SCHEDULE_DATA, not the global `artists` object, so a saved
+// activity has no entry for `artists[key]` to find. This fills in a lightweight
+// stand-in entry (pulled from SCHEDULE_DATA) for any saved key that's missing —
+// without touching or overwriting any real artist entry — so every existing
+// `artists[key]` lookup throughout the app (My Schedule, reminders, etc.)
+// works for saved activities too, instead of silently treating them as missing.
+function ensureActivityLookupEntries(keys) {
+  if (!window.SCHEDULE_DATA) return;
+  keys.forEach(function(key) {
+    if (artists[key]) return; // already a real artist — leave it alone
+    var found = null, foundDay = '';
+    ['fri','sat','sun'].forEach(function(dk) {
+      if (found) return;
+      var acts = (SCHEDULE_DATA[dk] && SCHEDULE_DATA[dk].activities) || [];
+      var hit = acts.find(function(a){ return a.artist === key; });
+      if (hit) { found = hit; foundDay = dk.charAt(0).toUpperCase() + dk.slice(1); }
+    });
+    if (found) {
+      artists[key] = {
+        stage: 'Activities', day: foundDay, time: found.time || 'TBA',
+        photo: found.imageUrl || '', color: '#ff4d8d', initials: '🎯',
+        genre: 'Activity', headliner: false
+      };
+    }
+  });
+}
+
 async function renderMySchedPage() {
   var mine = getMySchedule();
+  ensureActivityLookupEntries(mine);
   // Fetch work shifts for staff/admin
   var myShifts = [];
   if (currentUser && (currentUser.role === 'employee' || currentUser.role === 'admin')) {
@@ -5834,6 +5862,7 @@ async function renderMySchedPage() {
     {key:'Beach Stage',        color:'#06b6d4', cls:'beach',   hl:'beach-headliner'},
     {key:"Davey Jones Locker", color:'#84cc16', cls:'locals',  hl:'djlocker-headliner'},
     {key:'Deep Sea',           color:'#0ea5e9', cls:'deepsea', hl:'deepsea-headliner'},
+    {key:'Activities',         color:'#ff4d8d', cls:'activities', hl:'activities-headliner'},
   ];
 
   // Normalize stage names so 'Oasis Stage' shows as 'Oasis Stage'
