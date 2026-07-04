@@ -4772,10 +4772,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <button onclick="dmInsertEmoji('😢')" title="Sad">😢</button>
       <button onclick="dmInsertEmoji('☠️')" title="Skull & Crossbones">☠️</button>
       <button onclick="dmInsertEmoji('🦜')" title="Parrot">🦜</button>
-      <button onclick="dmInsertEmoji('🔥')" title="Fire">🔥</button>
-      <button onclick="dmInsertEmoji('🎉')" title="Party">🎉</button>
-      <button onclick="dmInsertEmoji('💀')" title="Skull">💀</button>
-      <button onclick="dmInsertEmoji('🏴‍☠️')" title="Pirate">🏴‍☠️</button>
     </div>
     <label class="dm-photo-btn" title="Send photo">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -11218,11 +11214,11 @@ function dmInsertEmoji(emoji) {
   const newPos = start + emoji.length;
   input.setSelectionRange(newPos, newPos);
   input.focus();
-  // On mobile, close picker after picking so keyboard comes back up
-  if (window.innerWidth < 768) {
-    const bar = document.getElementById('dmEmojiBar');
-    if (bar) bar.style.display = 'none';
-  }
+  // Always close the picker after a selection so it doesn't sit open over the chat
+  const bar = document.getElementById('dmEmojiBar');
+  if (bar) bar.style.display = 'none';
+  const toggleBtn = document.getElementById('dmEmojiToggleBtn');
+  if (toggleBtn) toggleBtn.style.opacity = '1';
 }
 
 /* ════════════════════════════════════════════════════════════
