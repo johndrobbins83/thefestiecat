@@ -809,21 +809,25 @@ body{
 .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .hotel-map-body{display:flex;gap:16px;align-items:flex-start;padding:0 0 16px;}
 .hotel-map-mapcol{flex:1;min-width:0;}
-.hotel-map-keycol{width:240px;flex-shrink:0;margin-top:16px;margin-right:16px;
+.hotel-map-keywrap{display:flex;flex-direction:column;gap:16px;flex-shrink:0;width:240px;margin-top:16px;margin-right:16px;}
+.hotel-map-keycol{width:100%;flex-shrink:0;
   background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);}
 .map-key-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;
   border-bottom:1px solid rgba(255,255,255,0.07);}
 .map-key-title{font-size:12px;font-weight:800;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;}
-.map-key-list{padding:10px 12px;display:flex;flex-direction:column;gap:10px;max-height:600px;overflow-y:auto;}
+.map-key-list{padding:10px 12px;display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;}
 .map-key-empty{font-size:12px;color:var(--text-muted);text-align:center;padding:12px 0;}
-.map-key-img-wrap{position:relative;}
-.map-key-img{width:100%;display:block;border:1px solid rgba(255,255,255,0.1);}
-.map-key-img-remove{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;
-  background:rgba(0,0,0,0.75);border:1px solid rgba(255,77,141,0.5);color:var(--pink-coral);
-  font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.map-amenity-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-light);}
+.map-amenity-icon{flex-shrink:0;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:12px;}
+.map-vendor-item{display:flex;align-items:baseline;gap:8px;font-size:12px;color:var(--text-light);}
+.map-vendor-num{flex-shrink:0;width:20px;height:20px;border-radius:0;background:rgba(245,200,66,0.15);
+  border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;}
 @media(max-width:900px){
   .hotel-map-body{flex-direction:column;}
-  .hotel-map-keycol{width:auto;margin:0 16px 16px;}
+  .hotel-map-keywrap{width:auto;margin:0 16px 16px;flex-direction:row;flex-wrap:wrap;}
+  .hotel-map-keycol{width:auto;flex:1;min-width:220px;}
 }
 .hotel-svg-wrap{overflow-x:auto;cursor:grab;}
 .hotel-svg-wrap:active{cursor:grabbing;}
@@ -3055,18 +3059,26 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       </div>
       </div><!-- /hotelSvgWrap -->
         </div><!-- /hotel-map-mapcol -->
+        <div class="hotel-map-keywrap">
         <div class="hotel-map-keycol" id="hotelMapKeyCol">
           <div class="map-key-header">
-            <span class="map-key-title">Map Key</span>
+            <span class="map-key-title">Amenities</span>
+            <button id="mapAmenitiesEditBtn" onclick="openAmenitiesEditor()" style="display:none;font-size:11px;padding:5px 10px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);color:var(--gold-bright);cursor:pointer;">✏ Edit</button>
           </div>
-          <div id="mapKeyList" class="map-key-list">
-            <div class="map-key-empty" id="mapKeyEmpty">No map key images yet.</div>
-          </div>
-          <div id="mapKeyAdminControls" style="display:none;padding:10px 12px;border-top:1px solid rgba(255,255,255,0.07);">
-            <input type="file" id="mapKeyFileInput" accept="image/*" style="display:none;" onchange="uploadMapKeyImage(this)">
-            <button class="dash-btn" onclick="document.getElementById('mapKeyFileInput').click()" style="width:100%;font-size:11px;padding:8px;">📎 Add Key Image</button>
+          <div id="mapAmenitiesList" class="map-key-list">
+            <div class="map-key-empty">Loading…</div>
           </div>
         </div><!-- /hotel-map-keycol -->
+        <div class="hotel-map-keycol" id="hotelMapVendorCol">
+          <div class="map-key-header">
+            <span class="map-key-title">Vendor Directory</span>
+            <button id="mapVendorDirEditBtn" onclick="openVendorDirEditor()" style="display:none;font-size:11px;padding:5px 10px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);color:var(--gold-bright);cursor:pointer;">✏ Edit</button>
+          </div>
+          <div id="mapVendorDirList" class="map-key-list">
+            <div class="map-key-empty">Loading…</div>
+          </div>
+        </div><!-- /hotel-map-vendor-col -->
+        </div><!-- /hotel-map-keywrap -->
       </div><!-- /hotel-map-body -->
     </div><!-- /hotel-map-wrap -->
   </div><!-- /page-map -->
@@ -6812,6 +6824,65 @@ var DEFAULT_MAP_LEGEND = [
   {color:'#4ade80', label:'Entry / Parking'}
 ];
 
+// ── Map amenity icon library — admin can swap any amenity's icon among these ──
+var MAP_ICON_LIBRARY = {
+  smoking:  { name:'Smoking Area',  svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5.5c1 .9 1 1.9 0 2.9M9 5.5c1 .9 1 1.9 0 2.9" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/><rect x="2" y="10" width="15" height="4" rx="1"/><rect x="17" y="10" width="3" height="4" fill="#000" opacity="0.35"/></svg>' },
+  stairs:   { name:'Stairs',        svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h4v-3h4v-3h4v-3h4V6h3v15H3z"/></svg>' },
+  kandi:    { name:'Kandi / Sparkle', svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"/></svg>' },
+  checkin:  { name:'Check-in / Door', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' },
+  atm:      { name:'ATM (text)',    svg:'TEXT:ATM' },
+  bar:      { name:'Bar / Cocktail', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 15v6M4 4h16l-8 11L4 4z"/></svg>' },
+  hotel:    { name:'Hotel / House', svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 10h3v10h6v-6h2v6h6V10h3z"/></svg>' },
+  elevator: { name:'Elevator',      svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h16v20H4V2zm2 2v16h12V4H6zm4 3 2-2 2 2h-4zm0 8 2 2 2-2h-4z"/></svg>' },
+  restroom: { name:'Restroom',      svg:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2.3"/><path d="M8 9h8l1.5 6h-3L14 21h-4l-.5-6h-3z"/></svg>' },
+  run:      { name:'Activity / Run', svg:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="14" cy="4" r="2"/><path d="M10 22l1-6-3-2 1-5 4-2 3 3h3v2h-4l-2-2-1 4 4 2-1 6h-2l1-5-3-1-1 6z"/></svg>' },
+  camera:   { name:'Camera / Photo', svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm0 1a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>' },
+  game:     { name:'Game Room',     svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10a4 4 0 0 1 4 4l1 6a2 2 0 0 1-3.4 1.4L16 16H8l-2.6 2.4A2 2 0 0 1 3 17l1-6a4 4 0 0 1 3-4zm1 4H6v2h2v2h2v-2h2v-2h-2V9H8v2zm8-1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm2 3a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>' },
+  pin:      { name:'Pin (generic)', svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>' },
+  star:     { name:'Star (generic)', svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0l1.9 5.8H16l-4.9 3.6L12.9 16 8 12.3 3.1 16l1.8-6.6L0 5.8h6.1z"/></svg>' },
+  info:     { name:'Info (generic)', svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>' },
+  heart:    { name:'Heart (generic)', svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/></svg>' }
+};
+
+// ── Default amenities legend — matches the hand-drawn map key art ──
+var DEFAULT_MAP_AMENITIES = [
+  { icon:'smoking',  color:'#ef4444', label:'Smoking Areas + Entrance/Exits' },
+  { icon:'atm',      color:'#14b8a6', label:'ATM' },
+  { icon:'restroom', color:'#1a1a1a', label:'Restrooms' },
+  { icon:'stairs',   color:'#1a1a1a', label:'Stairs' },
+  { icon:'bar',      color:'#f97316', label:'Bar + Food' },
+  { icon:'run',      color:'#9333ea', label:'Echo Kidz Renegade' },
+  { icon:'kandi',    color:'#c084fc', label:'Kandi Meetup (check app for times)' },
+  { icon:'hotel',    color:'#3b82f6', label:'Hotel Checkin' },
+  { icon:'camera',   color:'#1a1a1a', label:'Photo Area' },
+  { icon:'checkin',  color:'#0ea5e9', label:'Festival Checkin' },
+  { icon:'elevator', color:'#1a1a1a', label:'Elevator' },
+  { icon:'game',     color:'#1a1a1a', label:'Game Room' }
+];
+
+// ── Default vendor directory — matches the hand-drawn vendor list art ──
+var DEFAULT_MAP_VENDORS = [
+  { number:'1',  name:'Twisted Creations' },
+  { number:'2',  name:'HouseOfTheRisingSol' },
+  { number:'3',  name:'Memeckers' },
+  { number:'4',  name:'Evol Chicago' },
+  { number:'5',  name:'PNLZ' },
+  { number:'6',  name:'The Slug Hole' },
+  { number:'7',  name:'CatchAFireArts' },
+  { number:'8',  name:'Sisterly Twist' },
+  { number:'9',  name:"Athena's Home Novelties" },
+  { number:'10', name:'Innate Travelling Wellness' },
+  { number:'11', name:'Illuminate Art' },
+  { number:'12', name:'Knotty Beadness' }
+];
+
+function mapIconSvg(iconKey) {
+  var entry = MAP_ICON_LIBRARY[iconKey];
+  if (!entry) return '';
+  if (entry.svg === 'TEXT:ATM') return '<span style="font-size:8px;font-weight:900;">ATM</span>';
+  return entry.svg;
+}
+
 async function initHotelMap() {
   const adminBtn = document.getElementById('hotelMapAdminBtn');
   if (adminBtn && currentUser && currentUser.role === 'admin') {
@@ -6820,6 +6891,10 @@ async function initHotelMap() {
   }
   const legendEditBtn = document.getElementById('mapLegendEditBtn');
   if (legendEditBtn) legendEditBtn.style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none';
+  const amenEditBtn = document.getElementById('mapAmenitiesEditBtn');
+  if (amenEditBtn) amenEditBtn.style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none';
+  const vendEditBtn = document.getElementById('mapVendorDirEditBtn');
+  if (vendEditBtn) vendEditBtn.style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none';
   try {
     const token = localStorage.getItem(TOKEN_KEY);
     const res = await fetch(AUTH_URL + '/site/hotel-map', {
@@ -6831,7 +6906,8 @@ async function initHotelMap() {
     }
   } catch(e) {}
   loadMapLegend();
-  loadMapKey();
+  loadMapAmenities();
+  loadMapVendorDirectory();
 }
 
 async function loadMapLegend() {
@@ -6856,83 +6932,50 @@ function renderMapLegend(legend) {
   }).join('');
 }
 
-async function loadMapKey() {
-  let images = [];
+async function loadMapAmenities() {
+  let amenities = DEFAULT_MAP_AMENITIES;
   try {
     const token = localStorage.getItem(TOKEN_KEY);
-    const res = await fetch(AUTH_URL + '/site/map-key', { headers: token ? {'Authorization':'Bearer '+token} : {} });
+    const res = await fetch(AUTH_URL + '/site/map-amenities', { headers: token ? {'Authorization':'Bearer '+token} : {} });
     if (res.ok) {
       const d = await res.json();
-      if (Array.isArray(d.images)) images = d.images;
+      if (Array.isArray(d.amenities) && d.amenities.length) amenities = d.amenities;
     }
   } catch(e) {}
-  window._mapKey = images;
-  renderMapKey(images);
+  window._mapAmenities = amenities;
+  renderMapAmenities(amenities);
 }
 
-function renderMapKey(images) {
-  const wrap = document.getElementById('mapKeyList');
+function renderMapAmenities(amenities) {
+  const wrap = document.getElementById('mapAmenitiesList');
   if (!wrap) return;
-  const isAdmin = !!(currentUser && currentUser.role === 'admin');
-  if (!images.length) {
-    wrap.innerHTML = '<div class="map-key-empty" id="mapKeyEmpty">No map key images yet.</div>';
-  } else {
-    wrap.innerHTML = images.map(function(url, i) {
-      return '<div class="map-key-img-wrap"><img src="'+esc(url)+'" class="map-key-img" alt="Map key">'+
-        (isAdmin ? '<button class="map-key-img-remove" onclick="removeMapKeyImage('+i+')">✕</button>' : '')+
-        '</div>';
-    }).join('');
-  }
-  const adminControls = document.getElementById('mapKeyAdminControls');
-  if (adminControls) adminControls.style.display = isAdmin ? 'block' : 'none';
+  if (!amenities.length) { wrap.innerHTML = '<div class="map-key-empty">No amenities yet.</div>'; return; }
+  wrap.innerHTML = amenities.map(function(a) {
+    return '<div class="map-amenity-item"><div class="map-amenity-icon" style="background:'+esc(a.color||'#333')+';">'+mapIconSvg(a.icon)+'</div><div>'+esc(a.label)+'</div></div>';
+  }).join('');
 }
 
-async function uploadMapKeyImage(input) {
-  const file = input.files[0]; if (!file) return;
-  if (file.size > 10 * 1024 * 1024) { showToast('File too large — max 10MB'); return; }
-  showToast('Uploading image…');
-  const token = localStorage.getItem(TOKEN_KEY);
+async function loadMapVendorDirectory() {
+  let vendors = DEFAULT_MAP_VENDORS;
   try {
-    const slug = 'mapkey_' + Date.now();
-    const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
-      method: 'POST',
-      headers: { 'Content-Type': file.type, 'Authorization': 'Bearer ' + token },
-      body: file
-    });
+    const token = localStorage.getItem(TOKEN_KEY);
+    const res = await fetch(AUTH_URL + '/site/map-vendor-directory', { headers: token ? {'Authorization':'Bearer '+token} : {} });
     if (res.ok) {
       const d = await res.json();
-      const images = (window._mapKey || []).concat([d.url]);
-      const putRes = await fetch(AUTH_URL + '/site/map-key', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ images })
-      });
-      if (putRes.ok) {
-        window._mapKey = images;
-        renderMapKey(images);
-        showToast('✓ Map key image added');
-      } else { showToast('Save failed'); }
-    } else { showToast('Upload failed'); }
-  } catch(e) { showToast('Upload error: ' + e.message); }
-  input.value = '';
+      if (Array.isArray(d.vendors) && d.vendors.length) vendors = d.vendors;
+    }
+  } catch(e) {}
+  window._mapVendorDirectory = vendors;
+  renderMapVendorDirectory(vendors);
 }
 
-async function removeMapKeyImage(index) {
-  const token = localStorage.getItem(TOKEN_KEY);
-  const images = (window._mapKey || []).slice();
-  images.splice(index, 1);
-  try {
-    const res = await fetch(AUTH_URL + '/site/map-key', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ images })
-    });
-    if (res.ok) {
-      window._mapKey = images;
-      renderMapKey(images);
-      showToast('Image removed');
-    } else { showToast('Remove failed'); }
-  } catch(e) { showToast('Error: ' + e.message); }
+function renderMapVendorDirectory(vendors) {
+  const wrap = document.getElementById('mapVendorDirList');
+  if (!wrap) return;
+  if (!vendors.length) { wrap.innerHTML = '<div class="map-key-empty">No vendors listed yet.</div>'; return; }
+  wrap.innerHTML = vendors.map(function(v) {
+    return '<div class="map-vendor-item"><div class="map-vendor-num">'+esc(v.number)+'</div><div>'+esc(v.name)+'</div></div>';
+  }).join('');
 }
 
 function applyHotelMap(url) {
@@ -15474,21 +15517,40 @@ async function adminBoothDeleteAndBan() {
   </div>
 </div>
 
-<div id="mapKeyModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
+<div id="mapAmenitiesModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
-      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">✏ EDIT MAP KEY</span>
-      <button onclick="closeMapKeyEditor()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">✏ EDIT AMENITIES</span>
+      <button onclick="closeAmenitiesEditor()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
     </div>
     <div style="padding:18px;overflow-y:auto;flex:1;">
-      <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.5;">Match each number on the uploaded map to what it points to.</p>
-      <div id="mapKeyRows"></div>
-      <button onclick="addMapKeyRow()" style="width:100%;margin-top:8px;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ Add Entry</button>
-      <div id="mapKeyStatus" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.5;">Pick an icon, a color, and a label for each amenity.</p>
+      <div id="mapAmenitiesRows"></div>
+      <button onclick="addAmenityRow()" style="width:100%;margin-top:8px;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ Add Amenity</button>
+      <div id="mapAmenitiesStatus" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
     </div>
     <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;flex-shrink:0;">
-      <button onclick="closeMapKeyEditor()" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
-      <button onclick="saveMapKey()" style="flex:1;padding:10px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save</button>
+      <button onclick="closeAmenitiesEditor()" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button onclick="saveAmenities()" style="flex:1;padding:10px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="mapVendorDirModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">✏ EDIT VENDOR DIRECTORY</span>
+      <button onclick="closeVendorDirEditor()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+    </div>
+    <div style="padding:18px;overflow-y:auto;flex:1;">
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.5;">Match each number on the map to a vendor.</p>
+      <div id="mapVendorDirRows"></div>
+      <button onclick="addVendorDirRow()" style="width:100%;margin-top:8px;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ Add Vendor</button>
+      <div id="mapVendorDirStatus" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;flex-shrink:0;">
+      <button onclick="closeVendorDirEditor()" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button onclick="saveVendorDirectory()" style="flex:1;padding:10px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save</button>
     </div>
   </div>
 </div>
@@ -15554,54 +15616,122 @@ async function saveMapLegend() {
   }
 }
 
-function openMapKeyEditor() {
-  window._mapKeyDraft = JSON.parse(JSON.stringify(window._mapKey || []));
-  renderMapKeyRows();
-  var status = document.getElementById('mapKeyStatus'); if (status) status.textContent = '';
-  var modal = document.getElementById('mapKeyModal'); if (modal) modal.style.display = 'flex';
+/* ════════════════════════════════════════════════════════════
+   MAP AMENITIES — Admin edit (icon + color + label)
+════════════════════════════════════════════════════════════ */
+function openAmenitiesEditor() {
+  window._mapAmenitiesDraft = JSON.parse(JSON.stringify(window._mapAmenities || DEFAULT_MAP_AMENITIES));
+  renderAmenityRows();
+  var status = document.getElementById('mapAmenitiesStatus'); if (status) status.textContent = '';
+  var modal = document.getElementById('mapAmenitiesModal'); if (modal) modal.style.display = 'flex';
 }
-function closeMapKeyEditor() {
-  var modal = document.getElementById('mapKeyModal'); if (modal) modal.style.display = 'none';
+function closeAmenitiesEditor() {
+  var modal = document.getElementById('mapAmenitiesModal'); if (modal) modal.style.display = 'none';
 }
-function renderMapKeyRows() {
-  var wrap = document.getElementById('mapKeyRows'); if (!wrap) return;
-  var rows = window._mapKeyDraft || [];
+function renderAmenityRows() {
+  var wrap = document.getElementById('mapAmenitiesRows'); if (!wrap) return;
+  var rows = window._mapAmenitiesDraft || [];
   wrap.innerHTML = rows.map(function(item, i) {
-    return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">'+
-      '<input type="text" value="'+esc(item.number||'')+'" oninput="updateMapKeyRow('+i+',\'number\',this.value)" placeholder="#" style="width:44px;padding:8px 6px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--gold-bright);font-family:\'Poppins\',sans-serif;font-size:12px;font-weight:700;text-align:center;outline:none;flex-shrink:0;">'+
-      '<input type="text" value="'+esc(item.label||'')+'" oninput="updateMapKeyRow('+i+',\'label\',this.value)" placeholder="What this points to" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">'+
-      '<button onclick="removeMapKeyRow('+i+')" style="flex-shrink:0;width:30px;height:30px;background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;">✕</button>'+
+    var opts = Object.keys(MAP_ICON_LIBRARY).map(function(key) {
+      return '<option value="'+key+'"'+(item.icon===key?' selected':'')+'>'+esc(MAP_ICON_LIBRARY[key].name)+'</option>';
+    }).join('');
+    return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">'+
+      '<div class="map-amenity-icon" style="background:'+esc(item.color||'#333')+';flex-shrink:0;">'+mapIconSvg(item.icon)+'</div>'+
+      '<select onchange="updateAmenityRow('+i+',\'icon\',this.value)" style="flex:1 1 120px;padding:8px 6px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:11px;outline:none;">'+opts+'</select>'+
+      '<input type="color" value="'+esc(item.color||'#333333')+'" onchange="updateAmenityRow('+i+',\'color\',this.value)" style="width:32px;height:32px;padding:0;border:1px solid rgba(255,255,255,0.15);background:#111;cursor:pointer;flex-shrink:0;">'+
+      '<input type="text" value="'+esc(item.label||'')+'" oninput="updateAmenityRow('+i+',\'label\',this.value)" placeholder="Label" style="flex:1.5 1 100px;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">'+
+      '<button onclick="removeAmenityRow('+i+')" style="flex-shrink:0;width:30px;height:30px;background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;">✕</button>'+
     '</div>';
   }).join('');
 }
-function updateMapKeyRow(i, key, val) {
-  if (!window._mapKeyDraft || !window._mapKeyDraft[i]) return;
-  window._mapKeyDraft[i][key] = val;
+function updateAmenityRow(i, key, val) {
+  if (!window._mapAmenitiesDraft || !window._mapAmenitiesDraft[i]) return;
+  window._mapAmenitiesDraft[i][key] = val;
+  renderAmenityRows();
 }
-function addMapKeyRow() {
-  if (!window._mapKeyDraft) window._mapKeyDraft = [];
-  window._mapKeyDraft.push({number:String(window._mapKeyDraft.length+1), label:''});
-  renderMapKeyRows();
+function addAmenityRow() {
+  if (!window._mapAmenitiesDraft) window._mapAmenitiesDraft = [];
+  window._mapAmenitiesDraft.push({icon:'pin', color:'#f5c842', label:''});
+  renderAmenityRows();
 }
-function removeMapKeyRow(i) {
-  window._mapKeyDraft.splice(i, 1);
-  renderMapKeyRows();
+function removeAmenityRow(i) {
+  window._mapAmenitiesDraft.splice(i, 1);
+  renderAmenityRows();
 }
-async function saveMapKey() {
-  var status = document.getElementById('mapKeyStatus');
-  var rows = (window._mapKeyDraft || []).filter(function(r){ return r.label && r.label.trim(); });
+async function saveAmenities() {
+  var status = document.getElementById('mapAmenitiesStatus');
+  var rows = (window._mapAmenitiesDraft || []).filter(function(r){ return r.label && r.label.trim(); });
   var token = localStorage.getItem(TOKEN_KEY);
   try {
-    var res = await fetch(AUTH_URL + '/site/map-key', {
+    var res = await fetch(AUTH_URL + '/site/map-amenities', {
       method: 'PUT',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({ items: rows })
+      body: JSON.stringify({ amenities: rows })
     });
     if (res.ok) {
-      window._mapKey = rows;
-      renderMapKey(rows);
-      closeMapKeyEditor();
-      showToast('✓ Map key updated');
+      window._mapAmenities = rows;
+      renderMapAmenities(rows);
+      closeAmenitiesEditor();
+      showToast('✓ Amenities updated');
+    } else {
+      if (status) { status.style.color='var(--pink-coral)'; status.textContent='Save failed.'; }
+    }
+  } catch(e) {
+    if (status) { status.style.color='var(--pink-coral)'; status.textContent='Save error: '+e.message; }
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   VENDOR DIRECTORY — Admin edit (number + name)
+════════════════════════════════════════════════════════════ */
+function openVendorDirEditor() {
+  window._mapVendorDirDraft = JSON.parse(JSON.stringify(window._mapVendorDirectory || DEFAULT_MAP_VENDORS));
+  renderVendorDirRows();
+  var status = document.getElementById('mapVendorDirStatus'); if (status) status.textContent = '';
+  var modal = document.getElementById('mapVendorDirModal'); if (modal) modal.style.display = 'flex';
+}
+function closeVendorDirEditor() {
+  var modal = document.getElementById('mapVendorDirModal'); if (modal) modal.style.display = 'none';
+}
+function renderVendorDirRows() {
+  var wrap = document.getElementById('mapVendorDirRows'); if (!wrap) return;
+  var rows = window._mapVendorDirDraft || [];
+  wrap.innerHTML = rows.map(function(item, i) {
+    return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">'+
+      '<input type="text" value="'+esc(item.number||'')+'" oninput="updateVendorDirRow('+i+',\'number\',this.value)" placeholder="#" style="width:44px;padding:8px 6px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--gold-bright);font-family:\'Poppins\',sans-serif;font-size:12px;font-weight:700;text-align:center;outline:none;flex-shrink:0;">'+
+      '<input type="text" value="'+esc(item.name||'')+'" oninput="updateVendorDirRow('+i+',\'name\',this.value)" placeholder="Vendor name" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">'+
+      '<button onclick="removeVendorDirRow('+i+')" style="flex-shrink:0;width:30px;height:30px;background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;">✕</button>'+
+    '</div>';
+  }).join('');
+}
+function updateVendorDirRow(i, key, val) {
+  if (!window._mapVendorDirDraft || !window._mapVendorDirDraft[i]) return;
+  window._mapVendorDirDraft[i][key] = val;
+}
+function addVendorDirRow() {
+  if (!window._mapVendorDirDraft) window._mapVendorDirDraft = [];
+  window._mapVendorDirDraft.push({number:String(window._mapVendorDirDraft.length+1), name:''});
+  renderVendorDirRows();
+}
+function removeVendorDirRow(i) {
+  window._mapVendorDirDraft.splice(i, 1);
+  renderVendorDirRows();
+}
+async function saveVendorDirectory() {
+  var status = document.getElementById('mapVendorDirStatus');
+  var rows = (window._mapVendorDirDraft || []).filter(function(r){ return r.name && r.name.trim(); });
+  var token = localStorage.getItem(TOKEN_KEY);
+  try {
+    var res = await fetch(AUTH_URL + '/site/map-vendor-directory', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ vendors: rows })
+    });
+    if (res.ok) {
+      window._mapVendorDirectory = rows;
+      renderMapVendorDirectory(rows);
+      closeVendorDirEditor();
+      showToast('✓ Vendor directory updated');
     } else {
       if (status) { status.style.color='var(--pink-coral)'; status.textContent='Save failed.'; }
     }
