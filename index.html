@@ -247,9 +247,11 @@ body{
   font-size:10px;
   color:rgba(122,184,224,0.25);
   letter-spacing:1px;
-  padding:20px 0 12px;
+  padding:14px 12px 10px;
   font-family:'Poppins',sans-serif;
+  line-height:1.7;
 }
+.page-footer-links{white-space:nowrap;}
 .page-footer a{
   color:rgba(122,184,224,0.45);
   text-decoration:underline;
@@ -7274,7 +7276,9 @@ renderChecklist();
   document.querySelectorAll('.page').forEach(function(p) {
     const div = document.createElement('div');
     div.className = 'page-footer';
-    div.innerHTML = 'Powered by The Festie Cat 2026 &nbsp;&middot;&nbsp; ';
+    div.innerHTML = 'Powered by The Festie Cat 2026<br>';
+    const linksLine = document.createElement('span');
+    linksLine.className = 'page-footer-links';
     const tos = document.createElement('a');
     tos.textContent = 'Terms of Service';
     tos.style.cursor = 'pointer';
@@ -7284,9 +7288,10 @@ renderChecklist();
     bug.textContent = 'Report a Bug';
     bug.style.cursor = 'pointer';
     bug.addEventListener('click', function() { openBugReportModal(); });
-    div.appendChild(tos);
-    div.appendChild(sep);
-    div.appendChild(bug);
+    linksLine.appendChild(tos);
+    linksLine.appendChild(sep);
+    linksLine.appendChild(bug);
+    div.appendChild(linksLine);
     p.appendChild(div);
   });
 })();
@@ -14556,12 +14561,26 @@ function openPhotoBooth() {
   el.style.display = 'block';
   document.body.style.overflow = 'hidden';
   loadBoothPhotos();
+  // Push a history entry so the mobile back button closes the booth
+  // instead of leaving the app / navigating away from it.
+  history.pushState({ modal: 'photoBooth' }, '');
 }
-function closePhotoBooth() {
+function closePhotoBooth(fromPopstate) {
   const el = document.getElementById('photoBoothOverlay');
   if (el) el.style.display = 'none';
   document.body.style.overflow = '';
+  // If this close was triggered by the X button (not the back button itself),
+  // consume the history entry we pushed so back-button state stays clean.
+  if (!fromPopstate && history.state && history.state.modal === 'photoBooth') {
+    history.back();
+  }
 }
+window.addEventListener('popstate', function() {
+  const el = document.getElementById('photoBoothOverlay');
+  if (el && el.style.display === 'block') {
+    closePhotoBooth(true);
+  }
+});
 
 // ── Step 1: user picks files → open caption/tag modal ──────
 function boothPickFiles(files) {
@@ -14790,19 +14809,13 @@ function boothZoom(photoId) {
   closeBtn.style.cssText = 'position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;width:32px;height:32px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;';
   closeBtn.onclick = function() { document.body.removeChild(overlay); };
 
-  // Image — constrained, object-fit:contain keeps aspect ratio
+  // Image — constrained, object-fit:contain keeps aspect ratio.
+  // No forced rotation here: browsers already auto-rotate based on the image's
+  // own EXIF orientation data, so guessing from raw pixel dimensions only
+  // breaks genuinely portrait photos (selfies, portrait flyers, etc.).
   const img = document.createElement('img');
   img.src = url;
-  img.style.cssText = 'max-width:min(800px,100%);max-height:min(800px,60vh);width:auto;height:auto;object-fit:contain;display:block;box-shadow:0 8px 48px rgba(0,0,0,0.8);margin-top:36px;flex-shrink:0;';
-
-  // On load: if portrait (h > w), rotate 90deg to fit landscape
-  img.onload = function() {
-    if (img.naturalHeight > img.naturalWidth * 1.2) {
-      img.style.transform = 'rotate(90deg)';
-      img.style.maxWidth  = 'min(800px,60vh)';
-      img.style.maxHeight = 'min(800px,100%)';
-    }
-  };
+  img.style.cssText = 'max-width:min(800px,100%);max-height:min(800px,70vh);width:auto;height:auto;object-fit:contain;display:block;box-shadow:0 8px 48px rgba(0,0,0,0.8);margin-top:36px;flex-shrink:0;';
 
   // Caption + tags below image
   const meta = document.createElement('div');
