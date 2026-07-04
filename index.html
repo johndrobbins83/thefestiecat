@@ -987,6 +987,8 @@ body{
 .booth-photo-item{position:relative;overflow:hidden;background:#111;aspect-ratio:1/1;}
 .booth-photo-item img{width:100%;height:100%;display:block;object-fit:cover;cursor:pointer;}
 .booth-photo-meta{position:absolute;bottom:0;left:0;right:0;padding:5px 6px;background:linear-gradient(transparent,rgba(0,0,0,0.85));font-size:9px;color:rgba(255,255,255,0.75);font-weight:600;line-height:1.3;}
+.booth-photo-likes{position:absolute;bottom:4px;right:6px;font-size:10px;font-weight:800;
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.9);z-index:2;pointer-events:none;}
 .booth-photo-del{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.75);border:none;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;}
 .booth-photo-report{position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.75);border:none;color:rgba(255,200,0,0.85);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;}
 @media(hover:hover){.booth-photo-del,.booth-photo-report{opacity:0;}.booth-photo-item:hover .booth-photo-del,.booth-photo-item:hover .booth-photo-report{opacity:1;}}
@@ -14722,6 +14724,8 @@ async function loadBoothPhotos() {
       return;
     }
     const isAdmin = currentUser && (currentUser.role === 'admin');
+    window._boothPhotosCache = {};
+    photos.forEach(function(p) { window._boothPhotosCache[p.id] = p; });
     grid.innerHTML = photos.map(function(p) {
       // Admins see flagged photos dimmed with a Review button; everyone else sees nothing
       if (p.flagged && !isAdmin) return '';
@@ -14730,17 +14734,18 @@ async function loadBoothPhotos() {
       const tags     = (p.taggedUsers || []).map(function(t){return '@'+t.handle;}).join(' ');
       const caption  = p.caption ? '<div style="font-size:11px;color:rgba(255,255,255,0.8);margin-top:3px;line-height:1.3;">'+p.caption+'</div>' : '';
       const tagLine  = tags ? '<div style="font-size:10px;color:#c084fc;margin-top:2px;">'+tags+'</div>' : '';
-      const zCaption = encodeURIComponent(p.caption||'');
-      const zTags    = encodeURIComponent(tags);
-      const zUploader= encodeURIComponent('@'+(p.uploadedBy||'festie'));
 
       const flaggedStyle = p.flagged ? ' style="opacity:0.2;outline:2px solid rgba(255,77,100,0.5);"' : '';
       const reviewBtn    = (p.flagged && isAdmin)
         ? '<button class="booth-photo-report" style="background:rgba(255,77,100,0.8);color:#fff;font-size:9px;font-weight:800;width:auto;padding:2px 5px;border-radius:3px;" onclick="adminReviewBoothPhoto(\''+p.id+'\',\''+p.url+'\',\''+p.uploadedBy+'\',\''+p.uploadedById+'\')">⚑ REVIEW</button>'
         : '';
+      const likeCount = (p.likes || []).length;
+      const iLiked = !!(currentUser && (p.likes||[]).includes(currentUser.id));
+      const likeBadge = '<div class="booth-photo-likes" style="color:'+(iLiked?'#ff4d8d':'#fff')+';">'+(iLiked?'❤️':'🤍')+' '+likeCount+'</div>';
 
       return '<div class="booth-photo-item" id="booth-item-' + p.id + '"' + flaggedStyle + '>' +
-        '<img src="' + p.url + '" loading="lazy" onclick="boothZoom(\'' + p.url + '\',\'' + zCaption + '\',\'' + zTags + '\',\'' + zUploader + '\')" onerror="this.closest(\'.booth-photo-item\').style.display=\'none\'">' +
+        '<img src="' + p.url + '" loading="lazy" onclick="boothZoom(\'' + p.id + '\')" onerror="this.closest(\'.booth-photo-item\').style.display=\'none\'">' +
+        likeBadge +
         '<div class="booth-photo-meta">@' + (p.uploadedBy || 'festie') + caption + tagLine + '</div>' +
         reviewBtn +
         (!canDel && !p.flagged && currentUser ? '<button class="booth-photo-report" onclick="openBoothReport(\'' + p.id + '\',\'' + p.uploadedBy + '\')" title="Report this photo">⚑</button>' : '') +
@@ -14762,39 +14767,42 @@ async function deleteBoothPhoto(photoId, btn) {
   } catch { showToast('Could not connect'); }
 }
 
-function boothZoom(url, captionEnc, tagsEnc, uploaderEnc) {
-  const caption  = captionEnc  ? decodeURIComponent(captionEnc)  : '';
-  const tags     = tagsEnc     ? decodeURIComponent(tagsEnc)     : '';
-  const uploader = uploaderEnc ? decodeURIComponent(uploaderEnc) : '';
+function boothZoom(photoId) {
+  const p = (window._boothPhotosCache || {})[photoId];
+  if (!p) return;
+  const caption  = p.caption || '';
+  const tags     = (p.taggedUsers || []).map(function(t){return '@'+t.handle;}).join(' ');
+  const uploader = '@' + (p.uploadedBy || 'festie');
+  const url      = p.url;
 
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.96);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
-  overlay.onclick = function(e) { if (e.target === overlay || e.target === closeBtn) document.body.removeChild(overlay); };
+  overlay.id = 'boothZoomOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.96);display:flex;flex-direction:column;align-items:center;padding:16px;box-sizing:border-box;overflow-y:auto;';
+  overlay.onclick = function(e) { if (e.target === overlay) document.body.removeChild(overlay); };
 
   // Close button
   const closeBtn = document.createElement('button');
   closeBtn.textContent = '✕';
-  closeBtn.style.cssText = 'position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;width:32px;height:32px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;';
+  closeBtn.style.cssText = 'position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;width:32px;height:32px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;';
   closeBtn.onclick = function() { document.body.removeChild(overlay); };
 
-  // Image — constrained to 800×800, object-fit:contain keeps aspect ratio
+  // Image — constrained, object-fit:contain keeps aspect ratio
   const img = document.createElement('img');
   img.src = url;
-  img.style.cssText = 'max-width:min(800px,100%);max-height:min(800px,80vh);width:auto;height:auto;object-fit:contain;display:block;box-shadow:0 8px 48px rgba(0,0,0,0.8);';
+  img.style.cssText = 'max-width:min(800px,100%);max-height:min(800px,60vh);width:auto;height:auto;object-fit:contain;display:block;box-shadow:0 8px 48px rgba(0,0,0,0.8);margin-top:36px;flex-shrink:0;';
 
-  // On load: if portrait (h > w), rotate 90deg to fit landscape within 800×800
+  // On load: if portrait (h > w), rotate 90deg to fit landscape
   img.onload = function() {
     if (img.naturalHeight > img.naturalWidth * 1.2) {
-      // Portrait — rotate to landscape, swap constraints
       img.style.transform = 'rotate(90deg)';
-      img.style.maxWidth  = 'min(800px,80vh)';
+      img.style.maxWidth  = 'min(800px,60vh)';
       img.style.maxHeight = 'min(800px,100%)';
     }
   };
 
   // Caption + tags below image
   const meta = document.createElement('div');
-  meta.style.cssText = 'margin-top:14px;text-align:center;max-width:min(800px,100%);';
+  meta.style.cssText = 'margin-top:14px;text-align:center;max-width:min(800px,100%);width:100%;';
   if (uploader) {
     const byLine = document.createElement('div');
     byLine.style.cssText = 'font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);margin-bottom:4px;letter-spacing:0.5px;';
@@ -14814,10 +14822,125 @@ function boothZoom(url, captionEnc, tagsEnc, uploaderEnc) {
     meta.appendChild(tagEl);
   }
 
+  // Like row
+  const likeRow = document.createElement('div');
+  likeRow.id = 'boothZoomLikeRow';
+  likeRow.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;';
+  likeRow.innerHTML = boothLikeRowHTML(p);
+
+  // Comments
+  const commentsWrap = document.createElement('div');
+  commentsWrap.style.cssText = 'width:100%;max-width:min(800px,100%);margin-top:16px;border-top:1px solid rgba(255,255,255,0.1);padding-top:14px;padding-bottom:24px;';
+  commentsWrap.innerHTML =
+    '<div id="boothZoomCommentsList" style="display:flex;flex-direction:column;gap:10px;max-height:220px;overflow-y:auto;margin-bottom:12px;padding-right:4px;"></div>' +
+    (currentUser ?
+      '<div style="display:flex;gap:8px;">' +
+        '<input type="text" id="boothCommentInput" placeholder="Add a comment…" maxlength="300" autocomplete="off" style="flex:1;padding:9px 12px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:13px;outline:none;" onkeydown="if(event.key===\'Enter\'){event.preventDefault();submitBoothComment(\''+esc(photoId)+'\')}">' +
+        '<button onclick="submitBoothComment(\''+esc(photoId)+'\')" style="padding:9px 16px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:\'Poppins\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">Post</button>' +
+      '</div>'
+      : '<div style="text-align:center;font-size:12px;color:var(--text-muted);">Sign in to comment</div>');
+
   overlay.appendChild(closeBtn);
   overlay.appendChild(img);
   overlay.appendChild(meta);
+  overlay.appendChild(likeRow);
+  overlay.appendChild(commentsWrap);
   document.body.appendChild(overlay);
+
+  renderBoothComments(photoId);
+}
+
+function boothLikeRowHTML(p) {
+  const likeCount = (p.likes||[]).length;
+  const iLiked = !!(currentUser && (p.likes||[]).includes(currentUser.id));
+  return '<button onclick="toggleBoothLike(\''+esc(p.id)+'\')" style="background:none;border:none;cursor:pointer;font-size:22px;line-height:1;padding:4px;" title="Like">'+(iLiked?'❤️':'🤍')+'</button>' +
+    '<span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);">'+likeCount+' like'+(likeCount===1?'':'s')+'</span>';
+}
+
+async function toggleBoothLike(photoId) {
+  if (!currentUser) { showToast('Sign in to like photos'); return; }
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/booth/' + photoId + '/like', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) { showToast('Could not like photo'); return; }
+    const d = await res.json();
+    const p = (window._boothPhotosCache || {})[photoId];
+    if (p) {
+      p.likes = p.likes || [];
+      const idx = p.likes.indexOf(currentUser.id);
+      if (d.liked && idx < 0) p.likes.push(currentUser.id);
+      if (!d.liked && idx >= 0) p.likes.splice(idx, 1);
+    }
+    const likeRow = document.getElementById('boothZoomLikeRow');
+    if (likeRow && p) likeRow.innerHTML = boothLikeRowHTML(p);
+    const gridItem = document.getElementById('booth-item-' + photoId);
+    if (gridItem) {
+      const badge = gridItem.querySelector('.booth-photo-likes');
+      if (badge) {
+        badge.style.color = d.liked ? '#ff4d8d' : '#fff';
+        badge.textContent = (d.liked?'❤️':'🤍') + ' ' + d.likeCount;
+      }
+    }
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+async function submitBoothComment(photoId) {
+  if (!currentUser) { showToast('Sign in to comment'); return; }
+  const input = document.getElementById('boothCommentInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/booth/' + photoId + '/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ text: text })
+    });
+    if (res.ok) {
+      const d = await res.json();
+      const p = (window._boothPhotosCache || {})[photoId];
+      if (p) { p.comments = p.comments || []; p.comments.push(d.comment); }
+      renderBoothComments(photoId);
+    } else {
+      showToast('Could not post comment');
+    }
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+function renderBoothComments(photoId) {
+  const list = document.getElementById('boothZoomCommentsList');
+  if (!list) return;
+  const p = (window._boothPhotosCache || {})[photoId];
+  const comments = (p && p.comments) || [];
+  if (!comments.length) {
+    list.innerHTML = '<div style="text-align:center;font-size:12px;color:var(--text-muted);padding:8px 0;">No comments yet — be the first!</div>';
+    return;
+  }
+  list.innerHTML = comments.map(function(c) {
+    const canDel = currentUser && (currentUser.id === c.userId || currentUser.role === 'admin');
+    return '<div style="display:flex;gap:8px;align-items:flex-start;">' +
+      '<div style="width:26px;height:26px;border-radius:50%;background:'+escapeHTML(c.avatarColor||'#9b3dff')+';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;">'+escapeHTML((c.handle||'?')[0].toUpperCase())+'</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:12px;"><span style="font-weight:700;color:var(--text-light);">@'+escapeHTML(c.handle)+'</span> <span style="color:rgba(255,255,255,0.85);">'+escapeHTML(c.text)+'</span></div>' +
+        '<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">'+getTimeAgo(c.createdAt)+(canDel?' · <span style="cursor:pointer;color:var(--pink-coral);" onclick="deleteBoothComment(\''+esc(photoId)+'\',\''+esc(c.id)+'\')">Delete</span>':'')+'</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  list.scrollTop = list.scrollHeight;
+}
+
+async function deleteBoothComment(photoId, commentId) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const res = await fetch(AUTH_URL + '/booth/' + photoId + '/comments/' + commentId, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+    if (res.ok) {
+      const p = (window._boothPhotosCache || {})[photoId];
+      if (p && p.comments) p.comments = p.comments.filter(function(c){ return c.id !== commentId; });
+      renderBoothComments(photoId);
+    } else { showToast('Could not delete comment'); }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 // Close tag dropdown when clicking outside
