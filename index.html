@@ -2001,6 +2001,27 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   border-radius:16px 16px 16px 4px;
 }
 .dm-msg-time{font-size:10px;opacity:0.45;margin-top:3px;display:block;}
+.dm-msg.emoji-only{font-size:28px;line-height:1.3;}
+.dm-msg{position:relative;padding-bottom:16px;}
+.dm-msg-react-btn{position:absolute;bottom:3px;width:16px;height:16px;border-radius:50%;
+  background:rgba(255,255,255,0.15);border:none;color:rgba(255,255,255,0.75);
+  font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  opacity:0.65;transition:opacity .15s,transform .1s;padding:0;line-height:1;}
+.dm-msg-react-btn:hover,.dm-msg-react-btn:active{opacity:1;transform:scale(1.15);}
+.dm-msg.theirs .dm-msg-react-btn{right:4px;}
+.dm-msg.mine .dm-msg-react-btn{left:4px;background:rgba(0,0,0,0.2);}
+.dm-msg-reaction-badge{position:absolute;bottom:-10px;background:#161616;
+  border:1px solid rgba(255,255,255,0.15);border-radius:9px;padding:1px 5px;
+  font-size:12px;line-height:1.3;cursor:pointer;}
+.dm-msg.theirs .dm-msg-reaction-badge{left:8px;}
+.dm-msg.mine .dm-msg-reaction-badge{right:8px;}
+#msgReactionPicker{position:fixed;z-index:9600;display:none;gap:4px;align-items:center;
+  background:#161616;border:1px solid rgba(255,255,255,0.15);border-radius:22px;
+  padding:5px 7px;box-shadow:0 8px 24px rgba(0,0,0,0.55);}
+#msgReactionPicker button{width:30px;height:30px;border-radius:50%;border:none;background:transparent;
+  font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:transform .1s,background .15s;padding:0;}
+#msgReactionPicker button:hover{background:rgba(255,255,255,0.1);transform:scale(1.2);}
 
 /* Input row — pinned to bottom, safe area aware */
 .dm-thread-input-row{
@@ -4767,6 +4788,14 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();sendDM();}">
     <button class="dm-send-btn" id="dmSendBtn" onclick="sendDM()">▶</button>
   </div>
+</div>
+
+<!-- Message reaction picker — one shared popup, positioned near whichever message was tapped -->
+<div id="msgReactionPicker">
+  <button onclick="sendReaction('👍')" title="Thumbs Up">👍</button>
+  <button onclick="sendReaction('👎')" title="Thumbs Down">👎</button>
+  <button onclick="sendReaction('❤️')" title="Heart">❤️</button>
+  <button onclick="sendReaction('☠️')" title="Skull & Crossbones">☠️</button>
 </div>
 
 
@@ -11131,9 +11160,13 @@ function renderDMMessages(messages, isFirstLoad) {
       ? '<img src="' + escapeHTML(m.imageUrl) + '" style="max-width:220px;max-height:260px;display:block;object-fit:cover;border-radius:6px;cursor:pointer;' + (m.text ? 'margin-bottom:5px;' : '') + '" onclick="dmZoomPhoto(\'' + escapeHTML(m.imageUrl) + '\')" onerror="this.style.display=\'none\'">'
       : '';
     const textHtml = m.text ? escapeHTML(m.text) : '';
-    return '<div class="dm-msg ' + (mine ? 'mine' : 'theirs') + '">' +
+    const bigEmoji = !m.imageUrl && isEmojiOnlyText(m.text);
+    const reactionHtml = m.reaction ? '<div class="dm-msg-reaction-badge" title="' + escapeHTML(m.reaction.byHandle||'') + ' reacted" onclick="event.stopPropagation();openReactionPicker(this,\'' + esc(m.id) + '\')">' + m.reaction.emoji + '</div>' : '';
+    const reactBtn = m.reaction ? '' : '<button class="dm-msg-react-btn" onclick="event.stopPropagation();openReactionPicker(this,\'' + esc(m.id) + '\')" title="React">🙂</button>';
+    return '<div class="dm-msg ' + (mine ? 'mine' : 'theirs') + (bigEmoji ? ' emoji-only' : '') + '">' +
       imgHtml + textHtml +
       '<div class="dm-msg-time">' + getTimeAgo(m.createdAt) + '</div>' +
+      reactBtn + reactionHtml +
     '</div>';
   }).join('');
 
@@ -11193,6 +11226,61 @@ function dmInsertEmoji(emoji) {
   }
 }
 
+/* ════════════════════════════════════════════════════════════
+   MESSAGE REACTIONS — tiny corner button opens a 4-emoji picker
+════════════════════════════════════════════════════════════ */
+window._reactionTargetMsgId = null;
+function openReactionPicker(triggerEl, msgId) {
+  window._reactionTargetMsgId = msgId;
+  const picker = document.getElementById('msgReactionPicker');
+  if (!picker) return;
+  const rect = triggerEl.getBoundingClientRect();
+  picker.style.display = 'flex';
+  // Position above the trigger by default; flip below if too close to top of screen
+  const pickerHeight = 42;
+  const top  = rect.top - pickerHeight - 6;
+  picker.style.top  = (top < 4 ? rect.bottom + 6 : top) + 'px';
+  const left = Math.min(Math.max(8, rect.left - 70), window.innerWidth - 160);
+  picker.style.left = left + 'px';
+  setTimeout(function() { document.addEventListener('click', closeReactionPickerOutside); }, 0);
+}
+function closeReactionPicker() {
+  const picker = document.getElementById('msgReactionPicker');
+  if (picker) picker.style.display = 'none';
+  document.removeEventListener('click', closeReactionPickerOutside);
+}
+function closeReactionPickerOutside(e) {
+  const picker = document.getElementById('msgReactionPicker');
+  if (picker && !picker.contains(e.target)) closeReactionPicker();
+}
+async function sendReaction(emoji) {
+  const msgId = window._reactionTargetMsgId;
+  closeReactionPicker();
+  if (!msgId) return;
+  const token = localStorage.getItem(TOKEN_KEY);
+  let url;
+  if (typeof _currentGroupId !== 'undefined' && _currentGroupId) {
+    url = AUTH_URL + '/groups/' + _currentGroupId + '/react';
+  } else if (currentDMFriendId) {
+    url = AUTH_URL + '/dm/' + currentDMFriendId + '/react';
+  } else { return; }
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ messageId: msgId, emoji: emoji })
+    });
+    if (res.ok) {
+      const msgs = document.getElementById('dmThreadMessages');
+      if (msgs) delete msgs.dataset.cacheKey; // force a fresh render even if length/last-id are unchanged
+      if (typeof _currentGroupId !== 'undefined' && _currentGroupId) { loadGroupThread(); }
+      else if (currentDMFriendId) { loadDMThread(currentDMFriendId); }
+    } else {
+      showToast('Could not react');
+    }
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
 async function uploadDMPhoto(file) {
   const token = localStorage.getItem('ss_auth_token');
   const slug  = 'chat_' + (currentUser.handle || currentUser.id) + '_' + Date.now();
@@ -11240,7 +11328,7 @@ async function sendDM() {
     const placeholder = msgs.querySelector('.dm-empty, [data-placeholder]');
     if (placeholder) placeholder.remove();
     optimisticBubble = document.createElement('div');
-    optimisticBubble.className = 'dm-msg mine';
+    optimisticBubble.className = 'dm-msg mine' + ((!photo && isEmojiOnlyText(text)) ? ' emoji-only' : '');
     optimisticBubble.setAttribute('data-optimistic', '1');
     optimisticBubble.innerHTML =
       (photo ? '<img src="' + photo.dataUrl + '" style="max-width:220px;max-height:260px;display:block;object-fit:cover;border-radius:6px;' + (text ? 'margin-bottom:5px;' : '') + '">' : '') +
@@ -11385,6 +11473,18 @@ function getTimeAgo(iso) {
 }
 function escapeHTML(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Detect messages that are emoji-only, so chat bubbles can render them larger ──
+function isEmojiOnlyText(str) {
+  if (!str) return false;
+  var stripped = String(str).replace(/[\s\u200d\ufe0f\ufe0e]/g, '');
+  if (!stripped) return false;
+  try {
+    return /^(?:\p{Extended_Pictographic}|\p{Emoji_Component})+$/u.test(stripped);
+  } catch(e) {
+    return /^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}]+$/u.test(stripped);
+  }
 }
 
 /* ════════════════════════════════════════
@@ -15225,11 +15325,15 @@ async function loadGroupThread() {
       var mine = m.fromId === (currentUser&&currentUser.id);
       // Highlight @mentions in text
       var textHtml = m.text ? highlightMentions(escapeHTML(m.text)) : '';
-      return '<div class="dm-msg '+(mine?'mine':'theirs')+'">' +
+      var bigEmoji = !m.imageUrl && isEmojiOnlyText(m.text);
+      var reactionHtml = m.reaction ? '<div class="dm-msg-reaction-badge" title="'+escapeHTML(m.reaction.byHandle||'')+' reacted" onclick="event.stopPropagation();openReactionPicker(this,\''+esc(m.id)+'\')">'+m.reaction.emoji+'</div>' : '';
+      var reactBtn = m.reaction ? '' : '<button class="dm-msg-react-btn" onclick="event.stopPropagation();openReactionPicker(this,\''+esc(m.id)+'\')" title="React">🙂</button>';
+      return '<div class="dm-msg '+(mine?'mine':'theirs')+(bigEmoji?' emoji-only':'')+'">' +
         (!mine ? '<div style="font-size:10px;font-weight:700;color:#c084fc;margin-bottom:3px;">@'+escapeHTML(m.fromHandle||'user')+'</div>' : '') +
         (m.imageUrl ? '<img src="'+escapeHTML(m.imageUrl)+'" style="max-width:200px;max-height:200px;display:block;object-fit:cover;border-radius:4px;cursor:pointer;'+(m.text?'margin-bottom:4px;':'')+'" onclick="dmZoomPhoto(\''+escapeHTML(m.imageUrl)+'\')" onerror="this.style.display=\'none\'">' : '') +
         textHtml +
         '<div class="dm-msg-time">'+getTimeAgo(m.createdAt)+'</div>' +
+        reactBtn + reactionHtml +
       '</div>';
     }).join('') : '<div style="text-align:center;padding:32px;color:var(--text-muted);">No messages yet — say hi! 👋</div>';
     if (atBottom) msgs.scrollTop = msgs.scrollHeight;
@@ -15253,7 +15357,7 @@ async function sendGroupMessage() {
   if (msgs) {
     delete msgs.dataset.cacheKey;
     bubble = document.createElement('div');
-    bubble.className = 'dm-msg mine';
+    bubble.className = 'dm-msg mine' + ((!photo && isEmojiOnlyText(text)) ? ' emoji-only' : '');
     bubble.innerHTML = (text?escapeHTML(text):'') + '<div class="dm-msg-time" style="opacity:0.4;">sending…</div>';
     msgs.appendChild(bubble);
     msgs.scrollTop = msgs.scrollHeight;
