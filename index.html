@@ -814,12 +814,13 @@ body{
 .map-key-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;
   border-bottom:1px solid rgba(255,255,255,0.07);}
 .map-key-title{font-size:12px;font-weight:800;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;}
-.map-key-list{padding:10px 12px;display:flex;flex-direction:column;gap:8px;max-height:460px;overflow-y:auto;}
+.map-key-list{padding:10px 12px;display:flex;flex-direction:column;gap:10px;max-height:600px;overflow-y:auto;}
 .map-key-empty{font-size:12px;color:var(--text-muted);text-align:center;padding:12px 0;}
-.map-key-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-light);}
-.map-key-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(245,200,66,0.15);
-  border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-size:10px;font-weight:800;
-  display:flex;align-items:center;justify-content:center;}
+.map-key-img-wrap{position:relative;}
+.map-key-img{width:100%;display:block;border:1px solid rgba(255,255,255,0.1);}
+.map-key-img-remove{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;
+  background:rgba(0,0,0,0.75);border:1px solid rgba(255,77,141,0.5);color:var(--pink-coral);
+  font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 @media(max-width:900px){
   .hotel-map-body{flex-direction:column;}
   .hotel-map-keycol{width:auto;margin:0 16px 16px;}
@@ -2618,7 +2619,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <span class="desktop-nav-link"        data-page="schedule" onclick="navigate('schedule')"><span style="color:var(--gold-bright);margin-right:4px;">◈</span>Schedule</span>
     <span class="desktop-nav-link"        data-page="artists"  onclick="navigate('artists')"><span style="color:var(--gold-bright);margin-right:4px;">♪</span>Artists</span>
     <span class="desktop-nav-link"        data-page="map"      onclick="navigate('map')"><span style="color:var(--gold-bright);margin-right:4px;">⊕</span>Map</span>
-    <span class="desktop-nav-link"        data-page="checklist" onclick="navigate('checklist')"><span style="color:var(--gold-bright);margin-right:4px;">☑</span>List</span>
     <span class="desktop-nav-link" data-page="people" onclick="navigate('people')">👥 People</span>
     <span class="desktop-nav-link more-trigger" onclick="if(document.getElementById('dmThreadOverlay')&&document.getElementById('dmThreadOverlay').classList.contains('open')){closeDMThread();}toggleMore(this)">⋯ More</span>
   </nav>
@@ -2828,19 +2828,20 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
       <!-- MOBILE: dropdowns row -->
       <div class="sched-mobile-dropdowns">
-        <select id="dayDropdown" onchange="switchDayMobile(this.value)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
-          <option value="fri">FRI 7/17</option>
-          <option value="sat">SAT 7/18</option>
-          
-          <option value="mine">My Schedule</option>
-        </select>
-        <select id="stageDropdown" onchange="filterStageMobile(this.value)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+        <select id="stageDropdown" onchange="filterStageMobile(this.value)" style="flex:2;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
           <option value="all">All Stages</option>
           <option value="dnb">DNB Stage</option>
           <option value="oasis">Oasis Stage</option>
           <option value="beach">Beach Stage</option>
           <option value="locals">Davey Jones Locker</option>
           <option value="deepsea">Deep Sea</option>
+          <option value="activities">Activities</option>
+        </select>
+        <select id="dayDropdown" onchange="switchDayMobile(this.value)" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(245,200,66,0.35);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+          <option value="fri">FRI 7/17</option>
+          <option value="sat">SAT 7/18</option>
+          
+          <option value="mine">My Schedule</option>
         </select>
         <div class="view-toggle">
           <button class="view-btn" id="viewListBtnM" onclick="setView('list')" title="List view">☰</button>
@@ -3076,10 +3077,13 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="hotel-map-keycol" id="hotelMapKeyCol">
           <div class="map-key-header">
             <span class="map-key-title">Map Key</span>
-            <button id="mapKeyEditBtn" onclick="openMapKeyEditor()" style="display:none;font-size:11px;padding:5px 10px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);color:var(--gold-bright);cursor:pointer;">✏ Edit</button>
           </div>
           <div id="mapKeyList" class="map-key-list">
-            <div class="map-key-empty" id="mapKeyEmpty">No map key entries yet.</div>
+            <div class="map-key-empty" id="mapKeyEmpty">No map key images yet.</div>
+          </div>
+          <div id="mapKeyAdminControls" style="display:none;padding:10px 12px;border-top:1px solid rgba(255,255,255,0.07);">
+            <input type="file" id="mapKeyFileInput" accept="image/*" style="display:none;" onchange="uploadMapKeyImage(this)">
+            <button class="dash-btn" onclick="document.getElementById('mapKeyFileInput').click()" style="width:100%;font-size:11px;padding:8px;">📎 Add Key Image</button>
           </div>
         </div><!-- /hotel-map-keycol -->
       </div><!-- /hotel-map-body -->
@@ -3881,7 +3885,6 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   <span class="nav-item"        data-page="schedule"  onclick="navigate('schedule')"><div class="nav-icon-wrap">◈</div><span class="nav-label">Schedule</span></span>
   <span class="nav-item"        data-page="artists"   onclick="navigate('artists')"><div class="nav-icon-wrap">♪</div><span class="nav-label">Artists</span></span>
   <span class="nav-item"        data-page="map"       onclick="navigate('map')"><div class="nav-icon-wrap">⊕</div><span class="nav-label">Map</span></span>
-  <span class="nav-item"        data-page="checklist" onclick="navigate('checklist')"><div class="nav-icon-wrap">☑</div><span class="nav-label">List</span></span>
   <span class="nav-item" data-page="people" onclick="navigate('people')"><div class="nav-icon-wrap">👥</div><span class="nav-label">People</span></span>
   <span class="nav-item more-trigger" onclick="if(document.getElementById('dmThreadOverlay')&&document.getElementById('dmThreadOverlay').classList.contains('open')){closeDMThread();}toggleMore(this)"><div class="nav-icon-wrap">···</div><span class="nav-label">More</span></span>
 </nav>
@@ -3895,6 +3898,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <button onclick="closeMore()" style="background:rgba(255,255,255,0.08);border:none;color:var(--text-muted);width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
     </div>
     <div class="more-grid">
+      <span class="more-btn" onclick="navigate('checklist');closeMore()" style="border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.05);">
+        <div class="more-btn-icon" style="background:rgba(245,200,66,0.2);color:var(--gold-bright);">☑</div>
+        <div class="more-btn-label">List</div>
+        <div class="more-btn-sub">Packing &amp; to-dos</div>
+      </span>
       <span class="more-btn" onclick="navigate('activities');closeMore()" style="border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.05);">
         <div class="more-btn-icon" style="background:rgba(245,200,66,0.2);color:var(--gold-bright);">🎯</div>
         <div class="more-btn-label">Activities</div>
@@ -5375,6 +5383,7 @@ function closeAllPopouts() {
   if (typeof closeDrawer === 'function') closeDrawer();
   if (typeof closeDMThread === 'function') closeDMThread();
   if (typeof closeEditProfileModal === 'function') closeEditProfileModal();
+  if (typeof closePhotoBooth === 'function') closePhotoBooth();
   const raveTriviaOverlay = document.getElementById('raveTriviaOverlay');
   if (raveTriviaOverlay) raveTriviaOverlay.style.display = 'none';
   const djBingoOverlay = document.getElementById('djBingoOverlay');
@@ -6734,10 +6743,12 @@ function toggleMore(triggerEl) {
   const infoOpen = document.getElementById('infoOverlay')?.classList.contains('open');
   const sosOpen  = document.getElementById('sosOverlay')?.classList.contains('open');
   const findOpen = document.getElementById('findMeOverlay')?.style.display === 'flex';
-  if (infoOpen || sosOpen || findOpen) {
+  const boothOpen = document.getElementById('photoBoothOverlay')?.style.display === 'block';
+  if (infoOpen || sosOpen || findOpen || boothOpen) {
     if (typeof closeInfo === 'function') closeInfo();
     if (typeof closeSOS === 'function') closeSOS();
     if (typeof closeFindMe === 'function') closeFindMe();
+    if (typeof closePhotoBooth === 'function') closePhotoBooth();
     overlay.classList.add('open');
     document.querySelectorAll('.more-trigger').forEach(t=>t.classList.add('more-active'));
     document.body.style.overflow = 'hidden';
@@ -6827,8 +6838,6 @@ async function initHotelMap() {
   }
   const legendEditBtn = document.getElementById('mapLegendEditBtn');
   if (legendEditBtn) legendEditBtn.style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none';
-  const keyEditBtn = document.getElementById('mapKeyEditBtn');
-  if (keyEditBtn) keyEditBtn.style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none';
   try {
     const token = localStorage.getItem(TOKEN_KEY);
     const res = await fetch(AUTH_URL + '/site/hotel-map', {
@@ -6866,30 +6875,82 @@ function renderMapLegend(legend) {
 }
 
 async function loadMapKey() {
-  let items = [];
+  let images = [];
   try {
     const token = localStorage.getItem(TOKEN_KEY);
     const res = await fetch(AUTH_URL + '/site/map-key', { headers: token ? {'Authorization':'Bearer '+token} : {} });
     if (res.ok) {
       const d = await res.json();
-      if (Array.isArray(d.items)) items = d.items;
+      if (Array.isArray(d.images)) images = d.images;
     }
   } catch(e) {}
-  window._mapKey = items;
-  renderMapKey(items);
+  window._mapKey = images;
+  renderMapKey(images);
 }
 
-function renderMapKey(items) {
-  const wrap  = document.getElementById('mapKeyList');
-  const empty = document.getElementById('mapKeyEmpty');
+function renderMapKey(images) {
+  const wrap = document.getElementById('mapKeyList');
   if (!wrap) return;
-  if (!items.length) {
-    wrap.innerHTML = '<div class="map-key-empty" id="mapKeyEmpty">No map key entries yet.</div>';
-    return;
+  const isAdmin = !!(currentUser && currentUser.role === 'admin');
+  if (!images.length) {
+    wrap.innerHTML = '<div class="map-key-empty" id="mapKeyEmpty">No map key images yet.</div>';
+  } else {
+    wrap.innerHTML = images.map(function(url, i) {
+      return '<div class="map-key-img-wrap"><img src="'+esc(url)+'" class="map-key-img" alt="Map key">'+
+        (isAdmin ? '<button class="map-key-img-remove" onclick="removeMapKeyImage('+i+')">✕</button>' : '')+
+        '</div>';
+    }).join('');
   }
-  wrap.innerHTML = items.map(function(item) {
-    return '<div class="map-key-item"><div class="map-key-num">'+esc(item.number)+'</div><div>'+esc(item.label)+'</div></div>';
-  }).join('');
+  const adminControls = document.getElementById('mapKeyAdminControls');
+  if (adminControls) adminControls.style.display = isAdmin ? 'block' : 'none';
+}
+
+async function uploadMapKeyImage(input) {
+  const file = input.files[0]; if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('File too large — max 10MB'); return; }
+  showToast('Uploading image…');
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const slug = 'mapkey_' + Date.now();
+    const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
+      method: 'POST',
+      headers: { 'Content-Type': file.type, 'Authorization': 'Bearer ' + token },
+      body: file
+    });
+    if (res.ok) {
+      const d = await res.json();
+      const images = (window._mapKey || []).concat([d.url]);
+      const putRes = await fetch(AUTH_URL + '/site/map-key', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ images })
+      });
+      if (putRes.ok) {
+        window._mapKey = images;
+        renderMapKey(images);
+        showToast('✓ Map key image added');
+      } else { showToast('Save failed'); }
+    } else { showToast('Upload failed'); }
+  } catch(e) { showToast('Upload error: ' + e.message); }
+  input.value = '';
+}
+
+async function removeMapKeyImage(index) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const images = (window._mapKey || []).slice();
+  images.splice(index, 1);
+  try {
+    const res = await fetch(AUTH_URL + '/site/map-key', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ images })
+    });
+    if (res.ok) {
+      window._mapKey = images;
+      renderMapKey(images);
+      showToast('Image removed');
+    } else { showToast('Remove failed'); }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 function applyHotelMap(url) {
@@ -11538,7 +11599,7 @@ async function initProfile() {
         return '<div style="padding:6px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">'+inner+'</div>';
       }).join('') +
       '</div></div>' : '') +
-    (isOwnProfile&&savedArtists.length ? (function(){ var c=savedArtists.map(function(a){return '<div class="profile-artist-chip" onclick="openArtist(\''+esc(a.key)+'\')"><div class="profile-artist-avatar" style="background:'+a.color+';">'+a.initials+'</div><div class="profile-artist-name">'+a.key+'</div></div>';}).join('');if(mine.length>8)c+='<div class="profile-artist-chip" style="color:var(--text-muted);" onclick="navigate(\'schedule\')">+'+(mine.length-8)+' more</div>';return '<div class="profile-card"><div class="profile-card-title">My Schedule</div><div class="profile-artists-grid">'+c+'</div></div>';})() : '')
+    (isOwnProfile&&savedArtists.length ? (function(){ var c=savedArtists.map(function(a){var avatarHTML=a.photo?('<img src="'+a.photo+'" alt="'+esc(a.key)+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:'+a.color+';">'+a.initials+'</div>'):(a.initials);return '<div class="profile-artist-chip" onclick="openArtist(\''+esc(a.key)+'\')"><div class="profile-artist-avatar" style="background:'+(a.photo?'transparent':a.color)+';overflow:hidden;">'+avatarHTML+'</div><div class="profile-artist-name">'+a.key+'</div></div>';}).join('');if(mine.length>8)c+='<div class="profile-artist-chip" style="color:var(--text-muted);" onclick="navigate(\'schedule\')">+'+(mine.length-8)+' more</div>';return '<div class="profile-card"><div class="profile-card-title">My Schedule</div><div class="profile-artists-grid">'+c+'</div></div>';})() : '')
     editForm+'</div>';
 }
 
