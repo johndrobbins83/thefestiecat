@@ -6821,7 +6821,7 @@ function closeSOS() { document.getElementById('sosOverlay').classList.remove('op
   document.addEventListener('click', ()=>panel.classList.remove('open'));
   // Fetch weather via Open-Meteo (no API key needed)
   const LAT=42.1167, LON=-72.0898;
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true&hourly=relativehumidity_2m,precipitation_probability,apparent_temperature&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/New_York`)
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true&hourly=relative_humidity_2m,precipitation_probability,apparent_temperature&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/New_York`)
     .then(r=>r.json()).then(d=>{
       const cw=d.current_weather; if(!cw)return;
       const temp=Math.round(cw.temperature);
@@ -6837,7 +6837,7 @@ function closeSOS() { document.getElementById('sosOverlay').classList.remove('op
       const hr=now.getHours();
       if(d.hourly){
         const feel=d.hourly.apparent_temperature?.[hr];
-        const hum=d.hourly.relativehumidity_2m?.[hr];
+        const hum=d.hourly.relative_humidity_2m?.[hr];
         const rain=d.hourly.precipitation_probability?.[hr];
         if(feel!=null) document.getElementById('wpFeel').textContent='Feels like '+Math.round(feel)+'°F';
         if(hum!=null)  document.getElementById('wpHumid').textContent=hum+'%';
