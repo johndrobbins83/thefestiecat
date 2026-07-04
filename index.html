@@ -2011,6 +2011,73 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 .dm-msg-time{font-size:10px;opacity:0.45;margin-top:3px;display:block;}
 .chat-tab-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff4d8d;
   margin-left:6px;vertical-align:middle;box-shadow:0 0 4px rgba(255,77,141,0.7);}
+
+/* ── Sunken Radio ── */
+.radio-frame{
+  --radio-accent:#f5c842;
+  --radio-display-bg:#04140f;
+  --radio-display-text:#00d4c8;
+  --radio-case:#242019;
+  position:relative;
+  background:
+    radial-gradient(circle 3px at 13px 13px, #000 45%, transparent 47%),
+    radial-gradient(circle 3px at calc(100% - 13px) 13px, #000 45%, transparent 47%),
+    radial-gradient(circle 3px at 13px calc(100% - 13px), #000 45%, transparent 47%),
+    radial-gradient(circle 3px at calc(100% - 13px) calc(100% - 13px), #000 45%, transparent 47%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 5px),
+    linear-gradient(160deg,var(--radio-case),#0a0a0a);
+  border:2px solid rgba(245,200,66,0.3);
+  padding:22px 16px 26px;
+  max-width:440px;
+  margin:8px auto 0;
+  box-shadow:0 12px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.radio-display{
+  background:var(--radio-display-bg);
+  border:3px solid #000;
+  border-radius:4px;
+  padding:14px 16px;
+  margin-bottom:22px;
+  box-shadow:inset 0 2px 10px rgba(0,0,0,0.85);
+  text-align:center;
+  position:relative;
+}
+.radio-display-brand{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:3px;
+  color:var(--radio-display-text);opacity:0.55;margin-bottom:8px;
+  display:flex;align-items:center;justify-content:center;gap:6px;}
+.radio-display-brand svg{opacity:0.85;flex-shrink:0;}
+.radio-display-now{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;
+  color:var(--radio-display-text);text-shadow:0 0 8px currentColor;min-height:20px;
+  letter-spacing:1px;line-height:1.4;}
+.radio-display-time{font-family:'Orbitron',sans-serif;font-size:11px;
+  color:var(--radio-display-text);opacity:0.65;margin-top:8px;letter-spacing:1px;}
+.radio-controls-row{display:flex;justify-content:center;gap:56px;margin-bottom:4px;}
+.radio-knob{
+  width:64px;height:64px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 35% 30%, #fff6da, var(--radio-accent) 50%, #8a5a12 100%);
+  border:2px solid rgba(0,0,0,0.45);
+  display:flex;align-items:center;justify-content:center;
+  color:#3a2c08;cursor:pointer;padding:0;
+  box-shadow:0 4px 10px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.55);
+  transition:transform .18s ease;
+}
+.radio-knob::before{
+  content:'';position:absolute;top:7px;left:50%;width:2px;height:11px;
+  background:rgba(0,0,0,0.55);border-radius:1px;transform:translateX(-50%);
+}
+.radio-knob:active{transform:scale(0.94);}
+.radio-knob-labels{display:flex;justify-content:center;gap:56px;margin-bottom:20px;}
+.radio-knob-labels span{width:64px;text-align:center;font-size:9px;font-weight:800;
+  letter-spacing:1.5px;color:rgba(245,200,66,0.4);}
+.radio-btn-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.radio-btn{
+  background:#0d0d0f;color:#ddd;border:1px solid rgba(255,255,255,0.15);
+  border-radius:6px;padding:11px 14px;font-size:11px;font-weight:800;
+  font-family:'Poppins',sans-serif;letter-spacing:0.5px;cursor:pointer;
+  box-shadow:0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.radio-btn:active{transform:translateY(1px);}
+.radio-btn-play{background:var(--radio-accent);color:#1a1200;border-color:transparent;min-width:80px;}
 .typing-bubble{display:inline-flex;align-items:center;gap:4px;background:#1a1a1a;
   border:1px solid rgba(255,255,255,0.07);border-radius:16px 16px 16px 4px;padding:9px 14px;}
 .typing-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.6);
@@ -3187,6 +3254,44 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
     <div class="games-grid" id="gamesGrid"></div>
   </div><!-- /page-games -->
 
+  <!-- ── SUNKEN RADIO ── -->
+  <div class="page" id="page-radio">
+    <div class="page-header" style="padding-top:12px;"><div class="page-title">Sunken Radio</div><div class="page-sub">Tune in to the broadcast</div></div>
+
+    <div id="radioPlayerFrame" class="radio-frame">
+      <div class="radio-display">
+        <div class="radio-display-brand"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="9" r="6"/><circle cx="9.3" cy="8.3" r="1.3" fill="var(--radio-display-bg)"/><circle cx="14.7" cy="8.3" r="1.3" fill="var(--radio-display-bg)"/><path d="M9.5 11.5l1.2 1.8M14.5 11.5l-1.2 1.8M12 12v2.5" stroke="var(--radio-display-bg)" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M3 19.5l6.5-3 2.5 2.5 2.5-2.5 6.5 3-3.2-5.3-3 1-2.8-2.2-2.8 2.2-3-1z"/></svg>SUNKEN RADIO<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1);"><circle cx="12" cy="9" r="6"/><circle cx="9.3" cy="8.3" r="1.3" fill="var(--radio-display-bg)"/><circle cx="14.7" cy="8.3" r="1.3" fill="var(--radio-display-bg)"/><path d="M9.5 11.5l1.2 1.8M14.5 11.5l-1.2 1.8M12 12v2.5" stroke="var(--radio-display-bg)" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M3 19.5l6.5-3 2.5 2.5 2.5-2.5 6.5 3-3.2-5.3-3 1-2.8-2.2-2.8 2.2-3-1z"/></svg></div>
+        <div class="radio-display-now" id="radioNowPlaying">— STANDBY —</div>
+        <div class="radio-display-time" id="radioTimeReadout">--:-- / --:--</div>
+      </div>
+
+      <div class="radio-controls-row">
+        <button class="radio-knob" id="radioPowerBtn" onclick="radioTogglePlay()" title="Play / Pause">
+          <svg id="radioPowerIcon" viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="radio-knob" id="radioTuneBtn" onclick="radioTuneRandom()" title="Tune to a random spot in the broadcast">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="radio-knob-labels">
+        <span>POWER</span><span>TUNE</span>
+      </div>
+
+      <div class="radio-btn-row">
+        <button class="radio-btn" onclick="radioSkip(-30)">⏪ 30s</button>
+        <button class="radio-btn" onclick="radioSkip(30)">30s ⏩</button>
+        <button class="radio-btn" onclick="radioSkip(300)">5m ⏩</button>
+        <button class="radio-btn radio-btn-play" id="radioPlayBtn" onclick="radioTogglePlay()">▶ Play</button>
+      </div>
+    </div>
+
+    <div id="radioAdminBar" style="display:none;text-align:center;margin-top:16px;">
+      <button class="dash-btn" onclick="openRadioAdminModal()">⚙ Edit Radio Settings</button>
+    </div>
+
+    <audio id="radioAudioEl" preload="none"></audio>
+  </div><!-- /page-radio -->
+
   <!-- ── WATCH THE DOC ── -->
   <div class="page" id="page-doc">
     <div class="page-header">
@@ -3957,6 +4062,11 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
         <div class="more-btn-icon"><svg viewBox="0 0 16 16" width="17" height="17" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3H3z"/><circle cx="5" cy="5" r="1.3" fill="#000"/><circle cx="11" cy="5" r="1.3" fill="#000"/><circle cx="8" cy="8" r="1.3" fill="#000"/><circle cx="5" cy="11" r="1.3" fill="#000"/><circle cx="11" cy="11" r="1.3" fill="#000"/></svg></div>
         <div class="more-btn-label">Games</div>
         <div class="more-btn-sub">Trivia &amp; fun</div>
+      </span>
+      <span class="more-btn" onclick="navigate('radio');closeMore()" style="border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.05);">
+        <div class="more-btn-icon" style="background:rgba(245,200,66,0.2);color:var(--gold-bright);"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="6" width="20" height="12" rx="2"/><rect x="8" y="9" width="8" height="4" rx="1" fill="#000" opacity="0.35"/><circle cx="5" cy="12" r="1.6" fill="#000" opacity="0.35"/><circle cx="19" cy="12" r="1.6" fill="#000" opacity="0.35"/><rect x="9" y="4" width="6" height="2" rx="1"/></svg></div>
+        <div class="more-btn-label">Sunken Radio</div>
+        <div class="more-btn-sub">Tune in</div>
       </span>
       <span class="more-btn" onclick="navigate('doc');closeMore()" style="border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.05);">
         <div class="more-btn-icon" style="background:rgba(245,200,66,0.2);color:var(--gold-bright);"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor" stroke="none"/></svg></div>
@@ -5465,6 +5575,7 @@ function navigate(page) {
   if (page === 'games') initGames();
   if (page === 'checklist') renderChecklist();
   if (page === 'map') initHotelMap();
+  if (page === 'radio') initRadio();
   if (page === 'admin')  initAdminDashboard();
   if (page === 'staff')  initStaffDashboard();
   if (page === 'people')  { initPeople(); }
@@ -6772,6 +6883,159 @@ GAMES_DATA = [
   {icon:'🪱', name:'Rave Worm',   desc:'Neon snake game. Eat the rave snacks, dodge yourself, survive the worm.', players:'1 player', color:'rgba(255,0,255,0.25)', ready:true, link:''},
 ];
 // (declared at top of script)
+/* ════════════════════════════════════════════════════════════
+   SUNKEN RADIO — retro player that "tunes in" to a random spot
+   in one long pre-recorded broadcast, like a real radio station
+════════════════════════════════════════════════════════════ */
+var radioSegments = [];
+var radioHasTunedIn = false;
+
+async function initRadio() {
+  const adminBar = document.getElementById('radioAdminBar');
+  if (adminBar) adminBar.style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none';
+
+  const audio = document.getElementById('radioAudioEl');
+  if (!audio) return;
+
+  // Style theme
+  try {
+    const sRes = await fetch(AUTH_URL + '/site/radio-style');
+    if (sRes.ok) { const sd = await sRes.json(); applyRadioStyle(sd.style || {}); }
+  } catch(e) {}
+
+  // Show guide (labeled timeframes)
+  try {
+    const segRes = await fetch(AUTH_URL + '/site/radio-segments');
+    if (segRes.ok) { const segd = await segRes.json(); radioSegments = segd.segments || []; }
+  } catch(e) {}
+
+  // Broadcast file URL — only (re)assign if it actually changed, so we never
+  // interrupt playback just from revisiting this page
+  try {
+    const res = await fetch(AUTH_URL + '/site/radio-audio');
+    if (res.ok) {
+      const d = await res.json();
+      const nowEl = document.getElementById('radioNowPlaying');
+      if (d.url && audio.dataset.loadedUrl !== d.url) {
+        audio.src = d.url;
+        audio.dataset.loadedUrl = d.url;
+      } else if (!d.url && nowEl) {
+        nowEl.textContent = 'No broadcast uploaded yet';
+      }
+    }
+  } catch(e) {}
+}
+
+function applyRadioStyle(style) {
+  window._radioStyle = style || {};
+  const frame = document.getElementById('radioPlayerFrame');
+  if (!frame) return;
+  if (style.accent)      frame.style.setProperty('--radio-accent', style.accent);
+  if (style.displayBg)   frame.style.setProperty('--radio-display-bg', style.displayBg);
+  if (style.displayText) frame.style.setProperty('--radio-display-text', style.displayText);
+  if (style.caseColor)   frame.style.setProperty('--radio-case', style.caseColor);
+}
+
+function radioTogglePlay() {
+  const audio = document.getElementById('radioAudioEl');
+  if (!audio || !audio.src) { showToast('No broadcast uploaded yet'); return; }
+  if (audio.paused) {
+    // First play of the session — drop into a random spot, like switching on a real radio.
+    // Resuming after a manual pause should NOT re-tune; that would be annoying.
+    if (!radioHasTunedIn) {
+      radioHasTunedIn = true;
+      radioSeekRandom(function() {
+        audio.play().catch(function(){ showToast('Could not start playback'); });
+        radioUpdatePlayUI();
+      });
+      return;
+    }
+    audio.play().catch(function(){ showToast('Could not start playback'); });
+  } else {
+    audio.pause();
+  }
+  radioUpdatePlayUI();
+}
+
+function radioSeekRandom(onReady) {
+  const audio = document.getElementById('radioAudioEl');
+  if (!audio) return;
+  if (!audio.duration || !isFinite(audio.duration)) {
+    audio.addEventListener('loadedmetadata', function once() {
+      audio.removeEventListener('loadedmetadata', once);
+      radioSeekRandom(onReady);
+    });
+    return;
+  }
+  // Leave a little headroom so we don't drop right at the very end of the file
+  audio.currentTime = Math.random() * Math.max(0, audio.duration - 60);
+  if (onReady) onReady();
+}
+
+function radioTuneRandom() {
+  const audio = document.getElementById('radioAudioEl');
+  if (!audio || !audio.src) { showToast('No broadcast uploaded yet'); return; }
+  radioHasTunedIn = true;
+  const tuneBtn = document.getElementById('radioTuneBtn');
+  if (tuneBtn) {
+    tuneBtn.style.transform = 'rotate(220deg)';
+    setTimeout(function(){ tuneBtn.style.transform = ''; }, 300);
+  }
+  radioSeekRandom(function() {
+    if (audio.paused) audio.play().catch(function(){});
+    radioUpdatePlayUI();
+  });
+}
+
+function radioSkip(seconds) {
+  const audio = document.getElementById('radioAudioEl');
+  if (!audio || !audio.src) return;
+  const dur = isFinite(audio.duration) ? audio.duration : Infinity;
+  audio.currentTime = Math.min(Math.max(0, audio.currentTime + seconds), dur - 0.5);
+}
+
+function radioUpdatePlayUI() {
+  const audio = document.getElementById('radioAudioEl');
+  const btn   = document.getElementById('radioPlayBtn');
+  const icon  = document.getElementById('radioPowerIcon');
+  const playing = audio && !audio.paused;
+  if (btn)  btn.innerHTML  = playing ? '⏸ Pause' : '▶ Play';
+  if (icon) icon.innerHTML = playing
+    ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'
+    : '<path d="M8 5v14l11-7z"/>';
+}
+
+function radioFormatTime(sec) {
+  if (!isFinite(sec)) return '--:--';
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  const pad = function(n){ return n<10?'0'+n:''+n; };
+  return h>0 ? (h+':'+pad(m)+':'+pad(s)) : (m+':'+pad(s));
+}
+
+function radioCurrentSegmentLabel(t) {
+  if (!radioSegments.length) return null;
+  let label = null;
+  for (let i=0;i<radioSegments.length;i++) {
+    if (radioSegments[i].startSeconds <= t) label = radioSegments[i].label;
+    else break;
+  }
+  return label;
+}
+
+// Ticker: updates the LCD "now playing" label + elapsed/total time once a second
+setInterval(function() {
+  const audio = document.getElementById('radioAudioEl');
+  if (!audio || !audio.src) return;
+  const nowEl  = document.getElementById('radioNowPlaying');
+  const timeEl = document.getElementById('radioTimeReadout');
+  if (nowEl) {
+    const label = radioCurrentSegmentLabel(audio.currentTime);
+    nowEl.textContent = label || (audio.paused ? '— STANDBY —' : 'SUNKEN RADIO LIVE');
+  }
+  if (timeEl) timeEl.textContent = radioFormatTime(audio.currentTime) + ' / ' + radioFormatTime(audio.duration);
+}, 1000);
+
 function initGames() {
   if (gamesInitted) return;
   gamesInitted = true;
@@ -15868,6 +16132,139 @@ async function adminBoothDeleteAndBan() {
     </div>
   </div>
 </div>
+
+<div id="radioAdminModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">📻 EDIT SUNKEN RADIO</span>
+      <button onclick="closeRadioAdminModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
+    </div>
+    <div style="padding:18px;overflow-y:auto;flex:1;">
+      <label class="auth-label">Broadcast MP3 URL</label>
+      <input class="auth-input" id="radioUrlInput" type="text" placeholder="https://…/broadcast.mp3" style="margin-bottom:6px;">
+      <p style="font-size:11px;color:var(--text-muted);margin:0 0 16px;line-height:1.5;">Upload the file directly to your R2 bucket, then paste the public URL here. You can swap it anytime.</p>
+
+      <div style="font-size:12px;font-weight:800;color:var(--gold-bright);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Show Guide</div>
+      <p style="font-size:11px;color:var(--text-muted);margin:0 0 10px;line-height:1.5;">Label a timestamp in the file (H:MM:SS). That label shows on the display once playback passes it, until the next one starts.</p>
+      <div id="radioSegmentRows"></div>
+      <button onclick="addRadioSegmentRow()" style="width:100%;margin-top:8px;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ Add Show</button>
+
+      <div style="font-size:12px;font-weight:800;color:var(--gold-bright);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.5px;">Player Colors</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Case</label><input type="color" id="radioColorCase" value="#242019" style="width:44px;height:34px;padding:0;border:1px solid rgba(255,255,255,0.15);background:#111;cursor:pointer;"></div>
+        <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Knob</label><input type="color" id="radioColorAccent" value="#f5c842" style="width:44px;height:34px;padding:0;border:1px solid rgba(255,255,255,0.15);background:#111;cursor:pointer;"></div>
+        <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Display BG</label><input type="color" id="radioColorDisplayBg" value="#04140f" style="width:44px;height:34px;padding:0;border:1px solid rgba(255,255,255,0.15);background:#111;cursor:pointer;"></div>
+        <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Display Text</label><input type="color" id="radioColorDisplayText" value="#00d4c8" style="width:44px;height:34px;padding:0;border:1px solid rgba(255,255,255,0.15);background:#111;cursor:pointer;"></div>
+      </div>
+      <div id="radioAdminStatus" style="font-size:12px;margin-top:14px;min-height:16px;"></div>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;flex-shrink:0;">
+      <button onclick="closeRadioAdminModal()" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button onclick="saveRadioSettings()" style="flex:1;padding:10px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--gold-bright);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save All</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   SUNKEN RADIO — admin settings editor
+════════════════════════════════════════════════════════════ */
+function openRadioAdminModal() {
+  const audio = document.getElementById('radioAudioEl');
+  document.getElementById('radioUrlInput').value = (audio && audio.dataset.loadedUrl) || '';
+  window._radioSegmentsDraft = JSON.parse(JSON.stringify(radioSegments || []));
+  renderRadioSegmentRows();
+  const st = window._radioStyle || {};
+  document.getElementById('radioColorCase').value        = st.caseColor    || '#242019';
+  document.getElementById('radioColorAccent').value      = st.accent      || '#f5c842';
+  document.getElementById('radioColorDisplayBg').value   = st.displayBg   || '#04140f';
+  document.getElementById('radioColorDisplayText').value = st.displayText || '#00d4c8';
+  const status = document.getElementById('radioAdminStatus'); if (status) status.textContent = '';
+  document.getElementById('radioAdminModal').style.display = 'flex';
+}
+function closeRadioAdminModal() {
+  document.getElementById('radioAdminModal').style.display = 'none';
+}
+function radioClockToSeconds(str) {
+  const parts = String(str).split(':').map(function(p){ return parseInt(p,10)||0; });
+  if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  if (parts.length === 2) return parts[0]*60 + parts[1];
+  return parts[0] || 0;
+}
+function radioSecondsToClock(sec) {
+  sec = Math.max(0, Math.floor(sec||0));
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  function pad(n){ return n<10?'0'+n:''+n; }
+  return h+':'+pad(m)+':'+pad(s);
+}
+function renderRadioSegmentRows() {
+  const wrap = document.getElementById('radioSegmentRows'); if (!wrap) return;
+  const rows = window._radioSegmentsDraft || [];
+  wrap.innerHTML = rows.map(function(item, i) {
+    return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">'+
+      '<input type="text" value="'+esc(radioSecondsToClock(item.startSeconds))+'" oninput="updateRadioSegmentRow('+i+',\'time\',this.value)" placeholder="H:MM:SS" style="width:90px;padding:8px 8px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--gold-bright);font-family:\'Poppins\',sans-serif;font-size:12px;font-weight:700;text-align:center;outline:none;flex-shrink:0;">'+
+      '<input type="text" value="'+esc(item.label||'')+'" oninput="updateRadioSegmentRow('+i+',\'label\',this.value)" placeholder="Show name / DJ" style="flex:1;padding:8px 10px;background:#111;border:1px solid rgba(255,255,255,0.12);color:var(--text-light);font-family:\'Poppins\',sans-serif;font-size:12px;outline:none;">'+
+      '<button onclick="removeRadioSegmentRow('+i+')" style="flex-shrink:0;width:30px;height:30px;background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.3);color:var(--pink-coral);cursor:pointer;">✕</button>'+
+    '</div>';
+  }).join('');
+}
+function updateRadioSegmentRow(i, key, val) {
+  if (!window._radioSegmentsDraft || !window._radioSegmentsDraft[i]) return;
+  if (key === 'time') window._radioSegmentsDraft[i].startSeconds = radioClockToSeconds(val);
+  else window._radioSegmentsDraft[i][key] = val;
+}
+function addRadioSegmentRow() {
+  if (!window._radioSegmentsDraft) window._radioSegmentsDraft = [];
+  window._radioSegmentsDraft.push({ startSeconds: 0, label: '' });
+  renderRadioSegmentRows();
+}
+function removeRadioSegmentRow(i) {
+  window._radioSegmentsDraft.splice(i, 1);
+  renderRadioSegmentRows();
+}
+async function saveRadioSettings() {
+  const status = document.getElementById('radioAdminStatus');
+  const token  = localStorage.getItem(TOKEN_KEY);
+  const url    = document.getElementById('radioUrlInput').value.trim();
+  const segments = (window._radioSegmentsDraft || []).filter(function(s){ return s.label && s.label.trim(); });
+  const style = {
+    caseColor:   document.getElementById('radioColorCase').value,
+    accent:      document.getElementById('radioColorAccent').value,
+    displayBg:   document.getElementById('radioColorDisplayBg').value,
+    displayText: document.getElementById('radioColorDisplayText').value
+  };
+  status.style.color = 'var(--text-muted)'; status.textContent = 'Saving…';
+  try {
+    const r1 = await fetch(AUTH_URL + '/site/radio-audio', { method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body: JSON.stringify({ url: url }) });
+    const r2 = await fetch(AUTH_URL + '/site/radio-segments', { method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body: JSON.stringify({ segments: segments }) });
+    const r3 = await fetch(AUTH_URL + '/site/radio-style', { method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body: JSON.stringify({ style: style }) });
+    if (r1.ok && r2.ok && r3.ok) {
+      radioSegments = segments;
+      applyRadioStyle(style);
+      const audio = document.getElementById('radioAudioEl');
+      if (url && audio.dataset.loadedUrl !== url) {
+        const wasPlaying = !audio.paused;
+        audio.src = url;
+        audio.dataset.loadedUrl = url;
+        radioHasTunedIn = false; // new file — treat the next play as a fresh tune-in
+        if (wasPlaying) {
+          radioSeekRandom(function() {
+            audio.play().catch(function(){});
+            radioHasTunedIn = true;
+            radioUpdatePlayUI();
+          });
+        }
+      }
+      closeRadioAdminModal();
+      showToast('✓ Radio settings saved');
+    } else {
+      status.style.color = 'var(--pink-coral)'; status.textContent = 'Save failed — check your connection.';
+    }
+  } catch(e) {
+    status.style.color = 'var(--pink-coral)'; status.textContent = 'Error: ' + e.message;
+  }
+}
+</script>
 
 <div id="mapVendorDirModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
   <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
