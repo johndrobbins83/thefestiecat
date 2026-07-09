@@ -9530,7 +9530,7 @@ async function updateConnectButtonStates() {
 
 async function adminSetStaffRole(userId, staffRole) {
   const token = localStorage.getItem('ss_auth_token');
-  if (!token || !staffRole) return;
+  if (!token) return;
   try {
     const res = await fetch(AUTH_URL + '/auth/staffrole', {
       method: 'PUT',
@@ -9538,7 +9538,7 @@ async function adminSetStaffRole(userId, staffRole) {
       body: JSON.stringify({ userId, staffRole })
     });
     const data = await res.json();
-    if (res.ok) showToast('✓ Staff role set to ' + staffRole);
+    if (res.ok) showToast(staffRole ? '✓ Staff role set to ' + staffRole : '✓ Staff role cleared');
     else showToast('Error: ' + data.error);
   } catch { showToast('Could not update staff role'); }
 }
