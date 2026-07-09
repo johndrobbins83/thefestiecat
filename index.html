@@ -15894,7 +15894,22 @@ async function sendGroupMessage() {
       var slug = 'chat_'+(currentUser.handle||currentUser.id)+'_'+Date.now();
       var ur = await fetch(AUTH_URL+'/media/upload?artist='+encodeURIComponent(slug),{method:'POST',headers:{'Content-Type':photo.file.type,'Authorization':'Bearer '+token2},body:photo.file});
       if (ur.ok){ var ud=await ur.json(); imageUrl=ud.url||''; }
-    } catch{}
+      if (!imageUrl) {
+        showToast('Could not upload photo');
+        if (bubble) bubble.remove();
+        if (input) input.value = text;
+        _dmSending = false;
+        if (btn) { btn.style.opacity=''; btn.style.pointerEvents=''; }
+        return;
+      }
+    } catch {
+      showToast('Could not upload photo');
+      if (bubble) bubble.remove();
+      if (input) input.value = text;
+      _dmSending = false;
+      if (btn) { btn.style.opacity=''; btn.style.pointerEvents=''; }
+      return;
+    }
   }
   var token = localStorage.getItem(TOKEN_KEY);
   try {
