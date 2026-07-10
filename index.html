@@ -11736,14 +11736,51 @@ async function sendReaction(emoji) {
   } catch(e) { showToast('Error: ' + e.message); }
 }
 
+// Resizes/re-encodes an image client-side before upload — typical phone photos
+// are 3-8MB at resolutions way beyond what a 220x260px chat bubble (or even
+// the fullscreen zoom view) actually needs. This cuts both upload time and
+// every future download time for that image, often by 10x or more, with no
+// visible quality loss in context. Falls back to the original file untouched
+// if anything goes wrong, or if compression wouldn't actually help.
+function compressImageForUpload(file, maxDimension, quality) {
+  maxDimension = maxDimension || 1280;
+  quality = quality || 0.82;
+  return new Promise(function(resolve) {
+    if (!file.type || !file.type.startsWith('image/') || file.type === 'image/gif' || file.size < 300 * 1024) {
+      resolve(file); return;
+    }
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function() {
+      URL.revokeObjectURL(url);
+      var w = img.width, h = img.height;
+      if (w > maxDimension || h > maxDimension) {
+        if (w > h) { h = Math.round(h * maxDimension / w); w = maxDimension; }
+        else { w = Math.round(w * maxDimension / h); h = maxDimension; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(function(blob) {
+        if (!blob || blob.size >= file.size) { resolve(file); return; }
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = function() { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 async function uploadDMPhoto(file) {
   const token = localStorage.getItem('ss_auth_token');
   const slug  = 'chat_' + (currentUser.handle || currentUser.id) + '_' + Date.now();
   try {
+    const uploadFile = await compressImageForUpload(file);
     const res = await fetch(AUTH_URL + '/media/upload?artist=' + encodeURIComponent(slug), {
       method: 'POST',
-      headers: { 'Content-Type': file.type, 'Authorization': 'Bearer ' + token },
-      body: file
+      headers: { 'Content-Type': uploadFile.type, 'Authorization': 'Bearer ' + token },
+      body: uploadFile
     });
     if (res.ok) { const d = await res.json(); return d.url || null; }
   } catch {}
@@ -11886,18 +11923,11 @@ async function pollDMUnread() {
   try {
     let total = 0;
 
-    // 1. Count unread 1:1 DMs
+    // Count unread 1:1 DMs — /dm/unread checks both the conversation index
+    // and mutual friends, so it reliably reflects the true count; no need
+    // for a second, heavier fallback request when it comes back at 0.
     const res = await fetch(AUTH_URL + '/dm/unread', { headers: {'Authorization': 'Bearer ' + token} });
     if (res.ok) { const d = await res.json(); total += d.total || 0; }
-
-    // Fallback: check DM list directly
-    if (total === 0) {
-      const res2 = await fetch(AUTH_URL + '/dm', { headers: {'Authorization': 'Bearer ' + token} });
-      if (res2.ok) {
-        const d2 = await res2.json();
-        total += (d2.conversations || []).reduce(function(sum, c) { return sum + (c.unread || 0); }, 0);
-      }
-    }
 
     // Track the pure 1:1-DM portion separately so the "Personal" tab dot
     // can reflect DMs even when there's no unread group message.
@@ -15966,10 +15996,7 @@ async function sendGroupMessage() {
   var imageUrl = '';
   if (photo) {
     try {
-      var token2 = localStorage.getItem(TOKEN_KEY);
-      var slug = 'chat_'+(currentUser.handle||currentUser.id)+'_'+Date.now();
-      var ur = await fetch(AUTH_URL+'/media/upload?artist='+encodeURIComponent(slug),{method:'POST',headers:{'Content-Type':photo.file.type,'Authorization':'Bearer '+token2},body:photo.file});
-      if (ur.ok){ var ud=await ur.json(); imageUrl=ud.url||''; }
+      imageUrl = await uploadDMPhoto(photo.file) || '';
       if (!imageUrl) {
         showToast('Could not upload photo');
         if (bubble) bubble.remove();
