@@ -2027,6 +2027,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
   border-radius:16px 16px 16px 4px;
 }
 .dm-msg-time{font-size:10px;opacity:0.45;margin-top:3px;display:block;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 .chat-tab-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff4d8d;
   margin-left:6px;vertical-align:middle;box-shadow:0 0 4px rgba(255,77,141,0.7);}
 
@@ -3812,7 +3813,12 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <div class="dash-section" style="margin-top:16px;">
         <div class="dash-section-header">
           <div class="dash-section-title">📧 Email List</div>
-          <button class="dash-btn primary" onclick="downloadEmailListPDF()">⬇ Download PDF</button>
+          <div style="display:flex;gap:8px;">
+            <button class="dash-btn" id="refreshUserCountBtn" onclick="refreshUserCount(this)" title="Refresh total user count">
+              <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+            </button>
+            <button class="dash-btn primary" onclick="downloadEmailListPDF()">⬇ Download PDF</button>
+          </div>
         </div>
         <div class="dash-section-body">
           <div id="emailListPreview" style="color:var(--text-muted);font-size:13px;">
@@ -4178,7 +4184,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
 
 <!-- ══ PHOTO BOOTH — Caption & Tag Modal ══ -->
 <div id="boothUploadModal" style="display:none;position:fixed;inset:0;bottom:0;z-index:9600;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 72px);">
-  <div style="width:100%;max-width:540px;background:#0e0e0e;border-top:2px solid rgba(255,105,180,0.3);border-radius:0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 80px);max-height:85vh;overflow-y:auto;">
+  <div style="width:100%;max-width:540px;background:#0e0e0e;border-top:2px solid rgba(255,105,180,0.3);border-radius:0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 80px);max-height:85vh;max-height:85dvh;overflow-y:auto;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-size:14px;font-weight:800;color:#ff69b4;">Add Details</div>
       <button onclick="closeBoothUploadModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;">✕</button>
@@ -8208,6 +8214,14 @@ async function checkFlaggedBadge() {
   } catch {}
 }
 
+async function refreshUserCount(btn) {
+  const icon = btn ? btn.querySelector('svg') : null;
+  if (icon) icon.style.animation = 'spin 0.6s linear';
+  await loadAdminUsers();
+  showToast('✓ User count refreshed');
+  if (icon) setTimeout(function(){ icon.style.animation = ''; }, 600);
+}
+
 async function loadAdminUsers() {
   const token = localStorage.getItem(TOKEN_KEY);
   if (!token) return;
@@ -8845,15 +8859,7 @@ function adminEditArtist(key) {
   renderEditSlots(slots);
   document.getElementById('artistEditModal').classList.add('open');
   document.body.style.overflow = 'hidden';
-  if (window.innerWidth <= 767) {
-    const nav = document.querySelector('.bottom-nav');
-    const navH = nav ? nav.getBoundingClientRect().height : 80;
-    const modal = document.getElementById('artistEditModal');
-    const footer = modal && modal.querySelector('.edit-modal-footer');
-    if (footer) footer.style.paddingBottom = (navH + 12) + 'px';
-    const inner = modal && modal.querySelector('.edit-modal');
-    if (inner) inner.style.maxHeight = (window.innerHeight - navH - 20) + 'px';
-  }
+  applyMobileArtistModalSizing();
 }
 
 function adminNewArtist() {
@@ -8879,11 +8885,38 @@ function adminNewArtist() {
   // Open modal
   document.getElementById('artistEditModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  applyMobileArtistModalSizing();
+}
+
+let _artistEditResizeHandler = null;
+function applyMobileArtistModalSizing() {
+  if (window.innerWidth > 767) return;
+  const nav = document.querySelector('.bottom-nav');
+  const navH = nav ? nav.getBoundingClientRect().height : 80;
+  const modal = document.getElementById('artistEditModal');
+  const footer = modal && modal.querySelector('.edit-modal-footer');
+  if (footer) footer.style.paddingBottom = (navH + 12) + 'px';
+  const inner = modal && modal.querySelector('.edit-modal');
+  // Recalculate on the ACTUAL visible viewport (window.visualViewport), which
+  // correctly shrinks when the on-screen keyboard opens — a one-time
+  // window.innerHeight snapshot at open-time stays frozen at the pre-keyboard
+  // size, which can push the Save button down behind/below the keyboard.
+  _artistEditResizeHandler = () => {
+    if (!inner) return;
+    const visibleH = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    inner.style.maxHeight = Math.max(200, visibleH - navH - 20) + 'px';
+  };
+  _artistEditResizeHandler();
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', _artistEditResizeHandler);
 }
 
 function closeArtistEdit() {
   document.getElementById('artistEditModal').classList.remove('open');
   document.body.style.overflow = '';
+  if (_artistEditResizeHandler && window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', _artistEditResizeHandler);
+    _artistEditResizeHandler = null;
+  }
 }
 
 async function saveArtistEdit() {
@@ -15627,7 +15660,7 @@ async function deleteTaskComment(taskId, commentId) {
 
 <!-- ══ NEW GROUP CHAT MODAL ══ -->
 <div id="newGroupModal" style="display:none;position:fixed;inset:0;z-index:70000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px;">
-  <div style="width:100%;max-width:440px;background:#0e0e0e;border:1px solid rgba(155,61,255,0.35);max-height:85vh;display:flex;flex-direction:column;" id="newGroupModalBox">
+  <div style="width:100%;max-width:440px;background:#0e0e0e;border:1px solid rgba(155,61,255,0.35);max-height:85vh;max-height:85dvh;display:flex;flex-direction:column;" id="newGroupModalBox">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
       <span id="newGroupModalTitle" style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#c084fc;letter-spacing:1px;">👥 NEW GROUP CHAT</span>
       <button onclick="closeNewGroupModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
@@ -15655,7 +15688,7 @@ async function deleteTaskComment(taskId, commentId) {
 <!-- Staff groups (admins/managers): view + remove current members, add staff -->
 <!-- Personal groups (any member): add people from your crew -->
 <div id="manageMembersModal" style="display:none;position:fixed;inset:0;z-index:70000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px;">
-  <div style="width:100%;max-width:440px;background:#0e0e0e;border:1px solid rgba(0,212,200,0.35);max-height:85vh;display:flex;flex-direction:column;">
+  <div style="width:100%;max-width:440px;background:#0e0e0e;border:1px solid rgba(0,212,200,0.35);max-height:85vh;max-height:85dvh;display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
       <span id="manageMembersModalTitle" style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--teal-glow);letter-spacing:1px;">👥 MANAGE MEMBERS</span>
       <button onclick="closeManageMembersModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
@@ -16192,7 +16225,7 @@ async function adminBoothDeleteAndBan() {
 
 <!-- ══ MAP EDIT MODAL (Admin only) ══ -->
 <div id="mapLegendModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:480px;max-height:85vh;max-height:85dvh;display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
       <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">✏ EDIT MAP KEY COLORS</span>
       <button onclick="closeMapLegendEditor()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
@@ -16210,7 +16243,7 @@ async function adminBoothDeleteAndBan() {
 </div>
 
 <div id="mapAmenitiesModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:520px;max-height:85vh;max-height:85dvh;display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
       <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">✏ EDIT AMENITIES</span>
       <button onclick="closeAmenitiesEditor()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
@@ -16229,7 +16262,7 @@ async function adminBoothDeleteAndBan() {
 </div>
 
 <div id="radioAdminModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:520px;max-height:85vh;max-height:85dvh;display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
       <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">📻 EDIT SUNKEN RADIO</span>
       <button onclick="closeRadioAdminModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
@@ -16362,7 +16395,7 @@ async function saveRadioSettings() {
 </script>
 
 <div id="mapVendorDirModal" style="display:none;position:fixed;inset:0;z-index:80000;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
+  <div style="background:#0e0e0e;border:1px solid rgba(245,200,66,0.35);width:100%;max-width:480px;max-height:85vh;max-height:85dvh;display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
       <span style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:1px;">✏ EDIT VENDOR DIRECTORY</span>
       <button onclick="closeVendorDirEditor()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text-muted);font-size:16px;cursor:pointer;width:28px;height:28px;">✕</button>
