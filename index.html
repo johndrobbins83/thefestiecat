@@ -53,7 +53,7 @@ body{
   padding-top:env(safe-area-inset-top, 0px);
   background:#000000;backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(245,200,66,0.25);
-  z-index:200;display:flex;align-items:center;justify-content:space-between;
+  z-index:99999;display:flex;align-items:center;justify-content:space-between;
   padding:0 max(24px, calc((100vw - 1280px) / 2 + 24px));
 }
 .nav-logo{font-family:'Pirata One',cursive;font-size:22px;color:var(--gold-bright);
@@ -1094,7 +1094,7 @@ body{
 ══════════════════════════════════════════════════ */
 .modal-backdrop{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.92);
   backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;
-  padding:12px 0 calc(70px + env(safe-area-inset-bottom,0px));/* clear bottom nav */}
+  padding:calc(12px + env(safe-area-inset-top,0px)) 0 calc(70px + env(safe-area-inset-bottom,0px));/* clear notch + bottom nav */}
 .modal-backdrop.open{display:flex;}
 @media(min-width:768px){
   .modal-backdrop{padding:20px;}
@@ -2946,7 +2946,7 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
           <option value="fri">FRI 7/17</option>
           <option value="sat">SAT 7/18</option>
           
-          <option value="mine">My Schedule</option>
+          <option value="mine" selected>My Schedule</option>
         </select>
         <div class="view-toggle">
           <button class="view-btn" id="viewListBtnM" onclick="setView('list')" title="List view">☰</button>
@@ -2957,10 +2957,10 @@ body.is-admin .artist-card .artist-admin-pen { display:flex!important; }
       <!-- DESKTOP: tabs + pills -->
       <div class="sched-desktop-controls" style="display:flex;gap:10px;align-items:center;flex-wrap:nowrap;">
         <div class="day-tabs" style="flex:1;">
-          <button class="day-tab active" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
+          <button class="day-tab" data-day="fri" onclick="switchDay('fri',this)">FRI 7/17</button>
           <button class="day-tab"        data-day="sat" onclick="switchDay('sat',this)">SAT 7/18</button>
           
-          <button class="day-tab mine-tab" data-day="mine" onclick="switchDay('mine',this)" id="mySchedTab">My Schedule</button>
+          <button class="day-tab mine-tab active" data-day="mine" onclick="switchDay('mine',this)" id="mySchedTab">My Schedule</button>
         </div>
         <div class="filter-row">
           <span class="filter-label">Stage:</span>
@@ -5453,7 +5453,7 @@ const CHECKLIST_KEY = 'ss_checklist_v2';
 const PWA_DISMISSED_KEY = 'ss_pwa_dismissed';
 
 let currentPage = 'home';
-let schedCurrentDay = 'fri';
+let schedCurrentDay = 'mine';
 let schedStageFilter = 'all';
 let schedView = 'grid';
 let artistFilter = 'all';
@@ -5850,6 +5850,11 @@ function renderSchedule() {
   const gridWrap = document.getElementById('blockViewWrap');
   const myPage   = document.getElementById('mySchedPage');
   const search   = (document.getElementById('schedSearchInput')||{}).value||'';
+
+  // On My Schedule, hide the mobile stage dropdown — stage filtering doesn't apply there.
+  // Kept here (not just in switchDay) so it's also correct on initial page load.
+  const stageDd = document.getElementById('stageDropdown');
+  if (stageDd) stageDd.style.display = day === 'mine' ? 'none' : '';
 
   listWrap.style.display = 'none';
   gridWrap.style.display = 'none';
@@ -13187,14 +13192,19 @@ function formatTimeAgo(iso) {
   return Math.floor(hrs / 24) + 'd ago';
 }
 
-// Close notif drawer when clicking outside
+// Close notif drawer when clicking outside — uses the capture phase so this
+// fires reliably even when the clicked element calls event.stopPropagation()
+// in its own bubbling-phase handler (common throughout this app, e.g.
+// reaction buttons, modal close buttons). A bubbling-phase listener here
+// would never see those clicks at all, leaving the drawer stuck open until
+// the bell was tapped directly.
 document.addEventListener('click', function(e) {
   const drawer = document.getElementById('notifDrawer');
   const bell   = document.getElementById('bellWrap');
   if (drawer && drawer.classList.contains('open') && !bell?.contains(e.target)) {
     drawer.classList.remove('open');
   }
-});
+}, true);
 
 /* ════════════════════════════════════════
    INBOX + STAFF CONTACTS
