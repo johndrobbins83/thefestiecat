@@ -10366,11 +10366,14 @@ function selectUserForAssign(containerId, userId, userName) {
   // Find and set the hidden userId field
   const idEl = document.getElementById(containerId + '-assignUserId');
   if (idEl) idEl.value = userId;
-  // Find and set the display name field — try all naming patterns used across forms
-  const nameEl = document.getElementById(containerId + '-assignUserName') ||
-                 document.getElementById(containerId + '-assignDisplayName') ||
-                 document.getElementById(containerId.replace(/-shiftAssign$/, '') + '-shiftAssignName') ||
-                 document.getElementById(containerId.replace(/-taskAssign$/, '') + '-taskAssignName');
+  // Find and set the VISIBLE text input the user actually typed into. The
+  // specific "-shiftAssignName"/"-taskAssignName" patterns must be checked
+  // BEFORE the generic "-assignUserName"/"-assignDisplayName" ones — those
+  // generic ones also match this form's HIDDEN bookkeeping field below, so
+  // checking them first would silently update that instead of what's visible.
+  const nameEl = document.getElementById(containerId.replace(/-shiftAssign$/, '') + '-shiftAssignName') ||
+                 document.getElementById(containerId.replace(/-taskAssign$/, '') + '-taskAssignName') ||
+                 document.getElementById(containerId + '-assignUserName');
   if (nameEl) nameEl.value = userName;
   // Also set the display name hidden field if it exists
   const dispEl = document.getElementById(containerId + '-assignDisplayName');
