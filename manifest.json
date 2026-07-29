@@ -1,7 +1,7 @@
 {
-  "name": "Sunken Suite · The Mutiny",
-  "short_name": "Sunken Suite",
-  "description": "Official app for Sunken Suite 2026: The Mutiny — Schedule, Artists, Map, Crew & More",
+  "name": "Tropical Dreams",
+  "short_name": "Trop Dreams",
+  "description": "Official app for Tropical Dreams 2027 — Schedule, Artists, Map, Crew & More",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
