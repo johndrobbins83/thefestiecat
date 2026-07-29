@@ -103,7 +103,7 @@ async function setCount(n) {
 // a running "N new updates" count once more than one has arrived.
 self.addEventListener('push', event => {
   event.waitUntil((async () => {
-    const payload = { title: '☠ Tropical Dreams', body: 'You have a new notification', url: '/' };
+    const payload = { title: '🌴 Tropical Dreams', body: 'You have a new notification', url: '/' };
 
     if (event.data) {
       try {
@@ -120,7 +120,7 @@ self.addEventListener('push', event => {
     const count = (await getCount()) + 1;
     await setCount(count);
 
-    const title = count > 1 ? `☠ Tropical Dreams — ${count} new updates` : payload.title;
+    const title = count > 1 ? `🌴 Tropical Dreams — ${count} new updates` : payload.title;
     const body  = count > 1 ? `Latest: ${payload.body}` : payload.body;
 
     await self.registration.showNotification(title, {
